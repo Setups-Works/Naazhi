@@ -22,6 +22,18 @@ export type Release = {
  */
 export const RELEASES: Release[] = [
   {
+    date: "2026-11-10",
+    title: "Version 2.4.4: your Reader in chat",
+    summary: "Ask chat for your latest, starred or unread articles, news from a site you follow, or to add a website to the Reader.",
+    tone: "sand",
+    appVersion: "v2.4.4",
+    changes: [
+      { kind: "new", platform: "web", text: "Ask chat to show your latest, starred or unread articles, or the latest from a site you follow, and open them from the cards." },
+      { kind: "new", platform: "web", text: "Ask chat to add a website to your Reader. You review the feed and press Create before anything is added." },
+      { kind: "new", platform: "app", text: "The same Reader cards and add-feed drafts in the app’s chat." },
+    ],
+  },
+  {
     date: "2026-11-09",
     title: "Version 2.4.3: full articles and sharing",
     summary: "Articles open on their own page with the full text, you can share them, and Home cards follow your finger or cursor.",

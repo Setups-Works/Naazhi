@@ -51,3 +51,13 @@ export function rssAge(iso: string, now = Date.now()): string {
   if (days < 7) return `${days}d`;
   return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
+
+/** The feeds whose name, address or website contains every word of `site` (any case); no words means no feed matches. */
+export function feedsMatching<T extends Pick<RssFeed, "title" | "url" | "site_url">>(feeds: T[], site: string | undefined): T[] {
+  const words = (site ?? "").toLowerCase().split(/\s+/).filter(Boolean);
+  if (!words.length) return [];
+  return feeds.filter((f) => {
+    const hay = `${f.title} ${f.url} ${f.site_url ?? ""}`.toLowerCase();
+    return words.every((w) => hay.includes(w));
+  });
+}

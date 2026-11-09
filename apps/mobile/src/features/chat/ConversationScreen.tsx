@@ -260,6 +260,7 @@ const KIND = {
   journal: { tone: "violet", icon: "book-open", label: "journal entry", where: "Journal", href: "/journal" },
   task: { tone: "amber", icon: "list-check", label: "to-do", where: "To-do", href: "/todo" },
   note: { tone: "blue", icon: "pen-to-square", label: "note", where: "Notes", href: "/notes" },
+  feed: { tone: "sand", icon: "rss", label: "feed", where: "Reader", href: "/workspace" },
 } as const;
 
 const dateLabel = (iso: string) => {
@@ -301,7 +302,7 @@ function Drafts({ proposals, messageId, chatId }: { proposals: ChatProposal[]; m
         const a = p.action;
         const k = KIND[a.kind];
         const t = Tints[k.tone];
-        const preview = a.kind === "task" ? a.description : a.kind === "journal" ? stripRefs(a.body) : a.body;
+        const preview = a.kind === "task" ? a.description : a.kind === "journal" ? stripRefs(a.body) : a.kind === "feed" ? a.url : a.body;
         return (
           <View
             key={p.index}

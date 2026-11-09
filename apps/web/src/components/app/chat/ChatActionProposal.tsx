@@ -3,15 +3,15 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { faBookOpen, faListCheck, faPenToSquare } from "@fortawesome/free-solid-svg-icons";
+import { faBookOpen, faListCheck, faPenToSquare, faRss } from "@fortawesome/free-solid-svg-icons";
 import { stripRefs, type ChatAction, type ChatProposal } from "../../../lib/chat-actions";
 import { qk } from "../../../lib/query/keys";
 import { draftDue, recurrenceLabel } from "../../../lib/tasks";
 
-const TONE: Record<ChatAction["kind"], string> = { journal: "violet", task: "amber", note: "blue" };
-const ICON: Record<ChatAction["kind"], IconDefinition> = { journal: faBookOpen, task: faListCheck, note: faPenToSquare };
-const LABEL: Record<ChatAction["kind"], string> = { task: "to-do", journal: "journal entry", note: "note" };
-const WHERE: Record<ChatAction["kind"], string> = { task: "To-do", journal: "Journal", note: "Notes" };
+const TONE: Record<ChatAction["kind"], string> = { journal: "violet", task: "amber", note: "blue", feed: "sand" };
+const ICON: Record<ChatAction["kind"], IconDefinition> = { journal: faBookOpen, task: faListCheck, note: faPenToSquare, feed: faRss };
+const LABEL: Record<ChatAction["kind"], string> = { task: "to-do", journal: "journal entry", note: "note", feed: "feed" };
+const WHERE: Record<ChatAction["kind"], string> = { task: "To-do", journal: "Journal", note: "Notes", feed: "Reader" };
 
 const dateLabel = (iso: string) => {
   const [y, m, d] = iso.split("-").map(Number);
@@ -64,7 +64,7 @@ export default function ChatActionProposal({
     <div className="mt-3 flex flex-col gap-2" role="group" aria-label="Drafts to review">
       {proposals.map((p) => {
         const a = p.action;
-        const preview = a.kind === "task" ? a.description : a.kind === "journal" ? stripRefs(a.body) : a.body;
+        const preview = a.kind === "task" ? a.description : a.kind === "journal" ? stripRefs(a.body) : a.kind === "feed" ? a.url : a.body;
         return (
           <section
             key={p.index}

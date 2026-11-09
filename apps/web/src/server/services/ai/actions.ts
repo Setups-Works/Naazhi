@@ -15,6 +15,7 @@ import { getMessageBody, replaceMessageBody } from "../../repositories/chat-mess
 import { createJournalEntry, setJournalBody } from "../../repositories/journal.repository";
 import { createNote } from "../../repositories/notes.repository";
 import { createTask } from "../../repositories/tasks.repository";
+import { addFeed } from "../rss/rss.service";
 
 type Db = ReturnType<typeof userDb>;
 type Links = Map<string, { path: string; tip: string }>;
@@ -29,7 +30,7 @@ function linksOf(proposals: ChatProposal[]): Links {
   return m;
 }
 
-async function create(db: Db, action: ChatAction, links: Links): Promise<CreatedItem> {
+async function create(userId: string, db: Db, action: ChatAction, links: Links): Promise<CreatedItem> {
   if (action.kind === "note") {
     const n = await createNote(db, { title: action.title, body: action.body });
     return { kind: "note", id: n.id, path: itemPath("note", n.id) };
@@ -38,6 +39,10 @@ async function create(db: Db, action: ChatAction, links: Links): Promise<Created
     // The journal text links to the to-dos and notes made from the same message (those that exist so far).
     const j = await createJournalEntry(db, { body: resolveRefs(action.body, links), entry_date: action.entry_date });
     return { kind: "journal", id: j.id, path: itemPath("journal", j.id, j.entry_date) };
+  }
+  if (action.kind === "feed") {
+    const f = await addFeed(userId, action.url);
+    return { kind: "feed", id: f.id, path: itemPath("feed", f.id) };
   }
   // A repeating to-do needs a first date that fits its rule ("every 2nd Wednesday" starts on the next 2nd Wednesday).
   const recurrence = action.recurrence ?? null;
@@ -70,7 +75,7 @@ export async function createChatItems(userId: string, messageId: string, which: 
 
   const made: CreatedItem[] = [];
   for (const p of todo) {
-    const item = await create(db, p.action, linksOf(proposals));
+    const item = await create(userId, db, p.action, linksOf(proposals));
     text = markCreated(text, p.index, item, p.action);
     made.push(item);
     // Save after every item so a failure part-way keeps what was already created marked as created.

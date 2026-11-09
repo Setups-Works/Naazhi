@@ -13,7 +13,9 @@
 - Meter usage (`ai_usage`) and enforce plan limits _before_ calling a provider.
 - "No AI" mode when no provider is available — never an error screen.
 
-**Showing the user's own items:** the assistant can't see journal, to-dos or notes. When asked to show them it adds `<show-item>` blocks (journal for a day, to-dos by scope, notes by words, health for a day); the web (`components/app/chat/shown`) and the app (`features/chat/shown`) read the real items from the signed-in person's own data and draw them as cards with an Open button. Parsing: `packages/validation/src/chatActions.ts` (`showItemSchema`, at most 3 per reply); scopes and matching: `packages/logic/src/showItems.ts`. No content is ever sent to the provider for this.
+**Showing the user's own items:** the assistant can't see journal, to-dos or notes. When asked to show them it adds `<show-item>` blocks (journal for a day, to-dos by scope, notes by words, health for a day, Reader articles: latest / starred / unread, optionally from one followed site); the web (`components/app/chat/shown`) and the app (`features/chat/shown`) read the real items from the signed-in person's own data and draw them as cards with an Open button. Parsing: `packages/validation/src/chatActions.ts` (`showItemSchema`, at most 3 per reply); scopes and matching: `packages/logic/src/showItems.ts`. No content is ever sent to the provider for this.
+
+**Reader in chat (`chat.v15`):** `{"kind":"rss",view,site}` show blocks draw the person's real articles (web `shown/RssShown`, app `shown/RssShown`; the site is matched against followed feeds with `feedsMatching`), and a `{"kind":"feed",title,url}` draft adds a website's feed to the Reader only after the user presses Create (`actions.ts` calls `rss.service.addFeed`, so the same limits and safe fetching apply).
 
 **Rules**
 

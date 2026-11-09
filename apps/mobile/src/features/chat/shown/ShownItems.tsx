@@ -4,6 +4,7 @@ import { View } from "react-native";
 import { HealthShown } from "./HealthShown";
 import { JournalShown } from "./JournalShown";
 import { NotesShown } from "./NotesShown";
+import { RssShown } from "./RssShown";
 import { TasksShown } from "./TasksShown";
 import { Space } from "@/constants/theme";
 
@@ -22,6 +23,8 @@ export function ShownItems({ shows }: { shows: ShowItem[] }) {
             return <TasksShown key={i} scope={s.scope} />;
           case "notes":
             return <NotesShown key={i} query={s.query} />;
+          case "rss":
+            return <RssShown key={i} view={s.view} site={s.site} />;
           case "health":
             return <HealthShown key={i} date={s.date} />;
         }

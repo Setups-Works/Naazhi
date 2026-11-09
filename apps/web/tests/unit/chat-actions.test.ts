@@ -84,3 +84,13 @@ describe("itemPath", () => {
     expect(itemPath("journal", "1", "2026-08-07")).toBe("/dashboard/journal?d=2026-08-07");
   });
 });
+
+describe("the Reader in chat", () => {
+  it("reads an rss show block and a feed draft, and drops a bad one", () => {
+    const text = `Here.\n<show-item>{"kind":"rss","view":"starred"}</show-item><show-item>{"kind":"rss","view":"nope"}</show-item>\n<create-item>{"kind":"feed","title":"StackKit","url":"https://mystackkit.com"}</create-item>`;
+    const r = parseChatActions(text);
+    expect(r.shows).toEqual([{ kind: "rss", view: "starred" }]);
+    expect(r.proposals.map((p) => p.action.kind)).toEqual(["feed"]);
+    expect(itemPath("feed", "x")).toBe("/dashboard/workspace/reader");
+  });
+});

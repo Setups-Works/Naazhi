@@ -22,6 +22,8 @@ export const chatActionSchema = z.discriminatedUnion("kind", [
       .nullish(),
     ref,
   }),
+  /** Follow a website's feed in the Reader: only created after the person presses Create (the server then checks the address). */
+  z.object({ kind: z.literal("feed"), title: z.string().trim().min(1).max(200), url: z.string().trim().min(3).max(2048) }),
 ]);
 
 export type ChatAction = z.infer<typeof chatActionSchema>;
@@ -36,6 +38,8 @@ export const showItemSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("tasks"), scope: z.enum(["today", "overdue", "upcoming", "open"]) }),
   z.object({ kind: z.literal("notes"), query: z.string().trim().max(100).optional() }),
   z.object({ kind: z.literal("health"), date }),
+  /** Articles from the person's Reader: the latest, the starred or the unread ones, optionally only from one followed site (matched by name or address). */
+  z.object({ kind: z.literal("rss"), view: z.enum(["latest", "starred", "unread"]).optional(), site: z.string().trim().max(100).optional() }),
 ]);
 
 export type ShowItem = z.infer<typeof showItemSchema>;
@@ -69,6 +73,7 @@ export function describeItem(a: ChatAction): string {
       : "";
     return `To-do · ${clean(a.title, 120)}${due}`;
   }
+  if (a.kind === "feed") return `Feed · ${clean(a.title, 80)}`;
   if (a.kind === "note") return `Note · ${clean(a.title, 80)}${a.body.trim() ? ` · ${clean(a.body, 100)}` : ""}`;
   return "Journal entry";
 }
@@ -92,7 +97,7 @@ const MAX_PROPOSALS = 6;
 const BLOCK = /<(create-item|created-item)>\s*([\s\S]*?)\s*<\/\1>/g;
 
 const createdSchema = z.object({
-  kind: z.enum(["note", "journal", "task"]),
+  kind: z.enum(["note", "journal", "task", "feed"]),
   path: z.string().max(500),
   id: z.string().max(60).optional(),
   action: chatActionSchema,
@@ -196,5 +201,6 @@ export function markCreated(text: string, index: number, created: CreatedItem, a
 export function itemPath(kind: ChatAction["kind"], id: string, entryDate?: string) {
   if (kind === "note") return `/dashboard/notes?note=${encodeURIComponent(id)}`;
   if (kind === "task") return `/dashboard/todo?task=${encodeURIComponent(id)}`;
+  if (kind === "feed") return "/dashboard/workspace/reader";
   return `/dashboard/journal?d=${encodeURIComponent(entryDate ?? "")}`;
 }

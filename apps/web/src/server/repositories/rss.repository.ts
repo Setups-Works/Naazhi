@@ -64,7 +64,7 @@ export const saveItems = (userId: string, feedId: string, items: ParsedItem[], k
         `insert into public.rss_items (feed_id, guid, title, link, summary, content, image_url, author, published_at)
          values ${rows.join(", ")}
          on conflict (feed_id, guid) do update set title = excluded.title, link = excluded.link, summary = excluded.summary,
-           content = excluded.content, image_url = excluded.image_url, author = excluded.author`,
+           content = case when length(excluded.content) >= length(public.rss_items.content) then excluded.content else public.rss_items.content end, image_url = excluded.image_url, author = excluded.author`,
         params,
       );
     }
@@ -106,6 +106,10 @@ export const getItem = (userId: string, id: string) =>
         [id],
       )).rows[0] ?? null,
   );
+
+/** Stores the full text fetched from an article's own page. */
+export const setItemContent = (userId: string, id: string, content: string) =>
+  withUser(userId, async (c) => void (await c.query("update public.rss_items set content = $2 where id = $1", [id, content])));
 
 export const updateItem = (userId: string, id: string, patch: { is_read?: boolean; is_starred?: boolean }) =>
   withUser(

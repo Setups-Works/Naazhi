@@ -472,7 +472,7 @@ export default function HomeView({ name }: { name: string }) {
             key={id}
             data-drag-id={id}
             data-dragging={dragging === id}
-            className="rounded-r3 transition-[transform,box-shadow] duration-200 ease-(--ease) data-[dragging=true]:scale-[1.015] data-[dragging=true]:shadow-e3 motion-reduce:transition-none"
+            className="rounded-r3 transition-[transform,box-shadow] duration-200 ease-(--ease) data-[dragging=true]:relative data-[dragging=true]:z-10 data-[dragging=true]:scale-[1.015] data-[dragging=true]:shadow-e3 data-[dragging=true]:transition-none motion-reduce:transition-none"
           >
             {cards[id]}
           </div>

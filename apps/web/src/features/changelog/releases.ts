@@ -23,6 +23,20 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-09",
+    title: "Version 2.4.3: full articles and sharing",
+    summary: "Articles open on their own page with the full text, you can share them, and Home cards follow your finger or cursor.",
+    tone: "sand",
+    appVersion: "v2.4.3",
+    changes: [
+      { kind: "new", platform: "web", text: "Articles open on their own page instead of a pop-up, with the picture, the full text, and star, read and share buttons." },
+      { kind: "improved", platform: "web", text: "When a feed only sends a short teaser, the Reader now fetches the full article from the site." },
+      { kind: "new", platform: "app", text: "Share an article from its page, and see the full text that the Reader now fetches." },
+      { kind: "improved", platform: "app", text: "Star and read buttons on an article are icons, and you can swipe sideways between Workspace and Reader like in Plan." },
+      { kind: "improved", platform: "web", text: "Home cards now follow your cursor while you drag them." },
+    ],
+  },
+  {
+    date: "2026-11-09",
     title: "Version 2.4.2: feeds show up in the app",
     summary: "Feeds you follow on the web now appear in the app without waiting or restarting it.",
     tone: "sand",

@@ -66,19 +66,34 @@ export function useHomeLayout() {
         if (e.button !== 0) return;
         e.preventDefault();
         setDragging(id);
+        const el = cardsIn(col).find((c) => c.dataset.dragId === id);
+        const grab = { x: e.clientX, y: e.clientY, top: el?.getBoundingClientRect().top ?? 0 };
+        /** Keeps the card under the pointer: its offset is the pointer's travel minus where the layout has already moved it. */
+        const follow = (ev: { clientX: number; clientY: number }) => {
+          if (!el) return;
+          el.style.transform = "";
+          const shifted = el.getBoundingClientRect().top - grab.top;
+          el.style.transform = `translate3d(${ev.clientX - grab.x}px, ${ev.clientY - grab.y - shifted}px, 0)`;
+        };
         const move = (ev: globalThis.PointerEvent) => {
+          if (el) el.style.transform = ""; // measure the cards where the layout puts them, not under the pointer
           const cards = cardsIn(col);
           const from = cards.findIndex((c) => c.dataset.dragId === id);
           const over = cards.findIndex((c) => {
             const r = c.getBoundingClientRect();
             return ev.clientY >= r.top && ev.clientY <= r.bottom;
           });
-          if (from < 0 || over < 0 || over === from) return;
-          const r = cards[over].getBoundingClientRect();
-          const past = over > from ? ev.clientY > r.top + r.height / 2 : ev.clientY < r.top + r.height / 2;
-          if (past) place(col, id, cards[over].dataset.dragId ?? id);
+          if (from >= 0 && over >= 0 && over !== from) {
+            const r = cards[over].getBoundingClientRect();
+            const past = over > from ? ev.clientY > r.top + r.height / 2 : ev.clientY < r.top + r.height / 2;
+            if (past) place(col, id, cards[over].dataset.dragId ?? id);
+          }
+          follow(ev);
+          // The reorder lands on the next render; re-apply so the card does not jump for a frame.
+          requestAnimationFrame(() => follow(ev));
         };
         const end = () => {
+          if (el) el.style.transform = "";
           setDragging(null);
           window.removeEventListener("pointermove", move);
           window.removeEventListener("pointerup", end);

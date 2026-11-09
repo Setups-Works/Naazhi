@@ -4,7 +4,7 @@ import { RSS } from "@untitled/logic/rss";
 import { ConflictError, NotFoundError, RateLimitError, ValidationError } from "../../errors";
 import { underLimit } from "../../rateLimit";
 import * as repo from "../../repositories/rss.repository";
-import { findFeedLink, parseFeed, type ParsedFeed } from "./parse";
+import { extractArticle, findFeedLink, parseFeed, type ParsedFeed } from "./parse";
 import { itemsQuery } from "./rss.schema";
 import { safeGet } from "./safeFetch";
 import type { z } from "zod";
@@ -84,10 +84,25 @@ export async function listItems(userId: string, query: z.infer<typeof itemsQuery
   return { items, next: rows.length > query.limit && last ? `${new Date(last.published_at).toISOString()}|${last.id}` : null };
 }
 
+/** Feeds often carry only a teaser. When the stored text is short, read the article's own page once and keep the longer text. */
+async function withFullText(userId: string, item: RssItem): Promise<RssItem> {
+  if (!item.link || (item.content ?? "").length >= RSS.fullTextBelow) return item;
+  if (!(await underLimit(`rss-full:${userId}`, RSS.fullTextPerHour, 3600))) return item;
+  try {
+    const page = await safeGet(item.link, "text/html,application/xhtml+xml");
+    const full = extractArticle(page.body);
+    if (full.length <= (item.content ?? "").length + 200) return item;
+    await repo.setItemContent(userId, item.id, full);
+    return { ...item, content: full };
+  } catch {
+    return item; // the teaser is still shown
+  }
+}
+
 export async function getItem(userId: string, id: string): Promise<RssItem> {
   const item = await repo.getItem(userId, id);
   if (!item) throw new NotFoundError("That article isn’t available.");
-  return item;
+  return withFullText(userId, item);
 }
 
 export async function updateItem(userId: string, id: string, patch: { is_read?: boolean; is_starred?: boolean }) {

@@ -100,6 +100,20 @@ function itemImage(it: Node, html: string, base?: string): string | null {
   return itunes ?? firstImage(html, base);
 }
 
+/**
+ * The readable text of an article's own web page: the <article> (or <main>, or the whole page), reduced to its paragraphs, headings,
+ * list items and quotes, so menus, footers and scripts never come through. Plain text out, like everything else stored here.
+ */
+export function extractArticle(html: string): string {
+  const clean = html.replace(/<!--[\s\S]*?-->/g, "").replace(/<(script|style|noscript|svg|nav|header|footer|aside|form|iframe|button)\b[\s\S]*?<\/\1>/gi, "");
+  const articles = [...clean.matchAll(/<article\b[^>]*>([\s\S]*?)<\/article>/gi)].map((m) => m[1]!);
+  const region = articles.sort((a, b) => b.length - a.length)[0] ?? /<main\b[^>]*>([\s\S]*?)<\/main>/i.exec(clean)?.[1] ?? clean;
+  const blocks = [...region.matchAll(/<(h[1-6]|p|li|blockquote|pre)\b[^>]*>([\s\S]*?)<\/\1>/gi)]
+    .map((m) => htmlToText(m[2]!).replace(/[ \t]*\n[ \t]*/g, m[1]!.toLowerCase() === "pre" ? "\n" : " ").trim())
+    .filter((t) => t.length > 0);
+  return clip(blocks.join("\n\n"), RSS.contentLength);
+}
+
 function authorOf(it: Node): string | null {
   const a = it["dc:creator"] ?? it.author;
   const name = isNode(a) ? text(a.name) : text(a);

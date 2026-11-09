@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findFeedLink, htmlToText, parseFeed } from "../../src/server/services/rss/parse";
+import { extractArticle, findFeedLink, htmlToText, parseFeed } from "../../src/server/services/rss/parse";
 import { safeGet } from "../../src/server/services/rss/safeFetch";
 
 const BASE = "https://example.com/feed.xml";
@@ -60,5 +60,13 @@ describe("safeGet", () => {
 describe("safeGet address checks", () => {
   it("refuses private IPv6 and IPv4-mapped literals", async () => {
     for (const url of ["http://[::ffff:127.0.0.1]/", "http://[::ffff:10.0.0.1]/", "http://[fd00::1]/", "http://[fe80::1]/"]) await expect(safeGet(url)).rejects.toThrow();
+  });
+});
+
+describe("extractArticle", () => {
+  it("keeps the article's paragraphs and drops menus, scripts and footers", () => {
+    const html = `<html><body><nav><p>Menu</p></nav><script>var x = "<p>nope</p>";</script>
+      <article><h1>Title</h1><p>First &amp; best.</p><p>Second <b>para</b>.</p></article><footer><p>Copyright</p></footer></body></html>`;
+    expect(extractArticle(html)).toBe("Title\n\nFirst & best.\n\nSecond para.");
   });
 });

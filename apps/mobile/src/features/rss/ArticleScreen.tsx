@@ -1,12 +1,13 @@
 import { rssAge } from "@untitled/logic";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Image, Linking, StyleSheet, View } from "react-native";
+import { Image, Linking, Pressable, Share, StyleSheet, View } from "react-native";
 
 import { useArticle, useRssActions } from "./queries";
 import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
-import { BarButton, DetailBar } from "@/components/ui/DetailBar";
+import { DetailBar } from "@/components/ui/DetailBar";
+import { Icon } from "@/components/ui/Icon";
 import { Screen } from "@/components/ui/Screen";
 import { ErrorState, LoadingState } from "@/components/ui/States";
 import { Palette, Radius, Space } from "@/constants/theme";
@@ -33,7 +34,37 @@ export function ArticleScreen() {
       <DetailBar
         label="Article"
         onClose={() => router.back()}
-        action={<BarButton title={item.is_starred ? "Starred" : "Star"} onPress={() => setStarred.mutate({ id: item.id, value: !item.is_starred })} />}
+        action={
+          <View style={styles.barIcons}>
+            {item.link ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Share article"
+                hitSlop={10}
+                onPress={() => void Share.share({ message: item.link!, url: item.link!, title: item.title }).catch(() => undefined)}
+              >
+                <Icon name="share-nodes" size={18} color={Palette.fgMuted} />
+              </Pressable>
+            ) : null}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={item.is_read ? "Mark as unread" : "Mark as read"}
+              hitSlop={10}
+              onPress={() => setRead.mutate({ id: item.id, value: !item.is_read })}
+            >
+              <Icon name={item.is_read ? "envelope" : "envelope-open"} size={18} color={Palette.fgMuted} />
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={item.is_starred ? "Remove star" : "Star article"}
+              accessibilityState={{ selected: item.is_starred }}
+              hitSlop={10}
+              onPress={() => setStarred.mutate({ id: item.id, value: !item.is_starred })}
+            >
+              <Icon name="star" size={20} color={item.is_starred ? Palette.orangeFg : Palette.fgFaint} />
+            </Pressable>
+          </View>
+        }
       />
       {item.image_url && !imageFailed ? (
         <Image source={{ uri: item.image_url }} style={styles.hero} onError={() => setImageFailed(true)} accessibilityIgnoresInvertColors />
@@ -52,7 +83,6 @@ export function ArticleScreen() {
       </View>
       <View style={styles.actions}>
         {item.link ? <Button title="Open original" icon="arrow-up-right-from-square" onPress={() => void Linking.openURL(item.link!)} /> : null}
-        <Button title={item.is_read ? "Mark as unread" : "Mark as read"} kind="secondary" onPress={() => setRead.mutate({ id: item.id, value: !item.is_read })} />
       </View>
     </Screen>
   );
@@ -61,5 +91,6 @@ export function ArticleScreen() {
 const styles = StyleSheet.create({
   hero: { width: "100%", aspectRatio: 16 / 9, borderRadius: Radius.r3, backgroundColor: Palette.surfaceMuted },
   text: { gap: Space.md },
+  barIcons: { flexDirection: "row", alignItems: "center", gap: Space.lg },
   actions: { gap: Space.sm },
 });

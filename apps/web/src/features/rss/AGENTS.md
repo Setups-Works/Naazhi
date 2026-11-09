@@ -1,6 +1,6 @@
 # features/rss
 
-**Does:** the Reader (`/dashboard/workspace/reader`, behind the switcher on the Workspace page): follow feeds, read articles with title, description, picture and full text, search, filter (All / Unread / Starred), refresh, mark all read, unfollow. The layout and sidebar reuse the To-do classes (`tdo`, `tdo-sidewrap`, `tsb`, `tsb-item`): sand tint, icon rail when closed (remembered), drawer on phones. Views (All / Unread / Starred) and "My feeds" are in the sidebar. Adding accepts a feed address or a website (the feed it advertises is found). **Mobile:** `apps/mobile/src/features/rss` (Workspace tab → Reader), same API. Feeds live in the database (per user), so they are shared; the app has no realtime, so its Reader re-reads feeds when the screen gains focus, on app resume and every 30 s while open.
+**Does:** the Reader (`/dashboard/workspace/reader`, behind the switcher on the Workspace page): follow feeds, read articles on their own page (`/dashboard/workspace/reader/[id]`, `ArticleView`) with title, picture and full text, search, filter (All / Unread / Starred), refresh, mark all read, unfollow. The layout and sidebar reuse the To-do classes (`tdo`, `tdo-sidewrap`, `tsb`, `tsb-item`): sand tint, icon rail when closed (remembered), drawer on phones. Views (All / Unread / Starred) and "My feeds" are in the sidebar. Adding accepts a feed address or a website (the feed it advertises is found). **Mobile:** `apps/mobile/src/features/rss` (Workspace tab → Reader), same API. Feeds live in the database (per user), so they are shared; the app has no realtime, so its Reader re-reads feeds when the screen gains focus, on app resume and every 30 s while open.
 
 **Data flow:** `components → queries.ts → packages/api-client/src/rss.ts → /api/v1/rss/* → services/rss → repositories/rss.repository.ts → rss_feeds / rss_items` (RLS: owner only). Realtime refreshes open tabs. An open Reader refreshes itself every `RSS.autoRefreshMs`.
 
@@ -12,3 +12,4 @@
 - The refresh query key sits outside `qk.rss.all` on purpose, so a data change does not trigger another network refresh.
 - Feature flag: `FEATURES.rssReader`.
 - Form controls here need `border-0` and `font-sans` (the base CSS does not reset them).
+- Feeds often send only a teaser. `getItem` (service) reads the article's own page once through `safeGet`, keeps the readable text (`extractArticle`) when it is longer, and a later feed refresh never shortens it.

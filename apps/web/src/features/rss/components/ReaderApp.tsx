@@ -3,13 +3,13 @@ import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
 import { faArrowUpRightFromSquare, faBars, faCheckDouble, faMagnifyingGlass, faPlus, faRotate, faRss } from "@fortawesome/free-solid-svg-icons";
 import { RSS, rssFeedName } from "@untitled/logic/rss";
 import type { RssFilter, RssItem } from "@untitled/types";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { useConfirm } from "../../../components/ui/Confirm";
 import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
 import { useArticles, useAutoRefresh, useFeeds, useRssActions, useRssRealtime } from "../queries";
 import AddFeedDialog from "./AddFeedDialog";
 import ArticleCard from "./ArticleCard";
-import ArticleDialog from "./ArticleDialog";
 import FeedIcon from "./FeedIcon";
 import FeedSidebar from "./FeedSidebar";
 
@@ -36,7 +36,7 @@ export default function ReaderApp() {
   const [filter, setFilter] = useState<RssFilter>("all");
   const [search, setSearch] = useState("");
   const q = useDebouncedValue(search.trim(), SEARCH_DELAY_MS);
-  const [open, setOpen] = useState<RssItem | null>(null);
+  const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [notice, setNotice] = useState("");
   const [refreshing, setRefreshing] = useState(false);
@@ -96,10 +96,7 @@ export default function ReaderApp() {
     setFeedId(res.feed.id);
   }
 
-  const open_ = (item: RssItem) => {
-    setOpen(item);
-    if (!item.is_read) void actions.setRead(item.id, true);
-  };
+  const open_ = (item: RssItem) => router.push(`/dashboard/workspace/reader/${item.id}`);
 
   const title = feed ? rssFeedName(feed) : VIEW_TITLE[filter];
   const empty = !feedsQ.isPending && feeds.length === 0;
@@ -230,7 +227,6 @@ export default function ReaderApp() {
       </main>
 
       {adding && <AddFeedDialog onAdd={addFeed} onClose={() => setAdding(false)} />}
-      {open && <ArticleDialog preview={items.find((i) => i.id === open.id) ?? open} actions={actions} onClose={() => setOpen(null)} />}
     </div>
   );
 }

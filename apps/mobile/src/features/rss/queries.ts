@@ -12,7 +12,10 @@ export const rssApi = createRssApi(api);
 type Page = Awaited<ReturnType<typeof rssApi.items>>;
 export type ArticleQuery = { feed?: string; filter: RssFilter; q: string };
 
-export const useFeeds = () => useQuery({ queryKey: qk.rss.feeds, queryFn: rssApi.feeds });
+/** The app has no realtime like the web, so the open Reader re-reads the feed list now and then (feeds added on another device). */
+const FEEDS_POLL_MS = 30_000;
+
+export const useFeeds = () => useQuery({ queryKey: qk.rss.feeds, queryFn: rssApi.feeds, refetchInterval: FEEDS_POLL_MS });
 
 export const useArticles = ({ feed, filter, q }: ArticleQuery) =>
   useInfiniteQuery({

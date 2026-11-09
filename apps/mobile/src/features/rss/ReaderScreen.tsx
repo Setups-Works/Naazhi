@@ -1,8 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { RSS, rssFeedName } from "@untitled/logic";
 import type { RssFilter } from "@untitled/types";
-import { router } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppState, FlatList, Linking, Pressable, RefreshControl, StyleSheet, TextInput, View, useWindowDimensions } from "react-native";
 
 import { AddFeedSheet } from "./AddFeedSheet";
@@ -51,6 +51,14 @@ export function ReaderScreen() {
     const sub = AppState.addEventListener("change", (s) => s === "active" && void qc.invalidateQueries({ queryKey: qk.rss.all }));
     return () => sub.remove();
   }, [qc]);
+
+  // Tabs stay mounted and React Query has no focus signal in React Native, so a feed added on the web would otherwise wait for the
+  // next app resume. Catch up every time this screen comes into view.
+  useFocusEffect(
+    useCallback(() => {
+      void qc.invalidateQueries({ queryKey: qk.rss.all });
+    }, [qc]),
+  );
 
   // A feed that was unfollowed (here or on another device) falls back to "All articles".
   const feed = feeds.find((f) => f.id === feedId) ?? null;

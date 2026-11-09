@@ -22,6 +22,16 @@ export type Release = {
  */
 export const RELEASES: Release[] = [
   {
+    date: "2026-11-09",
+    title: "Version 2.4.2: feeds show up in the app",
+    summary: "Feeds you follow on the web now appear in the app without waiting or restarting it.",
+    tone: "sand",
+    appVersion: "v2.4.2",
+    changes: [
+      { kind: "fixed", platform: "app", text: "A feed you added on the web didn’t show up in the app’s Reader until you closed and reopened the app. It now appears when you open the Reader, and while it’s open the list keeps itself up to date." },
+    ],
+  },
+  {
     date: "2026-10-26",
     title: "Version 2.4.1: pricing in the app",
     summary: "The app now has its own pricing page, so you can see and compare the plans without leaving it.",

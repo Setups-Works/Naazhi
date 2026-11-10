@@ -551,8 +551,9 @@ function noteTitle(note: Note) {
 
 const styles = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: Space.md, paddingTop: Space.xs },
-  headerText: { flex: 1, gap: Space.xs },
-  dateRow: { flexDirection: "row", alignItems: "center", gap: Space.sm },
+  // minWidth 0 lets this column shrink beside the bell and avatar; the wrapping row drops the plan badge below the date instead of under the bell.
+  headerText: { flex: 1, minWidth: 0, gap: Space.xs },
+  dateRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", columnGap: Space.sm, rowGap: Space.xs },
   planBadge: { backgroundColor: Tints.green.bg, borderColor: Tints.green.line, borderWidth: 1, borderRadius: Radius.pill, paddingHorizontal: 8, paddingVertical: 2 },
   planText: { fontSize: 10, lineHeight: 13 },
   greeting: { fontSize: 34, lineHeight: 38, letterSpacing: -1 },

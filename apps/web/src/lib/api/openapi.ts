@@ -8,6 +8,10 @@ import {
   roleBody,
 } from "../../server/services/collaboration/collaboration.schema";
 import { healthSyncInput } from "../../server/services/health/health.schema";
+import { byoKeyInput, planIdInput } from "../../server/services/billing/billing.schema";
+import { deviceBody, deviceRemove, readBody } from "../../server/services/notifications/notifications.schema";
+import { addFeedInput, itemPatchInput, readAllInput, refreshInput } from "../../server/services/rss/rss.schema";
+import { NOTE_ACTIONS } from "../../server/services/ai/prompts/noteAssist";
 import { RESOURCES } from "./resources";
 
 /**
@@ -148,7 +152,28 @@ const chatShareResponse = z.object({ data: z.object({ share_token: z.string().nu
 const okResponse = z.object({ ok: z.literal(true) });
 const errorResponse = z.object({ error: z.string() });
 
+// Mirrors the body inside app/api/v1/ai/note/route.ts (it is not exported from there).
+const noteAssistRequest = z.object({
+  action: z.enum(NOTE_ACTIONS),
+  text: z.string().trim().min(1).max(40000),
+  instruction: z.string().trim().max(500).optional(),
+  provider: z
+    .string()
+    .regex(/^[a-z0-9_-]{1,40}(:[A-Za-z0-9._\/-]{1,100})?$/)
+    .optional(),
+});
+
 const schemas = {
+  NoteAssistRequest: noteAssistRequest,
+  BillingPlanRequest: planIdInput,
+  BillingAiKeyRequest: byoKeyInput,
+  NotificationDeviceRequest: deviceBody,
+  NotificationDeviceRemoveRequest: deviceRemove,
+  NotificationReadRequest: readBody,
+  RssAddFeedRequest: addFeedInput,
+  RssItemPatchRequest: itemPatchInput,
+  RssReadAllRequest: readAllInput,
+  RssRefreshRequest: refreshInput,
   DbRequest: dbRequest,
   DbResponse: dbResponse,
   ChatRequest: chatRequest,
@@ -293,6 +318,135 @@ function sharedJournalPaths() {
   };
 }
 
+/**
+ * Plans and billing, the notification inbox and phone registration, RSS reader, and the AI note assistant.
+ * Answers are `{ data }` unless noted; the response descriptions say what is inside.
+ */
+function productPaths() {
+  const uuidParam = (name: string) => ({ name, in: "path", required: true, schema: { type: "string", format: "uuid" } });
+  const dataOf = (description: string, inner: object = { type: "object" }) => ({
+    description,
+    content: { "application/json": { schema: { type: "object", properties: { data: inner } } } },
+  });
+  const done = { description: "Done", content: json("Ok") };
+  const fail = { "400": err("Invalid input."), ...common };
+  const op = (tag: string, summary: string, ok: object, extra: Record<string, unknown> = {}, status = "200") => ({
+    tags: [tag],
+    summary,
+    security: secured,
+    ...extra,
+    responses: { [status]: ok, ...fail },
+  });
+  return {
+    "/api/v1/billing": {
+      get: op(
+        "Billing",
+        "Your plan, this period's AI use, the plans on offer and whether your own key is saved",
+        dataOf("Plan, usage, the plans on offer and a flag for a saved key. The key itself is never returned."),
+      ),
+    },
+    "/api/v1/billing/plan": {
+      post: op("Billing", "Choose or switch your plan", dataOf("Your billing after the change"), { requestBody: body("BillingPlanRequest") }),
+    },
+    "/api/v1/billing/ai-key": {
+      post: op("Billing", "Save the API key for the Bring your own key plan", dataOf("Saved"), {
+        requestBody: body("BillingAiKeyRequest"),
+        description: "The key is stored encrypted and never returned by any endpoint.",
+      }),
+      delete: op("Billing", "Remove the saved key", dataOf("Removed")),
+    },
+    "/api/v1/billing/cancel": {
+      post: op("Billing", "Cancel your plan", dataOf("Your billing after the change"), {
+        description: "A subscription ends with its period; the other plans stop now.",
+      }),
+    },
+    "/api/v1/billing/resume": {
+      post: op("Billing", "Keep a subscription that was set to cancel", dataOf("Your billing after the change")),
+    },
+    "/api/v1/notifications": {
+      get: op("Notifications", "Your inbox, newest first, with how many are unread", dataOf("The messages and the unread count")),
+    },
+    "/api/v1/notifications/{id}": {
+      parameters: [uuidParam("id")],
+      delete: op("Notifications", "Delete one message from your inbox", done),
+    },
+    "/api/v1/notifications/read": {
+      post: op("Notifications", "Mark one message read, or all of them when id is null", done, { requestBody: body("NotificationReadRequest") }),
+    },
+    "/api/v1/notifications/devices": {
+      post: op(
+        "Notifications",
+        "Register this phone's push address",
+        done,
+        { requestBody: body("NotificationDeviceRequest"), description: "Sent by the mobile app so messages can reach the phone." },
+        "201",
+      ),
+    },
+    "/api/v1/notifications/devices/remove": {
+      post: op("Notifications", "Forget this phone (sign-out, or notifications turned off)", done, {
+        requestBody: body("NotificationDeviceRemoveRequest"),
+        description: "A POST because the token should not be put in a URL.",
+      }),
+    },
+    "/api/v1/rss/feeds": {
+      get: op("RSS", "The feeds you follow, each with its unread count", dataOf("The feeds", { type: "array", items: { type: "object" } })),
+      post: op(
+        "RSS",
+        "Follow a feed",
+        dataOf("The feed you now follow"),
+        { requestBody: body("RssAddFeedRequest"), description: "Accepts a feed address or a website address that advertises one." },
+        "201",
+      ),
+    },
+    "/api/v1/rss/feeds/{id}": {
+      parameters: [uuidParam("id")],
+      delete: op("RSS", "Unfollow a feed and drop its articles", done),
+    },
+    "/api/v1/rss/items": {
+      get: op("RSS", "Articles, newest first", dataOf("A page of articles; `next` is the cursor for the following page"), {
+        parameters: [
+          { name: "feed", in: "query", schema: { type: "string", format: "uuid" } },
+          { name: "filter", in: "query", schema: { type: "string", enum: ["all", "unread", "starred"], default: "all" } },
+          { name: "q", in: "query", description: "Search text.", schema: { type: "string" } },
+          { name: "cursor", in: "query", description: "The `next` value of the previous page.", schema: { type: "string" } },
+          { name: "limit", in: "query", schema: { type: "integer", minimum: 1 } },
+        ],
+      }),
+    },
+    "/api/v1/rss/items/{id}": {
+      parameters: [uuidParam("id")],
+      get: op("RSS", "One article with its full text", dataOf("The article")),
+      patch: op("RSS", "Mark an article read or unread, starred or unstarred", dataOf("The updated article"), {
+        requestBody: body("RssItemPatchRequest"),
+      }),
+    },
+    "/api/v1/rss/read-all": {
+      post: op("RSS", "Mark everything read, or only one feed's articles", dataOf("How many were marked"), { requestBody: body("RssReadAllRequest") }),
+    },
+    "/api/v1/rss/refresh": {
+      post: op("RSS", "Fetch new articles for one feed or all feeds", dataOf("What was fetched"), {
+        requestBody: body("RssRefreshRequest"),
+        description: "Can take up to a minute.",
+      }),
+    },
+    "/api/v1/ai/note": {
+      post: {
+        tags: ["AI"],
+        summary: "Run an AI action on note text",
+        description:
+          "Streams the result back as plain text (not JSON). Actions: improve, fix, shorter, longer, summarize, actions, continue, custom (use `instruction` with custom).",
+        security: secured,
+        requestBody: body("NoteAssistRequest"),
+        responses: {
+          "200": { description: "The generated text, streamed", content: { "text/plain": { schema: { type: "string" } } } },
+          "400": err("Select or write some text first."),
+          ...common,
+        },
+      },
+    },
+  };
+}
+
 export function buildOpenApi() {
   const components: Record<string, unknown> = {};
   for (const [name, schema] of Object.entries(schemas)) {
@@ -398,6 +552,9 @@ export function buildOpenApi() {
       { name: "To-do", description: "To-dos, including repeating ones" },
       { name: "Notes", description: "Notes (Markdown) with colours, pins and files" },
       { name: "Journal", description: "Journal entries by day" },
+      { name: "Billing", description: "Plans, AI use, switching or cancelling a plan, and a saved key for Bring your own key" },
+      { name: "Notifications", description: "The inbox, read state and phone registration for push messages" },
+      { name: "RSS", description: "Feeds you follow and their articles" },
       { name: "Health", description: "Daily activity, sleep and heart-rate totals synced from the phone" },
       { name: "AI", description: "Assistant replies and confirmed drafts" },
       { name: "Data", description: "Row-level-security protected data door used by the web app" },
@@ -505,6 +662,7 @@ export function buildOpenApi() {
         },
       },
       ...sharedJournalPaths(),
+      ...productPaths(),
       "/api/v1/auth-config": {
         get: {
           tags: ["Config"],

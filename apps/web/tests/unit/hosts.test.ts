@@ -31,9 +31,14 @@ describe("hosts", () => {
     expect(h.siteHref("/pricing")).toBe("https://naazhi.app/pricing");
   });
 
+  it("lands signed-in people on /home on the app host and /dashboard otherwise", async () => {
+    expect((await load("https://naazhi.app", "https://dashboard.naazhi.app")).homePath()).toBe("/home");
+    expect((await load()).homePath()).toBe("/dashboard");
+  });
+
   it("knows which paths belong to the app", async () => {
     const h = await load();
-    for (const p of ["/dashboard", "/dashboard/notes", "/admin/users", "/login", "/signup", "/share/abc"]) expect(h.isAppPath(p)).toBe(true);
+    for (const p of ["/dashboard", "/home", "/dashboard/notes", "/admin/users", "/login", "/signup", "/share/abc"]) expect(h.isAppPath(p)).toBe(true);
     for (const p of ["/", "/pricing", "/download", "/how-it-works", "/dashboards", "/loginx"]) expect(h.isAppPath(p)).toBe(false);
   });
 });

@@ -87,7 +87,7 @@ export default function ContextMenu() {
 
   const build = useCallback(
     (target: HTMLElement): Entry[] => {
-      const inApp = pathname.startsWith("/dashboard") || pathname.startsWith("/admin");
+      const inApp = pathname.startsWith("/dashboard") || pathname === "/home" || pathname.startsWith("/admin");
       const go = (path: string) => () => router.push(path);
       const out: Entry[] = [];
 

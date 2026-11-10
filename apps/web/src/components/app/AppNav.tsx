@@ -81,7 +81,9 @@ export default function AppNav({
   const box = useRef<HTMLDivElement>(null);
 
   // Which section we are on (the tab pill itself lives in SectionTabs).
-  const here = settingsTab ? (returnTo.current ?? "/dashboard").split("?")[0] : path;
+  // The home page is /home on the app host and /dashboard otherwise; both highlight the Home tab.
+  const raw = settingsTab ? (returnTo.current ?? "/dashboard").split("?")[0] : path;
+  const here = raw === "/home" ? "/dashboard" : raw;
   const current = TABS.findIndex((t) =>
     t.href === "/dashboard" ? here === "/dashboard" : [t.href, ...(t.also ?? [])].some((h) => here.startsWith(h)),
   );

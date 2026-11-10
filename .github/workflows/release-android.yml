@@ -116,13 +116,13 @@ jobs:
             rm -f "$RUNNER_TEMP/release.keystore"
             echo "SIGNED=release" >> "$GITHUB_ENV"
           fi
-          cp "$APK" "untitled-project-$TAG.apk"
-          sha256sum "untitled-project-$TAG.apk" > "untitled-project-$TAG.apk.sha256"
+          cp "$APK" "naazhi-$TAG.apk"
+          sha256sum "naazhi-$TAG.apk" > "naazhi-$TAG.apk.sha256"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: untitled-project-${{ env.TAG }}-apk
-          path: untitled-project-${{ env.TAG }}.apk*
+          name: naazhi-${{ env.TAG }}-apk
+          path: naazhi-${{ env.TAG }}.apk*
 
       - name: Publish the GitHub Release
         env:
@@ -131,8 +131,8 @@ jobs:
           NOTE="Android APK for $TAG. Download it on your phone, allow installs from this source, and open it."
           [ "$SIGNED" = "debug" ] && NOTE="$NOTE Signed with the debug key (not for Google Play)."
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" "untitled-project-$TAG.apk" "untitled-project-$TAG.apk.sha256" --clobber
+            gh release upload "$TAG" "naazhi-$TAG.apk" "naazhi-$TAG.apk.sha256" --clobber
           else
-            gh release create "$TAG" "untitled-project-$TAG.apk" "untitled-project-$TAG.apk.sha256" \
+            gh release create "$TAG" "naazhi-$TAG.apk" "naazhi-$TAG.apk.sha256" \
               --title "$TAG" --generate-notes --notes "$NOTE" $( [[ "$TAG" == *-* ]] && echo --prerelease )
           fi

@@ -11,4 +11,4 @@
 - Add a card: put its id in `HOME_COLUMNS` and add it to the `cards` map in `HomeView`; old saved orders pick it up at the end automatically (`cleanOrder`). A card that renders `null` (like invitations when there are none) is skipped but keeps its place.
 - Each card's wrapper needs `data-drag-id` (HomeView's `column()` adds it); the column needs `data-home-col`.
 - No auto-scroll while dragging near the screen edge yet.
-- Phone app equivalent: `apps/mobile/src/features/home` + `components/ui/ReorderableList.tsx` (touch and hold, then drag).
+- Phone app equivalent: `apps/mobile/src/features/home` + `components/ui/ReorderableList.tsx` (the grip on each card, then drag).

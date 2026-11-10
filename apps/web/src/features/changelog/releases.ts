@@ -23,6 +23,18 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-10",
+    title: "Version 2.5.0: the app’s Home matches the web",
+    summary: "The app’s Home now looks like the web Home, and every card has the same grip to drag it into your own order.",
+    tone: "green",
+    appVersion: "v2.5.0",
+    changes: [
+      { kind: "new", platform: "app", text: "Home has the web layout: your greeting with your plan, quick actions, and Today, journal, Notes, Chats, Schedule, Reader and Health cards." },
+      { kind: "new", platform: "app", text: "Add a task for today or write a journal entry right from Home." },
+      { kind: "improved", platform: "app", text: "Every Home card has a grip like the web: press it and drag the card up or down. Screen readers can move cards up and down too." },
+    ],
+  },
+  {
+    date: "2026-11-10",
     title: "Version 2.4.4: your Reader in chat",
     summary: "Ask chat for your latest, starred or unread articles, news from a site you follow, or to add a website to the Reader.",
     tone: "sand",

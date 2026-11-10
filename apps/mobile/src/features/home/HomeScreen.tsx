@@ -1,31 +1,57 @@
 import type { Note } from "@untitled/types";
-import { ago, isOpen, isOverdue } from "@untitled/logic";
+import { ago, fmtDuration, isOverdue, rssAge } from "@untitled/logic";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 
 import { AppText } from "@/components/ui/AppText";
-import { AttachmentGallery } from "@/components/ui/AttachmentGallery";
+import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Icon } from "@/components/ui/Icon";
+import { Icon, type IconName } from "@/components/ui/Icon";
 import { ErrorState, LoadingState } from "@/components/ui/States";
 import { Screen } from "@/components/ui/Screen";
 import { Font, Palette, Radius, Space, Tints } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { addDays, greeting, isoDate, longDate, timeOf } from "@/lib/dates";
-import { useJournal } from "@/features/journal/queries";
+import { useCalendarEvents } from "@/features/calendar/queries";
+import { useChats } from "@/features/chat/queries";
+import { useHealthDays } from "@/features/health/queries";
+import { useJournal, useJournalActions } from "@/features/journal/queries";
+import { useArticles, useFeeds } from "@/features/rss/queries";
 import { useNotes } from "@/features/notes/queries";
 import { TaskRow } from "@/features/tasks/TaskRow";
-import { useTasks } from "@/features/tasks/queries";
+import { useTaskActions, useTasks } from "@/features/tasks/queries";
 import { useToggleTask } from "@/features/tasks/useToggleTask";
 import { useAppState, useAuth } from "@/providers/AppState";
-import { ReorderableList } from "@/components/ui/ReorderableList";
+import { ReorderableList, type ReorderNode } from "@/components/ui/ReorderableList";
+import { HomePanel, PanelEmpty } from "./HomePanel";
 import { PersonalityInsightsCard } from "./PersonalityInsightsCard";
 import { useBilling } from "@/features/billing/queries";
 import { useHomeOrder } from "./useHomeOrder";
 
-/** Mobile overview of the journal streak, today's tasks, and recent notes. */
+const QUICK: { title: string; icon: IconName; go: () => void }[] = [
+  { title: "Plan my day", icon: "list-check", go: () => router.navigate("/todo") },
+  { title: "Journal", icon: "book-open", go: () => router.navigate("/journal") },
+  { title: "New note", icon: "pen-to-square", go: () => router.push({ pathname: "/note/[id]", params: { id: "new" } }) },
+  { title: "New chat", icon: "comments", go: () => router.navigate("/chat") },
+];
+
+/** What the drag grip announces for each section. */
+const LABELS: Record<string, string> = {
+  plans: "Plans",
+  today: "Today",
+  journal: "Today’s journal",
+  notes: "Notes",
+  chats: "Chats",
+  schedule: "Schedule",
+  reader: "Reader",
+  health: "Health",
+  streak: "Journal streak",
+  insights: "Personality insights",
+};
+
+/** The web Home with the same cards, a quick-action row and a grip on every card to drag it. */
 export function HomeScreen() {
   const { user } = useAppState();
   const auth = useAuth();
@@ -35,6 +61,15 @@ export function HomeScreen() {
   const toggle = useToggleTask();
   const [order, saveOrder] = useHomeOrder();
   const billingQ = useBilling();
+  const chatsQ = useChats();
+  const calendarQ = useCalendarEvents();
+  const feedsQ = useFeeds();
+  const articlesQ = useArticles({ filter: "all", q: "" });
+  const healthQ = useHealthDays();
+  const { add: addTask } = useTaskActions(isoDate());
+  const { create: createEntry } = useJournalActions();
+  const [taskTitle, setTaskTitle] = useState("");
+  const [entryText, setEntryText] = useState("");
   const today = useMemo(() => isoDate(), []);
   const [refreshing, setRefreshing] = useState(false);
   const [avatarCookie, setAvatarCookie] = useState<string | null>(null);
@@ -56,24 +91,30 @@ export function HomeScreen() {
   const refresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([tasksQ.refetch(), journalQ.refetch(), notesQ.refetch()]);
+      await Promise.all([tasksQ.refetch(), journalQ.refetch(), notesQ.refetch(), chatsQ.refetch(), feedsQ.refetch(), articlesQ.refetch(), healthQ.refetch(), calendarQ.refetch()]);
     } finally {
       setRefreshing(false);
     }
-  }, [tasksQ, journalQ, notesQ]);
+  }, [tasksQ, journalQ, notesQ, chatsQ, feedsQ, articlesQ, healthQ, calendarQ]);
 
   const first = user?.name.trim().split(/\s+/)[0] ?? "";
+  const plan = billingQ.data?.plan?.name ?? "Free";
   const header = (
     <View style={styles.header}>
       <View style={styles.headerText}>
-        <AppText variant="heading" style={styles.greeting}>
-          {greeting()},
-        </AppText>
-        <AppText variant="bodyStrong" accessibilityRole="header" style={styles.name}>
-          {first ? first.toLocaleUpperCase() : "YOUR DAY"}
-        </AppText>
-        <AppText variant="small" color={Palette.fgSubtle}>
-          {longDate()}
+        <View style={styles.dateRow}>
+          <AppText variant="small" color={Palette.fgSubtle}>
+            {longDate()}
+          </AppText>
+          <View style={styles.planBadge}>
+            <AppText variant="label" color={Tints.green.fg} style={styles.planText}>
+              {plan}
+            </AppText>
+          </View>
+        </View>
+        <AppText variant="title" accessibilityRole="header" style={styles.greeting}>
+          {greeting()},{first ? " " : ""}
+          {first ? <AppText variant="title" style={styles.name}>{first}</AppText> : null}
         </AppText>
       </View>
       <Pressable
@@ -100,11 +141,36 @@ export function HomeScreen() {
       </Pressable>
     </View>
   );
+  const quick = (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      accessibilityLabel="Quick actions"
+      contentContainerStyle={styles.quick}
+      style={styles.quickScroll}
+    >
+      {QUICK.map((q) => (
+        <Pressable
+          key={q.title}
+          accessibilityRole="button"
+          accessibilityLabel={q.title}
+          onPress={q.go}
+          style={({ pressed }) => [styles.pill, pressed ? styles.pressed : null]}
+        >
+          <Icon name={q.icon} size={12} color={Palette.fgMuted} />
+          <AppText variant="small" color={Palette.fgMuted}>
+            {q.title}
+          </AppText>
+        </Pressable>
+      ))}
+    </ScrollView>
+  );
 
   if (tasksQ.isPending || journalQ.isPending || notesQ.isPending)
     return (
       <Screen>
         {header}
+        {quick}
         <LoadingState />
       </Screen>
     );
@@ -113,14 +179,13 @@ export function HomeScreen() {
     return (
       <Screen onRefresh={refresh} refreshing={refreshing}>
         {header}
+        {quick}
         <ErrorState message={errorMessage(tasksQ.error ?? journalQ.error ?? notesQ.error)} onRetry={() => void refresh()} />
       </Screen>
     );
 
   const tasks = tasksQ.data;
   const dueToday = tasks.filter((task) => task.due_date === today && !task.cancelled && !task.archived);
-  const remaining = dueToday.filter((task) => !task.done).length;
-  const todayTasks = dueToday.filter((task) => isOpen(task)).slice(0, 3);
   const overdue = tasks.filter((task) => isOverdue(task, today));
   const entries = journalQ.data;
   const loggedDays = new Set(entries.map((entry) => entry.entry_date));
@@ -138,8 +203,34 @@ export function HomeScreen() {
     .sort((left, right) => new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime())
     .slice(0, 3);
 
-  const sections: Record<string, ReactNode> = {
-    streak: (
+  const todayList = [...overdue, ...dueToday.filter((task) => !overdue.includes(task))];
+  const doneToday = dueToday.filter((task) => task.done).length;
+  const pct = dueToday.length ? Math.round((doneToday / dueToday.length) * 100) : 0;
+  const todaysEntries = entries.filter((entry) => entry.entry_date === today).slice(0, 3);
+  const events = (calendarQ.data ?? []).filter((ev) => (ev.all_day ? ev.start_at.slice(0, 10) : isoDate(new Date(ev.start_at))) === today).slice(0, 5);
+  const articles = (articlesQ.data?.pages[0]?.items ?? []).slice(0, 4);
+  const unread = (feedsQ.data ?? []).reduce((sum, feed) => sum + feed.unread, 0);
+  const health = (healthQ.data ?? []).find((d) => d.day === today) ?? healthQ.data?.[healthQ.data.length - 1];
+  const chats = (chatsQ.data ?? []).slice(0, 4);
+
+  function submitTask() {
+    const title = taskTitle.trim();
+    if (!title) return;
+    setTaskTitle("");
+    addTask.mutate(
+      { title, description: "", due_date: today, priority: 4, list_id: null, recurrence: null },
+      { onError: () => setTaskTitle(title) },
+    );
+  }
+  function submitEntry() {
+    const body = entryText.trim();
+    if (!body) return;
+    setEntryText("");
+    createEntry.mutate({ entry_date: today, body }, { onError: () => setEntryText(body) });
+  }
+
+  const sections: Record<string, ReorderNode | null> = {
+    streak: (handle: ReactNode) => (
       <Card
         tone="green"
         liquidTint
@@ -148,9 +239,12 @@ export function HomeScreen() {
       >
         <View style={styles.cardHeader}>
           <AppText variant="bodyStrong">Journal streak</AppText>
-          <AppText variant="label" color={todayLogged ? Palette.greenFg : Palette.fgSubtle}>
-            {todayLogged ? "Today logged" : "Today not logged"}
-          </AppText>
+          <View style={styles.streakRight}>
+            <AppText variant="label" color={todayLogged ? Palette.greenFg : Palette.fgSubtle}>
+              {todayLogged ? "Today logged" : "Today not logged"}
+            </AppText>
+            {handle}
+          </View>
         </View>
         <View style={styles.streakSummary}>
           <View style={styles.streakNumber}>
@@ -193,17 +287,42 @@ export function HomeScreen() {
           <AppText variant="small" color={Palette.fgMuted}>A subscription, pay as you go, or your own key. See the plans and prices.</AppText>
         </Card>
       ) : null,
-    tasks: (
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <AppText variant="bodyStrong" style={styles.sectionTitle}>
-            Today · {remaining} left
+    today: (handle: ReactNode) => (
+      <Card style={styles.todayCard} accessibilityLabel="Today">
+        <View style={styles.todayHead}>
+          <AppText variant="heading" accessibilityRole="header" style={styles.todayTitle}>
+            Today
           </AppText>
-          <SectionLink title="Open" onPress={() => router.navigate("/todo")} />
+          <AppText variant="small" color={Palette.fgSubtle} style={styles.todayCount}>
+            {doneToday} of {dueToday.length} done
+          </AppText>
+          {handle}
         </View>
-        <Card tone="blue" liquidTint style={styles.taskCard}>
-          {todayTasks.length ? (
-            todayTasks.map((task) => (
+        <View
+          accessibilityRole="progressbar"
+          accessibilityLabel="Today’s progress"
+          accessibilityValue={{ min: 0, max: 100, now: pct }}
+          style={styles.progress}
+        >
+          <View style={[styles.progressFill, { width: `${pct}%` }]} />
+        </View>
+        <View style={styles.addRow}>
+          <Icon name="plus" size={12} color={Palette.fgSubtle} />
+          <TextInput
+            value={taskTitle}
+            onChangeText={setTaskTitle}
+            onSubmitEditing={submitTask}
+            returnKeyType="done"
+            placeholder="Add a task for today…"
+            placeholderTextColor={Palette.fgSubtle}
+            maxLength={300}
+            accessibilityLabel="Add a task for today"
+            style={styles.addInput}
+          />
+        </View>
+        {todayList.length ? (
+          <View>
+            {todayList.map((task) => (
               <TaskRow
                 key={task.id}
                 task={task}
@@ -211,114 +330,174 @@ export function HomeScreen() {
                 onToggle={toggle}
                 onOpen={(item) => router.push({ pathname: "/task/[id]", params: { id: item.id } })}
               />
-            ))
-          ) : (
-            <AppText variant="small" color={Palette.fgSubtle}>
-              {overdue.length
-                ? `${overdue.length} overdue. Open To-do to review your tasks.`
-                : "No tasks for today. Open To-do to plan ahead."}
-            </AppText>
-          )}
-        </Card>
-      </View>
-    ),
-    notes: (
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <View style={styles.notesHeading}>
-            <AppText variant="bodyStrong" style={styles.sectionTitle}>
-              Notes
-            </AppText>
-            <AppText variant="label">{notesQ.data.length} saved</AppText>
+            ))}
           </View>
-          <SectionLink title="Open" onPress={() => router.navigate("/notes")} />
-        </View>
-        <Card tone="amber" liquidTint style={styles.notesCard}>
-          {recentNotes.length ? (
-            recentNotes.map((note, index) => (
-              <View key={note.id}>
-                {index > 0 ? <View style={styles.separator} /> : null}
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={`Open note: ${noteTitle(note)}`}
-                  onPress={() => router.push({ pathname: "/note/[id]", params: { id: note.id } })}
-                  style={({ pressed }) => [styles.noteRow, pressed ? styles.pressed : null]}
-                >
-                  <View style={styles.noteBullet} />
-                  <AppText variant="bodyStrong" numberOfLines={2} style={styles.noteTitle}>
-                    {noteTitle(note)}
-                  </AppText>
-                  <AppText variant="small" color={Palette.fgSubtle} style={styles.noteAge}>
-                    {ago(note.updated_at)}
-                  </AppText>
-                </Pressable>
-              </View>
-            ))
-          ) : (
-            <AppText variant="small" color={Palette.fgSubtle}>
-              No notes yet. Save an idea from Notes.
-            </AppText>
-          )}
-        </Card>
-      </View>
+        ) : (
+          <PanelEmpty>Nothing planned yet. Add the first thing above.</PanelEmpty>
+        )}
+      </Card>
     ),
-    journal: (
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <AppText variant="bodyStrong" style={styles.sectionTitle}>
-            Today’s journal
-          </AppText>
-          <SectionLink title="Open" onPress={() => router.navigate("/journal")} />
+    journal: (handle: ReactNode) => (
+      <HomePanel icon="book-open" title="Today’s journal" onOpen={() => router.navigate("/journal")} handle={handle}>
+        {todaysEntries.map((entry) => (
+          <View key={entry.id} style={styles.entryRow}>
+            <AppText variant="small" color={Palette.fgSubtle} style={styles.entryTime}>
+              {timeOf(entry.created_at)}
+            </AppText>
+            <AppText variant="small" color={Palette.fgMuted} numberOfLines={2} style={styles.entryBody}>
+              {entry.body || "Voice or attachment"}
+            </AppText>
+          </View>
+        ))}
+        <View style={styles.entryForm}>
+          <TextInput
+            value={entryText}
+            onChangeText={setEntryText}
+            multiline
+            maxLength={50000}
+            placeholder={todaysEntries.length ? "Add another entry…" : "How is today going?"}
+            placeholderTextColor={Palette.fgSubtle}
+            accessibilityLabel="New journal entry"
+            style={styles.entryInput}
+          />
+          <Button title="Add" onPress={submitEntry} disabled={!entryText.trim()} loading={createEntry.isPending} />
         </View>
-        {entries
-          .filter((entry) => entry.entry_date === today)
-          .slice(0, 1)
-          .map((entry) => (
-            <Card
-              key={entry.id}
-              tone="violet"
-              liquidTint
-              onPress={() => router.push({ pathname: "/journal/[id]", params: { id: entry.id } })}
-              accessibilityLabel="Open today’s journal entry"
+      </HomePanel>
+    ),
+    notes: (handle: ReactNode) => (
+      <HomePanel icon="pen-to-square" title="Notes" hint={`${notesQ.data.length} saved`} onOpen={() => router.navigate("/notes")} handle={handle}>
+        {recentNotes.length ? (
+          recentNotes.map((note) => (
+            <Pressable
+              key={note.id}
+              accessibilityRole="button"
+              accessibilityLabel={`Open note: ${noteTitle(note)}`}
+              onPress={() => router.push({ pathname: "/note/[id]", params: { id: note.id } })}
+              style={({ pressed }) => [styles.listRow, pressed ? styles.pressed : null]}
             >
+              <AppText variant="body" numberOfLines={1} style={styles.listTitle}>
+                {noteTitle(note)}
+              </AppText>
               <AppText variant="small" color={Palette.fgSubtle}>
-                {timeOf(entry.created_at)}
+                {ago(note.updated_at)}
               </AppText>
-              <AppText variant="body" numberOfLines={3}>
-                {entry.body || "Voice or attachment"}
-              </AppText>
-              <AttachmentGallery attachments={entry.attachments} />
-            </Card>
-          ))}
-        {!todayLogged ? (
-          <Card tone="violet" liquidTint onPress={() => router.navigate("/journal")} accessibilityLabel="Write today’s journal">
-            <AppText variant="small" color={Palette.fgSubtle}>
-              Write your first entry for today.
-            </AppText>
-          </Card>
-        ) : null}
-      </View>
+            </Pressable>
+          ))
+        ) : (
+          <PanelEmpty>No notes yet. Save an idea from Notes.</PanelEmpty>
+        )}
+      </HomePanel>
     ),
-    insights: <PersonalityInsightsCard />,
+    chats: (handle: ReactNode) => (
+      <HomePanel icon="comments" title="Chats" onOpen={() => router.navigate("/chat")} handle={handle}>
+        {chats.length ? (
+          chats.map((chat) => (
+            <Pressable
+              key={chat.id}
+              accessibilityRole="button"
+              accessibilityLabel={`Open chats: ${chat.title}`}
+              onPress={() => router.navigate("/chat")}
+              style={({ pressed }) => [styles.listRow, pressed ? styles.pressed : null]}
+            >
+              <AppText variant="body" numberOfLines={1} style={styles.listTitle}>
+                {chat.title}
+              </AppText>
+              <AppText variant="small" color={Palette.fgSubtle}>
+                {ago(chat.updated_at)}
+              </AppText>
+            </Pressable>
+          ))
+        ) : (
+          <PanelEmpty>No chats yet</PanelEmpty>
+        )}
+      </HomePanel>
+    ),
+    schedule: (handle: ReactNode) => (
+      <HomePanel icon="calendar-day" title="Schedule" hint="today" onOpen={() => router.navigate("/workspace")} handle={handle}>
+        {events.length ? (
+          events.map((ev) => (
+            <View key={ev.id} style={styles.entryRow}>
+              <AppText variant="small" color={Palette.fgSubtle} style={styles.entryTime}>
+                {ev.all_day ? "All day" : timeOf(ev.start_at)}
+              </AppText>
+              <AppText variant="body" numberOfLines={1} style={styles.entryBody}>
+                {ev.title}
+              </AppText>
+            </View>
+          ))
+        ) : (
+          <PanelEmpty>No events today</PanelEmpty>
+        )}
+      </HomePanel>
+    ),
+    reader: (handle: ReactNode) => (
+      <HomePanel
+        icon="newspaper"
+        title="Reader"
+        hint={unread > 0 ? `${unread} unread` : undefined}
+        onOpen={() => router.navigate("/workspace")}
+        handle={handle}
+      >
+        {articlesQ.isPending ? (
+          <PanelEmpty>Loading…</PanelEmpty>
+        ) : articles.length ? (
+          articles.map((article) => (
+            <Pressable
+              key={article.id}
+              accessibilityRole="button"
+              accessibilityLabel={`Open article: ${article.title}`}
+              onPress={() => router.push({ pathname: "/reader/[id]", params: { id: article.id } })}
+              style={({ pressed }) => [styles.article, pressed ? styles.pressed : null]}
+            >
+              <AppText variant="body" numberOfLines={2} style={styles.articleTitle}>
+                {article.title}
+              </AppText>
+              <AppText variant="small" color={Palette.fgSubtle} numberOfLines={1}>
+                {article.feed_title} · {rssAge(article.published_at)}
+              </AppText>
+            </Pressable>
+          ))
+        ) : (
+          <PanelEmpty>No articles yet. Add a feed in the Reader.</PanelEmpty>
+        )}
+      </HomePanel>
+    ),
+    health: (handle: ReactNode) => (
+      <HomePanel icon="heart-pulse" title="Health" hint="today" onOpen={() => router.push("/health")} handle={handle}>
+        {health && (health.steps !== null || health.sleep_minutes !== null) ? (
+          <View style={styles.stats}>
+            <View style={styles.stat}>
+              <AppText variant="small" color={Palette.fgSubtle}>
+                Steps
+              </AppText>
+              <AppText variant="heading" style={styles.statValue}>
+                {(health.steps ?? 0).toLocaleString()}
+              </AppText>
+            </View>
+            <View style={styles.stat}>
+              <AppText variant="small" color={Palette.fgSubtle}>
+                Sleep
+              </AppText>
+              <AppText variant="heading" style={styles.statValue}>
+                {health.sleep_minutes ? fmtDuration(health.sleep_minutes) : "–"}
+              </AppText>
+            </View>
+          </View>
+        ) : (
+          <PanelEmpty>Open Health to connect your phone and see steps and sleep.</PanelEmpty>
+        )}
+      </HomePanel>
+    ),
+    insights: (handle: ReactNode) => <PersonalityInsightsCard handle={handle} />,
   };
 
   return (
     <Screen onRefresh={refresh} refreshing={refreshing}>
       {header}
+      {quick}
 
-      <ReorderableList gap={Space.lg} onReorder={saveOrder} items={order.map((id) => ({ id, node: sections[id] ?? null }))} />
+      <ReorderableList gap={Space.lg} onReorder={saveOrder} items={order.map((id) => ({ id, label: LABELS[id], node: sections[id] ?? null }))} />
     </Screen>
-  );
-}
-
-function SectionLink({ title, onPress }: { title: string; onPress: () => void }) {
-  return (
-    <Pressable accessibilityRole="button" onPress={onPress} hitSlop={8} style={styles.sectionLink}>
-      <AppText variant="label" color={Palette.greenFg}>
-        {title}
-      </AppText>
-      <Icon name="arrow-up-right-from-square" size={13} color={Palette.greenFg} />
-    </Pressable>
   );
 }
 
@@ -337,8 +516,45 @@ function noteTitle(note: Note) {
 const styles = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: Space.md, paddingTop: Space.xs },
   headerText: { flex: 1, gap: Space.xs },
-  greeting: { ...Font.serifItalic, fontSize: 25, lineHeight: 29 },
-  name: { fontSize: 30, lineHeight: 34, letterSpacing: -0.7, textTransform: "uppercase" },
+  dateRow: { flexDirection: "row", alignItems: "center", gap: Space.sm },
+  planBadge: { backgroundColor: Tints.green.bg, borderColor: Tints.green.line, borderWidth: 1, borderRadius: Radius.pill, paddingHorizontal: 8, paddingVertical: 2 },
+  planText: { fontSize: 10, lineHeight: 13 },
+  greeting: { fontSize: 34, lineHeight: 38, letterSpacing: -1 },
+  name: { ...Font.serifItalic, color: Palette.greenFg, fontSize: 34, lineHeight: 38, letterSpacing: -1 },
+  quickScroll: { marginHorizontal: -(Space.xl - 4), flexGrow: 0 },
+  quick: { gap: Space.sm, paddingHorizontal: Space.xl - 4 },
+  pill: {
+    height: 38,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Space.sm,
+    paddingHorizontal: 14,
+    borderRadius: Radius.pill,
+    backgroundColor: Palette.glassHi,
+    borderWidth: 1,
+    borderColor: Palette.glassRing,
+  },
+  todayCard: { padding: Space.lg + 2, gap: Space.md },
+  todayHead: { flexDirection: "row", alignItems: "center", gap: Space.sm },
+  todayTitle: { flex: 1, fontSize: 28, lineHeight: 32 },
+  todayCount: { fontVariant: ["tabular-nums"] },
+  progress: { height: 4, borderRadius: Radius.pill, backgroundColor: Palette.line, overflow: "hidden" },
+  progressFill: { height: "100%", borderRadius: Radius.pill, backgroundColor: Palette.greenFg },
+  addRow: { height: 44, flexDirection: "row", alignItems: "center", gap: Space.sm, paddingHorizontal: Space.lg, borderRadius: Radius.pill, backgroundColor: Palette.surfaceMuted },
+  addInput: { ...Font.sans, flex: 1, height: "100%", fontSize: 15, color: Palette.fg },
+  entryRow: { flexDirection: "row", alignItems: "baseline", gap: Space.md },
+  entryTime: { width: 56, fontVariant: ["tabular-nums"] },
+  entryBody: { flex: 1 },
+  entryForm: { flexDirection: "row", alignItems: "flex-end", gap: Space.sm },
+  entryInput: { ...Font.sans, flex: 1, minHeight: 44, maxHeight: 120, fontSize: 15, color: Palette.fg, paddingHorizontal: Space.lg, paddingVertical: 12, borderRadius: Radius.r2, backgroundColor: Palette.surfaceMuted },
+  listRow: { minHeight: 44, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: Space.md },
+  listTitle: { flex: 1 },
+  article: { paddingVertical: Space.sm, gap: 2 },
+  articleTitle: { lineHeight: 20 },
+  stats: { flexDirection: "row", gap: Space.lg },
+  stat: { flex: 1 },
+  statValue: { fontSize: 28, lineHeight: 32 },
+  streakRight: { flexDirection: "row", alignItems: "center", gap: Space.sm },
   avatar: {
     width: 42,
     height: 42,

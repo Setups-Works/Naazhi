@@ -6,10 +6,13 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 
-import { Shadow } from "@/constants/theme";
+import { Icon } from "./Icon";
+import { Palette, Radius, Shadow } from "@/constants/theme";
 import { useRuntimePrefs } from "@/lib/preferences";
 
-export type ReorderItem = { id: string; node: ReactNode | null };
+/** The grip a section places in its header: `handle` is the grip to render, already wired to the drag. */
+export type ReorderNode = ReactNode | ((handle: ReactNode) => ReactNode);
+export type ReorderItem = { id: string; node: ReorderNode | null; label?: string };
 
 type Props = {
   /** Items in the order to show them. Items whose node is null are skipped. */
@@ -20,9 +23,12 @@ type Props = {
 
 type Drag = { id: string; from: number; to: number };
 
+/** Touch the grip this long before the drag starts, so a finger sliding down the page still scrolls it. */
+const GRIP_HOLD_MS = 120;
+
 /**
- * A column of sections you can reorder: touch and hold one, then drag it up or down. The others slide out of the way and the new
- * order is reported when you let go. Hold-to-drag keeps normal scrolling and taps on the cards working.
+ * A column of sections you can reorder with the grip in each header (the same grip as the web's Home cards): press it and drag up
+ * or down. The others slide out of the way and the new order is reported when you let go. Screen readers get "move up / move down".
  */
 export function ReorderableList({ items, gap, onReorder }: Props) {
   const visible = items.filter((item) => item.node);
@@ -69,6 +75,11 @@ export function ReorderableList({ items, gap, onReorder }: Props) {
     setDrag(null);
   }
 
+  function step(id: string, by: -1 | 1) {
+    const from = ids.indexOf(id);
+    if (from >= 0 && from + by >= 0 && from + by < ids.length) onReorder(moveItem(ids, from, from + by));
+  }
+
   return (
     <View style={{ gap }}>
       {visible.map((item, index) => (
@@ -79,12 +90,14 @@ export function ReorderableList({ items, gap, onReorder }: Props) {
           gap={gap}
           heightOf={(id) => heights.current[id] ?? 0}
           id={item.id}
+          label={item.label ?? "section"}
           onLayoutHeight={(height) => {
             heights.current[item.id] = height;
           }}
           onBegin={begin}
           onMove={move}
           onFinish={finish}
+          onStep={step}
         >
           {item.node}
         </ReorderRow>
@@ -95,6 +108,7 @@ export function ReorderableList({ items, gap, onReorder }: Props) {
 
 function ReorderRow({
   id,
+  label,
   index,
   drag,
   gap,
@@ -103,9 +117,11 @@ function ReorderRow({
   onBegin,
   onMove,
   onFinish,
+  onStep,
   children,
 }: {
   id: string;
+  label: string;
   index: number;
   drag: Drag | null;
   gap: number;
@@ -114,7 +130,8 @@ function ReorderRow({
   onBegin: (id: string) => void;
   onMove: (translation: number) => void;
   onFinish: () => void;
-  children: ReactNode;
+  onStep: (id: string, by: -1 | 1) => void;
+  children: ReorderNode;
 }) {
   const { reduceMotion } = useRuntimePrefs();
   const active = drag?.id === id;
@@ -133,7 +150,7 @@ function ReorderRow({
   }, [offset, reduceMotion, shift]);
 
   const pan = Gesture.Pan()
-    .activateAfterLongPress(320)
+    .activateAfterLongPress(GRIP_HOLD_MS)
     .onStart(() => {
       scheduleOnRN(onBegin, id);
     })
@@ -150,19 +167,35 @@ function ReorderRow({
     transform: [{ translateY: active ? translation.value : shift.value }, { scale: active ? 1.02 : 1 }],
   }));
 
-  return (
+  const handle = (
     <GestureDetector gesture={pan}>
-      <Animated.View
-        onLayout={(event) => onLayoutHeight(event.nativeEvent.layout.height)}
-        accessibilityHint="Touch and hold, then drag to move this section"
-        style={[style, active ? styles.lifted : null]}
+      <View
+        accessible
+        accessibilityRole="adjustable"
+        accessibilityLabel={`Move ${label}`}
+        accessibilityHint="Swipe up or down to move this section"
+        accessibilityActions={[
+          { name: "decrement", label: "Move up" },
+          { name: "increment", label: "Move down" },
+        ]}
+        onAccessibilityAction={(event) => onStep(id, event.nativeEvent.actionName === "decrement" ? -1 : 1)}
+        hitSlop={6}
+        style={[styles.grip, active ? styles.gripActive : null]}
       >
-        {children}
-      </Animated.View>
+        <Icon name="grip-vertical" size={14} color={active ? Palette.fg : Palette.fgFaint} />
+      </View>
     </GestureDetector>
+  );
+
+  return (
+    <Animated.View onLayout={(event) => onLayoutHeight(event.nativeEvent.layout.height)} style={[style, active ? styles.lifted : null]}>
+      {typeof children === "function" ? children(handle) : children}
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   lifted: { zIndex: 10, ...Shadow.e2 },
+  grip: { width: 32, height: 32, borderRadius: Radius.pill, alignItems: "center", justifyContent: "center" },
+  gripActive: { backgroundColor: Palette.surfaceMuted },
 });

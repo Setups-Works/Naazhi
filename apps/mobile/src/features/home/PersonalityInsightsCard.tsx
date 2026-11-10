@@ -1,6 +1,6 @@
 import { analyse, type Axis, type Observation } from "@untitled/logic";
 import { router } from "expo-router";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useMemo, useState, type ReactNode } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import Svg, { Line, Polygon, Text as SvgText } from "react-native-svg";
 
@@ -24,7 +24,7 @@ const OBSERVATION_ICONS: Record<Observation["icon"], IconName> = {
   calendar: "calendar-days",
 };
 
-export function PersonalityInsightsCard() {
+export function PersonalityInsightsCard({ handle }: { handle?: ReactNode }) {
   const tasksQ = useTasks();
   const journalQ = useJournal();
   const notesQ = useNotes();
@@ -67,6 +67,7 @@ export function PersonalityInsightsCard() {
             </Pressable>
           </View>
         ) : null}
+        {handle}
       </View>
 
       {pending ? (
@@ -221,8 +222,8 @@ function PersonalityRadar({ axes }: { axes: Axis[] }) {
 
 const styles = StyleSheet.create({
   card: { gap: 0, paddingHorizontal: 18, paddingVertical: 0, overflow: "hidden" },
-  header: { minHeight: 58, flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Tints.gold.line },
-  headerTitle: { flexDirection: "row", alignItems: "center", gap: 9 },
+  header: { minHeight: 58, flexDirection: "row", justifyContent: "flex-start", alignItems: "center", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Tints.gold.line },
+  headerTitle: { flex: 1, flexDirection: "row", alignItems: "center", gap: 9 },
   pager: { flexDirection: "row", alignItems: "center", gap: 4 },
   pageButton: { width: 34, height: 40, alignItems: "center", justifyContent: "center" },
   empty: { gap: 16, paddingTop: 18, paddingBottom: 4 },

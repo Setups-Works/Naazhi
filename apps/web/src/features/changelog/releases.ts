@@ -23,6 +23,17 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-10",
+    title: "Version 3.0.1: now under the Naazhi name",
+    summary: "The project’s home on GitHub is now called Naazhi, and the Android app file carries the same name.",
+    tone: "sand",
+    appVersion: "v3.0.1",
+    changes: [
+      { kind: "improved", platform: "app", text: "The Android download is now named naazhi-v3.0.1.apk, and updates keep working as before." },
+      { kind: "improved", platform: "web", text: "The download and release links on the website point to the renamed Naazhi project page." },
+    ],
+  },
+  {
+    date: "2026-11-10",
     title: "Version 3.0.0: a new look for the website",
     summary: "The public website is rebuilt on a clean white design, with a download page, phone mockups and better search results.",
     tone: "green",

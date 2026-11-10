@@ -26,7 +26,7 @@ Add a line to the web changelog (`apps/web/src/features/changelog/releases.ts`) 
 
 1. Generates `apps/mobile/android` with `expo prebuild` (that folder is never committed).
 2. Sets `versionName` from the tag and `versionCode` from the run number, so a newer APK always installs over an older one.
-3. Builds `assembleRelease`, signs it, names it `untitled-project-<tag>.apk` and writes a SHA-256 file.
+3. Builds `assembleRelease`, signs it, names it `naazhi-<tag>.apk` and writes a SHA-256 file.
 4. Creates (or updates) the release for the tag with auto-generated notes.
 
 ## Settings (repository → Settings → Secrets and variables → Actions)

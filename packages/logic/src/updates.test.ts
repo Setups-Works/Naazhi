@@ -3,7 +3,7 @@ import { isNewerVersion, parseVersion, readLatestRelease } from "./updates";
 
 const release = (over: Record<string, unknown> = {}) => ({
   tag_name: "v1.0.2",
-  html_url: "https://github.com/Setups-Works/untitled-project-landing/releases/tag/v1.0.2",
+  html_url: "https://github.com/Setups-Works/Naazhi/releases/tag/v1.0.2",
   assets: [
     { name: "untitled-project-v1.0.2.apk.sha256", browser_download_url: "https://github.com/x/y/releases/download/v1.0.2/a.sha256" },
     { name: "untitled-project-v1.0.2.apk", browser_download_url: "https://github.com/x/y/releases/download/v1.0.2/a.apk" },

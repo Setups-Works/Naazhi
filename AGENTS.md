@@ -1,6 +1,6 @@
 # AGENTS.md — read this first
 
-You are working on **Naazhi** (the repository is still called untitled-project-landing; the product name, logo and voice are in `docs/BRAND.md`): one workspace for notes, tasks, journal, chat, calendar, email, meetings and automations, with an AI layer that can be swapped (Groq, Puter.js, bring-your-own) or switched off. Three developers build it in parallel, each using AI agents. This file is the contract that keeps everyone's code consistent. Folder-level `AGENTS.md` files add detail — **read the one in every folder you touch.**
+You are working on **Naazhi** (the product name, logo and voice are in `docs/BRAND.md`): one workspace for notes, tasks, journal, chat, calendar, email, meetings and automations, with an AI layer that can be swapped (Groq, Puter.js, bring-your-own) or switched off. Three developers build it in parallel, each using AI agents. This file is the contract that keeps everyone's code consistent. Folder-level `AGENTS.md` files add detail — **read the one in every folder you touch.**
 
 > Source of truth: **Jira project UNT** for _what to build and who owns it_ · **this repo's docs** for _how to build it_ · **the code** for _what exists today_. If they disagree, say so in your PR instead of guessing.
 

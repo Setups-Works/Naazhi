@@ -10,20 +10,23 @@ import {
   faWandMagicSparkles,
 } from "@fortawesome/free-solid-svg-icons";
 import AuthLink from "../../components/auth/AuthLink";
-import { StepCards } from "../../components/landing/Blocks";
-import Glass from "../../components/landing/Glass";
-import { Section } from "../../components/landing/Kit";
-import { Magnetic } from "../../components/landing/Magnetic";
-import { R, Reveal } from "../../components/landing/Reveal";
-import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/PageKit";
-import type { Tone } from "../../lib/tones";
+import { StepCards } from "../../components/site/blocks";
+import JsonLd from "../../components/site/JsonLd";
+import { pageMeta, pageSchemas } from "../../lib/seo";
+import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/site/kit";
+import { PhoneRow } from "../../components/site/Phone";
+import { R, Reveal } from "../../components/site/Reveal";
+import { buttonClass, Section, Surface } from "../../components/site/ui";
 
-export const metadata: Metadata = {
+const SEO = {
+  name: "Early users",
   title: "Early users — Naazhi",
   description: "Be one of the first to shape Naazhi. Early users get a direct line to the team.",
+  path: "/early-users",
 };
+export const metadata: Metadata = pageMeta(SEO);
 
-const slots: Tone[] = ["blue", "violet", "amber"];
+const slots = [0, 1, 2];
 
 const involve = [
   {
@@ -59,55 +62,55 @@ const involve = [
 export default function Page() {
   return (
     <main>
+      <JsonLd data={pageSchemas(SEO)} />
       <PageHero
         eyebrow="Early users"
         title="Built with the people"
         quiet="who use it first."
         lead="Naazhi is in its early days. The first people to try it shape what it becomes, and we’ll share what they tell us right here."
+        visual={<PhoneRow screens={["/mobile/journal.png", "/mobile/home.png", "/mobile/chat.png"]} />}
       >
-        <Magnetic>
-          <AuthLink arrow />
-        </Magnetic>
+        <AuthLink arrow className={buttonClass("primary")} />
       </PageHero>
 
       <Section tight>
         <SectionHead
-          eyebrow="What early users say"
+          kicker="What early users say"
           title="Their words,"
           quiet="not ours."
           lead="We only publish feedback from real people, with their permission. The first quotes will appear here as early users share them."
         />
         <Reveal stagger={0.12} className="mt-[clamp(28px,4vw,52px)] grid gap-4 md:grid-cols-3">
-          {slots.map((t, n) => (
+          {slots.map((n) => (
             <R key={n}>
-              <Glass variant="flat" radius="r4" tone={t} glare tilt lift className="relative flex h-full flex-col gap-4 p-7">
-                <span className="absolute top-5 right-5 rounded-pill bg-white/70 px-2.5 py-0.5 text-[11.5px] font-medium text-fg-muted">
+              <Surface lift className="relative flex h-full flex-col gap-4 p-7">
+                <span className="absolute top-5 right-5 rounded-pill bg-surface-muted px-2.5 py-0.5 text-[11.5px] font-medium text-fg-muted">
                   Placeholder
                 </span>
-                <FA icon={faQuoteLeft} className="text-[26px] text-(--abf)/40" />
+                <FA icon={faQuoteLeft} className="text-[26px] text-green-fg/40" />
                 <blockquote className="font-serif text-[22px] leading-snug tracking-[-0.015em] text-fg">
                   Your feedback could be the first quote on this page.
                 </blockquote>
                 <figcaption className="mt-auto flex items-center gap-3">
-                  <span aria-hidden className="size-10 rounded-full bg-white/70 shadow-glass" />
+                  <span aria-hidden className="size-10 rounded-full bg-surface-muted ring-1 ring-line" />
                   <span>
                     <b className="block text-[14.5px] font-semibold text-fg">Early user</b>
                     <small className="text-[12.5px] text-fg-subtle">Name and role added with permission</small>
                   </span>
                 </figcaption>
-              </Glass>
+              </Surface>
             </R>
           ))}
         </Reveal>
       </Section>
 
       <Section tight>
-        <SectionHead eyebrow="Taking part" title="Four small steps," quiet="no commitment." />
+        <SectionHead kicker="Taking part" title="Four small steps," quiet="no commitment." />
         <StepCards steps={involve} />
       </Section>
 
       <Section tight>
-        <SectionHead eyebrow="Why join early" title="A direct line" quiet="to the team." />
+        <SectionHead kicker="Why join early" title="A direct line" quiet="to the team." />
         <FeatureCards
           items={[
             {
@@ -132,6 +135,7 @@ export default function Page() {
         quiet="the first."
         lead="Start with the notes, connect your tools as they arrive, and tell us what you think."
         secondary={["See the product demo", "/demo"]}
+        phone="/mobile/home.png"
       />
     </main>
   );

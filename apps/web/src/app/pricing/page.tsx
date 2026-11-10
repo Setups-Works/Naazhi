@@ -4,30 +4,29 @@ import { faBan, faCheck, faCoins, faKey, faWallet } from "@fortawesome/free-soli
 import type { BillingPlan } from "@untitled/types";
 import { formatTokens, priceLine } from "@untitled/logic/billing";
 import AuthLink from "../../components/auth/AuthLink";
-import { CompareTable } from "../../components/landing/Blocks";
-import { FaqList } from "../../components/landing/Faq";
-import Glass from "../../components/landing/Glass";
-import { BTN_LIGHT, Section } from "../../components/landing/Kit";
-import { Magnetic } from "../../components/landing/Magnetic";
-import { R, Reveal } from "../../components/landing/Reveal";
-import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/PageKit";
+import { CompareTable } from "../../components/site/blocks";
+import { FaqList } from "../../components/site/Faq";
+import JsonLd from "../../components/site/JsonLd";
+import { breadcrumbSchema, faqSchema, pageMeta, webPageSchema } from "../../lib/seo";
+import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/site/kit";
+import { R, Reveal } from "../../components/site/Reveal";
+import { buttonClass, Section, Surface } from "../../components/site/ui";
 import { isEnabled } from "../../config/features";
 import { listPublicPlans } from "../../server/services/billing/billing.service";
 
 // Prices and allowances are edited in Admin → Plans, so this page reads them on every request instead of baking them in at build time.
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Pricing — Naazhi",
-  description: "One workspace, three ways to pay for AI: a subscription, pay as you go, or your own API key. Change or cancel any time.",
-};
+const TITLE = "Pricing — Naazhi";
+const DESCRIPTION = "One workspace, three ways to pay for AI: a subscription, pay as you go, or your own API key. Change or cancel any time.";
+export const metadata: Metadata = pageMeta({ title: TITLE, description: DESCRIPTION, path: "/pricing" });
 
 function Plan({ plan, emphasis = false }: { plan: BillingPlan; emphasis?: boolean }) {
   const body = (
-    <Glass radius="r4" className="flex h-full flex-col gap-4 p-7 sm:p-9">
+    <Surface radius="r4" className={`flex h-full flex-col gap-4 p-7 sm:p-9 ${emphasis ? "ring-2 ring-green-fg" : ""}`}>
       <div className="flex items-center justify-between">
         <span className="text-[11px] font-semibold tracking-[0.1em] text-fg-faint uppercase">{plan.name}</span>
-        {emphasis && <span className="rounded-pill bg-fg px-3 py-1 text-[12px] font-medium text-on-dark">Popular</span>}
+        {emphasis && <span className="rounded-pill bg-green-bg px-3 py-1 text-[12px] font-medium text-green-fg">Popular</span>}
       </div>
       <h3 className="font-serif text-[30px] leading-tight tracking-[-0.022em]">{priceLine(plan)}</h3>
       <p className="m-0 border-y border-line py-4 text-[15px] text-fg-muted">{plan.tagline}</p>
@@ -40,24 +39,11 @@ function Plan({ plan, emphasis = false }: { plan: BillingPlan; emphasis?: boolea
         ))}
       </ul>
       <div className="pt-2">
-        {emphasis ? (
-          <Magnetic>
-            <AuthLink className={BTN_LIGHT.replace("bg-white", "bg-fg").replace("text-fg", "text-on-dark")}>Get started</AuthLink>
-          </Magnetic>
-        ) : (
-          <AuthLink className="btn btn-secondary" />
-        )}
+        <AuthLink className={`${buttonClass(emphasis ? "primary" : "secondary")} w-full`}>Get started</AuthLink>
       </div>
-    </Glass>
+    </Surface>
   );
-  // The emphasised plan gets a slowly shifting gradient edge.
-  return emphasis ? (
-    <div className="h-full animate-sheen rounded-r4 bg-[linear-gradient(120deg,var(--orb-1),var(--orb-2),var(--orb-3),var(--orb-1))] bg-[length:300%_100%] p-px motion-reduce:animate-none">
-      {body}
-    </div>
-  ) : (
-    body
-  );
+  return body;
 }
 
 /** What each plan means for AI, worked out from the plan's own numbers. */
@@ -98,15 +84,20 @@ export default async function Page() {
 
   return (
     <main>
+      <JsonLd
+        data={[
+          webPageSchema({ name: TITLE, description: DESCRIPTION, path: "/pricing" }),
+          breadcrumbSchema([{ name: "Pricing", path: "/pricing" }]),
+          faqSchema(faqs),
+        ]}
+      />
       <PageHero
         eyebrow="Pricing"
         title="Pick how you pay"
         quiet="for AI."
         lead="Your workspace is one thing; the AI behind it is another. Choose a subscription, pay for what you use, or bring your own key, and change or cancel any time."
       >
-        <Magnetic>
-          <AuthLink arrow />
-        </Magnetic>
+        <AuthLink arrow className={buttonClass("primary")} />
       </PageHero>
 
       <Section tight>
@@ -130,7 +121,7 @@ export default async function Page() {
 
       {plans.length > 0 && (
         <Section tight>
-          <SectionHead eyebrow="Compare" title="What’s in" quiet="each plan." />
+          <SectionHead kicker="Compare" title="What’s in" quiet="each plan." />
           <CompareTable
             plans={plans.map((p) => p.name)}
             rows={[
@@ -148,7 +139,7 @@ export default async function Page() {
 
       <Section tight>
         <SectionHead
-          eyebrow="AI is separate"
+          kicker="AI is separate"
           title="Four ways to power AI,"
           quiet="or none at all."
           lead="Pick whatever suits you today and change it whenever you like. Your workspace content never moves."
@@ -165,7 +156,7 @@ export default async function Page() {
       </Section>
 
       <Section tight>
-        <SectionHead eyebrow="Pricing FAQ" title="Straight" quiet="answers." />
+        <SectionHead kicker="Pricing FAQ" title="Straight" quiet="answers." />
         <div className="mx-auto mt-[clamp(28px,4vw,48px)] max-w-3xl">
           <FaqList items={faqs} />
         </div>
@@ -177,6 +168,7 @@ export default async function Page() {
         lead="Start with the workspace and pick a plan whenever you need AI."
         primary={["Get started", "/signup"]}
         secondary={["Read the FAQ", "/#faq"]}
+        phone="/mobile/chat.png"
       />
     </main>
   );

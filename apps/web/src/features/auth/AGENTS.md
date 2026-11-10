@@ -2,7 +2,7 @@
 
 **Does:** sign-up, email or username login, passkey sign-in/enrollment, Google sign-in and One Tap, last-used sign-in hint, email OTP password reset (with legacy reset-link support), Better Auth admin APIs, sign-out, signed-in awareness for marketing buttons. **Track A. Phase 0–1.**
 
-**Today (legacy):** `components/auth/{AuthForm,AuthShell,SignOut,AuthLink,HeaderAuth,useAuthState}`, `lib/auth/{client,redirect}.ts`, `server/{auth,session}.ts`, `proxy.ts`, routes `login/ signup/ forgot-password/ reset-password/ auth/callback/`.
+**Today (legacy):** `components/auth/{AuthForm,AuthShell,SignOut,AuthLink,useAuthState}`, `lib/auth/{client,redirect}.ts`, `server/{auth,session}.ts`, `proxy.ts`, routes `login/ signup/ forgot-password/ reset-password/ auth/callback/`.
 
 **Backed by:** Better Auth (`auth.users/sessions/accounts/verifications`), `profiles`. Usernames are normalized to lowercase for uniqueness; existing users set one in Profile settings. `apps/web/src/proxy.ts` only redirects on the session cookie.
 

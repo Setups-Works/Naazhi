@@ -4,12 +4,13 @@ import { config } from "@fortawesome/fontawesome-svg-core";
 import "../styles/tailwind.css";
 import "./globals.css";
 import { publicEnv } from "../config/env";
-import { SiteHeader, SiteFooter } from "../components/SiteChrome";
 import HideInApp from "../components/HideInApp";
-import Ambient from "../components/landing/Ambient";
-import MarketingScope from "../components/landing/MarketingScope";
-import MotionRoot from "../components/landing/MotionRoot";
+import Footer from "../components/site/Footer";
+import Header from "../components/site/Header";
+import Refresh from "../components/site/Refresh";
 import ContextMenu from "../components/app/ContextMenu";
+import JsonLd from "../components/site/JsonLd";
+import { KEYWORDS, organizationSchema, setupsWorksSchema, websiteSchema } from "../lib/seo";
 
 config.autoAddCss = false;
 
@@ -36,7 +37,15 @@ export const metadata: Metadata = {
   applicationName: "Naazhi",
   title: "Naazhi — one workspace, any AI",
   description: DESCRIPTION,
-  openGraph: { siteName: "Naazhi", title: "Naazhi — one workspace, any AI", description: DESCRIPTION, type: "website" },
+  keywords: KEYWORDS,
+  category: "productivity",
+  authors: [{ name: "Setups Works" }],
+  creator: "Setups Works",
+  publisher: "Naazhi",
+  // The marketing pages are indexable; the app itself is kept out by robots.txt and by `noindex` on its own layouts.
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 } },
+  formatDetection: { telephone: false, email: false, address: false },
+  openGraph: { siteName: "Naazhi", title: "Naazhi — one workspace, any AI", description: DESCRIPTION, type: "website", locale: "en_US" },
   twitter: { card: "summary_large_image", title: "Naazhi — one workspace, any AI", description: DESCRIPTION },
 };
 
@@ -44,21 +53,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${geist.variable} ${mono.variable} ${serif.variable} ${tamil.variable}`}>
       <body>
+        <JsonLd data={[organizationSchema(), setupsWorksSchema(), websiteSchema()]} />
         {/* Marketing content starts hidden for its entrance animation; without JavaScript it must simply be there. */}
         <noscript>
-          <style>{"[data-reveal]{opacity:1!important}"}</style>
+          <style>{"[data-reveal]{opacity:1!important;transform:none!important}"}</style>
         </noscript>
-        <MarketingScope>
+        {/* overflow-x-clip (not hidden) keeps animated elements that start off to the side from widening a phone page, and keeps sticky working. */}
+        <div className="overflow-x-clip">
           <HideInApp>
-            <Ambient />
-            <MotionRoot />
-            <SiteHeader />
+            {/* The public site sits on plain white; the app inside keeps its own cream canvas. */}
+            <div aria-hidden className="fixed inset-0 -z-20 bg-surface" />
+            <Refresh />
+            <Header />
           </HideInApp>
           {children}
           <HideInApp>
-            <SiteFooter />
+            <Footer />
           </HideInApp>
-        </MarketingScope>
+        </div>
         <ContextMenu />
       </body>
     </html>

@@ -3,7 +3,7 @@
 import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
 import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
-import Glass from "../../components/landing/Glass";
+import { Surface } from "../../components/site/ui";
 import { GITHUB_REPO } from "../../lib/site";
 import { toneClass } from "../../lib/tones";
 import { filterReleases, KIND_LABEL, PLATFORM_LABEL, RELEASES, type ChangeKind, type PlatformFilter } from "./releases";
@@ -26,14 +26,14 @@ export default function Changelog() {
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div role="group" aria-label="Show changes for" className="glass inline-flex gap-1 rounded-pill p-1">
+        <div role="group" aria-label="Show changes for" className="inline-flex gap-1 rounded-pill bg-surface-muted p-1 ring-1 ring-line">
           {FILTERS.map((f) => (
             <button
               key={f.id}
               type="button"
               aria-pressed={filter === f.id}
               onClick={() => setFilter(f.id)}
-              className="h-9 rounded-pill px-4 text-[13.5px] font-medium text-fg-muted transition-colors aria-pressed:bg-white aria-pressed:text-fg aria-pressed:shadow-e1"
+              className="h-9 rounded-pill px-4 text-[13.5px] font-medium text-fg-muted transition-colors aria-pressed:bg-surface aria-pressed:text-fg aria-pressed:ring-1 aria-pressed:ring-line"
             >
               {f.label}
             </button>
@@ -67,7 +67,7 @@ export default function Changelog() {
                 </a>
               )}
             </div>
-            <Glass variant="flat" radius="r3" tone={r.tone} className="flex flex-col gap-4 p-6 sm:p-7">
+            <Surface radius="r3" className="flex flex-col gap-4 p-6 sm:p-7">
               <div>
                 <h2 className="font-serif text-[28px] leading-[1.1] font-normal tracking-[-0.022em] text-balance">{r.title}</h2>
                 <p className="mt-2 text-[15px] leading-relaxed text-fg-muted">{r.summary}</p>
@@ -79,13 +79,13 @@ export default function Changelog() {
                       <span className={`${KIND_TONE[c.kind]} tint w-[78px] rounded-[7px] py-[3px] text-center text-[12px] font-medium`}>
                         {KIND_LABEL[c.kind]}
                       </span>
-                      <span className="rounded-[7px] bg-white/60 px-2 py-[3px] text-[12px] text-fg-muted">{PLATFORM_LABEL[c.platform]}</span>
+                      <span className="rounded-[7px] bg-surface-muted px-2 py-[3px] text-[12px] text-fg-muted">{PLATFORM_LABEL[c.platform]}</span>
                     </span>
                     <span className="min-w-0 flex-1 basis-[240px]">{c.text}</span>
                   </li>
                 ))}
               </ul>
-            </Glass>
+            </Surface>
           </li>
         ))}
       </ol>

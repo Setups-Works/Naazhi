@@ -1,19 +1,23 @@
 import type { Metadata } from "next";
 import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
 import { faBan, faCheck, faCodeBranch, faFileExport, faKey, faPlugCircleCheck, faUserLock } from "@fortawesome/free-solid-svg-icons";
-import { AccessMatrix } from "../../components/landing/Blocks";
-import { TRUST } from "../../components/landing/content";
-import Glass from "../../components/landing/Glass";
-import { Eyebrow, IconTile, Lead, Section, Title } from "../../components/landing/Kit";
-import { R, Reveal } from "../../components/landing/Reveal";
-import { Tip } from "../../components/landing/Tip";
-import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/PageKit";
+import { AccessMatrix } from "../../components/site/blocks";
+import JsonLd from "../../components/site/JsonLd";
+import { pageMeta, pageSchemas } from "../../lib/seo";
+import { TRUST } from "../../components/site/content";
+import { Heading } from "../../components/site/Heading";
+import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/site/kit";
+import { R, Reveal } from "../../components/site/Reveal";
+import { Tip } from "../../components/site/Tip";
+import { buttonClass, IconBadge, Kicker, Lead, Section, Surface } from "../../components/site/ui";
 
-export const metadata: Metadata = {
+const SEO = {
+  name: "Privacy & Security",
   title: "Privacy & Security — Naazhi",
-  description:
-    "How Naazhi keeps your workspace yours: separate from your AI, connected only to what you choose, and always exportable.",
+  description: "How Naazhi keeps your workspace yours: separate from your AI, connected only to what you choose, and always exportable.",
+  path: "/privacy-security",
 };
+export const metadata: Metadata = pageMeta(SEO);
 
 const access = [
   { what: "Your notes, tasks and chats", who: "You", note: "Protected by row-level security in the database, not only by the interface." },
@@ -39,19 +43,20 @@ const access = [
 export default function Page() {
   return (
     <main>
+      <JsonLd data={pageSchemas(SEO)} />
       <PageHero
         eyebrow="Privacy & Security"
         title="Your workspace stays"
         quiet="yours."
         lead="Your notes, journal and mail are personal. Naazhi is designed so that you decide what connects, whether AI is involved at all, and how to take your work with you."
       >
-        <a className="btn btn-primary" href="#principles" data-cursor="Read">
+        <a className={buttonClass("primary")} href="#principles">
           Read our principles
         </a>
       </PageHero>
 
       <Section id="principles" tight>
-        <SectionHead eyebrow="Principles" title="Control is the" quiet="default." />
+        <SectionHead kicker="Principles" title="Control is the" quiet="default." />
         <FeatureCards
           items={[
             {
@@ -96,7 +101,7 @@ export default function Page() {
 
       <Section tight>
         <SectionHead
-          eyebrow="Your account"
+          kicker="Your account"
           title="Signing in,"
           quiet="done carefully."
           lead="The ways to sign in today, and what protects them. Hover a card for the detail."
@@ -105,21 +110,11 @@ export default function Page() {
           {TRUST.map((t) => (
             <R key={t.t}>
               <Tip content={t.tip} className="flex h-full w-full">
-                <Glass
-                  variant="flat"
-                  radius="r4"
-                  tone={t.tone}
-                  glare
-                  tilt
-                  lift
-                  className="flex h-full w-full flex-col gap-3 p-6"
-                  role="group"
-                  aria-label={t.t}
-                >
-                  <IconTile icon={t.icon} />
+                <Surface lift className="flex h-full w-full flex-col gap-3 p-6" role="group" aria-label={t.t}>
+                  <IconBadge icon={t.icon} />
                   <h3 className="mt-1 text-[17px] font-semibold tracking-[-0.01em] text-fg">{t.t}</h3>
                   <p className="text-[15px] leading-relaxed text-fg-muted">{t.d}</p>
-                </Glass>
+                </Surface>
               </Tip>
             </R>
           ))}
@@ -128,7 +123,7 @@ export default function Page() {
 
       <Section tight>
         <SectionHead
-          eyebrow="Who can see what"
+          kicker="Who can see what"
           title="Plainly,"
           quiet="in a table."
           lead="No vague promises. For each kind of data, who can see it and why."
@@ -138,17 +133,13 @@ export default function Page() {
 
       <Section tight>
         <Reveal>
-          <Glass variant="dark" radius="r5" className="overflow-hidden p-[clamp(24px,5vw,64px)]">
-            <span
-              aria-hidden
-              className="pointer-events-none absolute -top-24 -right-16 -z-10 size-[400px] rounded-full bg-green-fg/35 blur-[90px]"
-            />
+          <Surface variant="ink" radius="r5" className="overflow-hidden p-[clamp(24px,5vw,64px)]">
             <div className="grid items-center gap-8 lg:grid-cols-2">
               <div className="flex flex-col items-start gap-5">
-                <Eyebrow dark>In the open</Eyebrow>
-                <Title dark quiet="published before launch.">
+                <Kicker dark>In the open</Kicker>
+                <Heading dark quiet="published before launch.">
                   Security details,
-                </Title>
+                </Heading>
                 <Lead dark>
                   We don’t make security claims we haven’t documented. Before launch we’ll publish how data is stored and protected, which
                   permissions each connection asks for, and how long anything is kept.
@@ -163,9 +154,9 @@ export default function Page() {
                 ].map((x) => (
                   <li
                     key={x}
-                    className="flex items-center gap-3.5 rounded-r3 bg-white/5 px-4 py-3.5 text-[15px] shadow-[inset_0_0_0_1px_var(--liquid-ghost)]"
+                    className="flex items-center gap-3.5 rounded-r3 bg-on-dark/5 px-4 py-3.5 text-[15px] ring-1 ring-on-dark/15"
                   >
-                    <span className="grid size-7 shrink-0 place-items-center rounded-full bg-white/15">
+                    <span className="grid size-7 shrink-0 place-items-center rounded-full bg-on-dark/15">
                       <FA icon={faCheck} className="text-[12px]" />
                     </span>
                     {x}
@@ -173,7 +164,7 @@ export default function Page() {
                 ))}
               </ul>
             </div>
-          </Glass>
+          </Surface>
         </Reveal>
       </Section>
 
@@ -183,6 +174,7 @@ export default function Page() {
         lead="Start with the notes, connect only what you want, and keep AI off until you’re ready."
         primary={["Get started", "/signup"]}
         secondary={["Read the FAQ", "/#faq"]}
+        phone="/mobile/journal.png"
       />
     </main>
   );

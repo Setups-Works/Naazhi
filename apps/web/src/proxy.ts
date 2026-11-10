@@ -16,16 +16,17 @@ const requestHost = (request: NextRequest) => request.headers.get("x-forwarded-h
  */
 export function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
+  const signedIn = Boolean(getSessionCookie(request));
 
   if (isSplit()) {
     const onApp = requestHost(request) === new URL(publicEnv.appUrl!).host;
     const target = (base: string, to = path) => new URL(`${to}${request.nextUrl.search}`, base);
     if (!onApp && isAppPath(path)) return NextResponse.redirect(target(publicEnv.appUrl!));
-    if (onApp && path === "/") return NextResponse.redirect(target(publicEnv.appUrl!, "/dashboard"));
+    // Signed-out visitors land on the sign-in page, signed-in ones on their dashboard.
+    if (onApp && path === "/") return NextResponse.redirect(target(publicEnv.appUrl!, signedIn ? "/dashboard" : "/login"));
     if (onApp && !isAppPath(path)) return NextResponse.redirect(target(publicEnv.siteUrl!));
   }
 
-  const signedIn = Boolean(getSessionCookie(request));
   if (!signedIn && (path.startsWith("/dashboard") || path.startsWith("/admin"))) {
     const to = request.nextUrl.clone();
     to.pathname = "/login";

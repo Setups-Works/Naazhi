@@ -23,6 +23,16 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-11",
+    title: "Version 4.2.0: terms, refund policy and contact pages",
+    summary: "The website now has its Terms & Conditions, Refund & Cancellation Policy and a Contact page, linked from the footer.",
+    tone: "green",
+    appVersion: "v4.2.0",
+    changes: [
+      { kind: "new", platform: "web", text: "Terms & Conditions, Refund & Cancellation Policy and Contact pages, linked from the footer." },
+    ],
+  },
+  {
+    date: "2026-11-11",
     title: "Version 4.1.0: cleaner addresses and a tidier Settings",
     summary: "Workspace pages now have short addresses like /todo and /notes, and Settings on the phone is a simple list.",
     tone: "blue",

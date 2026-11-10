@@ -23,6 +23,17 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-10",
+    title: "Version 2.6.1: tidier admin messages",
+    summary: "The admin Messages form looks right, and the Android app can receive push notifications once they are turned on.",
+    tone: "sand",
+    appVersion: "v2.6.1",
+    changes: [
+      { kind: "fixed", platform: "web", text: "The title and email boxes on the admin Messages page now look like the message box." },
+      { kind: "improved", platform: "app", text: "The Android app is ready to receive push notifications from the team." },
+    ],
+  },
+  {
+    date: "2026-11-10",
     title: "Version 2.6.0: notifications and messages from the team",
     summary: "The app has a Notifications inbox, reminders for your to-dos, journal and events, and the team can message you.",
     tone: "blue",

@@ -12,6 +12,10 @@ npm-debug.log*
 !.env.example
 !.env.selfhost.example
 
+# Firebase client config for push notifications: supplied by the build (see apps/mobile/app.config.js), never committed.
+google-services.json
+GoogleService-Info.plist
+
 # test output
 playwright-report
 test-results

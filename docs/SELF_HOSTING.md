@@ -63,6 +63,27 @@ If the app already runs on Azure, files can live in a Blob Storage account inste
 - Keep images updated; monitor disk space; limit SSH access.
 - Run more than one `web` instance only after reading "Scaling" below.
 
+## Website and app on separate hosts (naazhi.com and app.naazhi.com)
+
+One deployment can answer on two hostnames: the marketing site on the root domain, the app on a subdomain. Point **both** hostnames at the
+same web app (on Azure App Service this needs a paid tier such as B1 for the custom domains, or Cloudflare in front), then set:
+
+| Variable                                | Value                                                                                       |
+| --------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`                  | `https://naazhi.com`                                                                        |
+| `NEXT_PUBLIC_APP_URL`                   | `https://app.naazhi.com`                                                                    |
+| `BETTER_AUTH_URL`                       | `https://app.naazhi.com` (auth, Google redirect and passkeys live on the app host)         |
+| `AUTH_COOKIE_DOMAIN`                    | `naazhi.com` (lets the website see you are signed in and show "Dashboard")                  |
+| `EXPO_PUBLIC_API_URL` (Android build)   | `https://app.naazhi.com`                                                                    |
+
+`NEXT_PUBLIC_*` values are baked in at build time. In the GitHub deploy workflow they come from the repository secrets `SITE_URL`
+(the website; falls back to `APP_URL`) and `WEB_APP_URL` (the app host), then redeploy. `BETTER_AUTH_URL` and `AUTH_COOKIE_DOMAIN` are
+runtime app settings on Azure. The proxy
+(`src/proxy.ts`, helpers in `src/lib/hosts.ts`) sends app pages asked for on the website to the app, website pages asked for on the app
+to the website, and `app.naazhi.com/` to the dashboard. `robots.txt` on the app host disallows everything. Update the Google sign-in
+redirect URI to `https://app.naazhi.com/api/auth/callback/google`. Passkeys registered on the old address stop working (they are tied
+to the host) and people register a new one. With the variables unset, everything is served from one host as before.
+
 ## Deploying the Azure Docker app with GitHub Actions
 
 The workflow at `.github/workflows/deploy-azure-docker.yml` builds the web app from the repository `Dockerfile`, publishes an immutable commit-tagged image and `latest` to Docker Hub, then deploys the commit-tagged image to the Azure Web App. It runs on pushes to `main` when app, shared package, database migration, or image build files change. You can also run it from the repository's **Actions** tab with **Run workflow**.

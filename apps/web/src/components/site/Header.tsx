@@ -7,6 +7,7 @@ import { faArrowRight, faChevronDown, faXmark } from "@fortawesome/free-solid-sv
 import AuthLink from "../auth/AuthLink";
 import { useAuthState } from "../auth/useAuthState";
 import { BrandMark } from "../BrandMark";
+import { appHref } from "../../lib/hosts";
 import { MEGA, MENU, NAV_LINKS } from "../../lib/site";
 import { buttonClass, WRAP } from "./ui";
 
@@ -40,7 +41,7 @@ export default function Header() {
 
         <div className="flex items-center gap-3">
           {auth === "out" && (
-            <Link href="/login" className="px-2 text-[14px] whitespace-nowrap text-fg-muted transition-colors hover:text-fg max-sm:hidden">
+            <Link href={appHref("/login")} className="px-2 text-[14px] whitespace-nowrap text-fg-muted transition-colors hover:text-fg max-sm:hidden">
               Log in
             </Link>
           )}
@@ -170,7 +171,7 @@ function MobileMenu({ path, auth }: { path: string; auth: "in" | "out" }) {
             </Link>
           ))}
           {auth === "out" && (
-            <Link href="/login" className={item}>
+            <Link href={appHref("/login")} className={item}>
               Log in
             </Link>
           )}

@@ -6,7 +6,7 @@ import { APIError } from "better-auth/api";
 import { admin, emailOTP, lastLoginMethod, oneTap, openAPI, username } from "better-auth/plugins";
 import { passkey } from "@better-auth/passkey";
 import pg from "pg";
-import { serverEnv } from "../config/env";
+import { publicEnv, serverEnv } from "../config/env";
 import { sendMail } from "./mail";
 
 const env = serverEnv();
@@ -26,9 +26,14 @@ function create() {
     baseURL: env.authUrl,
     secret: env.authSecret,
     database: authPool(),
-    advanced: { database: { generateId: "uuid" } },
+    advanced: {
+      database: { generateId: "uuid" },
+      // With the website and the app on sibling hosts, one cookie on the parent domain lets the website tell you are signed in.
+      ...(env.authCookieDomain ? { crossSubDomainCookies: { enabled: true, domain: env.authCookieDomain } } : {}),
+    },
     trustedOrigins: [
       env.authUrl,
+      ...(publicEnv.siteUrl ? [publicEnv.siteUrl] : []),
       "untitled://",
       ...env.authTrustedOrigins,
       ...(process.env.NODE_ENV === "development" ? ["exp://", "exp://**", "exp://192.168.*.*:*/**"] : []),

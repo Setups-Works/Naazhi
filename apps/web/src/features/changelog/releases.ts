@@ -22,6 +22,21 @@ export type Release = {
  */
 export const RELEASES: Release[] = [
   {
+    date: "2026-11-11",
+    title: "Version 4.1.0: cleaner addresses and a tidier Settings",
+    summary: "Workspace pages now have short addresses like /todo and /notes, and Settings on the phone is a simple list.",
+    tone: "blue",
+    appVersion: "v4.1.0",
+    changes: [
+      { kind: "improved", platform: "web", text: "Workspace pages have short addresses: /home, /todo, /notes, /workspace and so on, without /dashboard in front." },
+      { kind: "improved", platform: "web", text: "Old links to the previous address now take you to the new naazhi.app and dashboard.naazhi.app." },
+      { kind: "improved", platform: "app", text: "Settings is a list of sections. Tap one to open it on its own screen." },
+      { kind: "improved", platform: "app", text: "What’s new and the privacy link open on naazhi.app." },
+      { kind: "fixed", platform: "app", text: "On Home, the plan badge no longer runs under the notifications bell." },
+      { kind: "fixed", platform: "web", text: "The passkey button on the log in page has a visible outline again." },
+    ],
+  },
+  {
     date: "2026-11-10",
     title: "Version 4.0.0: naazhi.app, with the workspace on its own address",
     summary: "The website now lives at naazhi.app and the workspace opens at dashboard.naazhi.app, with one sign-in for both.",

@@ -8,9 +8,9 @@
  */
 
 export const publicEnv = {
-  /** The public website (marketing pages), e.g. https://naazhi.com. */
+  /** The public website (marketing pages), e.g. https://naazhi.app. */
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL?.trim() || undefined,
-  /** The app (dashboard, sign-in, API), e.g. https://app.naazhi.com. Leave unset to serve everything from one host. */
+  /** The app (dashboard, sign-in, API), e.g. https://dashboard.naazhi.app. Leave unset to serve everything from one host. */
   appUrl: process.env.NEXT_PUBLIC_APP_URL?.trim() || undefined,
   posthogKey: process.env.NEXT_PUBLIC_POSTHOG_KEY?.trim() || undefined,
   posthogHost: process.env.NEXT_PUBLIC_POSTHOG_HOST?.trim() || "https://eu.i.posthog.com",
@@ -56,7 +56,7 @@ export function serverEnv() {
     smtpUrl: optional("SMTP_URL"),
     authSecret: optional("BETTER_AUTH_SECRET"),
     authUrl: optional("BETTER_AUTH_URL") ?? optional("NEXT_PUBLIC_SITE_URL") ?? "http://localhost:3000",
-    /** Shares the sign-in cookie between the website and the app (e.g. `naazhi.com`), so the website knows you are signed in. */
+    /** Shares the sign-in cookie between the website and the app (e.g. `naazhi.app`), so the website knows you are signed in. */
     authCookieDomain: optional("AUTH_COOKIE_DOMAIN"),
     authTrustedOrigins: (optional("BETTER_AUTH_TRUSTED_ORIGINS") ?? "")
       .split(",")

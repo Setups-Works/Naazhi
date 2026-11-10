@@ -1,7 +1,7 @@
 import { publicEnv } from "../config/env";
 
 /*
- * One deployment, two addresses: the website (naazhi.com) and the app (app.naazhi.com). Everything here is inert until both
+ * One deployment, two addresses: the website (naazhi.app) and the app (dashboard.naazhi.app). Everything here is inert until both
  * NEXT_PUBLIC_SITE_URL and NEXT_PUBLIC_APP_URL are set to different hosts, so local development and single-host setups behave as before.
  */
 

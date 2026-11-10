@@ -80,7 +80,7 @@ jobs:
           provenance: false
           sbom: false
           # The public addresses (not secret values): link previews and the sitemap need the website's as an absolute URL.
-          # SITE_URL is the website (naazhi.com) and falls back to APP_URL; WEB_APP_URL is the app host (app.naazhi.com) and stays
+          # SITE_URL is the website (naazhi.app) and falls back to APP_URL; WEB_APP_URL is the app host (dashboard.naazhi.app) and stays
           # empty to serve everything from one host.
           build-args: |
             NEXT_PUBLIC_SITE_URL=${{ secrets.SITE_URL || secrets.APP_URL }}

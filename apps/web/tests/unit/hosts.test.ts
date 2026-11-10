@@ -14,8 +14,8 @@ describe("hosts", () => {
   it("does nothing until both addresses are set and different", async () => {
     for (const [site, app] of [
       [undefined, undefined],
-      ["https://naazhi.com", undefined],
-      ["https://naazhi.com", "https://naazhi.com"],
+      ["https://naazhi.app", undefined],
+      ["https://naazhi.app", "https://naazhi.app"],
     ] as const) {
       const h = await load(site, app);
       expect(h.isSplit()).toBe(false);
@@ -25,10 +25,10 @@ describe("hosts", () => {
   });
 
   it("sends app links to the app host when the website and the app are apart", async () => {
-    const h = await load("https://naazhi.com", "https://app.naazhi.com/");
+    const h = await load("https://naazhi.app", "https://dashboard.naazhi.app/");
     expect(h.isSplit()).toBe(true);
-    expect(h.appHref("/signup")).toBe("https://app.naazhi.com/signup");
-    expect(h.siteHref("/pricing")).toBe("https://naazhi.com/pricing");
+    expect(h.appHref("/signup")).toBe("https://dashboard.naazhi.app/signup");
+    expect(h.siteHref("/pricing")).toBe("https://naazhi.app/pricing");
   });
 
   it("knows which paths belong to the app", async () => {

@@ -23,6 +23,17 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-10",
+    title: "Version 2.7.0: your plan shows correctly",
+    summary: "Home shows the plan you are really on instead of “Free”, and this release brings together this week’s notification, widget and chat fixes.",
+    tone: "gold",
+    appVersion: "v2.7.0",
+    changes: [
+      { kind: "fixed", platform: "web", text: "The plan badge on Home now shows your real plan (for example your subscription) instead of “Free”." },
+      { kind: "fixed", platform: "app", text: "The same plan badge on the app’s Home, which also no longer flashes “Free” while it loads." },
+    ],
+  },
+  {
+    date: "2026-11-10",
     title: "Version 2.6.3: home-screen widgets that show up",
     summary: "The Android widgets draw again and have proper previews when you choose one.",
     tone: "violet",

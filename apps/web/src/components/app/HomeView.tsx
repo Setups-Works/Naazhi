@@ -27,7 +27,8 @@ import { useArticles, useFeeds } from "../../features/rss/queries";
 import { useHealthDays } from "../../features/health/queries";
 import { useMyInvites } from "../../features/collaboration";
 import { addDays, ago, greeting, isoDate } from "../../lib/dates";
-import type { Chat, Note, Profile, Task } from "../../lib/workspace";
+import type { Chat, Note, Task } from "../../lib/workspace";
+import { useBilling } from "../../features/billing/queries";
 import { fmtTime } from "../../lib/prefs";
 import { useHomeLayout, type HomeColumn } from "../../features/home/useHomeLayout";
 import DragHandle from "../../features/home/DragHandle";
@@ -145,14 +146,8 @@ export default function HomeView({ name }: { name: string }) {
       return data as Pick<Note, "id" | "title" | "updated_at">[];
     },
   });
-  const profileQ = useQuery({
-    queryKey: qk.profile,
-    queryFn: async () => {
-      const { data, error } = await sb.from("profiles").select("plan").maybeSingle();
-      if (error) throw error;
-      return (data as Profile | null) ?? { plan: "free" };
-    },
-  });
+  // The badge shows the plan from Plan and billing (not the old `profiles.plan` column, which stays "free" for everyone).
+  const billingQ = useBilling();
   const calendarQ = useCalendarEvents();
   const feedsQ = useFeeds();
   const articlesQ = useArticles({ filter: "all", q: "" });
@@ -163,9 +158,10 @@ export default function HomeView({ name }: { name: string }) {
   const entries = entriesQ.data ?? EMPTY_ENTRIES;
   const chats = chatsQ.data ?? EMPTY_CHATS;
   const notes = notesQ.data ?? EMPTY_NOTES;
-  const profile = profileQ.data ?? { plan: "free" };
+  const billing = billingQ.data;
+  const planLabel = billing ? (billing.plan && billing.status !== "none" ? billing.plan.name : "Free") : null;
   const ready = !tasksQ.isPending && !entriesQ.isPending && !chatsQ.isPending;
-  const loadFailed = tasksQ.isError || entriesQ.isError || chatsQ.isError || profileQ.isError;
+  const loadFailed = tasksQ.isError || entriesQ.isError || chatsQ.isError;
 
   useRealtimeInvalidate("tasks", [qk.tasks.all]);
   useRealtimeInvalidate("chats", [qk.chats.all]);
@@ -487,9 +483,11 @@ export default function HomeView({ name }: { name: string }) {
         <div>
           <p className="m-0 mb-1.5 text-[13.5px] text-fg-subtle">
             {date}
-            <span className="at-green tint ml-2.5 rounded-pill px-2 py-[2px] align-middle text-[11px] font-semibold tracking-[0.08em] uppercase">
-              {profile.plan}
-            </span>
+            {planLabel && (
+              <span className="at-green tint ml-2.5 rounded-pill px-2 py-[2px] align-middle text-[11px] font-semibold tracking-[0.08em] uppercase">
+                {planLabel}
+              </span>
+            )}
           </p>
           <h1 className="m-0 font-serif text-[clamp(30px,3.4vw,42px)] leading-[1.04] font-normal tracking-[-0.03em] text-balance">
             {greeting()}, <span className="text-green-fg italic">{first}</span>

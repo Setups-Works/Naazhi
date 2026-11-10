@@ -101,7 +101,8 @@ export function HomeScreen() {
   }, [tasksQ, journalQ, notesQ, chatsQ, feedsQ, articlesQ, healthQ, calendarQ]);
 
   const first = user?.name.trim().split(/\s+/)[0] ?? "";
-  const plan = billingQ.data?.plan?.name ?? "Free";
+  // Nothing until the plan is known, so a subscriber never sees "Free" flash first.
+  const plan = billingQ.data ? (billingQ.data.plan?.name ?? "Free") : null;
   const header = (
     <View style={styles.header}>
       <View style={styles.headerText}>
@@ -109,11 +110,13 @@ export function HomeScreen() {
           <AppText variant="small" color={Palette.fgSubtle}>
             {longDate()}
           </AppText>
-          <View style={styles.planBadge}>
-            <AppText variant="label" color={Tints.green.fg} style={styles.planText}>
-              {plan}
-            </AppText>
-          </View>
+          {plan ? (
+            <View style={styles.planBadge}>
+              <AppText variant="label" color={Tints.green.fg} style={styles.planText}>
+                {plan}
+              </AppText>
+            </View>
+          ) : null}
         </View>
         <AppText variant="title" accessibilityRole="header" style={styles.greeting}>
           {greeting()},{first ? " " : ""}

@@ -25,8 +25,11 @@ COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY . .
 # The build needs no secrets: every server setting is read at runtime. The one value baked in is the site's public address
 # (NEXT_PUBLIC_SITE_URL), which link previews and the web manifest need as an absolute URL. The Next.js compiler cache is kept between builds.
+# NEXT_PUBLIC_APP_URL is the app's own address when it lives on a different host than the website (empty = one host).
 ARG NEXT_PUBLIC_SITE_URL=""
+ARG NEXT_PUBLIC_APP_URL=""
 ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
+ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
 RUN --mount=type=cache,target=/app/apps/web/.next/cache pnpm build:web
 
 FROM node:${NODE_VERSION} AS runner

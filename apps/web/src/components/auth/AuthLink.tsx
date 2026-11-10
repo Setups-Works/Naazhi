@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { appHref } from "../../lib/hosts";
 import { useAuthState } from "./useAuthState";
 
 /**
@@ -28,7 +29,7 @@ export default function AuthLink({
 }) {
   const state = useAuthState();
   return (
-    <Link className={className} href={state === "in" ? "/dashboard" : href} style={style} onClick={onClick}>
+    <Link className={className} href={appHref(state === "in" ? "/dashboard" : href)} style={style} onClick={onClick}>
       {state === "in" ? signedIn : children} {arrow && <FA icon={faArrowRight} />}
     </Link>
   );

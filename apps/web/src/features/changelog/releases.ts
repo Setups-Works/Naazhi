@@ -23,6 +23,20 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-10",
+    title: "Version 2.6.0: notifications and messages from the team",
+    summary: "The app has a Notifications inbox, reminders for your to-dos, journal and events, and the team can message you.",
+    tone: "blue",
+    appVersion: "v2.6.0",
+    changes: [
+      { kind: "new", platform: "app", text: "A Notifications screen (the bell on Home) with messages from the team, shared-journal invitations and new articles from your Reader." },
+      { kind: "new", platform: "app", text: "Reminders that name your real to-dos each morning, nudge you to journal in the evening and warn you before an event. Choose which ones you want." },
+      { kind: "new", platform: "web", text: "Admins can send a message to everyone, or to one person, from the admin panel." },
+      { kind: "fixed", platform: "app", text: "Home-screen widgets on Android no longer stay blank when added before the app has opened." },
+      { kind: "improved", platform: "app", text: "The Android app has a new app ID, so this version installs next to the old one instead of replacing it. Sign in again and you can remove the old app." },
+    ],
+  },
+  {
+    date: "2026-11-10",
     title: "Version 2.5.1: glass buttons and a smarter Reader chat",
     summary: "Buttons in the app are liquid glass, chat is rebuilt from matching pieces on web and app, and chat answers Reader requests instead of asking for a URL.",
     tone: "violet",

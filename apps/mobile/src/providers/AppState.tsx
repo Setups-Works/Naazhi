@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { unregisterPush } from "@/features/notifications";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 
 import { readOnboardingDone, writeOnboardingDone } from "@/features/onboarding/storage";
@@ -84,6 +85,8 @@ function Inner({ client, children }: { client: MobileAuthClient; children: React
   }, []);
 
   const signOut = useCallback(async () => {
+    // Forget this phone while the session still works, so messages for this account stop reaching it.
+    await unregisterPush().catch(() => undefined);
     await client.signOut().catch(() => undefined);
     queryClient.clear();
   }, [client, queryClient]);

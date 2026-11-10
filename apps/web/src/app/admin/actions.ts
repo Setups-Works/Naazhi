@@ -7,6 +7,9 @@ import { pool } from "../../server/db/pool";
 import { purgePrefix } from "../../server/storage";
 import { adminDb, assertAdmin, audit, getUserById, isRootAdmin, type AdminUser, type AppUser } from "../../server/session";
 import { EMAIL_RE } from "../../lib/validate";
+import { ServiceError } from "../../server/errors";
+import { pushConfigured, sendAdminMessage } from "../../server/services/notifications/notifications.service";
+import { adminMessage } from "../../server/services/notifications/notifications.schema";
 
 type Result = { ok: true; message?: string } | { ok: false; error: string };
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -306,5 +309,23 @@ export async function deleteAnnouncement(id: string): Promise<Result> {
     return { ok: true };
   } catch {
     return { ok: false, error: "Not allowed." };
+  }
+}
+
+/* ---------- messages to users (inbox + push) ---------- */
+export async function sendMessageToUsers(title: string, body: string, to: string): Promise<Result> {
+  try {
+    const me = await assertAdmin();
+    const parsed = adminMessage.safeParse({ title, body, to: to.trim() || undefined });
+    if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the message." };
+    const r = await sendAdminMessage(parsed.data);
+    // The audit log keeps who it went to and the title, never the text of the message.
+    await audit(me, "message.send", parsed.data.to ?? "everyone", { title: parsed.data.title.slice(0, 60), saved: r.saved, pushed: r.pushed });
+    return {
+      ok: true,
+      message: `Sent to ${r.saved} ${r.saved === 1 ? "person" : "people"}.${r.pushed ? " Phones were notified." : pushConfigured() ? " No phones registered yet." : " Push isn’t set up, so it shows in their inbox in the app."}`,
+    };
+  } catch (e) {
+    return { ok: false, error: e instanceof ServiceError ? e.message : "Couldn’t send that." };
   }
 }

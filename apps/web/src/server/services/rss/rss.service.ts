@@ -4,6 +4,7 @@ import { RSS } from "@untitled/logic/rss";
 import { ConflictError, NotFoundError, RateLimitError, ValidationError } from "../../errors";
 import { underLimit } from "../../rateLimit";
 import * as repo from "../../repositories/rss.repository";
+import * as notifications from "../notifications/notifications.service";
 import { extractArticle, findFeedLink, parseFeed, type ParsedFeed } from "./parse";
 import { itemsQuery } from "./rss.schema";
 import { safeGet } from "./safeFetch";
@@ -110,3 +111,22 @@ export async function updateItem(userId: string, id: string, patch: { is_read?: 
 }
 
 export const markAllRead = async (userId: string, feedId?: string) => ({ updated: await repo.markAllRead(userId, feedId) });
+
+/**
+ * The hourly background check (see /api/cron/reader-news): fetches a person's feeds and, if articles arrived since the last time we told
+ * them (at most once every few hours), puts one "new in your Reader" notification in their inbox and on their phone.
+ */
+export async function notifyNewArticles(userId: string): Promise<boolean> {
+  await refreshFeeds(userId).catch(() => undefined);
+  if (await notifications.sentRecently(userId, "reader", RSS.newsNotifyGapMinutes)) return false;
+  const since = new Date(Date.now() - RSS.newsNotifyGapMinutes * 60_000);
+  const n = await repo.countNewSince(userId, since);
+  if (n === 0) return false;
+  await notifications.notifyUsers([userId], {
+    kind: "reader",
+    title: "New in your Reader",
+    body: n === 1 ? "1 new article from the sites you follow." : `${n} new articles from the sites you follow.`,
+    url: "/workspace",
+  });
+  return true;
+}

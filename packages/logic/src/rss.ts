@@ -20,6 +20,8 @@ export const RSS = {
   /** Per person: new feeds and refreshes allowed per hour (each one fetches from the internet). */
   addsPerHour: 30,
   refreshesPerHour: 120,
+  /** Fewest minutes between two "new in your Reader" notifications to one person. */
+  newsNotifyGapMinutes: 360,
   /** An article whose stored text is shorter than this is opened from its own page to get the full text (feeds often send a teaser). */
   fullTextBelow: 2_000,
   /** Per person: full-text fetches allowed per hour (each one fetches from the internet). */

@@ -1,13 +1,15 @@
-import { WIDGET_NAMES, type WidgetProps } from "@untitled/logic";
+import { emptyWidgetSnapshot, WIDGET_NAMES, type WidgetProps } from "@untitled/logic";
 import { registerWidgetTaskHandler, requestWidgetUpdate, type WidgetTaskHandlerProps } from "react-native-android-widget";
 import type { ReactElement } from "react";
 
+import { propsFor } from "../props";
 import { readWidgetProps } from "../store";
 import { HealthWidget } from "./HealthWidget";
 import { JournalWidget } from "./JournalWidget";
 import { QuickWidget } from "./QuickWidget";
 import { TasksWidget } from "./TasksWidget";
 import type { WidgetSize } from "./primitives";
+import { isoDate } from "@/lib/dates";
 
 type Draw = (props: WidgetProps, size: WidgetSize) => ReactElement;
 
@@ -21,13 +23,24 @@ const DRAW: Record<string, Draw> = {
 
 /**
  * Runs when Android adds, resizes or periodically refreshes a widget, with no screen and often with the app closed: it draws from the
- * props the app last saved, so it needs no network and holds no login.
+ * data the app last saved, so it needs no network and holds no login.
+ *
+ * Only the person's data is read back from storage. Colours, words and sizes always come from this build, so data saved by an older
+ * version of the app can never leave a widget half-drawn, and a widget added before the app has ever synced still shows something
+ * (the "open the app" text) instead of staying blank.
  */
 async function widgetTaskHandler({ widgetInfo, widgetAction, renderWidget }: WidgetTaskHandlerProps) {
   const draw = DRAW[widgetInfo.widgetName];
   if (!draw || widgetAction === "WIDGET_DELETED" || widgetAction === "WIDGET_CLICK") return;
-  const props = await readWidgetProps();
-  if (props) renderWidget(draw(props, { width: widgetInfo.width, height: widgetInfo.height }));
+  const stored = await readWidgetProps();
+  const props = propsFor(stored?.snapshot ?? emptyWidgetSnapshot(isoDate(), false));
+  const size = { width: widgetInfo.width, height: widgetInfo.height };
+  try {
+    renderWidget(draw(props, size));
+  } catch {
+    // Damaged saved data: draw the empty widget rather than leave a blank one.
+    renderWidget(draw(propsFor(emptyWidgetSnapshot(isoDate(), false)), size));
+  }
 }
 
 /** Call once at startup (see apps/mobile/index.ts) so Android can reach the handler even when the app isn't open. */

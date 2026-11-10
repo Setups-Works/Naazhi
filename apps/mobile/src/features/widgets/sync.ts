@@ -1,23 +1,15 @@
-import { emptyWidgetSnapshot, WIDGET_LAYOUT, WIDGET_LINKS, WIDGET_TEXT, type WidgetProps, type WidgetSnapshot } from "@untitled/logic";
+import { emptyWidgetSnapshot, type WidgetProps } from "@untitled/logic";
 
 import { SYNC_MIN_MS } from "./constants";
 import { pushWidgets } from "./push";
 import { loadWidgetSnapshot } from "./snapshot";
 import { readWidgetProps, signatureOf, writeWidgetProps } from "./store";
-import { widgetTheme } from "./theme";
+import { propsFor } from "./props";
 import { isoDate } from "@/lib/dates";
 
 let lastRun = 0;
 let lastSignature = "";
 let running: Promise<void> | null = null;
-
-const propsFor = (snapshot: WidgetSnapshot): WidgetProps => ({
-  snapshot,
-  theme: widgetTheme,
-  text: WIDGET_TEXT,
-  links: WIDGET_LINKS,
-  layout: WIDGET_LAYOUT,
-});
 
 async function deliver(props: WidgetProps, force: boolean) {
   const signature = signatureOf(props);

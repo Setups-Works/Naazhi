@@ -1,0 +1,20 @@
+name: Notification checks
+
+# Every hour: ask the web app to look for new Reader articles and notify the people who follow them.
+# Needs two repository secrets: APP_URL (for example https://your-app.azurewebsites.net) and CRON_SECRET (the same value as the web app's CRON_SECRET).
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+
+jobs:
+  reader-news:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for new articles
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then echo "APP_URL or CRON_SECRET is not set; skipping."; exit 0; fi
+          curl --fail --silent --show-error -X POST -H "Authorization: Bearer $CRON_SECRET" "${APP_URL%/}/api/cron/reader-news"

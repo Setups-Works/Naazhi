@@ -1,4 +1,5 @@
 import "server-only";
+import { notifyQuietly } from "../notifications/notifications.service";
 import type {
   JournalPerson,
   SharedJournal,
@@ -167,7 +168,7 @@ async function invite(
         repo.selectContact(c, userId),
         repo.selectJournalName(c, journalId),
       ]);
-      return { id, to, from, journal };
+      return { id, to, from, journal, inviteeId };
     } catch (e) {
       // The partial unique index allows one open invitation per person.
       if ((e as { code?: string }).code === "23505") throw new ConflictError("They already have an invitation to this journal.");
@@ -183,6 +184,13 @@ async function invite(
       `${made.from?.name || "Someone"} invited you to write in the shared journal “${made.journal ?? "Shared journal"}” as ${role === "editor" ? "an editor" : "a viewer"}. Open the app to accept or decline.`,
       { label: "View invitation", url: `${serverEnv().authUrl.replace(/\/$/, "")}/dashboard/journal/collaborate` },
     ).catch(() => undefined);
+  // And a notification in their inbox and on their phone, if they have the app.
+  notifyQuietly([made.inviteeId], {
+    kind: "invite",
+    title: "Shared journal invitation",
+    body: `${made.from?.name || "Someone"} invited you to write in “${made.journal ?? "Shared journal"}”.`,
+    url: "/journal/collaborate",
+  });
   return { id: made.id };
 }
 

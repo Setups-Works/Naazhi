@@ -71,5 +71,7 @@ export function serverEnv() {
     composioApiKey: optional("COMPOSIO_API_KEY"),
     sentryAuthToken: optional("SENTRY_AUTH_TOKEN"),
     cronSecret: optional("CRON_SECRET"),
+    /** Firebase service-account JSON (plain or base64) used to send push notifications to Android phones. Without it messages still reach the in-app inbox. */
+    fcmServiceAccount: optional("FCM_SERVICE_ACCOUNT"),
   } as const;
 }

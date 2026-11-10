@@ -1,3 +1,4 @@
+import { useNotificationSync } from "@/features/notifications";
 import { useWidgetSync } from "@/features/widgets";
 import { Geist_400Regular, Geist_500Medium, Geist_600SemiBold } from "@expo-google-fonts/geist";
 import { InstrumentSerif_400Regular, InstrumentSerif_400Regular_Italic } from "@expo-google-fonts/instrument-serif";
@@ -59,9 +60,11 @@ function SplashGate({ fontsReady }: { fontsReady: boolean }) {
 
 /** Declarative guards: a screen in a group whose `guard` is false cannot be reached, and the router falls back to `index`. */
 function Routes() {
-  const { ready, onboardingDone, signedIn } = useAppState();
+  const { ready, onboardingDone, signedIn, user } = useAppState();
   // Keeps the home-screen widgets in step with the app (and wipes them on sign-out).
   useWidgetSync(signedIn);
+  // Notifications: reminders planned on the phone, push registration, and opening the right screen when one is tapped.
+  useNotificationSync(user?.id ?? null);
 
   if (!ready) return null;
 
@@ -103,6 +106,7 @@ function Routes() {
         <Stack.Screen name="health/[metric]" options={{ presentation: "modal" }} />
         <Stack.Screen name="profile" options={{ presentation: "modal" }} />
         <Stack.Screen name="pricing" options={{ presentation: "modal" }} />
+        <Stack.Screen name="notifications" options={{ presentation: "modal" }} />
       </Stack.Protected>
     </Stack>
   );

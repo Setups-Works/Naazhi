@@ -128,3 +128,7 @@ export const markAllRead = (userId: string, feedId?: string) =>
       (await c.query("update public.rss_items set is_read = true where not is_read and ($1::uuid is null or feed_id = $1)", [feedId ?? null]))
         .rowCount ?? 0,
   );
+
+/** Articles that arrived after `since` and are still unread (for the "new in your Reader" notification). */
+export const countNewSince = (userId: string, since: Date) =>
+  withUser(userId, async (c) => (await c.query<{ n: number }>("select count(*)::int as n from public.rss_items where not is_read and published_at > $1", [since])).rows[0]!.n);

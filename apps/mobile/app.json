@@ -2,7 +2,7 @@
   "expo": {
     "name": "untitled project",
     "slug": "untitled-project-mobile",
-    "version": "2.5.1",
+    "version": "2.6.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "untitled",
@@ -11,7 +11,7 @@
       "bundleIdentifier": "com.setupsworks.untitledproject"
     },
     "android": {
-      "package": "com.setupsworks.workspace",
+      "package": "com.setupsworks.naazhi",
       "softwareKeyboardLayoutMode": "pan",
       "permissions": [
         "android.permission.health.READ_STEPS",
@@ -45,6 +45,7 @@
         }
       ],
       "expo-audio",
+      "expo-notifications",
       [
         "@kingstinct/react-native-healthkit",
         {

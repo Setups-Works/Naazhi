@@ -10,6 +10,7 @@ name: Release Android
 #   secret   ANDROID_KEYSTORE_PASSWORD  which installs fine on a phone but cannot be uploaded to Google Play.
 #   secret   ANDROID_KEY_ALIAS
 #   secret   ANDROID_KEY_PASSWORD
+#   secret   GOOGLE_SERVICES_JSON_BASE64  optional: your Firebase google-services.json, base64. Needed for push notifications.
 
 on:
   push:
@@ -67,6 +68,15 @@ jobs:
 
       - name: Install
         run: pnpm install --frozen-lockfile
+
+      # Push notifications need the Firebase file. It is written from a secret (never committed); without the secret the app still
+      # builds, just with push left off (apps/mobile/app.config.js only uses the file when it exists).
+      - name: Add the Firebase file
+        working-directory: apps/mobile
+        env:
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON_BASE64" ]; then echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 -d > google-services.json; else echo "No GOOGLE_SERVICES_JSON_BASE64 secret: building without push."; fi
 
       # android/ is generated from app.json and its config plugins (Health Connect, build properties), never committed.
       - name: Generate the Android project

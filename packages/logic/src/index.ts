@@ -15,3 +15,4 @@ export * from "./showItems";
 export * from "./rss";
 export * from "./homeLayout";
 export * from "./billing";
+export * from "./reminders";

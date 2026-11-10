@@ -16,6 +16,7 @@ import { Font, Palette, Radius, Space, Tints } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { addDays, greeting, isoDate, longDate, timeOf } from "@/lib/dates";
 import { useCalendarEvents } from "@/features/calendar/queries";
+import { useInbox } from "@/features/notifications/queries";
 import { useChats } from "@/features/chat/queries";
 import { useHealthDays } from "@/features/health/queries";
 import { useJournal, useJournalActions } from "@/features/journal/queries";
@@ -62,6 +63,7 @@ export function HomeScreen() {
   const toggle = useToggleTask();
   const [order, saveOrder] = useHomeOrder();
   const billingQ = useBilling();
+  const unreadCount = useInbox().data?.unread ?? 0;
   const chatsQ = useChats();
   const calendarQ = useCalendarEvents();
   const feedsQ = useFeeds();
@@ -118,6 +120,16 @@ export function HomeScreen() {
           {first ? <AppText variant="title" style={styles.name}>{first}</AppText> : null}
         </AppText>
       </View>
+      <GlassPill
+        accessibilityRole="button"
+        accessibilityLabel={unreadCount ? `Notifications, ${unreadCount} unread` : "Notifications"}
+        hitSlop={8}
+        onPress={() => router.push("/notifications")}
+        style={styles.bell}
+      >
+        <Icon name="bell" size={16} color={Palette.fgMuted} />
+        {unreadCount ? <View style={styles.bellDot} /> : null}
+      </GlassPill>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Open profile"
@@ -565,6 +577,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   avatarImage: { width: "100%", height: "100%", borderRadius: Radius.pill },
+  bell: {
+    width: 42,
+    height: 42,
+    borderRadius: Radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: Palette.glassHi,
+    borderWidth: 1,
+    borderColor: Palette.glassRing,
+  },
+  bellDot: { position: "absolute", top: Space.sm, right: Space.sm, width: Space.sm, height: Space.sm, borderRadius: Radius.pill, backgroundColor: Palette.rec },
   pressed: { opacity: 0.72 },
   streakCard: { gap: Space.md, padding: Space.lg },
   cardHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: Space.sm },

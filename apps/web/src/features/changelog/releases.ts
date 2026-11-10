@@ -23,6 +23,21 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-10",
+    title: "Version 2.8.1: made for tablets",
+    summary: "The app now turns in every direction and has layouts for tablets, and links to Naazhi show a proper preview.",
+    tone: "blue",
+    appVersion: "v2.8.1",
+    changes: [
+      { kind: "new", platform: "app", text: "The app rotates and works on tablets, upright and sideways, on iPad and Android." },
+      { kind: "new", platform: "app", text: "On a wide screen Home shows two columns, like the web, and you can still drag cards into your own order." },
+      { kind: "improved", platform: "app", text: "Chat, lists and pop-up sheets stay at a comfortable width on a tablet instead of stretching across the screen." },
+      { kind: "fixed", platform: "app", text: "Dates in notes, chats, calendar, billing and settings no longer show “Invalid Date” on some phones." },
+      { kind: "new", platform: "web", text: "Links to Naazhi show a preview picture with the logo, and the site can be installed as an app from the browser." },
+      { kind: "improved", platform: "web", text: "Behind-the-scenes tidy-up of the web app, and the notification link check is stricter." },
+    ],
+  },
+  {
+    date: "2026-11-10",
     title: "Version 2.8.0: meet Naazhi",
     summary: "We have a name and a logo. Naazhi has a new look across the web and the app, and a launch animation that draws the mark.",
     tone: "green",

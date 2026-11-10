@@ -23,7 +23,7 @@ export const FEATURES = {
   integrations: false, // Phase 3: Composio connections page
   meetings: false, // Phase 5
   automations: false, // Phase 5
-  notifications: false, // Phase 5
+  notifications: true, // App: inbox, push (Android, through Firebase) and reminders. Web notifications are not built.
   insightsAi: false, // Phase 5: AI-written insights (today they are computed locally)
   billing: true, // Plans: subscription, pay as you go, bring your own key (Settings → Plan and billing, Admin → Plans)
   payments: false, // A payment provider is not connected yet: plan changes are recorded and nobody is charged

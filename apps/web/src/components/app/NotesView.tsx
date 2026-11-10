@@ -3,7 +3,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
 import {
-  faCheck,
   faEllipsis,
   faGripVertical,
   faImage,

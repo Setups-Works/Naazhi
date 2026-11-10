@@ -1,3 +1,4 @@
+import { toDate } from "@untitled/logic";
 import type { CalendarEvent, Task, Tone } from "@untitled/types";
 import { useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
@@ -23,8 +24,8 @@ const toneOf = (c: string): Tone => (isTone(c) ? c : "blue");
 
 /** Every local calendar day an event touches. An all-day event ends at midnight, which belongs to the next day. */
 function daysOf(e: CalendarEvent) {
-  const start = new Date(e.start_at);
-  const end = new Date(e.end_at);
+  const start = toDate(e.start_at);
+  const end = toDate(e.end_at);
   const out: string[] = [];
   const cursor = new Date(start.getFullYear(), start.getMonth(), start.getDate());
   const last = new Date(end.getTime() - (e.all_day || end.getTime() > start.getTime() ? 1 : 0));

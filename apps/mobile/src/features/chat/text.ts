@@ -1,3 +1,5 @@
+import { toDate } from "@untitled/logic";
+
 import type { Chat } from "./types";
 
 export const prettyTitle = (t: string) => {
@@ -7,7 +9,7 @@ export const prettyTitle = (t: string) => {
 
 /** "now", "5m", "3h", "4d", "2mo", "1y" */
 export function ageShort(iso: string, now = Date.now()) {
-  const s = Math.max(0, (now - new Date(iso).getTime()) / 1000);
+  const s = Math.max(0, (now - toDate(iso).getTime()) / 1000);
   if (s < 60) return "now";
   if (s < 3600) return `${Math.floor(s / 60)}m`;
   if (s < 86400) return `${Math.floor(s / 3600)}h`;
@@ -24,7 +26,7 @@ export function groupByDate(chats: Chat[], now = new Date()): { label: string; i
   if (pinned.length) out.set("Pinned", pinned);
   for (const chat of chats) {
     if (chat.pinned) continue;
-    const time = new Date(chat.updated_at).getTime();
+    const time = toDate(chat.updated_at).getTime();
     const label =
       time >= start
         ? "Today"

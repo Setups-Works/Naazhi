@@ -1,3 +1,4 @@
+import { toDate } from "@untitled/logic";
 import { Modal, Pressable, ScrollView, Share, StyleSheet, View, useWindowDimensions } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -19,7 +20,7 @@ import { deleteChatFile } from "./files";
 import type { Chat, Message } from "./types";
 import { useRef, useState } from "react";
 
-const isUnread = (chat: Chat) => new Date(chat.updated_at).getTime() > new Date(chat.last_read_at).getTime() + 1000;
+const isUnread = (chat: Chat) => toDate(chat.updated_at).getTime() > toDate(chat.last_read_at).getTime() + 1000;
 
 type Props = {
   visible: boolean;

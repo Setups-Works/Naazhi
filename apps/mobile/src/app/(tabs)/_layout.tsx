@@ -48,7 +48,7 @@ function IosNativeTabs() {
 }
 
 /** Android: floating pill navbar with capsule active indicator + split standalone round black Chat button */
-function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const mainRoutes = state.routes.filter((r) => r.name !== "chat");
   const chatRoute = state.routes.find((r) => r.name === "chat");

@@ -1,7 +1,8 @@
 import { RefreshControl, ScrollView, StyleSheet, View, KeyboardAvoidingView, Platform, type StyleProp, type ViewStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { MaxContentWidth, Palette, Space } from "@/constants/theme";
+import { ContentWidth, Palette, Space } from "@/constants/theme";
+import { useLayout } from "@/lib/layout";
 
 export type ScreenEdges = ("top" | "bottom" | "left" | "right")[];
 
@@ -13,11 +14,17 @@ type Props = {
   refreshing?: boolean;
   edges?: ScreenEdges;
   contentStyle?: StyleProp<ViewStyle>;
+  /** Lets the content grow to the full width of a tablet (for pages laid out in columns). Other screens stop at a comfortable reading width. */
+  wide?: boolean;
 };
 
 /** Cream canvas with safe areas, a readable max width on tablets, and keyboard avoidance. */
-export function Screen({ children, scroll = true, onRefresh, refreshing = false, edges = ["top", "left", "right"], contentStyle }: Props) {
-  const inner = <View style={[styles.column, contentStyle]}>{children}</View>;
+export function Screen({ children, scroll = true, onRefresh, refreshing = false, edges = ["top", "left", "right"], contentStyle, wide = false }: Props) {
+  const layout = useLayout();
+  // A phone keeps its 640 column. On a tablet a page may use more room, a list stops at a width that is still pleasant to read.
+  const maxWidth = wide ? layout.contentWidth : Math.min(layout.contentWidth, ContentWidth.medium);
+  const paddingHorizontal = layout.padding;
+  const inner = <View style={[styles.column, { maxWidth, paddingHorizontal }, contentStyle]}>{children}</View>;
   return (
     <SafeAreaView style={styles.safe} edges={edges}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
@@ -47,8 +54,6 @@ const styles = StyleSheet.create({
   scroll: { flexGrow: 1, alignItems: "center" },
   column: {
     width: "100%",
-    maxWidth: MaxContentWidth,
-    paddingHorizontal: Space.xl - 4,
     paddingTop: Space.lg,
     paddingBottom: Platform.OS === "android" ? Space.xxl + 56 : Space.xxl,
     gap: Space.lg,

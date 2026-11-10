@@ -2,13 +2,14 @@
   "expo": {
     "name": "Naazhi",
     "slug": "untitled-project-mobile",
-    "version": "2.8.0",
-    "orientation": "portrait",
+    "version": "2.8.1",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "untitled",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "bundleIdentifier": "com.setupsworks.naazhi"
+      "bundleIdentifier": "com.setupsworks.naazhi",
+      "supportsTablet": true
     },
     "android": {
       "package": "com.setupsworks.naazhi",

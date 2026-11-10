@@ -1,5 +1,5 @@
 import type { Note } from "@untitled/types";
-import { ago, fmtDuration, isOverdue, rssAge } from "@untitled/logic";
+import { ago, fmtDuration, isOverdue, rssAge, toDate } from "@untitled/logic";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
@@ -30,7 +30,8 @@ import { ReorderableList, type ReorderNode } from "@/components/ui/ReorderableLi
 import { HomePanel, PanelEmpty } from "./HomePanel";
 import { PersonalityInsightsCard } from "./PersonalityInsightsCard";
 import { useBilling } from "@/features/billing/queries";
-import { useHomeOrder } from "./useHomeOrder";
+import { HOME_COLUMNS, useHomeOrder } from "./useHomeOrder";
+import { useLayout } from "@/lib/layout";
 
 const QUICK: { title: string; icon: IconName; go: () => void }[] = [
   { title: "Plan my day", icon: "list-check", go: () => router.navigate("/todo") },
@@ -62,6 +63,7 @@ export function HomeScreen() {
   const notesQ = useNotes();
   const toggle = useToggleTask();
   const [order, saveOrder] = useHomeOrder();
+  const layout = useLayout();
   const billingQ = useBilling();
   const unreadCount = useInbox().data?.unread ?? 0;
   const chatsQ = useChats();
@@ -162,8 +164,9 @@ export function HomeScreen() {
       horizontal
       showsHorizontalScrollIndicator={false}
       accessibilityLabel="Quick actions"
-      contentContainerStyle={styles.quick}
-      style={styles.quickScroll}
+      contentContainerStyle={[styles.quick, { paddingHorizontal: layout.padding }]}
+      // The row runs to the screen edges, so it cancels the page's own side margin.
+      style={[styles.quickScroll, { marginHorizontal: -layout.padding }]}
     >
       {QUICK.map((q) => (
         <GlassPill
@@ -216,14 +219,14 @@ export function HomeScreen() {
     streakDay = addDays(streakDay, -1);
   }
   const recentNotes = [...notesQ.data]
-    .sort((left, right) => new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime())
+    .sort((left, right) => toDate(right.updated_at).getTime() - toDate(left.updated_at).getTime())
     .slice(0, 3);
 
   const todayList = [...overdue, ...dueToday.filter((task) => !overdue.includes(task))];
   const doneToday = dueToday.filter((task) => task.done).length;
   const pct = dueToday.length ? Math.round((doneToday / dueToday.length) * 100) : 0;
   const todaysEntries = entries.filter((entry) => entry.entry_date === today).slice(0, 3);
-  const events = (calendarQ.data ?? []).filter((ev) => (ev.all_day ? ev.start_at.slice(0, 10) : isoDate(new Date(ev.start_at))) === today).slice(0, 5);
+  const events = (calendarQ.data ?? []).filter((ev) => (ev.all_day ? ev.start_at.slice(0, 10) : isoDate(toDate(ev.start_at))) === today).slice(0, 5);
   const articles = (articlesQ.data?.pages[0]?.items ?? []).slice(0, 4);
   const unread = (feedsQ.data ?? []).reduce((sum, feed) => sum + feed.unread, 0);
   const health = (healthQ.data ?? []).find((d) => d.day === today) ?? healthQ.data?.[healthQ.data.length - 1];
@@ -507,12 +510,29 @@ export function HomeScreen() {
     insights: (handle: ReactNode) => <PersonalityInsightsCard handle={handle} />,
   };
 
+  const items = order.map((id) => ({ id, label: LABELS[id], node: sections[id] ?? null }));
+  // A wide screen splits the sections into the two columns of the web Home; each column keeps its own order and drags within itself.
+  const inColumn = (column: readonly string[]) => items.filter((item) => column.includes(item.id));
+  const main = inColumn(HOME_COLUMNS.main);
+  const side = inColumn(HOME_COLUMNS.side);
+
   return (
-    <Screen onRefresh={refresh} refreshing={refreshing}>
+    <Screen onRefresh={refresh} refreshing={refreshing} wide>
       {header}
       {quick}
 
-      <ReorderableList gap={Space.lg} onReorder={saveOrder} items={order.map((id) => ({ id, label: LABELS[id], node: sections[id] ?? null }))} />
+      {layout.columns === 2 ? (
+        <View style={styles.columns}>
+          <View style={styles.mainColumn}>
+            <ReorderableList gap={Space.lg} onReorder={(ids) => saveOrder([...ids, ...side.map((item) => item.id)])} items={main} />
+          </View>
+          <View style={styles.sideColumn}>
+            <ReorderableList gap={Space.lg} onReorder={(ids) => saveOrder([...main.map((item) => item.id), ...ids])} items={side} />
+          </View>
+        </View>
+      ) : (
+        <ReorderableList gap={Space.lg} onReorder={saveOrder} items={items} />
+      )}
     </Screen>
   );
 }
@@ -537,8 +557,8 @@ const styles = StyleSheet.create({
   planText: { fontSize: 10, lineHeight: 13 },
   greeting: { fontSize: 34, lineHeight: 38, letterSpacing: -1 },
   name: { ...Font.serifItalic, color: Palette.greenFg, fontSize: 34, lineHeight: 38, letterSpacing: -1 },
-  quickScroll: { marginHorizontal: -(Space.xl - 4), flexGrow: 0 },
-  quick: { gap: Space.sm, paddingHorizontal: Space.xl - 4 },
+  quickScroll: { flexGrow: 0 },
+  quick: { gap: Space.sm },
   pill: {
     height: 38,
     flexDirection: "row",
@@ -598,6 +618,9 @@ const styles = StyleSheet.create({
   streakNumber: { flexDirection: "row", alignItems: "baseline", gap: Space.sm },
   streakValue: { fontSize: 58, lineHeight: 62 },
   streakHint: { maxWidth: "54%" },
+  columns: { flexDirection: "row", alignItems: "flex-start", gap: Space.lg },
+  mainColumn: { flex: 1.6 },
+  sideColumn: { flex: 1 },
   week: { flexDirection: "row", gap: Space.sm },
   weekDay: {
     flex: 1,

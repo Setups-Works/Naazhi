@@ -1,4 +1,4 @@
-import { safeName } from "@untitled/logic";
+import { safeName, toDate } from "@untitled/logic";
 import type { Note, Tone } from "@untitled/types";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -252,7 +252,7 @@ export function NoteForm({ id, note, onSaved, onCancel }: { id: string; note?: N
             <View key={v.id} style={styles.version}>
               <View style={styles.flex}>
                 <AppText variant="bodyStrong">
-                  {new Date(v.created_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                  {toDate(v.created_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
                 </AppText>
                 <AppText variant="small" numberOfLines={1}>
                   {v.title || "Untitled note"}

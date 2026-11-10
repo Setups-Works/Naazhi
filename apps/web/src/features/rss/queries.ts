@@ -2,7 +2,7 @@
 import { createRssApi } from "@untitled/api-client";
 import { RSS } from "@untitled/logic/rss";
 import type { RssFeed, RssFilter, RssItem } from "@untitled/types";
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery, useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import { useRealtimeInvalidate } from "../../hooks/useRealtimeInvalidate";
 import { http, restMessage } from "../../lib/api/rest";
 import { qk } from "../../lib/query/keys";

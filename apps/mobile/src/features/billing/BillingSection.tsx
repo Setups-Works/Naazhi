@@ -1,4 +1,4 @@
-import { BYO_PROVIDERS, byoProvider, formatMoney, formatTokens } from "@untitled/logic";
+import { BYO_PROVIDERS, byoProvider, formatMoney, formatTokens, toDate } from "@untitled/logic";
 import type { MyBilling } from "@untitled/types";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -15,7 +15,7 @@ import { Palette, Radius } from "@/constants/theme";
 import { PlanCard } from "./PlanCard";
 import { useBilling, useBillingActions } from "./queries";
 
-const day = (iso: string) => new Date(iso).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
+const day = (iso: string) => toDate(iso).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
 
 /** One line about where the current plan stands: when it renews or ends, or what this period has used. */
 function standing(b: MyBilling): string {

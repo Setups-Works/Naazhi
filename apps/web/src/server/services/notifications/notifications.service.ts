@@ -6,7 +6,7 @@ import { pushConfigured, sendPush } from "./fcm";
 export { pushConfigured };
 
 /** An in-app path the app opens when the notification is tapped. Only paths inside the app are accepted. */
-const safeUrl = (url?: string | null) => (url && /^\/[a-z0-9/_?=&.-]*$/i.test(url) ? url : null);
+const safeUrl = (url?: string | null) => (url && /^\/(?!\/)[a-z0-9/_?=&.-]*$/i.test(url) ? url : null);
 
 /**
  * Saves the message in each person's inbox, then pushes it to their phones. The inbox copy is what counts: a push that fails (no Firebase

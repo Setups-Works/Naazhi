@@ -85,3 +85,17 @@ export const Shadow = {
 } as const;
 
 export const MaxContentWidth = 640;
+
+/**
+ * Screen-size classes, by the window's width in dp (so a tablet in portrait, a phone in landscape and a split-screen window each get
+ * the class that fits what is on screen): compact is a phone upright, medium a large phone sideways or a tablet upright, expanded a tablet
+ * sideways or any wide window.
+ */
+export const Breakpoint = { medium: 600, expanded: 900 } as const;
+
+/** How wide the content column may grow in each class; a list never stretches wider than it reads. */
+export const ContentWidth = { compact: MaxContentWidth, medium: 720, expanded: 1040 } as const;
+
+/** Narrower than a full page: sheets, dialogs and the chat's reading column. */
+export const ReadingWidth = 720;
+export const DialogWidth = 560;

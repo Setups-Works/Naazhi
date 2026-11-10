@@ -46,8 +46,6 @@ import {
   ChatToolCalls,
 } from "./kit";
 import ShareDialog from "./ShareDialog";
-import ChatActionProposal from "./ChatActionProposal";
-import ShownItems from "./shown/ShownItems";
 import { parseChatAction, parseChatActions } from "../../../lib/chat-actions";
 import { isoDate } from "../../../lib/dates";
 import { useCtxActions } from "../../../lib/context-actions";

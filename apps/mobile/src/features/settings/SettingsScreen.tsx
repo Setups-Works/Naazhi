@@ -3,7 +3,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { giftShareText } from "@untitled/logic";
+import { giftShareText, toDate } from "@untitled/logic";
 import { Pressable, ScrollView, Share, StyleSheet, Switch, View } from "react-native";
 
 import { AppText } from "@/components/ui/AppText";
@@ -81,7 +81,7 @@ export function SettingsScreen() {
     return () => { active = false; };
   }, [auth, user?.id]);
 
-  const createdLabel = account?.createdAt ? new Date(account.createdAt).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }) : "—";
+  const createdLabel = account?.createdAt ? toDate(account.createdAt).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }) : "—";
 
   async function perform(key: string, action: () => Promise<void>) {
     setBusy(key);
@@ -442,7 +442,7 @@ export function SettingsScreen() {
             </>
           ) : <AppText variant="body" color={Palette.fgMuted}>You sign in with {(account?.providers ?? []).map(providerName).join(", ")}; there’s no password to manage here.</AppText>}
           <View style={styles.divider} />
-          <Fact label="Last sign-in" value={account?.lastSignIn ? new Date(account.lastSignIn).toLocaleString() : "—"} />
+          <Fact label="Last sign-in" value={account?.lastSignIn ? toDate(account.lastSignIn).toLocaleString() : "—"} />
           <Fact label="Account created" value={createdLabel} />
           <Fact label="Sign-in methods" value={(account?.providers ?? []).map(providerName).join(", ") || "—"} />
           <Button title="Sign out other devices" kind="secondary" loading={busy === "others"} onPress={() => void signOutOthers()} />

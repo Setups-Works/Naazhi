@@ -23,7 +23,6 @@ import {
   faDownload,
   faChevronUp,
   faChevronDown,
-  faCheck,
   faEye,
   faPen,
   faFeatherPointed,

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { ScrollView, StyleSheet, View, useWindowDimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -22,9 +22,16 @@ export function WorkspaceScreen() {
   const { width } = useWindowDimensions();
   const pager = useRef<ScrollView>(null);
   const [view, setView] = useState<View_>("workspace");
+  const current = useRef(view);
+
+  // Rotating the device changes the width of a page: keep the page that was showing in view.
+  useEffect(() => {
+    pager.current?.scrollTo({ x: VIEWS.findIndex((v) => v.key === current.current) * width, animated: false });
+  }, [width]);
 
   const go = useCallback(
     (next: View_) => {
+      current.current = next;
       setView(next);
       pager.current?.scrollTo({ x: VIEWS.findIndex((v) => v.key === next) * width, animated: true });
     },
@@ -33,7 +40,9 @@ export function WorkspaceScreen() {
 
   const settle = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const index = Math.round(e.nativeEvent.contentOffset.x / width);
-    setView(VIEWS[Math.min(Math.max(index, 0), VIEWS.length - 1)]!.key);
+    const next = VIEWS[Math.min(Math.max(index, 0), VIEWS.length - 1)]!.key;
+    current.current = next;
+    setView(next);
   };
 
   return (

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ScrollView, View, useWindowDimensions, type LayoutChangeEvent } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -25,7 +25,15 @@ export function JournalTabs() {
   const [height, setHeight] = useState(0);
   const waiting = useMyInvites().data?.length ?? 0;
 
+  const current = useRef(page);
+
+  // Rotating the device changes the width of a page: keep the page that was showing in view.
+  useEffect(() => {
+    pager.current?.scrollTo({ x: PAGES.indexOf(current.current) * width, animated: false });
+  }, [width]);
+
   const go = (next: Page) => {
+    current.current = next;
     setPage(next);
     pager.current?.scrollTo({ x: PAGES.indexOf(next) * width, animated: !prefs.reduceMotion });
   };
@@ -49,9 +57,11 @@ export function JournalTabs() {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         onLayout={(e: LayoutChangeEvent) => setHeight(e.nativeEvent.layout.height)}
-        onMomentumScrollEnd={(e) =>
-          setPage(PAGES[Math.min(Math.max(Math.round(e.nativeEvent.contentOffset.x / width), 0), PAGES.length - 1)]!)
-        }
+        onMomentumScrollEnd={(e) => {
+          const next = PAGES[Math.min(Math.max(Math.round(e.nativeEvent.contentOffset.x / width), 0), PAGES.length - 1)]!;
+          current.current = next;
+          setPage(next);
+        }}
       >
         <View style={{ width, height }}>
           <JournalScreen edges={["left", "right"]} />

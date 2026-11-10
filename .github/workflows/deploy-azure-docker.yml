@@ -79,6 +79,9 @@ jobs:
           # Attestation manifests only slow the push and the pull on Azure; nothing here consumes them.
           provenance: false
           sbom: false
+          # The site's public address (the APP_URL secret): link previews need it as an absolute URL. Not a secret value.
+          build-args: |
+            NEXT_PUBLIC_SITE_URL=${{ secrets.APP_URL }}
           tags: |
             nitheeshdr/untitled-workspace:${{ github.sha }}
             nitheeshdr/untitled-workspace:latest

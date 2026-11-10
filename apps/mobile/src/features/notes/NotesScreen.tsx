@@ -1,3 +1,4 @@
+import { toDate } from "@untitled/logic";
 import type { Note, Tone } from "@untitled/types";
 import { router } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
@@ -43,7 +44,7 @@ function noteTone(note: Note): Tone {
 }
 
 function editedLabel(iso: string) {
-  const date = new Date(iso);
+  const date = toDate(iso);
   const today = new Date();
   if (date.toDateString() === today.toDateString()) return `Edited ${timeOf(iso)}`;
   return `Edited ${date.toLocaleDateString(undefined, { day: "numeric", month: "short", ...(date.getFullYear() !== today.getFullYear() ? { year: "numeric" } : {}) })}`;
@@ -83,7 +84,7 @@ export function NotesScreen({ edges }: { edges?: ("top" | "bottom" | "left" | "r
     );
     const compare: Record<NoteSort, (a: Note, b: Note) => number> = {
       manual: (a, b) => b.sort_order - a.sort_order,
-      edited: (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+      edited: (a, b) => toDate(b.updated_at).getTime() - toDate(a.updated_at).getTime(),
       title: (a, b) => noteTitle(a).localeCompare(noteTitle(b)),
     };
     return visible.sort((a, b) => Number(b.pinned) - Number(a.pinned) || compare[sort](a, b));

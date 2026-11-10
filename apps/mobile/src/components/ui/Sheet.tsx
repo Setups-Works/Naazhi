@@ -14,7 +14,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-cont
 import { useEffect, useState } from "react";
 
 import { AppText } from "./AppText";
-import { Palette, Radius, Shadow } from "@/constants/theme";
+import { DialogWidth, Palette, Radius, Shadow } from "@/constants/theme";
 import { useRuntimePrefs } from "@/lib/preferences";
 
 type Props = { visible: boolean; onClose: () => void; title?: string; children: ReactNode; scroll?: boolean };
@@ -112,6 +112,10 @@ const styles = StyleSheet.create({
 
   // Web .cd / .tm: surface background, inset 1px ring, --e4 shadow, r4 radius.
   sheet: {
+    // On a tablet the sheet stays a dialog-sized panel, centred at the bottom, instead of a bar across the whole screen.
+    width: "100%",
+    maxWidth: DialogWidth,
+    alignSelf: "center",
     backgroundColor: Palette.surface,
     borderTopLeftRadius: Radius.r4,
     borderTopRightRadius: Radius.r4,

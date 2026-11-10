@@ -23,7 +23,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY . .
-# The build needs no secrets: every server setting is read at runtime. The Next.js compiler cache is kept between builds.
+# The build needs no secrets: every server setting is read at runtime. The one value baked in is the site's public address
+# (NEXT_PUBLIC_SITE_URL), which link previews and the web manifest need as an absolute URL. The Next.js compiler cache is kept between builds.
+ARG NEXT_PUBLIC_SITE_URL=""
+ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 RUN --mount=type=cache,target=/app/apps/web/.next/cache pnpm build:web
 
 FROM node:${NODE_VERSION} AS runner

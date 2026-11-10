@@ -1,3 +1,4 @@
+import { toDate } from "@untitled/logic";
 import type { Note } from "@untitled/types";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -55,7 +56,7 @@ function NoteView({ note, onEdit }: { note: Note; onEdit: () => void }) {
           {note.pinned ? <Icon name="thumbtack" size={14} color={tint?.fg ?? Palette.fgSubtle} /> : null}
         </View>
         <AppText variant="small" color={Palette.fgSubtle}>
-          Updated {new Date(note.updated_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+          Updated {toDate(note.updated_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
         </AppText>
         {note.body ? <Markdown text={note.body} /> : null}
         <AttachmentGallery attachments={note.attachments} />

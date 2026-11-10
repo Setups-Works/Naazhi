@@ -4,7 +4,6 @@ import AuthLink from "./auth/AuthLink";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
 import {
-  faArrowRight,
   faBookOpen,
   faCalendarDays,
   faEnvelope,

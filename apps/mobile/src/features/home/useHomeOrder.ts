@@ -4,8 +4,17 @@ import { useCallback, useEffect, useState } from "react";
 
 import { useAppState } from "@/providers/AppState";
 
+/**
+ * The Home sections by column, in their default order. A phone shows them as one list in this order; a wide screen puts each group in
+ * its own column (like the web Home) and a section can only be dragged within its column.
+ */
+export const HOME_COLUMNS = {
+  main: ["plans", "today", "journal", "notes", "chats", "streak"],
+  side: ["schedule", "reader", "health", "insights"],
+} as const;
+
 /** The Home sections in their default order. */
-export const HOME_SECTIONS = ["plans", "today", "journal", "notes", "chats", "schedule", "reader", "health", "streak", "insights"] as const;
+export const HOME_SECTIONS = [...HOME_COLUMNS.main, ...HOME_COLUMNS.side] as const;
 
 /** The order a person dragged the Home sections into, kept on this device per account. */
 export function useHomeOrder() {

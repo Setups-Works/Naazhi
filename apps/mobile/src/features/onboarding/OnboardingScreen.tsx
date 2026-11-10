@@ -60,6 +60,9 @@ export function OnboardingScreen() {
       </View>
 
       <FlatList
+        // Rotating the device changes the page width: start again at the slide that was showing, at the new width.
+        key={width}
+        initialScrollIndex={index}
         ref={list}
         data={SLIDES}
         keyExtractor={(s) => s.key}

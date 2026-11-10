@@ -67,11 +67,10 @@ export const FOOTER_COLS: { title: string; links: [string, string][] }[] = [
   {
     title: "Workspace",
     links: [
-      ["Journal", "/#journal"],
-      ["Notes", "/#notes"],
-      ["Email", "/#email"],
-      ["Calendar", "/#calendar"],
+      ["Notes, tasks and journal", "/#workspace"],
+      ["A tour of the app", "/#tour"],
       ["Integrations", "/#integrations"],
+      ["Get the Android app", `${GITHUB_REPO}/releases/latest`],
     ],
   },
   {
@@ -117,11 +116,11 @@ export const MEGA: { featured: MegaItem[]; workspace: MegaItem[]; explore: MegaI
     },
   ],
   workspace: [
-    { href: "/#journal", t: "Journal", d: "A private record of your days", icon: faBookOpen },
-    { href: "/#notes", t: "Notes", d: "Think, write and organize", icon: faPenToSquare },
-    { href: "/#email", t: "Email", d: "Gmail in the workspace", icon: faEnvelope },
-    { href: "/#calendar", t: "Calendar", d: "One view of your time", icon: faCalendarDays },
-    { href: "/#areas", t: "Meetings", d: "Capture, transcribe, follow through", icon: faMicrophone },
+    { href: "/#workspace", t: "Journal", d: "A private record of your days", icon: faBookOpen },
+    { href: "/#workspace", t: "Notes", d: "Think, write and organize", icon: faPenToSquare },
+    { href: "/#workspace", t: "Email", d: "Gmail in the workspace, on the way", icon: faEnvelope },
+    { href: "/#workspace", t: "Calendar", d: "One view of your time", icon: faCalendarDays },
+    { href: "/#workspace", t: "Meetings", d: "Capture, transcribe, follow through, on the way", icon: faMicrophone },
     { href: "/#integrations", t: "Integrations", d: "Connect the tools you use", icon: faPlug },
   ],
   explore: [

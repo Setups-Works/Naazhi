@@ -38,17 +38,26 @@ numbers that the docs and code don't support, and don't invent testimonials.
 
 ## Structure
 
-- `home/` — the sections of the home page (`Hero`, `Why`, `Bento`, `DeepDives` (sticky stack), `Speed`, `AiSection`, `Trust`, `Pro`) and `Mocks`.
-  `Bento` presents the capabilities as a `GlassCarousel` (scroll-snap, drag, arrows, dots, ← →; edge to edge but aligned to the page
-  column; the slide nearest the left edge is active and the rest recede). The playable miniatures inside its cards (slash menu, tickable tasks, recording, calendar overlay,
-  ask → preview → confirm, ⌘K search) live in `BentoTiles.tsx`. Built features get a live tile; anything not built goes in the dashed
-  "On the way" strip. Tile scenes are looping GSAP timelines: always `kill()` them in the cleanup and show a still state when `calm`.
-- `Blocks.tsx` — step cards, day timeline, access matrix, plan comparison. `Faq.tsx`, `IntegrationsCarousel.tsx`, `Nav.tsx`, `Logo.tsx`.
+- **The look: product first, in the manner of an Apple or Google product page.** One idea per section, a short serif line, one plain
+  sentence, and the real app on an iPhone. No floating chips, no decorative blobs, no icon-and-three-bullets cards where a sentence will
+  do. The liquid glass stays, as the material of the header, the tiles, the dark panels and the menus. Links to more are quiet text
+  links ("Learn more ›"), not extra buttons.
+- `Phone.tsx` — the iPhone mockup (a screenshot from `public/mobile/*.png` inside `iphone-frame.png`; its `children` can be a drawn screen
+  or stacked images). `home/PhoneHalf.tsx` tucks a phone into the bottom edge of a tile so only its top half shows; `PhoneRow` in
+  `components/PageKit.tsx` is three phones cut off by the edge of a page hero. Use screenshots of the real app only.
+- `home/` — the sections of the home page: `Hero` (one line, one sentence, three phones rising), `Bento` (four big tiles, one idea each,
+  then plain columns for Calendar, Search and "On the way" with their honest status), `Showcase` (a tablist on a dark glass panel that
+  switches the phone's screen), `Speed`, `AiSection`, `Trust`, `Pro`. Home composes them in `app/page.tsx`.
+- `Nav.tsx` is one slim full-width glass bar (name, plain links, "Features" menu, Log in and Get started; a full-screen menu on a phone);
+  `components/SiteChrome.tsx` has the footer (name, what it is, four link columns, a thin legal line). Anchor links in `lib/site.ts` must
+  point at ids that exist on the home page (`#workspace`, `#tour`, `#integrations`, `#ai`, `#trust`, `#pro`, `#faq`).
+- `Blocks.tsx` — step cards, day timeline, access matrix, plan comparison. `Faq.tsx`, `IntegrationsCarousel.tsx`, `Logo.tsx`.
 
 ## Gotchas
 
 - A server component must not hand a client component's element to something that clones it. `Tip` wraps children in a span instead.
 - `Reveal` delays are in **milliseconds**; GSAP's own `delay` is seconds.
-- Sticky stacks (`home/DeepDives.tsx`) resolve `#anchor` links from natural positions; keep ids on the direct children of the stack.
+- In a hero or tile, GSAP animates `transform` while Tailwind's `-translate-x-1/2` is the separate CSS `translate` property: they compose, but
+  put centring on a wrapper and the animation on the element inside, as `home/Hero.tsx` does.
 
 **Pricing page:** `app/pricing/page.tsx` is dynamic and reads the plans from the database (`listPublicPlans()`), so a price edited in Admin → Plans shows there without a deploy. Never hard-code a price, allowance or plan name on it; the compare table (`CompareTable`, any number of plans) is built from the plan rows. It says when payments are not switched on (`FEATURES.payments`). See `docs/BILLING.md`.

@@ -10,12 +10,11 @@ import { Reveal } from "../components/landing/Reveal";
 import { Tip } from "../components/landing/Tip";
 import AiSection from "../components/landing/home/AiSection";
 import Bento from "../components/landing/home/Bento";
-import DeepDives from "../components/landing/home/DeepDives";
 import Hero from "../components/landing/home/Hero";
 import Pro from "../components/landing/home/Pro";
+import Showcase from "../components/landing/home/Showcase";
 import Speed from "../components/landing/home/Speed";
 import Trust from "../components/landing/home/Trust";
-import Why from "../components/landing/home/Why";
 import { CtaPanel } from "../components/PageKit";
 import { isLive } from "../lib/logos";
 
@@ -40,9 +39,8 @@ export default function Page() {
         </Marquee>
       </section>
 
-      <Why />
       <Bento />
-      <DeepDives />
+      <Showcase />
 
       <Section id="integrations">
         <SectionHead
@@ -85,8 +83,9 @@ export default function Page() {
       <CtaPanel
         title="Bring it all"
         quiet="together."
-        lead="One workspace for personal and work information. Start with the notes, and connect the rest when you’re ready."
+        lead="One workspace for personal and work information, on the web and in your pocket. Start with the notes, and connect the rest when you’re ready."
         secondary={["Browse integrations", "/#integrations"]}
+        phone="/mobile/home.png"
       />
     </main>
   );

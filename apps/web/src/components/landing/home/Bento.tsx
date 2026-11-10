@@ -1,98 +1,107 @@
-"use client";
-import type { ReactNode } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import Link from "next/link";
+import { CAPABILITIES } from "../content";
 import Glass from "../Glass";
-import { CAPABILITIES, type Capability } from "../content";
-import { GlassCarousel, type Slide } from "../GlassCarousel";
-import { IconTile, Section, SectionHead, StatusChip, statusTip } from "../Kit";
-import { Reveal } from "../Reveal";
-import { Tip } from "../Tip";
-import { CalendarLive, ChatLive, JournalLive, NoteLive, SearchLive, TaskLive } from "./BentoTiles";
+import { Section, StatusChip } from "../Kit";
+import { R, Reveal } from "../Reveal";
+import { Title } from "../Title";
+import type { Tone } from "../../../lib/tones";
+import PhoneHalf from "./PhoneHalf";
 
-const cap = (t: string) => CAPABILITIES.find((c) => c.t === t) as Capability;
+const capability = (t: string) => CAPABILITIES.find((c) => c.t === t)!;
 
-/** One live slide: icon, honest status, title and blurb on top, the playable miniature underneath. */
-function LiveCard({ name, children }: { name: string; children: ReactNode }) {
-  const c = cap(name);
-  return (
-    <Glass variant="flat" radius="r4" tone={c.tone} glare tilt className="flex h-full min-h-[410px] flex-col p-6">
-      <div className="flex items-start justify-between gap-3">
-        <IconTile icon={c.icon} />
-        <Tip content={statusTip(c.status)}>
-          <span tabIndex={0} className="rounded-pill">
-            <StatusChip status={c.status} />
-          </span>
-        </Tip>
-      </div>
-      <h3 className="mt-5 text-[19px] font-semibold tracking-[-0.015em] text-fg">{c.t}</h3>
-      <p className="mt-1.5 max-w-md text-[14.5px] leading-relaxed text-fg-muted">{c.d}</p>
-      {children}
-    </Glass>
-  );
-}
-
-/** A feature that is planned, not built: a quiet dashed card, so it never reads like something you can use today. */
-function SoonCard({ name }: { name: string }) {
-  const c = cap(name);
-  return (
-    <div className="flex h-full min-h-[410px] flex-col rounded-r4 border border-dashed border-line-strong bg-white/30 p-6 transition-colors duration-300 hover:bg-white/55">
-      <div className="flex items-start justify-between gap-3">
-        <span className={`at-${c.tone} grid size-11 shrink-0 place-items-center rounded-r2 bg-(--abf)/10 text-[17px] text-(--abf)`}>
-          <FA icon={c.icon} />
-        </span>
-        <Tip content={statusTip(c.status)}>
-          <span tabIndex={0} className="rounded-pill">
-            <StatusChip status={c.status} />
-          </span>
-        </Tip>
-      </div>
-      <h3 className="mt-5 text-[19px] font-semibold tracking-[-0.015em] text-fg">{c.t}</h3>
-      <p className="mt-1.5 max-w-md text-[14.5px] leading-relaxed text-fg-muted">{c.d}</p>
-      <p className="mt-auto pt-6 text-[13px] leading-relaxed text-fg-subtle">Still being built. We’ll mark it live here the day it ships.</p>
-    </div>
-  );
-}
-
-const live = (name: string, node: ReactNode, className?: string): Slide => ({
-  key: name,
-  label: name,
-  className,
-  node: <LiveCard name={name}>{node}</LiveCard>,
-});
-const soon = (name: string): Slide => ({
-  key: name,
-  label: `${name} (coming soon)`,
-  className: "w-[min(80vw,340px)]",
-  node: <SoonCard name={name} />,
-});
+const TILES: { tone: Tone; label: string; title: string; lead: string; src: string; alt: string }[] = [
+  {
+    tone: "mint",
+    label: "Chat",
+    title: "Ask. Review. Save.",
+    lead: "The assistant drafts notes, journal entries and to-dos. Nothing is saved until you say so.",
+    src: "/mobile/chat.png",
+    alt: "Chat in the Naazhi app",
+  },
+  {
+    tone: "amber",
+    label: "Plan",
+    title: "Plan your day. Then do it.",
+    lead: "Lists, priorities and repeats, in the view that suits the day.",
+    src: "/mobile/todo.png",
+    alt: "The to-do list in the Naazhi app",
+  },
+  {
+    tone: "violet",
+    label: "Journal",
+    title: "A journal that’s only yours.",
+    lead: "Write as often as you like, by typing or by voice. It stays private to you.",
+    src: "/mobile/journal.png",
+    alt: "The journal in the Naazhi app",
+  },
+  {
+    tone: "blue",
+    label: "Notes",
+    title: "Notes that keep up.",
+    lead: "Colours, slash commands, voice and attachments, all kept in the note.",
+    src: "/mobile/notes.png",
+    alt: "Notes in the Naazhi app",
+  },
+];
 
 /**
- * The workspace as a carousel of liquid-glass cards. Each live card plays a miniature of the real feature (a note's slash menu,
- * tasks you can tick, a recording, a calendar with a task overlay, ask → preview → confirm, a ⌘K search); the ones that are not built
- * yet come last, dashed and labelled. Swipe, drag, use the arrows or dots, or press ← → with the carousel focused.
+ * The workspace in four big tiles, one idea each: a line, a sentence, and the real screen rising from the bottom of the tile.
+ * Under them, the rest of the workspace in plain columns, with an honest status on anything not built yet.
  */
 export default function Bento() {
-  const slides: Slide[] = [
-    live("Notes", <NoteLive />),
-    live("Tasks", <TaskLive />),
-    live("Journal", <JournalLive />),
-    live("Calendar", <CalendarLive />, "w-[min(92vw,580px)]"),
-    live("Chat with AI", <ChatLive />),
-    live("Universal search", <SearchLive />),
-    soon("Email"),
-    soon("Meetings"),
-    soon("Automations"),
-  ];
+  const more = [capability("Calendar"), capability("Universal search")];
+  const coming = CAPABILITIES.filter((c) => c.status !== "live");
   return (
     <Section id="workspace">
-      <SectionHead
-        eyebrow="The workspace"
-        title="Everything in one place,"
-        quiet="nothing in isolation."
-        lead="Six tools you can use today, shown running. Swipe on to see what is still on the way, labelled so you always know where you stand."
-      />
-      <Reveal className="mt-[clamp(28px,4vw,52px)]">
-        <GlassCarousel label="Workspace features" slides={slides} />
+      <div className="mx-auto flex max-w-[820px] flex-col items-center gap-4 text-center">
+        <Title>
+          Everything you keep, <br className="max-sm:hidden" />
+          in one place.
+        </Title>
+        <Reveal delay={120}>
+          <p className="text-[clamp(17px,1.7vw,21px)] leading-relaxed text-fg-muted">
+            Write it, plan it, say it out loud or ask for it. It all lands in the same place, on the web and on your phone.
+          </p>
+        </Reveal>
+      </div>
+
+      <Reveal stagger={0.1} className="mt-[clamp(36px,5vw,72px)] grid gap-4 md:grid-cols-2">
+        {TILES.map((t) => (
+          <R key={t.label}>
+            <Glass variant="flat" radius="r5" tone={t.tone} className="relative flex h-full min-h-[560px] flex-col items-center overflow-hidden px-6 pt-10 text-center sm:px-10 sm:pt-12">
+              <p className="text-[13px] font-semibold tracking-[0.06em] text-(--abf) uppercase">{t.label}</p>
+              <h3 className="mt-2 max-w-[420px] font-serif text-[clamp(28px,3.2vw,40px)] leading-[1.08] tracking-[-0.025em]">{t.title}</h3>
+              <p className="mt-3 max-w-[400px] text-[16px] leading-relaxed text-fg-muted">{t.lead}</p>
+              <PhoneHalf src={t.src} alt={t.alt} className="bottom-0 left-1/2 w-[min(52%,250px)] -translate-x-1/2" />
+            </Glass>
+          </R>
+        ))}
+      </Reveal>
+
+      <Reveal className="mt-[clamp(36px,5vw,64px)]">
+        <div className="grid gap-x-10 gap-y-8 border-t border-line pt-8 md:grid-cols-3">
+          {more.map((c) => (
+            <div key={c.t} className="flex flex-col items-start gap-2">
+              <h3 className="font-serif text-[24px] tracking-[-0.02em]">{c.t}</h3>
+              <p className="text-[15px] leading-relaxed text-fg-muted">{c.d}</p>
+            </div>
+          ))}
+          <div className="flex flex-col items-start gap-2">
+            <h3 className="font-serif text-[24px] tracking-[-0.02em]">On the way</h3>
+            <ul className="flex flex-col gap-2 text-[15px] text-fg-muted">
+              {coming.map((c) => (
+                <li key={c.t} className="flex items-center gap-2.5">
+                  {c.t} <StatusChip status={c.status} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <p className="mt-8 text-center">
+          <Link href="/how-it-works" className="text-[16px] text-green-fg underline-offset-4 hover:underline">
+            See how it works ›
+          </Link>
+        </p>
       </Reveal>
     </Section>
   );

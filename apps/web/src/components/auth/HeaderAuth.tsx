@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useAuthState } from "./useAuthState";
 
-/** Site header actions: "Log in" + "Get started" for visitors, a single "Dashboard" button once signed in. */
+/** Site header actions: a quiet "Log in" link and a "Get started" button for visitors, a single "Dashboard" button once signed in. */
 export default function HeaderAuth() {
   const state = useAuthState();
   if (state === "in")
@@ -13,10 +13,7 @@ export default function HeaderAuth() {
     );
   return (
     <>
-      <Link
-        href="/login"
-        className="liquid-bar inline-flex h-11 items-center rounded-pill px-5 text-[14px] whitespace-nowrap text-fg transition-[transform,box-shadow] duration-300 hover:-translate-y-px active:scale-95 max-sm:hidden"
-      >
+      <Link href="/login" className="px-2 text-[14px] whitespace-nowrap text-fg-muted transition-colors hover:text-fg max-sm:hidden">
         Log in
       </Link>
       <Link href="/signup" className="btn btn-primary btn-sm whitespace-nowrap max-sm:hidden">

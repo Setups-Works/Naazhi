@@ -15,7 +15,7 @@ import {
   faPlug,
   faWandMagicSparkles,
 } from "@fortawesome/free-solid-svg-icons";
-import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/PageKit";
+import { CtaPanel, FeatureCards, PageHero, PhoneRow, SectionHead } from "../../components/PageKit";
 import { DayTimeline, StepCards } from "../../components/landing/Blocks";
 import Glass from "../../components/landing/Glass";
 import { Eyebrow, Lead, Section, Title } from "../../components/landing/Kit";
@@ -97,6 +97,7 @@ export default function Page() {
         title="One workspace."
         quiet="Any AI, or none."
         lead="Naazhi brings your notes, tasks, journal, calendar and chat together, with email and meetings on the way, and keeps all of it separate from whichever AI you choose to use."
+        visual={<PhoneRow screens={["/mobile/todo.png", "/mobile/home.png", "/mobile/notes.png"]} />}
       >
         <Link className="btn btn-primary" href="/demo" data-cursor="Play">
           Try the product demo <FA icon={faArrowRight} />
@@ -166,6 +167,7 @@ export default function Page() {
         lead="Click around a working preview of the workspace. No sign-up needed."
         primary={["Open the product demo", "/demo"]}
         secondary={["Read the FAQ", "/#faq"]}
+        phone="/mobile/chat.png"
       />
     </main>
   );

@@ -23,6 +23,17 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-10",
+    title: "Version 2.6.3: home-screen widgets that show up",
+    summary: "The Android widgets draw again and have proper previews when you choose one.",
+    tone: "violet",
+    appVersion: "v2.6.3",
+    changes: [
+      { kind: "fixed", platform: "app", text: "Android home-screen widgets (to-dos, quick write, health and journal) no longer stay blank." },
+      { kind: "improved", platform: "app", text: "The widget picker shows a preview of each widget instead of an empty grid." },
+    ],
+  },
+  {
+    date: "2026-11-10",
     title: "Version 2.6.2: notifications that arrive, and fixes",
     summary: "Messages from the team now reach you, the app asks about notifications when you start, and chat to-dos and dates are fixed.",
     tone: "mint",

@@ -25,4 +25,7 @@ features/widgets/
 - Add a widget in four places and keep them equal: `WIDGET_NAMES`, `ios/`, `android/index.tsx` (`DRAW`), and `app.json` (both `expo-widgets` and `react-native-android-widget` lists). `apps/web/tests/unit/widget-config.test.ts` fails if they disagree.
 - Android runs the handler in the background with the app closed: `apps/mobile/index.ts` registers it at startup; it draws only from the stored props.
 - Never put personal text in a widget beyond what the person sees on that screen of the app; sign-out wipes them (`clearWidgets`). Widget refreshes are throttled (`SYNC_MIN_MS`) and skipped when nothing changed.
+- **Every file in `android/` starts with `"use no memo"`.** The app uses the React Compiler, which adds memo hooks to components; the Android widget renderer calls widget components as plain functions, outside React, so a compiled one throws and the widget stays blank. Keep the directive in any new file there.
+- The pictures in Android's widget picker are `assets/widgets/*.png` (`previewImage` in `app.json`). They are generated from the theme tokens: run `node scripts/widget-previews.mjs` after changing a widget's look or the colours, and commit the PNGs.
+- The handler only reads the person's data back from storage; colours, words and sizes always come from this build (`props.ts`), so data saved by an older version can't break a widget, and a widget added before the first sync shows the "open the app" view.
 - Deep links used: `/todo`, `/health`, `/journal`, `/journal?new=1`, `/note/new`, `/task/new`.

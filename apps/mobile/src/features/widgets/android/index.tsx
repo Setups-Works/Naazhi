@@ -1,3 +1,4 @@
+"use no memo"; // see primitives.tsx: nothing in this folder may be compiled with React's memo hooks
 import { emptyWidgetSnapshot, WIDGET_NAMES, type WidgetProps } from "@untitled/logic";
 import { registerWidgetTaskHandler, requestWidgetUpdate, type WidgetTaskHandlerProps } from "react-native-android-widget";
 import type { ReactElement } from "react";

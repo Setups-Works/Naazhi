@@ -1,3 +1,4 @@
+"use no memo"; // widget components are called by the widget renderer, not React: the compiler's memo hooks would throw there
 import type { WidgetProps, WidgetTone } from "@untitled/logic";
 import { FlexWidget, TextWidget, type ColorProp, type HexColor } from "react-native-android-widget";
 import type { ReactNode } from "react";

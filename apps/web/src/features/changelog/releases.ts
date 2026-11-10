@@ -23,12 +23,13 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-10",
-    title: "Version 3.1.0: naazhi.app, with the workspace on its own address",
+    title: "Version 4.0.0: naazhi.app, with the workspace on its own address",
     summary: "The website now lives at naazhi.app and the workspace opens at dashboard.naazhi.app, with one sign-in for both.",
     tone: "green",
-    appVersion: "v3.1.0",
+    appVersion: "v4.0.0",
     changes: [
       { kind: "new", platform: "web", text: "The website is now at naazhi.app, and your workspace opens at dashboard.naazhi.app." },
+      { kind: "improved", platform: "web", text: "Opening dashboard.naazhi.app takes you to the sign-in page, or straight to your dashboard if you are already signed in." },
       { kind: "improved", platform: "web", text: "Log in and Get started on the website take you straight to the workspace, and you stay signed in across both." },
       { kind: "improved", platform: "app", text: "The Android app connects to dashboard.naazhi.app." },
     ],

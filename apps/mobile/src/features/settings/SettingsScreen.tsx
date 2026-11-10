@@ -4,7 +4,7 @@ import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { giftShareText, toDate } from "@untitled/logic";
-import { Pressable, ScrollView, Share, StyleSheet, Switch, View } from "react-native";
+import { BackHandler, Pressable, Share, StyleSheet, Switch, View } from "react-native";
 
 import { AppText } from "@/components/ui/AppText";
 import { Banner } from "@/components/ui/Banner";
@@ -29,7 +29,6 @@ import { shareImageWithText } from "@/lib/shareImage";
 import { createUploadId } from "@/lib/uploadId";
 import { api, errorMessage } from "@/lib/api";
 import { NOTE_CATEGORIES } from "@/lib/preferences";
-import { GlassPill } from "@/components/ui/GlassPill";
 
 type Notice = { kind: "success" | "error" | "info"; text: string } | null;
 type TableRow = Record<string, unknown>;
@@ -48,7 +47,21 @@ export function SettingsScreen() {
   const update = useUpdate();
   // Other screens can open Settings straight on a section (for example the Notifications inbox).
   const { section: requested } = useLocalSearchParams<{ section?: string }>();
-  const [section, setSection] = useState<SettingsSection>(SETTINGS_SECTIONS.find((s) => s.key === requested)?.key ?? "profile");
+  // null = the list of sections; a key = that section on its own screen.
+  const [section, setSection] = useState<SettingsSection | null>(SETTINGS_SECTIONS.find((s) => s.key === requested)?.key ?? null);
+  const openSection = (key: SettingsSection | null) => {
+    setSection(key);
+    setNotice(null);
+  };
+  // The phone's back button goes from a section back to the list; from the list it closes Settings as usual.
+  useEffect(() => {
+    if (section === null) return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      setSection(null);
+      return true;
+    });
+    return () => sub.remove();
+  }, [section]);
   const [busy, setBusy] = useState("");
   const giftRef = useRef<View>(null);
   const [notice, setNotice] = useState<Notice>(null);
@@ -332,36 +345,55 @@ export function SettingsScreen() {
     });
   }
 
-  const sections = (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sectionNav} accessibilityLabel="Settings sections">
-      {SETTINGS_SECTIONS.map((item) => (
-        <GlassPill
-          key={item.key}
-          glass={section !== item.key}
-          accessibilityRole="button"
-          accessibilityState={{ selected: section === item.key }}
-          onPress={() => { setSection(item.key); setNotice(null); }}
-          style={[styles.sectionPill, section === item.key ? styles.sectionPillActive : null]}
-        >
-          <Icon name={item.icon} size={14} color={section === item.key ? Palette.onDark : item.key === "danger" ? Palette.clayFg : Palette.fgMuted} />
-          <AppText variant="small" color={section === item.key ? Palette.onDark : item.key === "danger" ? Palette.clayFg : Palette.fgMuted}>{item.title}</AppText>
-        </GlassPill>
-      ))}
-    </ScrollView>
+  const current = SETTINGS_SECTIONS.find((s) => s.key === section) ?? null;
+
+  // The list: one row per section. Tapping a row opens that section on its own screen.
+  const list = (
+    <Card style={styles.list}>
+      {SETTINGS_SECTIONS.map((item, index) => {
+        const danger = item.key === "danger";
+        return (
+          <Pressable
+            key={item.key}
+            accessibilityRole="button"
+            accessibilityLabel={item.title}
+            onPress={() => openSection(item.key)}
+            style={({ pressed }) => [styles.row, index > 0 ? styles.rowDivider : null, pressed ? styles.rowPressed : null]}
+          >
+            <View style={[styles.rowIcon, danger ? styles.rowIconDanger : null]}>
+              <Icon name={item.icon} size={15} color={danger ? Palette.clayFg : Palette.fgMuted} />
+            </View>
+            <AppText variant="body" color={danger ? Palette.clayFg : Palette.fg} style={styles.flex}>{item.title}</AppText>
+            <Icon name="chevron-right" size={14} color={Palette.fgFaint} />
+          </Pressable>
+        );
+      })}
+    </Card>
   );
 
   return (
     <Screen>
-      <View style={styles.header}>
-        <AppText variant="title" accessibilityRole="header">Settings</AppText>
-        <Pressable accessibilityRole="button" accessibilityLabel="Close settings" hitSlop={12} onPress={() => router.back()}>
-          <AppText variant="bodyStrong" color={Palette.fgMuted}>Close</AppText>
-        </Pressable>
-      </View>
-      {sections}
-      {settingsQ.isPending ? <AppText variant="small">Loading account settings…</AppText> : null}
-      {settingsQ.isError ? <Banner kind="error">Couldn’t load all account details. You can still update your profile.</Banner> : null}
-      {notice ? <Banner kind={notice.kind}>{notice.text}</Banner> : null}
+      {current ? (
+        <View style={styles.header}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Back to settings" hitSlop={12} onPress={() => openSection(null)} style={styles.back}>
+            <Icon name="chevron-left" size={16} color={Palette.fgMuted} />
+            <AppText variant="bodyStrong" color={Palette.fgMuted}>Settings</AppText>
+          </Pressable>
+          <AppText variant="heading" accessibilityRole="header" numberOfLines={1} style={styles.sectionTitle}>{current.title}</AppText>
+          <View style={styles.headerSpacer} />
+        </View>
+      ) : (
+        <View style={styles.header}>
+          <AppText variant="title" accessibilityRole="header">Settings</AppText>
+          <Pressable accessibilityRole="button" accessibilityLabel="Close settings" hitSlop={12} onPress={() => router.back()}>
+            <AppText variant="bodyStrong" color={Palette.fgMuted}>Close</AppText>
+          </Pressable>
+        </View>
+      )}
+      {section === null ? list : null}
+      {section !== null && settingsQ.isPending ? <AppText variant="small">Loading account settings…</AppText> : null}
+      {section !== null && settingsQ.isError ? <Banner kind="error">Couldn’t load all account details. You can still update your profile.</Banner> : null}
+      {section !== null && notice ? <Banner kind={notice.kind}>{notice.text}</Banner> : null}
 
       {section === "profile" ? (
         <Card tone="violet" style={styles.card}>
@@ -578,9 +610,15 @@ function ChoiceSheet({ type, onClose, onChoose }: { type: "timeFormat" | "defaul
 
 const styles = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  sectionNav: { gap: 8, paddingVertical: 2 },
-  sectionPill: { minHeight: 40, flexDirection: "row", alignItems: "center", gap: 7, paddingHorizontal: 13, borderRadius: Radius.pill, borderWidth: 1, borderColor: Palette.glassRing, backgroundColor: Palette.glassHi },
-  sectionPillActive: { borderColor: Palette.fillDark, backgroundColor: Palette.fillDark },
+  list: { padding: 0, overflow: "hidden" },
+  row: { minHeight: 56, flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 16 },
+  rowDivider: { borderTopWidth: 1, borderTopColor: Palette.line },
+  rowPressed: { backgroundColor: Palette.surfaceSunken },
+  rowIcon: { width: 32, height: 32, borderRadius: Radius.pill, alignItems: "center", justifyContent: "center", backgroundColor: Palette.surfaceSunken },
+  rowIconDanger: { backgroundColor: Tints.clay.bg },
+  back: { minWidth: 80, flexDirection: "row", alignItems: "center", gap: 6 },
+  sectionTitle: { flex: 1, textAlign: "center" },
+  headerSpacer: { minWidth: 80 },
   card: { gap: 12 },
   avatarRow: { flexDirection: "row", alignItems: "center", gap: 14 },
   avatar: { width: 64, height: 64, borderRadius: Radius.pill, backgroundColor: Palette.surfaceSunken },

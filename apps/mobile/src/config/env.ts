@@ -9,6 +9,9 @@ function toOrigin(value: string | undefined) {
   }
 }
 
+/** The public website (changelog, privacy). Separate from the API address when the website and the app live on different hosts. */
+const siteOrigin = toOrigin(process.env.EXPO_PUBLIC_SITE_URL?.trim()) ?? toOrigin(configuredApiUrl);
+
 export const mobileEnv = {
   /** The web app's origin. All auth and data requests go here. */
   apiBaseUrl: toOrigin(configuredApiUrl),
@@ -18,6 +21,6 @@ export const mobileEnv = {
   /** Where the Android app's releases are published; the app checks it for a newer version. */
   githubRepo: "Setups-Works/Naazhi",
   /** The web changelog, linked from the update prompt. */
-  changelogUrl: toOrigin(configuredApiUrl) ? `${toOrigin(configuredApiUrl)}/changelog` : undefined,
-  privacyUrl: toOrigin(configuredApiUrl) ? `${toOrigin(configuredApiUrl)}/privacy-security` : undefined,
+  changelogUrl: siteOrigin ? `${siteOrigin}/changelog` : undefined,
+  privacyUrl: siteOrigin ? `${siteOrigin}/privacy-security` : undefined,
 } as const;

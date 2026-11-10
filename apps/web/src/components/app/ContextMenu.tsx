@@ -21,6 +21,7 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { api } from "../../lib/api/client";
+import { internalPath, publicPath } from "../../lib/hosts";
 import { openSearch } from "./UniversalSearch";
 import { runCtxAction, type CtxKind } from "../../lib/context-actions";
 
@@ -87,8 +88,8 @@ export default function ContextMenu() {
 
   const build = useCallback(
     (target: HTMLElement): Entry[] => {
-      const inApp = pathname.startsWith("/dashboard") || pathname.startsWith("/admin");
-      const go = (path: string) => () => router.push(path);
+      const inApp = internalPath(pathname).startsWith("/dashboard") || pathname.startsWith("/admin");
+      const go = (path: string) => () => router.push(publicPath(path));
       const out: Entry[] = [];
 
       // The most specific thing under the cursor comes first: a task, note, chat or journal entry.
@@ -138,7 +139,7 @@ export default function ContextMenu() {
                   .insert({ title: first, body: text.slice(0, 100000) })
                   .select("id")
                   .single();
-                if (data?.id) router.push(`/dashboard/notes?note=${data.id as string}`);
+                if (data?.id) router.push(publicPath(`/dashboard/notes?note=${data.id as string}`));
               },
             },
             {
@@ -147,7 +148,7 @@ export default function ContextMenu() {
               run: async () => {
                 const title = text.replace(/\s+/g, " ").slice(0, 300);
                 const { data } = await sb.current.from("tasks").insert({ title }).select("id").single();
-                if (data?.id) router.push(`/dashboard/todo?task=${data.id as string}`);
+                if (data?.id) router.push(publicPath(`/dashboard/todo?task=${data.id as string}`));
               },
             },
           );

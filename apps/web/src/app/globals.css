@@ -6119,9 +6119,16 @@
   .au-google:hover {
     box-shadow: inset 0 0 0 1px var(--fg);
   }
+  /* Same visible 1px outline as the Google button above it; the glass ring of .btn-secondary is invisible on the white card. */
   .au-passkey {
     width: 100%;
     justify-content: center;
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+  }
+  .au-passkey:hover:not(:disabled) {
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--fg);
   }
   .au-or {
     display: flex;

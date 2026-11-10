@@ -39,6 +39,7 @@ jobs:
       # for an emulator or an old 32-bit phone use "armeabi-v7a,arm64-v8a,x86,x86_64" (slower).
       ANDROID_ABIS: arm64-v8a
       EXPO_PUBLIC_API_URL: ${{ vars.EXPO_PUBLIC_API_URL }}
+      EXPO_PUBLIC_SITE_URL: ${{ vars.EXPO_PUBLIC_SITE_URL }}
     steps:
       - name: Check the tag and settings
         run: |

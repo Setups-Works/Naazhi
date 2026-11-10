@@ -1,7 +1,7 @@
 import { getSessionCookie } from "better-auth/cookies";
 import { NextResponse, type NextRequest } from "next/server";
 import { publicEnv } from "./config/env";
-import { isAppPath, isSplit } from "./lib/hosts";
+import { APP_HOME, homePath, internalPath, isAppPath, isDashboardSection, isSplit, publicPath } from "./lib/hosts";
 
 /** The host the request came in on (behind Azure's front end it is in `x-forwarded-host`). */
 const requestHost = (request: NextRequest) => request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? request.nextUrl.host;
@@ -10,24 +10,40 @@ const requestHost = (request: NextRequest) => request.headers.get("x-forwarded-h
  * Two jobs, both cheap.
  *
  * 1. Keep the two hosts apart when the website and the app are on different hosts: app pages asked for on the website go to the
- *    app, website pages asked for on the app go to the website, and the app's front door (`/`) goes to the dashboard.
+ *    app, website pages asked for on the app go to the website, and the app's front door (`/`) goes to sign-in or the home page.
+ *    On the app host the dashboard's pages drop the /dashboard prefix (/home, /todo, /workspace…); the pages themselves still
+ *    live in app/dashboard, so /dashboard/todo is redirected to /todo and /todo is served by the same page.
  * 2. Redirect by whether a session cookie exists. This is only a convenience: every page and API route still verifies the session
  *    against the database (currentUser()), and /admin additionally checks the admin role.
  */
 export function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const signedIn = Boolean(getSessionCookie(request));
+  const split = isSplit();
+  let onApp = false;
 
-  if (isSplit()) {
-    const onApp = requestHost(request) === new URL(publicEnv.appUrl!).host;
+  if (split) {
+    const host = requestHost(request);
+    onApp = host === new URL(publicEnv.appUrl!).host;
     const target = (base: string, to = path) => new URL(`${to}${request.nextUrl.search}`, base);
-    if (!onApp && isAppPath(path)) return NextResponse.redirect(target(publicEnv.appUrl!));
-    // Signed-out visitors land on the sign-in page, signed-in ones on their dashboard.
-    if (onApp && path === "/") return NextResponse.redirect(target(publicEnv.appUrl!, signedIn ? "/dashboard" : "/login"));
+    // The old Azure address (still in installed apps, bookmarks and shared links) hands every page over to the new domains.
+    // Only that suffix: local addresses and health checks must keep answering directly.
+    if (host.endsWith(".azurewebsites.net")) {
+      return NextResponse.redirect(isAppPath(path) ? target(publicEnv.appUrl!, publicPath(path)) : target(publicEnv.siteUrl!));
+    }
+    if (!onApp && isAppPath(path)) return NextResponse.redirect(target(publicEnv.appUrl!, publicPath(path)));
+    // Signed-out visitors land on the sign-in page, signed-in ones on their home page.
+    if (onApp && path === "/") return NextResponse.redirect(target(publicEnv.appUrl!, signedIn ? APP_HOME : "/login"));
+    // The old, prefixed address of a dashboard page goes to its clean one.
+    if (onApp && (path === "/dashboard" || path.startsWith("/dashboard/"))) return NextResponse.redirect(target(publicEnv.appUrl!, publicPath(path)));
     if (onApp && !isAppPath(path)) return NextResponse.redirect(target(publicEnv.siteUrl!));
   }
 
-  if (!signedIn && (path.startsWith("/dashboard") || path.startsWith("/admin"))) {
+  // A clean address (/home, /todo…) is a dashboard page; everything below treats it like the route that serves it.
+  const clean = split && onApp && (path === APP_HOME || isDashboardSection(path));
+  const route = clean ? internalPath(path) : path;
+
+  if (!signedIn && (route.startsWith("/dashboard") || route.startsWith("/admin"))) {
     const to = request.nextUrl.clone();
     to.pathname = "/login";
     to.search = `?next=${encodeURIComponent(path)}`;
@@ -35,9 +51,15 @@ export function proxy(request: NextRequest) {
   }
   if (signedIn && (path === "/login" || path === "/signup" || path === "/forgot-password")) {
     const to = request.nextUrl.clone();
-    to.pathname = "/dashboard";
+    to.pathname = homePath();
     to.search = "";
     return NextResponse.redirect(to);
+  }
+  // The address bar keeps the clean path; the page that answers is the one in app/dashboard.
+  if (clean) {
+    const to = request.nextUrl.clone();
+    to.pathname = route;
+    return NextResponse.rewrite(to);
   }
   return NextResponse.next();
 }

@@ -23,6 +23,7 @@ import {
 import { authClient } from "../../lib/auth/client";
 import { clearDrafts } from "../../lib/drafts";
 import { useSwipeNav } from "../../hooks/useSwipeNav";
+import { internalPath, publicPath } from "../../lib/hosts";
 import SectionTabs from "./SectionTabs";
 import { BrandMark } from "../BrandMark";
 
@@ -61,7 +62,8 @@ export default function AppNav({
   account: Account;
   prefs: Prefs;
 }) {
-  const path = usePathname();
+  // On the app host the address bar shows clean paths (/todo); the rest of this component works with the routes (/dashboard/todo).
+  const path = internalPath(usePathname());
   const router = useRouter();
   const [open, setOpen] = useState(false);
   // Settings lives in the address (/dashboard/settings/<section>). Opening it only changes the address, so the page you were
@@ -70,24 +72,24 @@ export default function AppNav({
   const returnTo = useRef<string | null>(null);
   const openSettings = useCallback((tab: SettingsTab = "profile") => {
     returnTo.current = window.location.pathname + window.location.search;
-    window.history.pushState(null, "", settingsHref(tab));
+    window.history.pushState(null, "", publicPath(settingsHref(tab)));
   }, []);
   const closeSettings = useCallback(() => {
     if (returnTo.current) window.history.back();
-    else router.push("/dashboard");
+    else router.push(publicPath("/dashboard"));
     returnTo.current = null;
   }, [router]);
-  const pickSettingsTab = useCallback((tab: SettingsTab) => window.history.replaceState(null, "", settingsHref(tab)), []);
+  const pickSettingsTab = useCallback((tab: SettingsTab) => window.history.replaceState(null, "", publicPath(settingsHref(tab))), []);
   const box = useRef<HTMLDivElement>(null);
 
   // Which section we are on (the tab pill itself lives in SectionTabs).
-  const here = settingsTab ? (returnTo.current ?? "/dashboard").split("?")[0] : path;
+  const here = settingsTab ? internalPath((returnTo.current ?? "/dashboard").split("?")[0]) : path;
   const current = TABS.findIndex((t) =>
     t.href === "/dashboard" ? here === "/dashboard" : [t.href, ...(t.also ?? [])].some((h) => here.startsWith(h)),
   );
 
   // On a touch screen, swipe the page sideways to go to the next or previous section.
-  useSwipeNav(current, TABS.length, (to) => router.push(TABS[to].href));
+  useSwipeNav(current, TABS.length, (to) => router.push(publicPath(TABS[to].href)));
 
   useEffect(() => {
     const close = (e: MouseEvent | KeyboardEvent) => {
@@ -117,13 +119,13 @@ export default function AppNav({
 
   return (
     <header className="ap-bar">
-      <Link href="/dashboard" className="logo ap-logo">
+      <Link href={publicPath("/dashboard")} className="logo ap-logo">
         <BrandMark size={28} />
         <span>Naazhi</span>
       </Link>
       {/* Liquid-glass section switcher (click, or drag the glass lens across and let go) with the search button beside it. */}
       <div className="flex items-center gap-2.5">
-        <SectionTabs tabs={TABS} current={current} onGo={(href) => router.push(href)} />
+        <SectionTabs tabs={TABS} current={current} onGo={(href) => router.push(publicPath(href))} />
         <UniversalSearch
           admin={admin}
           className="relative size-12 justify-center rounded-full bg-white/60 p-0 text-[15px] text-fg-muted [&_kbd]:hidden [&_span]:hidden backdrop-blur-xl backdrop-saturate-150 shadow-glass transition-[transform,background-color,color,box-shadow] duration-300 ease-[cubic-bezier(0.34,1.45,0.5,1)] hover:bg-white/80 hover:text-fg hover:shadow-glass-hi active:scale-95 motion-reduce:transition-none"

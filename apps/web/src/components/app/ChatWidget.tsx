@@ -38,6 +38,7 @@ import AudioWave from "../ui/AudioWave";
 import Markdown from "./Markdown";
 import Composer from "./chat/Composer";
 import ShareDialog from "./chat/ShareDialog";
+import { internalPath } from "../../lib/hosts";
 import { ChatLayout, ChatMessage, ChatMessageBubble, ChatMessageList, ChatMessageMetadata, ChatSystemMessage, ChatTokenizedText, ChatToolCalls } from "./chat/kit";
 
 const CHAT_KEY = "up_widget_chat";
@@ -69,7 +70,7 @@ const saveChat = (id: string | null) => {
  */
 export default function ChatWidget() {
   const pathname = usePathname();
-  const hidden = pathname.startsWith("/dashboard/chat");
+  const hidden = internalPath(pathname).startsWith("/dashboard/chat");
   const sb = useMemo(api, []);
   const qc = useQueryClient();
   const { providers, provider, select: selectProvider } = useAiProviders();

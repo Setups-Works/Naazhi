@@ -25,7 +25,29 @@ export const APP_HOME = "/home";
 /** Where signed-in people land: /home on the app host, /dashboard when everything is on one host. */
 export const homePath = () => (isSplit() ? APP_HOME : "/dashboard");
 
+/** The pages inside app/dashboard. On the app host their address drops the prefix: /dashboard/workspace is shown as /workspace. */
+export const DASHBOARD_SECTIONS = ["calendar", "chat", "health", "journal", "notes", "settings", "todo", "workspace"];
+
+const firstSegment = (path: string) => path.split("/")[1] ?? "";
+
+/** True for /todo, /workspace/reader and the like (the clean addresses of the dashboard's pages). */
+export const isDashboardSection = (path: string) => DASHBOARD_SECTIONS.includes(firstSegment(path));
+
+/** The route that serves an address: /home → /dashboard, /workspace → /dashboard/workspace. Anything else is returned unchanged. */
+export const internalPath = (path: string) => (path === APP_HOME ? "/dashboard" : isDashboardSection(path) ? `/dashboard${path}` : path);
+
+/**
+ * The address people should see for a route. On the app host the /dashboard prefix is dropped (/dashboard/todo?v=today → /todo?v=today,
+ * /dashboard → /home); on a single host the path is returned unchanged. Query strings and hashes are kept.
+ */
+export const publicPath = (path: string) => {
+  if (!isSplit()) return path;
+  const rest = path.replace(/^\/dashboard(?=$|[/?#])/, "");
+  if (rest === path) return path;
+  return rest === "" || rest[0] === "?" || rest[0] === "#" ? `${APP_HOME}${rest}` : rest;
+};
+
 /** Paths that only exist on the app host. */
 export const APP_PATH_PREFIXES = ["/dashboard", APP_HOME, "/admin", "/login", "/signup", "/forgot-password", "/reset-password", "/share"];
 
-export const isAppPath = (path: string) => APP_PATH_PREFIXES.some((p) => path === p || path.startsWith(`${p}/`));
+export const isAppPath = (path: string) => APP_PATH_PREFIXES.some((p) => path === p || path.startsWith(`${p}/`)) || isDashboardSection(path);

@@ -34,6 +34,7 @@ Add a line to the web changelog (`apps/web/src/features/changelog/releases.ts`) 
 | Name                                                                                                | Kind     | Purpose                                                                  |
 | --------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------ |
 | `EXPO_PUBLIC_API_URL`                                                                               | variable | The web app's address, compiled into the app. Required.                  |
+| `EXPO_PUBLIC_SITE_URL`                                                                              | variable | The public website (for the changelog and privacy links). Optional.      |
 | `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | secrets  | Optional release key. Without them the APK is signed with the debug key. |
 
 A debug-signed APK installs on any phone (allow installs from the browser or Files app) but cannot be uploaded to Google Play. To sign properly, create a keystore once and store it as secrets:

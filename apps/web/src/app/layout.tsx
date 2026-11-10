@@ -6,7 +6,6 @@ import "./globals.css";
 import { publicEnv } from "../config/env";
 import { SiteHeader, SiteFooter } from "../components/SiteChrome";
 import HideInApp from "../components/HideInApp";
-import Ambient from "../components/landing/Ambient";
 import MarketingScope from "../components/landing/MarketingScope";
 import MotionRoot from "../components/landing/MotionRoot";
 import ContextMenu from "../components/app/ContextMenu";
@@ -46,11 +45,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {/* Marketing content starts hidden for its entrance animation; without JavaScript it must simply be there. */}
         <noscript>
-          <style>{"[data-reveal]{opacity:1!important}"}</style>
+          <style>{"[data-reveal]{opacity:1!important;transform:none!important}"}</style>
         </noscript>
         <MarketingScope>
           <HideInApp>
-            <Ambient />
+            {/* The public site sits on plain white; the app inside keeps its own cream canvas. */}
+            <div aria-hidden className="fixed inset-0 -z-20 bg-surface" />
             <MotionRoot />
             <SiteHeader />
           </HideInApp>

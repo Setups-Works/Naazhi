@@ -45,9 +45,11 @@ numbers that the docs and code don't support, and don't invent testimonials.
 - `Phone.tsx` — the iPhone mockup (a screenshot from `public/mobile/*.png` inside `iphone-frame.png`; its `children` can be a drawn screen
   or stacked images). `home/PhoneHalf.tsx` tucks a phone into the bottom edge of a tile so only its top half shows; `PhoneRow` in
   `components/PageKit.tsx` is three phones cut off by the edge of a page hero. Use screenshots of the real app only.
-- `home/` — the sections of the home page: `Hero` (one line, one sentence, three phones rising), `Bento` (four big tiles, one idea each,
-  then plain columns for Calendar, Search and "On the way" with their honest status), `Showcase` (a tablist on a dark glass panel that
-  switches the phone's screen), `Speed`, `AiSection`, `Trust`, `Pro`. Home composes them in `app/page.tsx`.
+- The public site sits on **plain white** (a fixed white layer in `app/layout.tsx`, inside `HideInApp`, so the signed-in app keeps its cream).
+- `home/` — the sections of the home page: `Hero` (one line, one sentence, three whole iPhones that fan out on load and open wider as you
+  scroll), `Story` (the tour: on a wide screen one phone stays put on the right while the chapters pass on the left, and the screen and the
+  panel's tint change with the chapter in view; on a phone, one tile per chapter), `Capabilities` (everything the workspace does with
+  its honest status), `Speed`, `AiSection`, `Trust`, `Pro`. Home composes them in `app/page.tsx`.
 - `Nav.tsx` is one slim full-width glass bar (name, plain links, "Features" menu, Log in and Get started; a full-screen menu on a phone);
   `components/SiteChrome.tsx` has the footer (name, what it is, four link columns, a thin legal line). Anchor links in `lib/site.ts` must
   point at ids that exist on the home page (`#workspace`, `#tour`, `#integrations`, `#ai`, `#trust`, `#pro`, `#faq`).

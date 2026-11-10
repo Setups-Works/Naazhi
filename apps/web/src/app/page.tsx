@@ -9,11 +9,11 @@ import { Marquee } from "../components/landing/Marquee";
 import { Reveal } from "../components/landing/Reveal";
 import { Tip } from "../components/landing/Tip";
 import AiSection from "../components/landing/home/AiSection";
-import Bento from "../components/landing/home/Bento";
+import Capabilities from "../components/landing/home/Capabilities";
 import Hero from "../components/landing/home/Hero";
 import Pro from "../components/landing/home/Pro";
-import Showcase from "../components/landing/home/Showcase";
 import Speed from "../components/landing/home/Speed";
+import Story from "../components/landing/home/Story";
 import Trust from "../components/landing/home/Trust";
 import { CtaPanel } from "../components/PageKit";
 import { isLive } from "../lib/logos";
@@ -39,8 +39,8 @@ export default function Page() {
         </Marquee>
       </section>
 
-      <Bento />
-      <Showcase />
+      <Story />
+      <Capabilities />
 
       <Section id="integrations">
         <SectionHead

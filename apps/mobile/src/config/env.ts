@@ -16,7 +16,7 @@ export const mobileEnv = {
   scheme: "untitled",
   /** Public pages linked from the sign-up form. */
   /** Where the Android app's releases are published; the app checks it for a newer version. */
-  githubRepo: "Setups-Works/untitled-project-landing",
+  githubRepo: "Setups-Works/Naazhi",
   /** The web changelog, linked from the update prompt. */
   changelogUrl: toOrigin(configuredApiUrl) ? `${toOrigin(configuredApiUrl)}/changelog` : undefined,
   privacyUrl: toOrigin(configuredApiUrl) ? `${toOrigin(configuredApiUrl)}/privacy-security` : undefined,

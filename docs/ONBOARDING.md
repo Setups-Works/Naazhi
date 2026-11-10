@@ -6,7 +6,7 @@ For every new developer (and the AI agent you'll work with). About 30 minutes.
 
 | Tool    | What you need                                                                                    | Ask       |
 | ------- | ------------------------------------------------------------------------------------------------ | --------- |
-| GitHub  | Member of the **Setups-Works** org with write access to `untitled-project-landing`               | tech lead |
+| GitHub  | Member of the **Setups-Works** org with write access to `Naazhi`                               | tech lead |
 | Jira    | Access to project **UNT** — https://setups-works.atlassian.net/jira/software/projects/UNT/boards | tech lead |
 | Docker  | Install Docker Desktop; `corepack pnpm docker:up` gives you Postgres, Redis, storage and mail locally  | you       |
 | Vercel  | Read access to deployments / preview logs                                                        | tech lead |
@@ -15,8 +15,8 @@ For every new developer (and the AI agent you'll work with). About 30 minutes.
 ## 2. Run it locally
 
 ```bash
-git clone https://github.com/Setups-Works/untitled-project-landing.git
-cd untitled-project-landing
+git clone https://github.com/Setups-Works/Naazhi.git
+cd Naazhi
 corepack pnpm install
 cp .env.example apps/web/.env.local  # fill in the dev values you were given
 corepack pnpm dev:web                         # http://localhost:3000

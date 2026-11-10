@@ -16,7 +16,7 @@ import {
   faClockRotateLeft,
 } from "@fortawesome/free-solid-svg-icons";
 /** The public repository. App releases (the Android APK) are published under its Releases. */
-export const GITHUB_REPO = "https://github.com/Setups-Works/untitled-project-landing";
+export const GITHUB_REPO = "https://github.com/Setups-Works/Naazhi";
 
 export const FEATURES = [
   { href: "/universal-search", t: "Universal Search", d: "Find anything across notes, tasks, mail and meetings." },

@@ -136,7 +136,7 @@ The native launch screen before it shows only the cream ground (`splash-blank.pn
 
 ## 8. What keeps the old technical names
 
-These are identifiers, not branding, and are left as they are so nothing breaks: the repository (`untitled-project-landing`), the workspace packages (`@untitled/*`), the app's deep-link scheme (`untitled://`, used by sign-in callbacks, widgets and notifications), the Expo slug, and the Azure resources. The Android package and iOS bundle id are `com.setupsworks.naazhi`.
+These are identifiers, not branding, and are left as they are so nothing breaks: the workspace packages (`@untitled/*`), the app's deep-link scheme (`untitled://`, used by sign-in callbacks, widgets and notifications), the Expo slug, and the Azure resources. The Android package and iOS bundle id are `com.setupsworks.naazhi`.
 
 ## 9. Adding something new that carries the brand
 

@@ -12,7 +12,7 @@
 ## Today (legacy locations — move only as part of a Jira task)
 
 - Marketing site: **`landing/`** (the liquid-glass kit, motion and home sections — see `landing/AGENTS.md`), plus `PageKit.tsx` (hero / feature cards / call to action for the sub-pages), `SiteChrome.tsx` (header and footer), `HeroApp.tsx`, `MegaPreview.tsx`, `NotFoundFun.tsx`, `HideInApp.tsx`; `demo/`, `demos/`.
-- `auth/` — login/signup form, shell, `AuthLink`, `HeaderAuth`, `useAuthState`.
+- `auth/` — login/signup form, shell, `AuthLink`, `useAuthState`.
 - `app/` — the whole signed-in app UI (Home, Notes, Journal, Chat, To-do, Settings, Search…). Moves into `apps/web/src/features/*` per feature.
 - `admin/` — admin panel components.
 

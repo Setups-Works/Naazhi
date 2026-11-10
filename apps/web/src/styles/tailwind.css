@@ -80,6 +80,12 @@
   --animate-float: float 8s ease-in-out infinite;
   --animate-float-slow: float 11s ease-in-out infinite reverse;
   --animate-sheen: sheen 7s ease-in-out infinite;
+  --animate-marquee: marquee 50s linear infinite;
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
   @keyframes drift-a {
     to {
       transform: translate3d(14vw, 10vh, 0) scale(1.18);

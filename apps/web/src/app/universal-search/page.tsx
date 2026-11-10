@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
 import { faBolt, faFilter, faLayerGroup, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import SearchDemo from "../../components/demos/SearchDemo";
-import Glass from "../../components/landing/Glass";
-import { Kbd, Section, StatusChip, type Status } from "../../components/landing/Kit";
-import { R, Reveal } from "../../components/landing/Reveal";
-import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/PageKit";
+import JsonLd from "../../components/site/JsonLd";
+import { pageMeta, pageSchemas } from "../../lib/seo";
+import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/site/kit";
+import { R, Reveal } from "../../components/site/Reveal";
+import { buttonClass, Kbd, Section, StatusChip, Surface, type Status } from "../../components/site/ui";
 
-export const metadata: Metadata = {
+const SEO = {
+  name: "Universal Search",
   title: "Universal Search — Naazhi",
   description: "Find anything across your notes, tasks, journal, email, calendar and meetings from one search box.",
+  path: "/universal-search",
 };
+export const metadata: Metadata = pageMeta(SEO);
 
 // Must match docs/CURRENT_STATE.md: search covers tasks, notes, journal and chats today.
 const scope: [string, Status][] = [
@@ -25,6 +29,7 @@ const scope: [string, Status][] = [
 export default function Page() {
   return (
     <main>
+      <JsonLd data={pageSchemas(SEO)} />
       <PageHero
         eyebrow="Universal Search"
         status={<StatusChip status="live" />}
@@ -32,16 +37,16 @@ export default function Page() {
         quiet="wherever it lives."
         lead="One search box for your tasks, notes, journal and chats today, with email, calendar and meetings joining as they arrive. No more guessing which app it was in."
       >
-        <a className="btn btn-primary" href="#try" data-cursor="Try it">
+        <a className={buttonClass("primary")} href="#try">
           Try the search
         </a>
       </PageHero>
 
       <Section id="try" tight>
         <Reveal>
-          <Glass tone="blue" radius="r5" className="p-[clamp(14px,3vw,36px)]">
+          <Surface variant="soft" radius="r5" className="p-[clamp(14px,3vw,36px)]">
             <SearchDemo />
-          </Glass>
+          </Surface>
         </Reveal>
         <p className="mt-4 text-center text-[13.5px] text-fg-subtle">
           A preview with sample data. In the app, press ⌘K (or Ctrl K) from anywhere.
@@ -50,7 +55,7 @@ export default function Page() {
 
       <Section tight>
         <SectionHead
-          eyebrow="What it searches"
+          kicker="What it searches"
           title="Honest about"
           quiet="its reach."
           lead="Search works across these today, and the rest are marked so you know."
@@ -58,10 +63,10 @@ export default function Page() {
         <Reveal stagger={0.06} className="mx-auto mt-[clamp(24px,4vw,44px)] grid max-w-3xl gap-3 sm:grid-cols-2">
           {scope.map(([name, status]) => (
             <R key={name}>
-              <Glass variant="flat" radius="r3" lift className="flex items-center justify-between px-5 py-4">
+              <Surface radius="r3" lift className="flex items-center justify-between px-5 py-4">
                 <span className="text-[15.5px] font-medium text-fg">{name}</span>
                 <StatusChip status={status} />
-              </Glass>
+              </Surface>
             </R>
           ))}
         </Reveal>
@@ -72,7 +77,7 @@ export default function Page() {
       </Section>
 
       <Section tight>
-        <SectionHead eyebrow="Why it matters" title="Your work isn’t in one app." quiet="Your search should be." />
+        <SectionHead kicker="Why it matters" title="Your work isn’t in one app." quiet="Your search should be." />
         <FeatureCards
           cols={4}
           items={[

@@ -23,6 +23,21 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-10",
+    title: "Version 3.0.0: a new look for the website",
+    summary: "The public website is rebuilt on a clean white design, with a download page, phone mockups and better search results.",
+    tone: "green",
+    appVersion: "v3.0.0",
+    changes: [
+      { kind: "new", platform: "web", text: "A new white website with three open phones on the home page, a scrolling tour of the app, and a swipeable row of everything the workspace does." },
+      { kind: "new", platform: "web", text: "A Download page with the latest Android version, steps to install it, and Google Play and App Store badges. The App Store one says coming soon." },
+      { kind: "new", platform: "web", text: "Download is now in the header and the footer, and the footer credits Setups Works with its logo." },
+      { kind: "improved", platform: "web", text: "The menu on a phone opens full screen again, and the website works at phone width on every page." },
+      { kind: "improved", platform: "web", text: "Pages are easier to find and share: proper titles and descriptions, a sitemap, and information that helps search engines understand Naazhi." },
+      { kind: "improved", platform: "web", text: "Cleaner pages throughout, with outlines instead of shadows and one green accent colour." },
+    ],
+  },
+  {
+    date: "2026-11-10",
     title: "Version 2.8.1: made for tablets",
     summary: "The app now turns in every direction and has layouts for tablets, and links to Naazhi show a proper preview.",
     tone: "blue",

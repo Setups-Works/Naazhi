@@ -1,19 +1,24 @@
 import type { Metadata } from "next";
 import { faClockRotateLeft, faCompass, faDiagramProject, faLink } from "@fortawesome/free-solid-svg-icons";
 import GraphDemo from "../../components/demos/GraphDemo";
-import Glass from "../../components/landing/Glass";
-import { Section, StatusChip } from "../../components/landing/Kit";
-import { Reveal } from "../../components/landing/Reveal";
-import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/PageKit";
+import JsonLd from "../../components/site/JsonLd";
+import { pageMeta, pageSchemas } from "../../lib/seo";
+import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/site/kit";
+import { Reveal } from "../../components/site/Reveal";
+import { buttonClass, Section, StatusChip, Surface } from "../../components/site/ui";
 
-export const metadata: Metadata = {
+const SEO = {
+  name: "Context Graph",
   title: "Context Graph — Naazhi",
   description: "See how your notes, tasks, emails, meetings and journal entries connect to each other.",
+  path: "/context-graph",
 };
+export const metadata: Metadata = pageMeta(SEO);
 
 export default function Page() {
   return (
     <main>
+      <JsonLd data={pageSchemas(SEO)} />
       <PageHero
         eyebrow="Context Graph"
         status={<StatusChip status="soon" />}
@@ -21,16 +26,16 @@ export default function Page() {
         quiet="connects."
         lead="A launch plan, the email thread behind it, the meeting that decided it and the task that follows. The Context Graph shows how your work relates, so nothing sits in isolation."
       >
-        <a className="btn btn-primary" href="#explore" data-cursor="Explore">
+        <a className={buttonClass("primary")} href="#explore">
           Explore the graph
         </a>
       </PageHero>
 
       <Section id="explore" tight>
         <Reveal>
-          <Glass tone="violet" radius="r5" className="p-[clamp(14px,3vw,36px)]">
+          <Surface variant="soft" radius="r5" className="p-[clamp(14px,3vw,36px)]">
             <GraphDemo />
-          </Glass>
+          </Surface>
         </Reveal>
         <p className="mt-4 text-center text-[13.5px] text-fg-subtle">
           An illustration with sample data. The Context Graph is planned and not available yet.
@@ -39,7 +44,7 @@ export default function Page() {
 
       <Section tight>
         <SectionHead
-          eyebrow="Built on connections"
+          kicker="Built on connections"
           title="Backlinks and an atlas,"
           quiet="across your whole workspace."
           lead="Notes will link to each other first. The Context Graph then carries that idea to your tasks, journal, calendar and, later, email and meetings."

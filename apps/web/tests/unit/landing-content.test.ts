@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ALL_INTEGRATIONS, CAPABILITIES, FAQS, GROUPS, SHORTCUTS, TRUST } from "../../src/components/landing/content";
+import { ALL_INTEGRATIONS, CAPABILITIES, FAQS, GROUPS, SHORTCUTS, TRUST } from "../../src/components/site/content";
 import { isTone, toneClass } from "../../src/lib/tones";
 import { isLive } from "../../src/lib/logos";
 

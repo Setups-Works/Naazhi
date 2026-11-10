@@ -1,37 +1,42 @@
 import type { Metadata } from "next";
 import { faCheckDouble, faEnvelopeOpenText, faHandPointer, faToggleOn } from "@fortawesome/free-solid-svg-icons";
 import DemoApp from "../../components/demo/DemoApp";
-import Glass from "../../components/landing/Glass";
-import { Section } from "../../components/landing/Kit";
-import { Reveal } from "../../components/landing/Reveal";
-import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/PageKit";
+import JsonLd from "../../components/site/JsonLd";
+import { pageMeta, pageSchemas } from "../../lib/seo";
+import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/site/kit";
+import { Reveal } from "../../components/site/Reveal";
+import { buttonClass, Section, Surface } from "../../components/site/ui";
 
-export const metadata: Metadata = {
+const SEO = {
+  name: "Product demo",
   title: "Product demo — Naazhi",
   description: "Click around an interactive preview of the workspace: notes, to-do, email, calendar, meetings and automations.",
+  path: "/demo",
 };
+export const metadata: Metadata = pageMeta(SEO);
 
 export default function Page() {
   return (
     <main>
+      <JsonLd data={pageSchemas(SEO)} />
       <PageHero
         eyebrow="Product demo"
         title="Try the workspace"
         quiet="right here."
         lead="A working preview of the workspace. Search with ⌘K, write notes, reply to mail, plan your week, record a meeting and turn AI off, and it all responds. Nothing to install, nothing to sign up for."
       >
-        <a className="btn btn-primary" href="#demo" data-cursor="Play">
+        <a className={buttonClass("primary")} href="#demo">
           Start clicking
         </a>
       </PageHero>
 
       <Section id="demo" tight>
         <Reveal>
-          <Glass radius="r5" glare className="mx-auto max-w-[1240px] p-2 sm:p-3">
+          <Surface radius="r5" className="mx-auto max-w-[1240px] bg-surface-muted p-2 sm:p-3">
             <div className="overflow-hidden rounded-r4">
               <DemoApp />
             </div>
-          </Glass>
+          </Surface>
         </Reveal>
         <p className="mt-4 text-center text-[13.5px] text-fg-subtle">
           Preview with sample data. It shows email, meetings and automations as they are planned; the live product connects to your own
@@ -40,7 +45,7 @@ export default function Page() {
       </Section>
 
       <Section tight>
-        <SectionHead eyebrow="Things to try" title="Four quick" quiet="experiments." />
+        <SectionHead kicker="Things to try" title="Four quick" quiet="experiments." />
         <FeatureCards
           cols={4}
           items={[

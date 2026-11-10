@@ -1,17 +1,23 @@
 import type { Metadata } from "next";
 import ClientOnly from "../../components/app/ClientOnly";
-import { Section } from "../../components/landing/Kit";
-import { CtaPanel, PageHero } from "../../components/PageKit";
+import JsonLd from "../../components/site/JsonLd";
+import { CtaPanel, PageHero } from "../../components/site/kit";
+import { pageMeta, pageSchemas } from "../../lib/seo";
+import { Section } from "../../components/site/ui";
 import Changelog from "../../features/changelog/Changelog";
 
-export const metadata: Metadata = {
+const SEO = {
+  name: "Changelog",
   title: "Changelog — Naazhi",
   description: "What’s new in the web app and the Android app, newest first.",
+  path: "/changelog",
 };
+export const metadata: Metadata = pageMeta(SEO);
 
 export default function Page() {
   return (
     <main>
+      <JsonLd data={pageSchemas(SEO)} />
       <PageHero
         eyebrow="Changelog"
         title="What’s new,"

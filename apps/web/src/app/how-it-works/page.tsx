@@ -15,17 +15,19 @@ import {
   faPlug,
   faWandMagicSparkles,
 } from "@fortawesome/free-solid-svg-icons";
-import { CtaPanel, FeatureCards, PageHero, PhoneRow, SectionHead } from "../../components/PageKit";
-import { DayTimeline, StepCards } from "../../components/landing/Blocks";
-import Glass from "../../components/landing/Glass";
-import { Eyebrow, Lead, Section, Title } from "../../components/landing/Kit";
-import { Reveal } from "../../components/landing/Reveal";
+import { DayTimeline, StepCards } from "../../components/site/blocks";
+import JsonLd from "../../components/site/JsonLd";
+import { breadcrumbSchema, pageMeta, webPageSchema } from "../../lib/seo";
+import { Heading } from "../../components/site/Heading";
+import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/site/kit";
+import { PhoneRow } from "../../components/site/Phone";
+import { Reveal } from "../../components/site/Reveal";
+import { buttonClass, Kicker, Lead, Section, Surface } from "../../components/site/ui";
 
-export const metadata: Metadata = {
-  title: "How it works — Naazhi",
-  description:
-    "One workspace for notes, tasks, journal, calendar and chat, with email and meetings on the way. AI that you choose, or no AI at all.",
-};
+const TITLE = "How it works — Naazhi";
+const DESCRIPTION =
+  "One workspace for notes, tasks, journal, calendar and chat, with email and meetings on the way. AI that you choose, or no AI at all.";
+export const metadata: Metadata = pageMeta({ title: TITLE, description: DESCRIPTION, path: "/how-it-works" });
 
 const steps = [
   {
@@ -92,6 +94,18 @@ const day = [
 export default function Page() {
   return (
     <main>
+      <JsonLd
+        data={[
+          webPageSchema({ name: TITLE, description: DESCRIPTION, path: "/how-it-works" }),
+          breadcrumbSchema([{ name: "How it works", path: "/how-it-works" }]),
+          {
+            "@context": "https://schema.org",
+            "@type": "HowTo",
+            name: "Get started with Naazhi",
+            step: steps.map((s, i) => ({ "@type": "HowToStep", position: i + 1, name: s.t, text: s.d })),
+          },
+        ]}
+      />
       <PageHero
         eyebrow="How it works"
         title="One workspace."
@@ -99,22 +113,22 @@ export default function Page() {
         lead="Naazhi brings your notes, tasks, journal, calendar and chat together, with email and meetings on the way, and keeps all of it separate from whichever AI you choose to use."
         visual={<PhoneRow screens={["/mobile/todo.png", "/mobile/home.png", "/mobile/notes.png"]} />}
       >
-        <Link className="btn btn-primary" href="/demo" data-cursor="Play">
+        <Link className={buttonClass("primary")} href="/demo">
           Try the product demo <FA icon={faArrowRight} />
         </Link>
-        <Link className="btn btn-secondary" href="/pricing">
+        <Link className={buttonClass("secondary")} href="/pricing">
           See pricing
         </Link>
       </PageHero>
 
       <Section tight>
-        <SectionHead eyebrow="In four steps" title="From scattered apps" quiet="to one calm place." />
+        <SectionHead kicker="In four steps" title="From scattered apps" quiet="to one calm place." />
         <StepCards steps={steps} />
       </Section>
 
       <Section tight>
         <SectionHead
-          eyebrow="A day with it"
+          kicker="A day with it"
           title="What a day"
           quiet="looks like."
           lead="No grand routine required. Here is how the pieces fit into an ordinary day."
@@ -124,27 +138,23 @@ export default function Page() {
 
       <Section tight>
         <Reveal>
-          <Glass variant="dark" radius="r5" className="overflow-hidden px-6 py-[clamp(40px,6vw,80px)] text-center">
-            <span
-              aria-hidden
-              className="pointer-events-none absolute -top-20 left-1/2 -z-10 size-[380px] -translate-x-1/2 rounded-full bg-violet-fg/35 blur-[90px]"
-            />
+          <Surface variant="ink" radius="r5" className="overflow-hidden px-6 py-[clamp(40px,6vw,80px)] text-center">
             <div className="mx-auto flex max-w-2xl flex-col items-center gap-5">
-              <Eyebrow dark>The principle</Eyebrow>
-              <Title dark quiet="Your workspace shouldn’t.">
+              <Kicker dark>The principle</Kicker>
+              <Heading dark quiet="Your workspace shouldn’t.">
                 Your AI can change.
-              </Title>
+              </Heading>
               <Lead dark className="mx-auto">
                 Try a new model. Switch providers. Change what powers your AI. Your notes, tasks, journal and everything you’ve built stay
                 exactly where they are.
               </Lead>
             </div>
-          </Glass>
+          </Surface>
         </Reveal>
       </Section>
 
       <Section tight>
-        <SectionHead eyebrow="What you get" title="Everything a day needs," quiet="in one flow." />
+        <SectionHead kicker="What you get" title="Everything a day needs," quiet="in one flow." />
         <FeatureCards
           cols={4}
           items={[

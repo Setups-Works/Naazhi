@@ -28,7 +28,7 @@ export const NAV_LINKS = [
   { href: "/how-it-works", t: "How it works" },
   { href: "/demo", t: "Product demo" },
   { href: "/pricing", t: "Pricing" },
-  { href: "/privacy-security", t: "Privacy & Security" },
+  { href: "/download", t: "Download" },
 ];
 
 /** Flat list for the mobile menu */
@@ -39,6 +39,7 @@ export const MENU: [string, string][] = [
   ["Daily Brief", "/daily-brief"],
   ["Product demo", "/demo"],
   ["Pricing", "/pricing"],
+  ["Download", "/download"],
   ["Privacy & Security", "/privacy-security"],
   ["Early users", "/early-users"],
   ["Changelog", "/changelog"],
@@ -51,6 +52,7 @@ export const FOOTER_COLS: { title: string; links: [string, string][] }[] = [
       ["How it works", "/how-it-works"],
       ["Product demo", "/demo"],
       ["Pricing", "/pricing"],
+      ["Download", "/download"],
       ["Early users", "/early-users"],
       ["Changelog", "/changelog"],
     ],
@@ -70,7 +72,7 @@ export const FOOTER_COLS: { title: string; links: [string, string][] }[] = [
       ["Notes, tasks and journal", "/#workspace"],
       ["A tour of the app", "/#tour"],
       ["Integrations", "/#integrations"],
-      ["Get the Android app", `${GITHUB_REPO}/releases/latest`],
+      ["Get the Android app", "/download"],
     ],
   },
   {

@@ -1,19 +1,25 @@
 import type { Metadata } from "next";
 import { faBookOpen, faCalendarDays, faEnvelope, faListCheck } from "@fortawesome/free-solid-svg-icons";
 import BriefDemo from "../../components/demos/BriefDemo";
-import Glass from "../../components/landing/Glass";
-import { Eyebrow, Lead, Section, StatusChip, Title } from "../../components/landing/Kit";
-import { Reveal } from "../../components/landing/Reveal";
-import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/PageKit";
+import JsonLd from "../../components/site/JsonLd";
+import { pageMeta, pageSchemas } from "../../lib/seo";
+import { Heading } from "../../components/site/Heading";
+import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/site/kit";
+import { Reveal } from "../../components/site/Reveal";
+import { buttonClass, Kicker, Lead, Section, StatusChip, Surface } from "../../components/site/ui";
 
-export const metadata: Metadata = {
+const SEO = {
+  name: "Daily Brief",
   title: "Daily Brief — Naazhi",
   description: "Start the day knowing what matters: your events, tasks, email and journal in one brief, with or without AI.",
+  path: "/daily-brief",
 };
+export const metadata: Metadata = pageMeta(SEO);
 
 export default function Page() {
   return (
     <main>
+      <JsonLd data={pageSchemas(SEO)} />
       <PageHero
         eyebrow="Daily Brief"
         status={<StatusChip status="building" />}
@@ -21,16 +27,16 @@ export default function Page() {
         quiet="knowing what matters."
         lead="Your events, open tasks, email that needs a reply and a line from your journal, pulled into one calm page. Turn the AI summary on or off; the brief works either way."
       >
-        <a className="btn btn-primary" href="#brief" data-cursor="Preview">
+        <a className={buttonClass("primary")} href="#brief">
           See a sample brief
         </a>
       </PageHero>
 
       <Section id="brief" tight>
         <Reveal>
-          <Glass tone="amber" radius="r5" className="p-[clamp(14px,3vw,36px)]">
+          <Surface variant="soft" radius="r5" className="p-[clamp(14px,3vw,36px)]">
             <BriefDemo />
-          </Glass>
+          </Surface>
         </Reveal>
         <p className="mt-4 text-center text-[13.5px] text-fg-subtle">
           A sample with made-up content. The Daily Brief is being built; your tasks and calendar are the first sources.
@@ -38,7 +44,7 @@ export default function Page() {
       </Section>
 
       <Section tight>
-        <SectionHead eyebrow="What’s inside" title="Four sources," quiet="one page." />
+        <SectionHead kicker="What’s inside" title="Four sources," quiet="one page." />
         <FeatureCards
           cols={4}
           items={[
@@ -52,16 +58,16 @@ export default function Page() {
 
       <Section tight>
         <Reveal>
-          <Glass tone="green" radius="r5" className="p-[clamp(24px,5vw,64px)]">
+          <Surface variant="soft" radius="r5" className="p-[clamp(24px,5vw,64px)]">
             <div className="mx-auto flex max-w-2xl flex-col items-center gap-5 text-center">
-              <Eyebrow>AI optional</Eyebrow>
-              <Title quiet="Plain facts when you don’t.">Summaries when you want them.</Title>
+              <Kicker>AI optional</Kicker>
+              <Heading quiet="Plain facts when you don’t.">Summaries when you want them.</Heading>
               <Lead className="mx-auto">
                 With an AI provider connected, your brief can open with a short summary. Without one, you get the same information as a
                 clean list. Either way, your content stays in your workspace.
               </Lead>
             </div>
-          </Glass>
+          </Surface>
         </Reveal>
       </Section>
 

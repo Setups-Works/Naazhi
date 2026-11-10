@@ -1,3 +1,5 @@
+import { toDate } from "@untitled/logic";
+
 import { getRuntimePrefs } from "./preferences";
 
 /** Calendar days are plain `YYYY-MM-DD` strings in the user's local time, as on the web (apps/web/src/lib/dates.ts). */
@@ -32,7 +34,9 @@ export function dayLabel(iso: string, today = isoDate()) {
 
 export function timeOf(iso: string) {
   const prefs = getRuntimePrefs();
+  const d = toDate(iso);
+  if (Number.isNaN(d.getTime())) return "";
   return prefs.timeFormat === "24h"
-    ? new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false })
-    : new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase();
+    ? d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false })
+    : d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase();
 }

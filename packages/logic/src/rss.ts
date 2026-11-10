@@ -1,4 +1,5 @@
 import type { RssFeed, RssFilter } from "@untitled/types";
+import { toDate } from "./dates";
 
 /** Every RSS limit and option in one place, shared by the server, the web and the phone app. Change a number here, nowhere else. */
 export const RSS = {
@@ -43,7 +44,9 @@ export const rssFeedName = (f: Pick<RssFeed, "title" | "url">) => f.title || f.u
 
 /** "5m", "3h", "2d", or a short date for older articles. */
 export function rssAge(iso: string, now = Date.now()): string {
-  const diff = Math.max(now - new Date(iso).getTime(), 0);
+  const date = toDate(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const diff = Math.max(now - date.getTime(), 0);
   const min = Math.floor(diff / 60_000);
   if (min < 1) return "now";
   if (min < 60) return `${min}m`;
@@ -51,7 +54,7 @@ export function rssAge(iso: string, now = Date.now()): string {
   if (hours < 24) return `${hours}h`;
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days}d`;
-  return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 /** The feeds whose name, address or website contains every word of `site` (any case); no words means no feed matches. */

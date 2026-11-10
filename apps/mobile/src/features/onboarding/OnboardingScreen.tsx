@@ -12,6 +12,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { SLIDES } from "./slides";
+import { writeDeviceChoice } from "@/features/notifications/prefs";
+import { askPermission } from "@/features/notifications/setup";
 import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
@@ -27,6 +29,15 @@ export function OnboardingScreen() {
 
   function onScrollEnd(e: NativeSyntheticEvent<NativeScrollEvent>) {
     setIndex(Math.round(e.nativeEvent.contentOffset.x / width));
+  }
+
+  // The system asks for permission here, before anyone has signed in; the choice is remembered on the phone and switches the
+  // notifications on for whichever account signs in next (see notifications/prefs.ts).
+  const [allowed, setAllowed] = useState(false);
+  async function allowNotifications() {
+    const granted = await askPermission();
+    await writeDeviceChoice(granted);
+    setAllowed(granted);
   }
 
   // Finishing (or skipping) marks onboarding done; the route guards then move the user to the auth stack on their own.
@@ -86,7 +97,14 @@ export function OnboardingScreen() {
         </View>
         {last ? (
           <View style={styles.actions}>
-            <Button title="Get started" onPress={() => void finish("/signup")} />
+            <Button
+              title={allowed ? "Notifications are on" : "Turn on notifications"}
+              icon={allowed ? "check" : "bell"}
+              kind={allowed ? "secondary" : "primary"}
+              disabled={allowed}
+              onPress={() => void allowNotifications()}
+            />
+            <Button title="Get started" kind={allowed ? "primary" : "secondary"} onPress={() => void finish("/signup")} />
             <Button title="I already have an account" kind="ghost" onPress={() => void finish("/login")} />
           </View>
         ) : (

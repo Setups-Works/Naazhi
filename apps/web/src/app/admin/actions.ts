@@ -326,6 +326,7 @@ export async function sendMessageToUsers(title: string, body: string, to: string
       message: `Sent to ${r.saved} ${r.saved === 1 ? "person" : "people"}.${r.pushed ? " Phones were notified." : pushConfigured() ? " No phones registered yet." : " Push isn’t set up, so it shows in their inbox in the app."}`,
     };
   } catch (e) {
-    return { ok: false, error: e instanceof ServiceError ? e.message : "Couldn’t send that." };
+    if (!(e instanceof ServiceError)) console.error("admin message failed", e instanceof Error ? e.name : "unknown error", (e as { code?: string }).code ?? "");
+    return { ok: false, error: e instanceof ServiceError ? e.message : "Couldn’t send that. Has the latest database migration been applied?" };
   }
 }

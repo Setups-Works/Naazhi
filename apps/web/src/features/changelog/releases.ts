@@ -23,6 +23,23 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-10",
+    title: "Version 2.6.2: notifications that arrive, and fixes",
+    summary: "Messages from the team now reach you, the app asks about notifications when you start, and chat to-dos and dates are fixed.",
+    tone: "mint",
+    appVersion: "v2.6.2",
+    changes: [
+      { kind: "fixed", platform: "web", text: "Messages sent from the admin panel now arrive in the app’s Notifications inbox." },
+      { kind: "new", platform: "app", text: "The introduction asks whether you want notifications, and your choice carries over when you sign in." },
+      { kind: "improved", platform: "app", text: "Notification choices moved to Settings → Notifications. The Notifications screen is now just your inbox." },
+      { kind: "fixed", platform: "web", text: "Dates in the web app and the app no longer show “Invalid Date”." },
+      { kind: "fixed", platform: "app", text: "Dates in the app no longer show “Invalid Date”." },
+      { kind: "fixed", platform: "web", text: "Asking chat to add a to-do now shows a draft card instead of raw text." },
+      { kind: "fixed", platform: "app", text: "The same to-do draft cards in the app’s chat." },
+      { kind: "improved", platform: "web", text: "The floating assistant now has everything the chat page has: a jump-to-latest button, links in your messages, message times, and chats you open are marked read." },
+    ],
+  },
+  {
+    date: "2026-11-10",
     title: "Version 2.6.1: tidier admin messages",
     summary: "The admin Messages form looks right, and the Android app can receive push notifications once they are turned on.",
     tone: "sand",

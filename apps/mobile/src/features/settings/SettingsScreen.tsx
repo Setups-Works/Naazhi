@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
 import { Image } from "expo-image";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { giftShareText } from "@untitled/logic";
 import { Pressable, ScrollView, Share, StyleSheet, Switch, View } from "react-native";
@@ -20,6 +20,7 @@ import { Palette, Radius, Tints } from "@/constants/theme";
 import { mobileEnv } from "@/config/env";
 import { dbQuery } from "@/features/chat/db";
 import { BillingSection } from "@/features/billing/BillingSection";
+import { NotificationSettings } from "@/features/notifications/NotificationSettings";
 import { useAccountSettings } from "./queries";
 import { SETTINGS_SECTIONS, type SettingsPrefs, type SettingsSection } from "./types";
 import { useUpdate } from "@/features/updates/UpdateProvider";
@@ -45,7 +46,9 @@ export function SettingsScreen() {
   const auth = useAuth();
   const settingsQ = useAccountSettings();
   const update = useUpdate();
-  const [section, setSection] = useState<SettingsSection>("profile");
+  // Other screens can open Settings straight on a section (for example the Notifications inbox).
+  const { section: requested } = useLocalSearchParams<{ section?: string }>();
+  const [section, setSection] = useState<SettingsSection>(SETTINGS_SECTIONS.find((s) => s.key === requested)?.key ?? "profile");
   const [busy, setBusy] = useState("");
   const giftRef = useRef<View>(null);
   const [notice, setNotice] = useState<Notice>(null);
@@ -422,6 +425,8 @@ export function SettingsScreen() {
           </View>
         </Card>
       ) : null}
+
+      {section === "notifications" ? <NotificationSettings /> : null}
 
       {section === "billing" ? <BillingSection /> : null}
 

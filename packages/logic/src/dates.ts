@@ -25,13 +25,32 @@ export const greeting = (d = new Date()) => {
   return h < 5 ? "Good night" : h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
 };
 
+/**
+ * A timestamp from the API as a Date. Accepts ISO-8601 and also Postgres' own text form ("2026-11-10 07:50:43.123456+00", with a space,
+ * more than three fraction digits and an hours-only offset), which the phone's JavaScript engine refuses to read and turns into
+ * "Invalid Date". Plain `YYYY-MM-DD` days are left alone.
+ */
+export function toDate(value: string | number | Date): Date {
+  if (typeof value !== "string") return new Date(value);
+  const text = value.trim();
+  if (!/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}/.test(text)) return new Date(text);
+  return new Date(
+    text
+      .replace(" ", "T")
+      .replace(/(\.\d{3})\d+/, "$1")
+      .replace(/([+-]\d{2})$/, "$1:00"),
+  );
+}
+
 export function ago(iso: string) {
-  const s = (Date.now() - new Date(iso).getTime()) / 1000;
+  const date = toDate(iso);
+  const s = (Date.now() - date.getTime()) / 1000;
+  if (Number.isNaN(s)) return "";
   if (s < 60) return "just now";
   if (s < 3600) return `${Math.floor(s / 60)}m ago`;
   if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
   if (s < 86400 * 7) return `${Math.floor(s / 86400)}d ago`;
-  return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 /** Whole days from a to b (both YYYY-MM-DD). */

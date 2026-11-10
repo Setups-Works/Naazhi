@@ -66,7 +66,12 @@ export async function sendPush(tokens: string[], msg: { title: string; body: str
             },
           }),
         }).catch(() => null);
-        if (res && (res.status === 404 || res.status === 400)) dead.push(token);
+        if (!res || res.ok) return;
+        // Only a token Firebase says is gone is forgotten; any other refusal (a bad payload, a permission problem) keeps the phone.
+        const detail = (await res.json().catch(() => null)) as { error?: { status?: string; details?: { errorCode?: string }[] } } | null;
+        const gone = res.status === 404 || detail?.error?.details?.some((d) => d.errorCode === "UNREGISTERED");
+        if (gone) dead.push(token);
+        else console.error("push refused", res.status, detail?.error?.status ?? "");
       }),
     );
   }

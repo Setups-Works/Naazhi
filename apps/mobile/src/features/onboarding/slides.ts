@@ -36,4 +36,12 @@ export const SLIDES: { key: string; icon: IconName; tone: Tone; eyebrow: string;
     title: "Your data stays yours",
     body: "Journal entries are visible only to you, and everything runs on your own self-hosted stack.",
   },
+  {
+    key: "notifications",
+    icon: "bell",
+    tone: "gold",
+    eyebrow: "Stay in the loop",
+    title: "Gentle reminders, only when they matter",
+    body: "Get a nudge for what is due, your journal streak, events, and messages from the team. You can change this any time in Settings.",
+  },
 ];

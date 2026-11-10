@@ -26,7 +26,8 @@ export async function notifyUsers(userIds: string[], n: repo.NewNotification): P
     );
     await repo.deleteTokens(dead);
     return { saved, pushed: devices.length > 0 };
-  } catch {
+  } catch (e) {
+    console.error("push failed", e instanceof Error ? e.name : "unknown error");
     return { saved, pushed: false };
   }
 }

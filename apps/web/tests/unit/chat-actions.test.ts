@@ -85,6 +85,37 @@ describe("itemPath", () => {
   });
 });
 
+describe("a draft the model wrote without its tags", () => {
+  const bare = '{"kind":"task","ref":"A1","title":"Call the dentist","description":"","due_date":"2026-11-11"}';
+
+  it("is turned into a draft card instead of showing raw JSON, even with an upper-case ref", () => {
+    const r = parseChatActions(bare);
+    expect(r.body).toBe("");
+    expect(r.proposals).toHaveLength(1);
+    expect(r.proposals[0]!.action).toMatchObject({ kind: "task", title: "Call the dentist", ref: "a1" });
+  });
+
+  it("works with text around it and inside a code fence", () => {
+    const r = parseChatActions(`Here you go.\n\n\`\`\`json\n${bare}\n\`\`\``);
+    expect(r.proposals).toHaveLength(1);
+    expect(r.body).toBe("Here you go.");
+  });
+
+  it("can be marked created like a tagged draft", () => {
+    const { action } = parseChatActions(bare).proposals[0]!;
+    const out = markCreated(bare, 0, { kind: "task", path: "/dashboard/todo?task=1" }, action);
+    expect(out).toContain("<created-item>");
+    expect(parseChatActions(out).proposals[0]!.created?.path).toBe("/dashboard/todo?task=1");
+  });
+
+  it("leaves ordinary JSON in a code answer alone", () => {
+    const code = 'Use this:\n\n```json\n{"kind":"banana","size":3}\n```';
+    const r = parseChatActions(code);
+    expect(r.proposals).toHaveLength(0);
+    expect(r.body).toContain('"kind":"banana"');
+  });
+});
+
 describe("the Reader in chat", () => {
   it("reads an rss show block and a feed draft, and drops a bad one", () => {
     const text = `Here.\n<show-item>{"kind":"rss","view":"starred"}</show-item><show-item>{"kind":"rss","view":"nope"}</show-item>\n<create-item>{"kind":"feed","title":"StackKit","url":"https://mystackkit.com"}</create-item>`;

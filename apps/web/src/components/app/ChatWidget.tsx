@@ -27,7 +27,6 @@ import { qk } from "../../lib/query/keys";
 import { isoDate } from "../../lib/dates";
 import { ageShort, prettyTitle } from "../../lib/chat";
 import { safeName } from "../../lib/notes";
-import { fmtTime } from "../../lib/prefs";
 import { parseChatActions } from "../../lib/chat-actions";
 import { NO_AI } from "../../lib/ai";
 import type { Attachment, Chat, Message } from "../../lib/workspace";
@@ -40,8 +39,7 @@ import AudioWave from "../ui/AudioWave";
 import Markdown from "./Markdown";
 import Composer from "./chat/Composer";
 import ShareDialog from "./chat/ShareDialog";
-import ChatActionProposal from "./chat/ChatActionProposal";
-import ShownItems from "./chat/shown/ShownItems";
+import { ChatLayout, ChatMessage, ChatMessageBubble, ChatMessageList, ChatMessageMetadata, ChatSystemMessage, ChatTokenizedText, ChatToolCalls } from "./chat/kit";
 
 const CHAT_KEY = "up_widget_chat";
 const MSG_COLS = "id,role,body,created_at,attachments";
@@ -87,7 +85,7 @@ export default function ChatWidget() {
   const [sharing, setSharing] = useState(false);
   const [urls, setUrls] = useState<Record<string, string>>({});
   const uid = useRef("");
-  const listRef = useRef<HTMLDivElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
   const launcherRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => setChatId(readChat()), []);
@@ -126,9 +124,19 @@ export default function ChatWidget() {
 
   // Keep the newest message in view.
   useEffect(() => {
-    const el = listRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    endRef.current?.scrollIntoView({ block: "end" });
   }, [list.length, typing, open]);
+
+  // Opening a chat marks it read, as on the chat page.
+  useEffect(() => {
+    if (!live || !active || new Date(active.last_read_at) >= new Date(active.updated_at)) return;
+    const now = new Date().toISOString();
+    qc.setQueryData<Chat[]>(qk.chats.list, (old) => (old ?? []).map((c) => (c.id === active.id ? { ...c, last_read_at: now } : c)));
+    sb.from("chats")
+      .update({ last_read_at: now })
+      .eq("id", active.id)
+      .then(() => {});
+  }, [live, active, qc, sb]);
 
   useEffect(() => {
     if (!open) return;
@@ -438,14 +446,38 @@ export default function ChatWidget() {
             </button>
           </header>
 
-          <div ref={listRef} className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 py-4" aria-live="polite">
+          <ChatLayout
+            footer={
+              <>
+                {err && (
+                  <p className="form-err" role="alert">
+                    {err}
+                  </p>
+                )}
+                {noAi && (
+                  <ChatSystemMessage icon={<FA icon={faTriangleExclamation} />}>No AI is selected, so replies aren’t generated.</ChatSystemMessage>
+                )}
+                <Composer
+                  key={chatId ?? "new"}
+                  draftKey={`widget:${chatId ?? "new"}`}
+                  busy={busy}
+                  providers={providers}
+                  provider={provider}
+                  onProvider={selectProvider}
+                  onSend={send}
+                  onError={setErr}
+                  autoFocus
+                />
+              </>
+            }
+          >
             {copied && (
               <p className="self-center rounded-pill bg-surface px-3 py-1 text-xs text-fg-muted shadow-e1" role="status">
                 Copied to clipboard
               </p>
             )}
-            {list.length === 0 && typing === null && (
-              <div className="my-auto text-center">
+            {list.length === 0 && typing === null ? (
+              <div className="my-auto px-4 text-center">
                 <p className="font-serif text-[28px] leading-tight text-fg-strong">Hi, how can I help?</p>
                 <p className="mt-1 text-sm text-fg-muted">
                   I can answer questions and turn what you tell me into journal entries, to-dos and notes.
@@ -464,80 +496,54 @@ export default function ChatWidget() {
                   ))}
                 </div>
               </div>
+            ) : (
+              <ChatMessageList endRef={endRef}>
+                {list.map((m) => {
+                  const parsed = m.role === "assistant" ? parseChatActions(m.body) : null;
+                  return (
+                    <ChatMessage key={m.id} role={m.role}>
+                      <ChatMessageBubble>
+                        {parsed ? (
+                          <>
+                            {parsed.body && <Markdown text={parsed.body} />}
+                            {chatId && <ChatToolCalls shows={parsed.shows} proposals={parsed.proposals} messageId={m.id} chatId={chatId} />}
+                          </>
+                        ) : (
+                          m.body && m.body !== "Attachment" && <ChatTokenizedText text={m.body} />
+                        )}
+                        {m.attachments.map((a) => {
+                          const u = urls[a.path];
+                          return (
+                            <div key={a.path} className="cx-att">
+                              {u && a.type.startsWith("image/") && <AttachmentImage src={u} name={a.name} />}
+                              {u && a.type.startsWith("audio/") && <AudioWave src={u} label={a.name} />}
+                              {!a.type.startsWith("image/") &&
+                                !a.type.startsWith("audio/") &&
+                                (u ? (
+                                  <a href={u} target="_blank" rel="noopener noreferrer">
+                                    <FA icon={faPaperclip} /> {a.name}
+                                  </a>
+                                ) : (
+                                  <span>{a.name}</span>
+                                ))}
+                            </div>
+                          );
+                        })}
+                        <ChatMessageMetadata at={m.created_at} />
+                      </ChatMessageBubble>
+                    </ChatMessage>
+                  );
+                })}
+                {typing !== null && (
+                  <ChatMessage role="assistant" busy>
+                    <ChatMessageBubble>
+                      {typing ? <Markdown text={parseChatActions(typing).body} /> : <p className="ap-none">Thinking…</p>}
+                    </ChatMessageBubble>
+                  </ChatMessage>
+                )}
+              </ChatMessageList>
             )}
-            {list.map((m) => {
-              const atts = m.attachments.map((a) => {
-                const u = urls[a.path];
-                return (
-                  <div key={a.path} className="cx-att mt-2">
-                    {u && a.type.startsWith("image/") && <AttachmentImage src={u} name={a.name} />}
-                    {u && a.type.startsWith("audio/") && <AudioWave src={u} label={a.name} />}
-                    {!a.type.startsWith("image/") &&
-                      !a.type.startsWith("audio/") &&
-                      (u ? (
-                        <a href={u} target="_blank" rel="noopener noreferrer">
-                          <FA icon={faPaperclip} /> {a.name}
-                        </a>
-                      ) : (
-                        <span>{a.name}</span>
-                      ))}
-                  </div>
-                );
-              });
-              if (m.role === "user")
-                return (
-                  <div
-                    key={m.id}
-                    className="max-w-[85%] self-end whitespace-pre-wrap break-words rounded-r3 rounded-br-r1 bg-fg px-4 py-2.5 text-sm text-on-dark"
-                  >
-                    {m.body && m.body !== "Attachment" && <p>{m.body}</p>}
-                    {atts}
-                    <small className="mt-1 block text-[11px] opacity-60">{fmtTime(m.created_at)}</small>
-                  </div>
-                );
-              const parsed = parseChatActions(m.body);
-              return (
-                <div key={m.id} className="max-w-[92%] self-start rounded-r3 rounded-bl-r1 bg-surface px-4 py-3 text-sm shadow-e1">
-                  {parsed.body && <Markdown text={parsed.body} />}
-                  {parsed.shows.length > 0 && <ShownItems shows={parsed.shows} />}
-                  {parsed.proposals.length > 0 && chatId && (
-                    <ChatActionProposal proposals={parsed.proposals} messageId={m.id} chatId={chatId} />
-                  )}
-                  {atts}
-                  <small className="mt-1 block text-[11px] text-fg-muted">{fmtTime(m.created_at)}</small>
-                </div>
-              );
-            })}
-            {typing !== null && (
-              <div className="max-w-[92%] self-start rounded-r3 rounded-bl-r1 bg-surface px-4 py-3 text-sm shadow-e1" aria-busy="true">
-                {typing ? <Markdown text={parseChatActions(typing).body} /> : <span className="text-fg-muted">Thinking…</span>}
-              </div>
-            )}
-          </div>
-
-          {err && (
-            <p className="px-4 pb-1 text-sm text-clay-fg" role="alert">
-              {err}
-            </p>
-          )}
-          {noAi && (
-            <p className="flex items-center justify-center gap-2 px-4 pb-2 text-xs text-fg-subtle">
-              <FA icon={faTriangleExclamation} /> No AI is selected, so replies aren’t generated.
-            </p>
-          )}
-          <div className="p-3">
-            <Composer
-              key={chatId ?? "new"}
-              draftKey={`widget:${chatId ?? "new"}`}
-              busy={busy}
-              providers={providers}
-              provider={provider}
-              onProvider={selectProvider}
-              onSend={send}
-              onError={setErr}
-              autoFocus
-            />
-          </div>
+          </ChatLayout>
         </section>
       )}
 

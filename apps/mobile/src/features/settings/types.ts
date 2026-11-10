@@ -15,11 +15,12 @@ export type AccountSettings = {
   preferences: unknown;
 };
 
-export type SettingsSection = "profile" | "prefs" | "appearance" | "billing" | "security" | "data" | "about" | "danger";
+export type SettingsSection = "profile" | "prefs" | "notifications" | "appearance" | "billing" | "security" | "data" | "about" | "danger";
 
-export const SETTINGS_SECTIONS: { key: SettingsSection; title: string; icon: "user" | "sliders" | "palette" | "wallet" | "shield-halved" | "database" | "circle-info" | "trash" }[] = [
+export const SETTINGS_SECTIONS: { key: SettingsSection; title: string; icon: "user" | "sliders" | "bell" | "palette" | "wallet" | "shield-halved" | "database" | "circle-info" | "trash" }[] = [
   { key: "profile", title: "Profile", icon: "user" },
   { key: "prefs", title: "Preferences", icon: "sliders" },
+  { key: "notifications", title: "Notifications", icon: "bell" },
   { key: "appearance", title: "Appearance", icon: "palette" },
   { key: "billing", title: "Plan and billing", icon: "wallet" },
   { key: "security", title: "Security", icon: "shield-halved" },

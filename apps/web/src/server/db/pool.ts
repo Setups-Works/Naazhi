@@ -4,9 +4,14 @@ import { requireEnv } from "../../config/env";
 
 // Dates stay as strings so `date` columns (YYYY-MM-DD) are never shifted by the server's timezone. Query results are produced as
 // JSON by Postgres itself (see execute.ts), which already formats timestamps as ISO-8601; these parsers cover everything else.
+// A `timestamptz` is turned into ISO-8601 here too: Postgres' own text ("2026-11-10 07:50:43+00") is not valid ISO, and the phone's
+// JavaScript engine reads it as "Invalid Date".
 pg.types.setTypeParser(1082, (v) => v); // date
 pg.types.setTypeParser(1114, (v) => v); // timestamp
-pg.types.setTypeParser(1184, (v) => v); // timestamptz
+pg.types.setTypeParser(1184, (v) => {
+  const t = new Date(v);
+  return Number.isNaN(t.getTime()) ? v : t.toISOString();
+}); // timestamptz
 pg.types.setTypeParser(20, (v) => Number(v)); // bigint (counts)
 
 const g = globalThis as unknown as { __pgPool?: pg.Pool };

@@ -4,7 +4,8 @@ const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 /** A short label a journal draft uses to point at a to-do or note draft from the same reply (see `[[text|ref]]` below). */
 const ref = z
   .string()
-  .regex(/^[a-z0-9]{1,12}$/)
+  .regex(/^[a-z0-9]{1,12}$/i)
+  .transform((r) => r.toLowerCase()) // models write "A1" as often as "a1"; markers and refs are compared in lower case
   .optional();
 
 export const chatActionSchema = z.discriminatedUnion("kind", [
@@ -54,7 +55,7 @@ export type CreatedItem = { kind: ChatAction["kind"]; path: string; id?: string 
 /* ---------- links from a journal entry to the to-dos and notes made from the same message ---------- */
 
 // In a journal draft the assistant marks the words that belong to another draft as `[[words|ref]]`.
-const REF_MARK = /\[\[([^\]|\n]{1,200})\|([a-z0-9]{1,12})\]\]/g;
+const REF_MARK = /\[\[([^\]|\n]{1,200})\|([a-z0-9]{1,12})\]\]/gi;
 
 /** The journal text with the markers removed (what a draft card shows before anything is saved). */
 export const stripRefs = (body: string) => body.replace(REF_MARK, "$1");
@@ -84,7 +85,7 @@ export function describeItem(a: ChatAction): string {
  */
 export function resolveRefs(body: string, items: Map<string, { path: string; tip: string }>): string {
   return body.replace(REF_MARK, (_all, text: string, r: string) => {
-    const it = items.get(r);
+    const it = items.get(r.toLowerCase());
     return it ? `[${text.replace(/[[\]]/g, "")}](${it.path} "${it.tip}")` : text;
   });
 }
@@ -139,6 +140,69 @@ function parseJson(json: string): unknown {
   }
 }
 
+const TAGGED = /<(?:create-item|created-item|show-item)>[\s\S]*?<\/(?:create-item|created-item|show-item)>/g;
+const FENCED = /```(?:json)?\s*(<(?:create-item|show-item)>[\s\S]*?<\/(?:create-item|show-item)>)\s*```/g;
+
+/** Where the JSON object that starts at `from` ends (string-aware), or -1 when it never closes. */
+function objectEnd(s: string, from: number): number {
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = from; i < s.length; i++) {
+    const ch = s[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === '"') inString = false;
+    } else if (ch === '"') inString = true;
+    else if (ch === "{") depth++;
+    else if (ch === "}" && --depth === 0) return i;
+  }
+  return -1;
+}
+
+/** Wraps JSON objects the model wrote without their tags, in the text outside any tag. */
+function wrapPlain(text: string): string {
+  let out = "";
+  let at = 0;
+  for (const m of text.matchAll(/\{\s*"kind"/g)) {
+    const start = m.index ?? 0;
+    if (start < at) continue;
+    const end = objectEnd(text, start);
+    if (end < 0) continue;
+    const json = text.slice(start, end + 1);
+    let tag: "create-item" | "show-item" | null = null;
+    try {
+      const raw = parseJson(json);
+      if (chatActionSchema.safeParse(raw).success) tag = "create-item";
+      else if (showItemSchema.safeParse(raw).success) tag = "show-item";
+    } catch {
+      /* not JSON: leave it as text */
+    }
+    if (!tag) continue;
+    out += `${text.slice(at, start)}<${tag}>${json}</${tag}>`;
+    at = end + 1;
+  }
+  return out + text.slice(at);
+}
+
+/**
+ * A model sometimes writes a draft's JSON on its own, without the `<create-item>` tags, and the app would show raw JSON in the
+ * chat instead of a draft card. A JSON object outside any tag that is a valid draft (or a valid show block) is wrapped in the tag it
+ * belongs to, and a code fence around a tagged block is dropped. A reply that already uses the tags is returned as it was.
+ */
+export function wrapBareJson(text: string): string {
+  if (!/\{\s*"kind"/.test(text)) return text;
+  let out = "";
+  let last = 0;
+  for (const m of text.matchAll(TAGGED)) {
+    const at = m.index ?? 0;
+    out += wrapPlain(text.slice(last, at)) + m[0];
+    last = at + m[0].length;
+  }
+  return (out + wrapPlain(text.slice(last))).replace(FENCED, "$1");
+}
+
 function readBlock(tag: string, json: string): { action: ChatAction; created: CreatedItem | null } | null {
   try {
     const raw: unknown = parseJson(json);
@@ -161,7 +225,7 @@ function readBlock(tag: string, json: string): { action: ChatAction; created: Cr
 export function parseChatActions(text: string): { body: string; proposals: ChatProposal[]; shows: ShowItem[] } {
   const proposals: ChatProposal[] = [];
   const shows: ShowItem[] = [];
-  let body = text
+  let body = wrapBareJson(text)
     .replace(SHOW, (_all, json: string) => {
       try {
         const r = showItemSchema.safeParse(parseJson(json));
@@ -191,7 +255,7 @@ export function parseChatAction(text: string): { body: string; action: ChatActio
 /** Rewrites a message so that the `index`-th draft is marked as created (keeping every other draft as it was). */
 export function markCreated(text: string, index: number, created: CreatedItem, action: ChatAction): string {
   let seen = -1;
-  return text.replace(BLOCK, (all, tag: string, json: string) => {
+  return wrapBareJson(text).replace(BLOCK, (all, tag: string, json: string) => {
     if (!readBlock(tag, json)) return all;
     seen++;
     return seen === index ? `<created-item>${JSON.stringify({ ...created, action })}</created-item>` : all;

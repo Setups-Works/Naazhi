@@ -1,3 +1,5 @@
+import { toDate } from "@untitled/logic";
+
 export type Prefs = {
   timeFormat: "12h" | "24h";
   defaultCategory: string;
@@ -42,7 +44,8 @@ export function readPrefs(): Prefs {
 
 /** Clock time of an ISO timestamp, in the user's 12h/24h preference. */
 export function fmtTime(iso: string) {
-  const d = new Date(iso);
+  const d = toDate(iso);
+  if (Number.isNaN(d.getTime())) return "";
   return readPrefs().timeFormat === "24h"
     ? d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false })
     : d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase();

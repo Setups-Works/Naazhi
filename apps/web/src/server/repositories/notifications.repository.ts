@@ -29,7 +29,8 @@ export const tokensFor = (userIds: string[]) =>
 export const insertFor = (userIds: string[], n: NewNotification) =>
   withOwner(async (c) => {
     const r = await c.query(
-      `insert into public.notifications (user_id, kind, title, body, url) select unnest($1::uuid[]), $2, $3, $4, $5`,
+      // Every placeholder is typed: Postgres cannot work out the type of a bare $n in a select list, and the insert fails.
+      `insert into public.notifications (user_id, kind, title, body, url) select unnest($1::uuid[]), $2::text, $3::text, $4::text, $5::text`,
       [userIds, n.kind, n.title, n.body, n.url ?? null],
     );
     return r.rowCount ?? 0;

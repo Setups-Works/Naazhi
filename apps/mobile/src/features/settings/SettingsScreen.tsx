@@ -28,6 +28,7 @@ import { shareImageWithText } from "@/lib/shareImage";
 import { createUploadId } from "@/lib/uploadId";
 import { api, errorMessage } from "@/lib/api";
 import { NOTE_CATEGORIES } from "@/lib/preferences";
+import { GlassPill } from "@/components/ui/GlassPill";
 
 type Notice = { kind: "success" | "error" | "info"; text: string } | null;
 type TableRow = Record<string, unknown>;
@@ -331,8 +332,9 @@ export function SettingsScreen() {
   const sections = (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sectionNav} accessibilityLabel="Settings sections">
       {SETTINGS_SECTIONS.map((item) => (
-        <Pressable
+        <GlassPill
           key={item.key}
+          glass={section !== item.key}
           accessibilityRole="button"
           accessibilityState={{ selected: section === item.key }}
           onPress={() => { setSection(item.key); setNotice(null); }}
@@ -340,7 +342,7 @@ export function SettingsScreen() {
         >
           <Icon name={item.icon} size={14} color={section === item.key ? Palette.onDark : item.key === "danger" ? Palette.clayFg : Palette.fgMuted} />
           <AppText variant="small" color={section === item.key ? Palette.onDark : item.key === "danger" ? Palette.clayFg : Palette.fgMuted}>{item.title}</AppText>
-        </Pressable>
+        </GlassPill>
       ))}
     </ScrollView>
   );

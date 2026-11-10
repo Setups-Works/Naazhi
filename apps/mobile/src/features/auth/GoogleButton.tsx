@@ -1,8 +1,9 @@
 import { FontAwesome6 } from "@expo/vector-icons";
-import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import { AppText } from "@/components/ui/AppText";
 import { Palette, Radius, Shadow } from "@/constants/theme";
+import { GlassPill } from "@/components/ui/GlassPill";
 
 /**
  * "Continue with Google". The glyph is drawn in ink, not Google's multicolour mark, which stays confined to the web app's
@@ -10,7 +11,7 @@ import { Palette, Radius, Shadow } from "@/constants/theme";
  */
 export function GoogleButton({ onPress, busy, disabled }: { onPress: () => void; busy: boolean; disabled: boolean }) {
   return (
-    <Pressable
+    <GlassPill
       accessibilityRole="button"
       accessibilityLabel="Continue with Google"
       accessibilityState={{ disabled: disabled || busy, busy }}
@@ -20,7 +21,7 @@ export function GoogleButton({ onPress, busy, disabled }: { onPress: () => void;
     >
       {busy ? <ActivityIndicator color={Palette.fg} /> : <FontAwesome6 name="google" brand size={17} color={Palette.fg} />}
       <AppText variant="bodyStrong">{busy ? "Connecting to Google…" : "Continue with Google"}</AppText>
-    </Pressable>
+    </GlassPill>
   );
 }
 

@@ -1,7 +1,8 @@
-import { Pressable, ScrollView, StyleSheet } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 
 import { AppText } from "./AppText";
 import { Palette, Radius } from "@/constants/theme";
+import { GlassPill } from "./GlassPill";
 
 /** Row of pills used as a tab/filter switcher (the web's section switcher). */
 export function Segmented<T extends string>({
@@ -18,7 +19,8 @@ export function Segmented<T extends string>({
       {options.map((o) => {
         const on = o.key === value;
         return (
-          <Pressable
+          <GlassPill
+            glass={!on}
             key={o.key}
             accessibilityRole="tab"
             accessibilityState={{ selected: on }}
@@ -34,7 +36,7 @@ export function Segmented<T extends string>({
               {o.label}
               {o.count ? `  ${o.count}` : ""}
             </AppText>
-          </Pressable>
+          </GlassPill>
         );
       })}
     </ScrollView>

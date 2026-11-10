@@ -1,30 +1,23 @@
 import { useEffect, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { router } from "expo-router";
-import { FlatList, Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from "react-native";
+import { Keyboard, Platform, Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { parseChatActions, stripRefs, type ChatProposal, type ShowItem } from "@untitled/validation";
+import { parseChatActions, type ChatProposal, type ShowItem } from "@untitled/validation";
 
 import { Composer } from "./Composer";
+import { ChatLayout, ChatMessage, ChatMessageBubble, ChatMessageList, ChatMessageMetadata, ChatSystemMessage, ChatTokenizedText, ChatToolCalls } from "./kit";
 import { uploadChatFile, type PendingFile } from "./files";
 import { useAiProviders } from "./providers";
-import { ShownItems } from "./shown/ShownItems";
 import { useChatActions, useMessages } from "./queries";
 import { streamReply } from "./streamReply";
 import { prettyTitle } from "./text";
-import type { Message } from "./types";
 import type { Attachment } from "@untitled/types";
 import { AppText } from "@/components/ui/AppText";
 import { AttachmentGallery } from "@/components/ui/AttachmentGallery";
-import { Banner } from "@/components/ui/Banner";
-import { GlassSurface } from "@/components/ui/GlassSurface";
 import { Markdown } from "@/components/ui/Markdown";
 import { Icon } from "@/components/ui/Icon";
 import { ErrorState, LoadingState } from "@/components/ui/States";
-import { Palette, Radius, Tints } from "@/constants/theme";
-import { api, errorMessage } from "@/lib/api";
-import { qk } from "@/lib/queryKeys";
-import { Button } from "@/components/ui/Button";
+import { Palette, Radius } from "@/constants/theme";
+import { errorMessage } from "@/lib/api";
 import { greeting } from "@/lib/dates";
 import { useAppState } from "@/providers/AppState";
 
@@ -56,7 +49,6 @@ export function Conversation({
   const [streaming, setStreaming] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const abort = useRef<AbortController | null>(null);
-  const list = useRef<FlatList<Message>>(null);
   const insets = useSafeAreaInsets();
   const [keyboard, setKeyboard] = useState(false);
   useEffect(() => {
@@ -135,78 +127,65 @@ export function Conversation({
   const noAi = provider === "none" && !providersLoading;
 
   return (
-    <View style={styles.safe}>
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        {chatId && messagesQ.isPending ? (
-          <LoadingState />
-        ) : messagesQ.isError ? (
-          <ErrorState message={errorMessage(messagesQ.error)} onRetry={() => void messagesQ.refetch()} />
-        ) : (
-          <FlatList
-            ref={list}
-            data={messages}
-            keyExtractor={(m) => m.id}
-            contentContainerStyle={styles.messages}
-            onContentSizeChange={() => list.current?.scrollToEnd({ animated: true })}
-            keyboardShouldPersistTaps="handled"
-            ListEmptyComponent={
-              streaming === null ? (
-                <View style={styles.hello}>
-                  <AppText variant="title" align="center">
-                    {greeting()}
-                    {user ? `, ${user.name.split(" ")[0]}` : ""}
-                  </AppText>
-                  <AppText variant="body" align="center" color={Palette.fgMuted}>
-                    What’s on your mind?
-                  </AppText>
-                </View>
-              ) : null
-            }
-            renderItem={({ item }) => (
-              <Bubble role={item.role} text={item.body} messageId={item.id} chatId={chatId} attachments={item.attachments} />
-            )}
-            ListFooterComponent={streaming !== null ? <Bubble role="assistant" text={streaming || "…"} /> : null}
+    <ChatLayout
+      footer={
+        <>
+          {noAi ? <ChatSystemMessage>No AI is selected. Messages are saved to the chat without replies.</ChatSystemMessage> : null}
+          {error ? <ChatSystemMessage kind="error">{error}</ChatSystemMessage> : null}
+
+          {streaming !== null ? (
+            <View style={styles.stopRow}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Stop reply" onPress={() => abort.current?.abort()} style={styles.stop}>
+                <Icon name="stop" size={12} color={Palette.clayFg} />
+                <AppText variant="small" color={Palette.clayFg}>
+                  Stop
+                </AppText>
+              </Pressable>
+            </View>
+          ) : null}
+
+          <Composer
+            busy={busy}
+            providers={providers}
+            provider={provider}
+            onProvider={selectProvider}
+            onSend={send}
+            onError={setError}
+            bottomInset={lift}
           />
-        )}
-
-        {noAi ? (
-          <View style={styles.pad}>
-            <Banner kind="info">No AI is selected. Messages are saved to the chat without replies.</Banner>
-          </View>
-        ) : null}
-        {error ? (
-          <View style={styles.pad}>
-            <Banner kind="error">{error}</Banner>
-          </View>
-        ) : null}
-
-        {streaming !== null ? (
-          <View style={styles.stopRow}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Stop reply"
-              onPress={() => abort.current?.abort()}
-              style={styles.stop}
-            >
-              <Icon name="stop" size={12} color={Palette.clayFg} />
-              <AppText variant="small" color={Palette.clayFg}>
-                Stop
-              </AppText>
-            </Pressable>
-          </View>
-        ) : null}
-
-        <Composer
-          busy={busy}
-          providers={providers}
-          provider={provider}
-          onProvider={selectProvider}
-          onSend={send}
-          onError={setError}
-          bottomInset={lift}
+        </>
+      }
+    >
+      {chatId && messagesQ.isPending ? (
+        <LoadingState />
+      ) : messagesQ.isError ? (
+        <ErrorState message={errorMessage(messagesQ.error)} onRetry={() => void messagesQ.refetch()} />
+      ) : (
+        <ChatMessageList
+          data={messages}
+          keyExtractor={(m) => m.id}
+          contentContainerStyle={styles.messages}
+          keyboardShouldPersistTaps="handled"
+          ListEmptyComponent={
+            streaming === null ? (
+              <View style={styles.hello}>
+                <AppText variant="title" align="center">
+                  {greeting()}
+                  {user ? `, ${user.name.split(" ")[0]}` : ""}
+                </AppText>
+                <AppText variant="body" align="center" color={Palette.fgMuted}>
+                  What’s on your mind?
+                </AppText>
+              </View>
+            ) : null
+          }
+          renderItem={({ item }) => (
+            <Bubble role={item.role} text={item.body} messageId={item.id} chatId={chatId} attachments={item.attachments} at={item.created_at} />
+          )}
+          ListFooterComponent={streaming !== null ? <Bubble role="assistant" text={streaming || "…"} /> : null}
         />
-      </KeyboardAvoidingView>
-    </View>
+      )}
+    </ChatLayout>
   );
 }
 
@@ -216,144 +195,27 @@ function Bubble({
   messageId,
   chatId,
   attachments = [],
+  at,
 }: {
   role: "user" | "assistant";
   text: string;
   messageId?: string;
   chatId?: string | null;
   attachments?: Attachment[];
+  at?: string;
 }) {
   const mine = role === "user";
   // Only the assistant's own messages are parsed for drafts; text a user types can never create items.
   const { body, proposals, shows } = mine ? { body: text, proposals: [] as ChatProposal[], shows: [] as ShowItem[] } : parseChatActions(text);
   return (
-    <View style={[styles.bubbleRow, mine ? styles.mine : styles.theirs]}>
-      <Surface mine={mine} wide={proposals.length > 0 || shows.length > 0}>
-        {body && !(attachments.length && body === "Attachment") ? (
-          mine ? (
-            <AppText variant="body" color={Palette.onDark} selectable>
-              {body}
-            </AppText>
-          ) : (
-            <Markdown text={body} />
-          )
-        ) : null}
+    <ChatMessage role={role}>
+      <ChatMessageBubble mine={mine} wide={proposals.length > 0 || shows.length > 0}>
+        {body && !(attachments.length && body === "Attachment") ? mine ? <ChatTokenizedText text={body} /> : <Markdown text={body} /> : null}
         {attachments.length ? <AttachmentGallery attachments={attachments} /> : null}
-        {shows.length ? <ShownItems shows={shows} /> : null}
-        {proposals.length && messageId && chatId ? <Drafts proposals={proposals} messageId={messageId} chatId={chatId} /> : null}
-      </Surface>
-    </View>
-  );
-}
-
-/** Your messages are solid ink; the assistant's are liquid glass. */
-function Surface({ mine, wide, children }: { mine: boolean; wide: boolean; children: React.ReactNode }) {
-  if (mine) return <View style={[styles.bubble, styles.bubbleMine, wide ? styles.bubbleWide : null]}>{children}</View>;
-  return (
-    <GlassSurface tone="blue" style={[styles.bubble, styles.bubbleTheirs, wide ? styles.bubbleWide : null]}>
-      {children}
-    </GlassSurface>
-  );
-}
-
-const KIND = {
-  journal: { tone: "violet", icon: "book-open", label: "journal entry", where: "Journal", href: "/journal" },
-  task: { tone: "amber", icon: "list-check", label: "to-do", where: "To-do", href: "/todo" },
-  note: { tone: "blue", icon: "pen-to-square", label: "note", where: "Notes", href: "/notes" },
-  feed: { tone: "sand", icon: "rss", label: "feed", where: "Reader", href: "/workspace" },
-} as const;
-
-const dateLabel = (iso: string) => {
-  const [y, m, d] = iso.split("-").map(Number) as [number, number, number];
-  return new Date(y, m - 1, d).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
-};
-
-/**
- * The drafts the assistant prepared (journal entry, to-dos, notes). Nothing is saved until the person taps Create; the server
- * (POST /api/v1/ai/actions) does the creating, exactly as for the web chat.
- */
-function Drafts({ proposals, messageId, chatId }: { proposals: ChatProposal[]; messageId: string; chatId: string }) {
-  const qc = useQueryClient();
-  const [busy, setBusy] = useState<number | "all" | null>(null);
-  const [error, setError] = useState("");
-  const pending = proposals.filter((p) => !p.created);
-
-  async function create(which: number | "all") {
-    setBusy(which);
-    setError("");
-    try {
-      await api.post("/api/v1/ai/actions", { messageId, which });
-      await Promise.all([
-        qc.invalidateQueries({ queryKey: ["chat-messages", chatId] }),
-        qc.invalidateQueries({ queryKey: qk.notes }),
-        qc.invalidateQueries({ queryKey: qk.tasks }),
-        qc.invalidateQueries({ queryKey: qk.journal }),
-      ]);
-    } catch (e) {
-      setError(errorMessage(e, "Couldn’t create that item."));
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  return (
-    <View style={styles.drafts} accessibilityLabel="Drafts to review">
-      {proposals.map((p) => {
-        const a = p.action;
-        const k = KIND[a.kind];
-        const t = Tints[k.tone];
-        const preview = a.kind === "task" ? a.description : a.kind === "journal" ? stripRefs(a.body) : a.kind === "feed" ? a.url : a.body;
-        return (
-          <View
-            key={p.index}
-            accessibilityLabel={`${k.label} draft`}
-            style={[styles.draft, { backgroundColor: t.bg, borderColor: t.line }]}
-          >
-            <View style={styles.draftHead}>
-              <View style={styles.draftIcon}>
-                <Icon name={k.icon} size={12} color={t.fg} />
-              </View>
-              <AppText variant="label" color={t.fg}>
-                {p.created ? `Saved to ${k.where}` : `${k.where} · draft`}
-              </AppText>
-            </View>
-            {a.kind !== "journal" ? <AppText variant="bodyStrong">{a.title}</AppText> : null}
-            {preview ? <Markdown text={preview.length > 600 ? `${preview.slice(0, 600)}…` : preview} color={Palette.fgMuted} /> : null}
-            {a.kind === "task" ? (
-              <AppText variant="small" color={t.fg}>
-                {a.due_date ? `${a.recurrence ? "Starts" : "Due"} ${dateLabel(a.due_date)}` : "No due date"}
-                {a.recurrence ? `  ·  Repeats ${a.recurrence.replace(/^nth:.*/, "monthly")}` : ""}
-              </AppText>
-            ) : null}
-            {a.kind === "journal" ? (
-              <AppText variant="small" color={t.fg}>
-                For {dateLabel(a.entry_date)}
-              </AppText>
-            ) : null}
-            {p.created ? (
-              <Button title={`Open ${k.label}`} kind="secondary" onPress={() => router.navigate(k.href)} style={styles.draftBtn} />
-            ) : (
-              <Button
-                title={`Create ${k.label}`}
-                loading={busy === p.index}
-                disabled={busy !== null}
-                onPress={() => void create(p.index)}
-                style={styles.draftBtn}
-              />
-            )}
-          </View>
-        );
-      })}
-      {pending.length > 1 ? (
-        <Button
-          title={`Create all ${pending.length}`}
-          loading={busy === "all"}
-          disabled={busy !== null}
-          onPress={() => void create("all")}
-        />
-      ) : null}
-      {error ? <Banner kind="error">{error}</Banner> : null}
-    </View>
+        <ChatToolCalls shows={shows} proposals={proposals} messageId={messageId} chatId={chatId} />
+        {at ? <ChatMessageMetadata at={at} mine={mine} /> : null}
+      </ChatMessageBubble>
+    </ChatMessage>
   );
 }
 
@@ -368,38 +230,6 @@ const styles = StyleSheet.create({
     borderRadius: Radius.pill,
     backgroundColor: Palette.clayBg,
   },
-  safe: { flex: 1, backgroundColor: Palette.page },
-  flex: { flex: 1 },
-  bar: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, minHeight: 48 },
-  back: { width: 32, height: 32, alignItems: "center", justifyContent: "center" },
   messages: { padding: 20, gap: 10, flexGrow: 1 },
   hello: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 80 },
-  bubbleRow: { flexDirection: "row" },
-  mine: { justifyContent: "flex-end" },
-  theirs: { justifyContent: "flex-start" },
-  bubble: { maxWidth: "86%", paddingHorizontal: 14, paddingVertical: 10, borderRadius: Radius.r3, gap: 6 },
-  bubbleWide: { width: "92%" },
-  drafts: { gap: 10, marginTop: 4 },
-  draft: { gap: 6, padding: 14, borderRadius: Radius.r2, borderWidth: 1 },
-  draftHead: { flexDirection: "row", alignItems: "center", gap: 8 },
-  draftIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: Radius.pill,
-    backgroundColor: Palette.glassHi,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  draftBtn: { alignSelf: "flex-start", minHeight: 40, marginTop: 4 },
-  bubbleMine: { backgroundColor: Palette.fillDark, borderBottomRightRadius: 6 },
-  bubbleTheirs: { borderBottomLeftRadius: 6 },
-  pad: { paddingHorizontal: 14, paddingTop: 8 },
-  send: {
-    width: 44,
-    height: 44,
-    borderRadius: Radius.pill,
-    backgroundColor: Palette.fillDark,
-    alignItems: "center",
-    justifyContent: "center",
-  },
 });

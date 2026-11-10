@@ -35,6 +35,16 @@ import { openSearch } from "../UniversalSearch";
 import ChatSidebar, { type Tab } from "./ChatSidebar";
 import ChatRail from "./ChatRail";
 import Composer from "./Composer";
+import {
+  ChatLayout,
+  ChatMessage,
+  ChatMessageBubble,
+  ChatMessageList,
+  ChatMessageMetadata,
+  ChatSystemMessage,
+  ChatTokenizedText,
+  ChatToolCalls,
+} from "./kit";
 import ShareDialog from "./ShareDialog";
 import ChatActionProposal from "./ChatActionProposal";
 import ShownItems from "./shown/ShownItems";
@@ -594,7 +604,28 @@ export default function ChatApp({ name }: { name: string }) {
           </p>
         )}
 
-        <div className="cx-stage">
+        <ChatLayout
+          footer={
+            <>
+              {activeId && provider === "none" && (
+                <ChatSystemMessage icon={<FA icon={faTriangleExclamation} />}>
+                  No AI is selected, so replies aren’t generated. Your messages are saved to this chat.
+                </ChatSystemMessage>
+              )}
+              <Composer
+                key={activeId ?? "new"}
+                draftKey={`chat:${activeId ?? "new"}`}
+                busy={busy}
+                providers={providers}
+                provider={provider}
+                onProvider={selectProvider}
+                onSend={send}
+                onError={setErr}
+                autoFocus
+              />
+            </>
+          }
+        >
           {!activeId ? (
             <div className="cx-hello">
               <span className="cx-mark" aria-hidden>
@@ -605,23 +636,20 @@ export default function ChatApp({ name }: { name: string }) {
               <p>{hello.sub}</p>
             </div>
           ) : (
-            <div className="cx-msgs" aria-live="polite">
+            <ChatMessageList endRef={end}>
               {msgs.length === 0 && ready && <p className="ap-none">Say something to start this chat.</p>}
               {msgs.map((m) => {
                 const parsed = m.role === "assistant" ? parseChatActions(m.body) : null;
                 return (
-                  <div key={m.id} className="cx-msg" data-role={m.role}>
-                    <div className="cx-bubble">
+                  <ChatMessage key={m.id} role={m.role}>
+                    <ChatMessageBubble>
                       {parsed ? (
                         <>
                           {parsed.body && <Markdown text={parsed.body} />}
-                          {parsed.shows.length > 0 && <ShownItems shows={parsed.shows} />}
-                          {parsed.proposals.length > 0 && (
-                            <ChatActionProposal proposals={parsed.proposals} messageId={m.id} chatId={activeId!} />
-                          )}
+                          <ChatToolCalls shows={parsed.shows} proposals={parsed.proposals} messageId={m.id} chatId={activeId} />
                         </>
                       ) : (
-                        m.body && <p>{m.body}</p>
+                        m.body && <ChatTokenizedText text={m.body} />
                       )}
                       {m.attachments.map((a) => {
                         const u = urls[a.path];
@@ -641,41 +669,21 @@ export default function ChatApp({ name }: { name: string }) {
                           </div>
                         );
                       })}
-                      <small>{fmtTime(m.created_at)}</small>
-                    </div>
-                  </div>
+                      <ChatMessageMetadata at={m.created_at} />
+                    </ChatMessageBubble>
+                  </ChatMessage>
                 );
               })}
               {streaming && streaming.chatId === activeId && (
-                <div className="cx-msg" data-role="assistant" aria-busy="true">
-                  <div className="cx-bubble">
+                <ChatMessage role="assistant" busy>
+                  <ChatMessageBubble>
                     {streaming.text ? <Markdown text={parseChatAction(streaming.text).body} /> : <p className="ap-none">Thinking…</p>}
-                  </div>
-                </div>
+                  </ChatMessageBubble>
+                </ChatMessage>
               )}
-              <div ref={end} />
-            </div>
+            </ChatMessageList>
           )}
-        </div>
-
-        <div className="cx-foot">
-          {activeId && provider === "none" && (
-            <p className="cx-note">
-              <FA icon={faTriangleExclamation} /> No AI is selected, so replies aren’t generated. Your messages are saved to this chat.
-            </p>
-          )}
-          <Composer
-            key={activeId ?? "new"}
-            draftKey={`chat:${activeId ?? "new"}`}
-            busy={busy}
-            providers={providers}
-            provider={provider}
-            onProvider={selectProvider}
-            onSend={send}
-            onError={setErr}
-            autoFocus
-          />
-        </div>
+        </ChatLayout>
       </section>
     </div>
   );

@@ -14,7 +14,7 @@ type View = keyof typeof FILTER;
 const openReader = () => router.navigate("/workspace");
 
 /** Articles from the person's Reader: latest, starred or unread, optionally from one site they follow. */
-export function RssShown({ view = "latest", site }: { view?: View; site?: string }) {
+export function RssShown({ view = "latest", site, query }: { view?: View; site?: string; query?: string }) {
   const feedsQ = useFeeds();
   if (feedsQ.isPending) return <Frame title={TITLE[view]}>{<ShownEmpty>Loading…</ShownEmpty>}</Frame>;
   if (feedsQ.isError) return <Frame title={TITLE[view]}>{<ShownEmpty>Couldn’t load your feeds.</ShownEmpty>}</Frame>;
@@ -22,9 +22,9 @@ export function RssShown({ view = "latest", site }: { view?: View; site?: string
   if (site) {
     const feed = feedsMatching(feedsQ.data, site)[0];
     if (!feed) return <Frame title={`Latest from ${site}`}>{<ShownEmpty>{`You don’t follow ${site} yet.`}</ShownEmpty>}</Frame>;
-    return <Articles view={view} feedId={feed.id} title={`${view === "latest" ? "Latest" : TITLE[view]} · ${rssFeedName(feed)}`} />;
+    return <Articles view={view} feedId={feed.id} query={query} title={`${view === "latest" ? "Latest" : TITLE[view]} · ${rssFeedName(feed)}`} />;
   }
-  return <Articles view={view} title={TITLE[view]} />;
+  return <Articles view={view} query={query} title={query ? `Articles about “${query}”` : TITLE[view]} />;
 }
 
 function Frame({ title, children }: { title: string; children: ReactNode }) {
@@ -35,8 +35,8 @@ function Frame({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function Articles({ view, feedId, title }: { view: View; feedId?: string; title: string }) {
-  const q = useArticles({ feed: feedId, filter: FILTER[view], q: "" });
+function Articles({ view, feedId, query, title }: { view: View; feedId?: string; query?: string; title: string }) {
+  const q = useArticles({ feed: feedId, filter: FILTER[view], q: query ?? "" });
   const all = q.data?.pages.flatMap((p) => p.items) ?? [];
   const items = all.slice(0, SHOW_LIMITS.items);
   return (

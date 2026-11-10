@@ -23,6 +23,21 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-10",
+    title: "Version 2.5.1: glass buttons and a smarter Reader chat",
+    summary: "Buttons in the app are liquid glass, chat is rebuilt from matching pieces on web and app, and chat answers Reader requests instead of asking for a URL.",
+    tone: "violet",
+    appVersion: "v2.5.1",
+    changes: [
+      { kind: "improved", platform: "app", text: "Secondary buttons, filter pills, round buttons and the Google sign-in button are liquid glass on iOS 26." },
+      { kind: "new", platform: "web", text: "A button to jump to the latest message appears when you scroll up in a chat, and web addresses in your messages are links." },
+      { kind: "new", platform: "app", text: "The same jump-to-latest button in chat, links in your messages, and the time under each message." },
+      { kind: "improved", platform: "app", text: "Chat is rebuilt from the same set of pieces as the web, with the same voice recording and picture previews." },
+      { kind: "fixed", platform: "web", text: "Ask chat for news about a topic from your Reader and it searches your articles; name a site such as cnet.com and it prepares the feed without asking for the exact address." },
+      { kind: "fixed", platform: "app", text: "The same Reader requests now work in the app’s chat." },
+    ],
+  },
+  {
+    date: "2026-11-10",
     title: "Version 2.5.0: the app’s Home matches the web",
     summary: "The app’s Home now looks like the web Home, and every card has the same grip to drag it into your own order.",
     tone: "green",

@@ -1,16 +1,22 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 import { pickFiles, type PendingFile } from "./files";
 import type { AiProvider } from "./types";
 import { useRecorder } from "./useRecorder";
 import { AppText } from "@/components/ui/AppText";
 import { FilePreviewList } from "@/components/ui/FilePreviewList";
-import { GlassSurface } from "@/components/ui/GlassSurface";
 import { Icon } from "@/components/ui/Icon";
-import { RecordButton } from "@/components/ui/RecordButton";
 import { Sheet } from "@/components/ui/Sheet";
-import { Font, Palette, Radius } from "@/constants/theme";
+import {
+  ChatComposer,
+  ChatComposerDrawer,
+  ChatComposerInput,
+  ChatComposerToolbar,
+  ChatDictationButton,
+  ChatSendButton,
+} from "./kit";
+import { Palette, Radius } from "@/constants/theme";
 
 type Props = {
   busy: boolean;
@@ -57,27 +63,15 @@ export function Composer({ busy, providers, provider, onProvider, onSend, onErro
   }
 
   return (
-    <View style={[styles.wrap, { paddingBottom: bottomInset }]}>
-      <GlassSurface tone="violet" style={styles.card}>
-        {files.length ? (
-          <View style={styles.files}>
-            <FilePreviewList files={files} onRemove={(i) => setFiles((x) => x.filter((_, j) => j !== i))} />
-          </View>
-        ) : null}
+    <>
+      <ChatComposer bottomInset={bottomInset}>
+        <ChatComposerDrawer>
+          {files.length ? <FilePreviewList files={files} onRemove={(i) => setFiles((x) => x.filter((_, j) => j !== i))} /> : null}
+        </ChatComposerDrawer>
 
-        <TextInput
-          accessibilityLabel="Message"
-          value={text}
-          onChangeText={setText}
-          placeholder="Ask anything…"
-          placeholderTextColor={Palette.fgFaint}
-          selectionColor={Palette.greenFg}
-          multiline
-          maxLength={20000}
-          style={styles.input}
-        />
+        <ChatComposerInput value={text} onChange={setText} />
 
-        <View style={styles.bar}>
+        <ChatComposerToolbar>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Attach files"
@@ -102,20 +96,10 @@ export function Composer({ busy, providers, provider, onProvider, onSend, onErro
 
           <View style={styles.spacer} />
 
-          <RecordButton recording={rec.recording} secs={rec.secs} onToggle={() => void rec.toggle()} />
-
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Send message"
-            accessibilityState={{ disabled: !canSend }}
-            disabled={!canSend}
-            onPress={() => void submit()}
-            style={[styles.send, canSend ? styles.sendOn : null]}
-          >
-            <Icon name="arrow-up" size={18} color={canSend ? Palette.onDark : Palette.fgFaint} />
-          </Pressable>
-        </View>
-      </GlassSurface>
+          <ChatDictationButton recording={rec.recording} secs={rec.secs} onToggle={() => void rec.toggle()} />
+          <ChatSendButton enabled={canSend} onPress={() => void submit()} />
+        </ChatComposerToolbar>
+      </ChatComposer>
 
       <Sheet visible={menu} onClose={() => setMenu(false)} title="AI model" scroll>
         {providers.map((p) => {
@@ -141,43 +125,14 @@ export function Composer({ busy, providers, provider, onProvider, onSend, onErro
           );
         })}
       </Sheet>
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 14, paddingTop: 8 },
-  card: {
-    borderRadius: Radius.r4,
-    paddingHorizontal: 18,
-    paddingTop: 14,
-    paddingBottom: 10,
-  },
-  input: {
-    ...Font.sans,
-    fontSize: 17,
-    lineHeight: 24,
-    color: Palette.fg,
-    minHeight: 28,
-    maxHeight: 160,
-    paddingVertical: 4,
-    paddingHorizontal: 0,
-    textAlignVertical: "top",
-  },
-  bar: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 8 },
   iconBtn: { width: 38, height: 38, borderRadius: Radius.pill, alignItems: "center", justifyContent: "center" },
   model: { flexDirection: "row", alignItems: "center", gap: 6, minHeight: 38, paddingHorizontal: 10 },
   spacer: { flex: 1 },
-  send: {
-    width: 46,
-    height: 46,
-    borderRadius: Radius.pill,
-    backgroundColor: Palette.glassHi,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  sendOn: { backgroundColor: Palette.fillDark },
-  files: { marginBottom: 8 },
   option: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 56, paddingHorizontal: 14, borderRadius: Radius.r2 },
   optionText: { flex: 1, gap: 2 },
 });

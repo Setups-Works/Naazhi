@@ -38,8 +38,8 @@ export const showItemSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("tasks"), scope: z.enum(["today", "overdue", "upcoming", "open"]) }),
   z.object({ kind: z.literal("notes"), query: z.string().trim().max(100).optional() }),
   z.object({ kind: z.literal("health"), date }),
-  /** Articles from the person's Reader: the latest, the starred or the unread ones, optionally only from one followed site (matched by name or address). */
-  z.object({ kind: z.literal("rss"), view: z.enum(["latest", "starred", "unread"]).optional(), site: z.string().trim().max(100).optional() }),
+  /** Articles from the person's Reader: the latest, the starred or the unread ones, optionally only from one followed site (matched by name or address) or about a topic (searched in the titles and text). */
+  z.object({ kind: z.literal("rss"), view: z.enum(["latest", "starred", "unread"]).optional(), site: z.string().trim().max(100).optional(), query: z.string().trim().max(100).optional() }),
 ]);
 
 export type ShowItem = z.infer<typeof showItemSchema>;

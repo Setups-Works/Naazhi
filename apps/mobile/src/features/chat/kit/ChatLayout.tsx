@@ -1,0 +1,18 @@
+import type { ReactNode } from "react";
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
+
+import { Palette } from "@/constants/theme";
+
+/** The chat body: the messages fill the screen, the composer sits under them and rides above the keyboard. */
+export function ChatLayout({ children, footer }: { children: ReactNode; footer: ReactNode }) {
+  return (
+    <View style={styles.safe}>
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        {children}
+        {footer}
+      </KeyboardAvoidingView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({ safe: { flex: 1, backgroundColor: Palette.page }, flex: { flex: 1 } });

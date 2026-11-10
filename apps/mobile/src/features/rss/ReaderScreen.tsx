@@ -3,7 +3,7 @@ import { RSS, rssFeedName } from "@untitled/logic";
 import type { RssFilter } from "@untitled/types";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AppState, FlatList, Linking, Pressable, RefreshControl, StyleSheet, TextInput, View, useWindowDimensions } from "react-native";
+import { AppState, FlatList, Linking, RefreshControl, StyleSheet, TextInput, View, useWindowDimensions } from "react-native";
 
 import { AddFeedSheet } from "./AddFeedSheet";
 import { ArticleRow } from "./ArticleRow";
@@ -21,6 +21,7 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/ui/States";
 import { Font, Palette, Radius, Space, Tints } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { qk } from "@/lib/queryKeys";
+import { GlassPill } from "@/components/ui/GlassPill";
 
 const SEARCH_DELAY_MS = 250;
 /** Width at which the sidebar stays open beside the articles (a tablet, or the app running in a desktop browser). */
@@ -215,9 +216,9 @@ export function ReaderScreen() {
 
 function RoundButton({ icon, label, onPress, disabled }: { icon: IconName; label: string; onPress: () => void; disabled?: boolean }) {
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress} style={[styles.round, disabled ? styles.roundOff : null]}>
+    <GlassPill accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress} style={[styles.round, disabled ? styles.roundOff : null]}>
       <Icon name={icon} size={15} color={Palette.fg} />
-    </Pressable>
+    </GlassPill>
   );
 }
 

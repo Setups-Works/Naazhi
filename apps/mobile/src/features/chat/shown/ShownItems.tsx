@@ -24,7 +24,7 @@ export function ShownItems({ shows }: { shows: ShowItem[] }) {
           case "notes":
             return <NotesShown key={i} query={s.query} />;
           case "rss":
-            return <RssShown key={i} view={s.view} site={s.site} />;
+            return <RssShown key={i} view={s.view} site={s.site} query={s.query} />;
           case "health":
             return <HealthShown key={i} date={s.date} />;
         }

@@ -1,11 +1,19 @@
 "use client";
 import { useRef } from "react";
 import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
-import { faArrowUp, faChevronDown, faPaperclip } from "@fortawesome/free-solid-svg-icons";
+import { faChevronDown, faPaperclip } from "@fortawesome/free-solid-svg-icons";
 import type { Provider } from "../../../lib/ai";
 import Menu, { MenuLabel, MenuRadioGroup, MenuRadioItem } from "../../ui/Menu";
 import FilePreviewList from "../../ui/FilePreviewList";
-import RecordButton from "../../ui/RecordButton";
+import {
+  ChatComposer,
+  ChatComposerDrawer,
+  ChatComposerInput,
+  ChatComposerToolbar,
+  ChatComposerTokenElement,
+  ChatDictationButton,
+  ChatSendButton,
+} from "./kit";
 import { useRecorder } from "../useRecorder";
 import { useDraftFiles, useDraftText } from "../../../hooks/useDraft";
 import { clearDraft } from "../../../lib/drafts";
@@ -72,43 +80,19 @@ export default function Composer({
   }
 
   return (
-    <form
-      className="cx-composer"
-      onSubmit={(e) => {
-        e.preventDefault();
-        submit();
-      }}
-    >
-      <FilePreviewList files={files} onRemove={(i) => setFiles((x) => x.filter((_, j) => j !== i))} />
-      {restored && (
-        <p className="mb-1 flex items-center gap-2 text-[12.5px] text-fg-subtle" role="status">
-          Restored your unsent draft.
-          <button type="button" className="underline underline-offset-2 hover:text-fg" onClick={sent}>
-            Discard it
-          </button>
-        </p>
-      )}
-      <textarea
-        ref={ta}
-        value={text}
-        rows={1}
-        maxLength={20000}
-        autoFocus={autoFocus}
-        placeholder="Ask anything…"
-        aria-label="Message"
-        onChange={(e) => {
-          setText(e.target.value);
-          e.target.style.height = "auto";
-          e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
-            e.preventDefault();
-            submit();
-          }
-        }}
-      />
-      <div className="cx-bar">
+    <ChatComposer onSubmit={submit}>
+      <ChatComposerDrawer>
+        <FilePreviewList files={files} onRemove={(i) => setFiles((x) => x.filter((_, j) => j !== i))} />
+        {restored && (
+          <p className="m-0 flex items-center gap-2 text-[12.5px] text-fg-subtle" role="status">
+            <ChatComposerTokenElement onRemove={sent} removeLabel="Discard the restored draft">
+              Restored your unsent draft
+            </ChatComposerTokenElement>
+          </p>
+        )}
+      </ChatComposerDrawer>
+      <ChatComposerInput ref={ta} value={text} onChange={setText} onSubmit={submit} autoFocus={autoFocus} />
+      <ChatComposerToolbar>
         <button type="button" className="ne-btn" aria-label="Attach files" onClick={() => picker.current?.click()}>
           <FA icon={faPaperclip} />
         </button>
@@ -146,11 +130,9 @@ export default function Composer({
           </MenuRadioGroup>
         </Menu>
         <span className="cx-spacer" />
-        <RecordButton recording={rec.recording} secs={rec.secs} onToggle={rec.toggle} />
-        <button className="jr-send" disabled={!canSend} aria-label="Send message" title="Send (Enter)">
-          <FA icon={faArrowUp} />
-        </button>
-      </div>
-    </form>
+        <ChatDictationButton recording={rec.recording} secs={rec.secs} onToggle={rec.toggle} />
+        <ChatSendButton disabled={!canSend} />
+      </ChatComposerToolbar>
+    </ChatComposer>
   );
 }

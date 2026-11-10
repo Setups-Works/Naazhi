@@ -8,6 +8,7 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native
 import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { GlassPill } from "@/components/ui/GlassPill";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { ErrorState, LoadingState } from "@/components/ui/States";
 import { Screen } from "@/components/ui/Screen";
@@ -150,7 +151,7 @@ export function HomeScreen() {
       style={styles.quickScroll}
     >
       {QUICK.map((q) => (
-        <Pressable
+        <GlassPill
           key={q.title}
           accessibilityRole="button"
           accessibilityLabel={q.title}
@@ -161,7 +162,7 @@ export function HomeScreen() {
           <AppText variant="small" color={Palette.fgMuted}>
             {q.title}
           </AppText>
-        </Pressable>
+        </GlassPill>
       ))}
     </ScrollView>
   );

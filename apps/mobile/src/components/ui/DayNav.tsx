@@ -1,8 +1,9 @@
-import { Pressable, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import { AppText } from "./AppText";
 import { Icon, type IconName } from "./Icon";
 import { Palette, Radius, Space } from "@/constants/theme";
+import { GlassPill } from "./GlassPill";
 
 /**
  * The day picker shared by Journal and Health: a round glass arrow either side of a glass pill that shows the date and opens the
@@ -30,7 +31,7 @@ export function DayNav({
   return (
     <View style={styles.row}>
       <Round icon="chevron-left" label="Previous day" disabled={prevDisabled} onPress={onPrev} />
-      <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel} onPress={onOpen} style={styles.pill}>
+      <GlassPill accessibilityRole="button" accessibilityLabel={accessibilityLabel} onPress={onOpen} style={styles.pill}>
         <Icon name="calendar-days" size={15} color={Palette.fgMuted} />
         <View style={styles.text}>
           <AppText variant="bodyStrong" numberOfLines={1}>
@@ -42,7 +43,7 @@ export function DayNav({
             </AppText>
           ) : null}
         </View>
-      </Pressable>
+      </GlassPill>
       <Round icon="chevron-right" label="Next day" disabled={nextDisabled} onPress={onNext} />
     </View>
   );
@@ -51,7 +52,7 @@ export function DayNav({
 /** A round glass button, like the web's `ne-btn`. */
 function Round({ icon, label, onPress, disabled }: { icon: IconName; label: string; onPress: () => void; disabled: boolean }) {
   return (
-    <Pressable
+    <GlassPill
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ disabled }}
@@ -60,7 +61,7 @@ function Round({ icon, label, onPress, disabled }: { icon: IconName; label: stri
       style={[styles.round, disabled ? styles.disabled : null]}
     >
       <Icon name={icon} size={16} color={Palette.fgMuted} />
-    </Pressable>
+    </GlassPill>
   );
 }
 

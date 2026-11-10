@@ -22,6 +22,7 @@ import { TextField } from "@/components/ui/TextField";
 import { Palette, Radius, Space, Tints } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { timeOf } from "@/lib/dates";
+import { GlassPill } from "@/components/ui/GlassPill";
 
 const open = (id: string) => router.push({ pathname: "/note/[id]", params: { id } });
 const CATEGORIES = ["Others", "Ideas & Creativity", "Personal", "Work", "Learning", "Health"] as const;
@@ -177,9 +178,9 @@ export function NotesScreen({ edges }: { edges?: ("top" | "bottom" | "left" | "r
           {notesQ.data ? <AppText variant="small" color={Palette.fgSubtle}>{notesQ.data.length}</AppText> : null}
         </View>
         <View style={styles.headActions}>
-          <Pressable accessibilityRole="button" accessibilityLabel={`Sort notes, currently ${sort}`} onPress={() => setSortOpen(true)} style={styles.optionsButton}>
+          <GlassPill accessibilityRole="button" accessibilityLabel={`Sort notes, currently ${sort}`} onPress={() => setSortOpen(true)} style={styles.optionsButton}>
             <Icon name="ellipsis" size={17} color={Palette.fgMuted} />
-          </Pressable>
+          </GlassPill>
           <Button title="New note" icon="plus" onPress={() => open("new")} />
         </View>
       </View>
@@ -309,7 +310,8 @@ export function NotesScreen({ edges }: { edges?: ("top" | "bottom" | "left" | "r
 
 function FilterPill({ title, selected, badge, onPress }: { title: string; selected: boolean; badge?: number; onPress: () => void }) {
   return (
-    <Pressable
+    <GlassPill
+      glass={!selected}
       accessibilityRole="button"
       accessibilityLabel={badge ? `${title}, ${badge} active filters` : title}
       accessibilityState={{ selected }}
@@ -318,7 +320,7 @@ function FilterPill({ title, selected, badge, onPress }: { title: string; select
     >
       <AppText variant="body" color={selected ? Palette.fg : Palette.fgMuted}>{title}</AppText>
       {badge ? <View style={styles.badge}><AppText variant="small" color={Palette.onDark} style={styles.badgeText}>{badge}</AppText></View> : null}
-    </Pressable>
+    </GlassPill>
   );
 }
 

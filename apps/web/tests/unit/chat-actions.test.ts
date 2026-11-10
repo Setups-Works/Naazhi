@@ -93,4 +93,9 @@ describe("the Reader in chat", () => {
     expect(r.proposals.map((p) => p.action.kind)).toEqual(["feed"]);
     expect(itemPath("feed", "x")).toBe("/dashboard/workspace/reader");
   });
+
+  it("keeps a topic query on an rss show block", () => {
+    const r = parseChatActions(`Here.\n<show-item>{"kind":"rss","query":"smart glass"}</show-item>`);
+    expect(r.shows).toEqual([{ kind: "rss", query: "smart glass" }]);
+  });
 });

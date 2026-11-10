@@ -2,6 +2,7 @@ import * as Haptics from "expo-haptics";
 import { ActivityIndicator, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 
 import { AppText } from "./AppText";
+import { GlassPill } from "./GlassPill";
 import { Icon, type IconName } from "./Icon";
 import { Palette, Radius, Shadow } from "@/constants/theme";
 
@@ -30,8 +31,9 @@ const palette: Record<Kind, { bg: string; fg: string; ring?: string }> = {
 export function Button({ title, onPress, kind = "primary", icon, loading, disabled, style, accessibilityHint }: Props) {
   const c = palette[kind];
   const inactive = disabled || loading;
+  const Root: typeof Pressable = kind === "secondary" ? (GlassPill as typeof Pressable) : Pressable;
   return (
-    <Pressable
+    <Root
       accessibilityRole="button"
       accessibilityLabel={title}
       accessibilityHint={accessibilityHint}
@@ -59,7 +61,7 @@ export function Button({ title, onPress, kind = "primary", icon, loading, disabl
           </AppText>
         </View>
       )}
-    </Pressable>
+    </Root>
   );
 }
 

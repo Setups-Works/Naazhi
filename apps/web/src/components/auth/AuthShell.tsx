@@ -15,7 +15,7 @@ export default function AuthShell({ children }: { children: ReactNode }) {
       <div className="aurora" aria-hidden />
       <div className="container au-grid">
         <aside className="au-side">
-          <div className="chip">untitled project</div>
+          <div className="chip">Naazhi</div>
           <h2 className="display">
             Your AI can change. <span className="quiet">Your workspace shouldn’t.</span>
           </h2>

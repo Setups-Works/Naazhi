@@ -388,7 +388,7 @@ export function buildOpenApi() {
   return {
     openapi: "3.1.0",
     info: {
-      title: "untitled project API",
+      title: "Naazhi API",
       version: "1.0.0",
       description:
         "HTTP API behind the web app. Requests are authenticated by the Better Auth session cookie and, for state-changing calls, must come from the app's own origin. Use Swagger UI from the same site (/api/v1/docs) so the cookie is sent.",

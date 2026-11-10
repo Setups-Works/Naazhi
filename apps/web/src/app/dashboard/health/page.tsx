@@ -4,7 +4,7 @@ import ClientOnly from "../../../components/app/ClientOnly";
 import HealthApp from "../../../features/health/components/HealthApp";
 
 export const metadata = {
-  title: "Health — untitled project",
+  title: "Health — Naazhi",
   description: "Steps, sleep and heart rate from your phone's health app.",
 };
 

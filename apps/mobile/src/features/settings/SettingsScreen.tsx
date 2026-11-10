@@ -128,7 +128,7 @@ export function SettingsScreen() {
     try {
       const imageUri = await captureGiftCard(card);
       const { textShared } = await shareImageWithText({
-        title: "Welcome to untitled project",
+        title: "Welcome to Naazhi",
         message: giftShareText(name || email, mobileEnv.apiBaseUrl),
         imageUri,
       });

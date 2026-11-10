@@ -19,7 +19,7 @@ export function SiteFooter() {
             <div className="flex flex-col items-start gap-4">
               <Link href="/" className="flex items-center gap-2.5 font-serif text-[27px] tracking-[-0.02em]">
                 <BrandMark size={34} />
-                untitled project
+                Naazhi
               </Link>
               <p className="max-w-sm text-[15px] leading-relaxed text-fg-muted">
                 One workspace for your notes, tasks, journal, email, calendar and meetings. Your AI can change. Your workspace shouldn’t.
@@ -44,7 +44,7 @@ export function SiteFooter() {
             </div>
           </div>
           <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5 text-[13px] text-fg-subtle">
-            <span>© {new Date().getFullYear()} untitled project. All rights reserved.</span>
+            <span>© {new Date().getFullYear()} Naazhi. All rights reserved.</span>
             <span className="flex items-center gap-2.5">
               <span className="text-[11px] font-semibold tracking-[0.1em] text-fg-faint uppercase">Backed by</span>
               <span className="font-medium text-fg">Setups Works</span>

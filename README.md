@@ -1,4 +1,4 @@
-# untitled project
+# Naazhi
 
 One workspace for **notes, tasks, journal, chat, calendar, email, meetings and automations** — with an AI layer you can swap, bring your own account to, or switch off entirely.
 

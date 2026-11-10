@@ -23,6 +23,19 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-10",
+    title: "Version 2.8.0: meet Naazhi",
+    summary: "We have a name and a logo. Naazhi has a new look across the web and the app, and a launch animation that draws the mark.",
+    tone: "green",
+    appVersion: "v2.8.0",
+    changes: [
+      { kind: "new", platform: "web", text: "The product is now called Naazhi, with its new green monogram in the header, the footer, emails and the browser tab." },
+      { kind: "new", platform: "app", text: "The app is now Naazhi, with a new icon, name and launch screen." },
+      { kind: "new", platform: "app", text: "A new launch animation: the mark is drawn in, the bubble lines write in, the star lands and the name appears. With reduced motion it simply shows." },
+      { kind: "improved", platform: "web", text: "Page titles, sign-in screens, shared pages and emails all say Naazhi." },
+    ],
+  },
+  {
+    date: "2026-11-10",
     title: "Version 2.7.0: your plan shows correctly",
     summary: "Home shows the plan you are really on instead of “Free”, and this release brings together this week’s notification, widget and chat fixes.",
     tone: "gold",

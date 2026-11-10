@@ -14,7 +14,7 @@ import { parseChatAction } from "../../../lib/chat-actions";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Shared chat — untitled project",
+  title: "Shared chat — Naazhi",
   robots: { index: false, follow: false },
   referrer: "no-referrer",
 };

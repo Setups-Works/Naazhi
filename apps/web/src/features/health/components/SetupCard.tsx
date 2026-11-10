@@ -2,7 +2,7 @@ import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
 import { faHeartPulse, faMobileScreen, faShieldHalved, faRotate } from "@fortawesome/free-solid-svg-icons";
 
 const STEPS = [
-  { icon: faMobileScreen, title: "Open the app on your phone", body: "Sign in to untitled project with this same account, then open the Health tab." },
+  { icon: faMobileScreen, title: "Open the app on your phone", body: "Sign in to Naazhi with this same account, then open the Health tab." },
   {
     icon: faShieldHalved,
     title: "Allow access to health data",

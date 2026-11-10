@@ -7,7 +7,7 @@ import { Reveal } from "../../components/landing/Reveal";
 import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/PageKit";
 
 export const metadata: Metadata = {
-  title: "Product demo — untitled project",
+  title: "Product demo — Naazhi",
   description: "Click around an interactive preview of the workspace: notes, to-do, email, calendar, meetings and automations.",
 };
 

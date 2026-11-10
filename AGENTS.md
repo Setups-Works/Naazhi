@@ -1,6 +1,6 @@
 # AGENTS.md — read this first
 
-You are working on **untitled project**: one workspace for notes, tasks, journal, chat, calendar, email, meetings and automations, with an AI layer that can be swapped (Groq, Puter.js, bring-your-own) or switched off. Three developers build it in parallel, each using AI agents. This file is the contract that keeps everyone's code consistent. Folder-level `AGENTS.md` files add detail — **read the one in every folder you touch.**
+You are working on **Naazhi** (the repository is still called untitled-project-landing; the product name, logo and voice are in `docs/BRAND.md`): one workspace for notes, tasks, journal, chat, calendar, email, meetings and automations, with an AI layer that can be swapped (Groq, Puter.js, bring-your-own) or switched off. Three developers build it in parallel, each using AI agents. This file is the contract that keeps everyone's code consistent. Folder-level `AGENTS.md` files add detail — **read the one in every folder you touch.**
 
 > Source of truth: **Jira project UNT** for _what to build and who owns it_ · **this repo's docs** for _how to build it_ · **the code** for _what exists today_. If they disagree, say so in your PR instead of guessing.
 
@@ -138,6 +138,7 @@ Three developers and several AI agents write UI here. To keep it one product, th
 | `docs/SELF_HOSTING.md`      | You run, deploy or back up the stack (Docker, env, storage, auth, Supabase data import)                                                                                         |
 | `docs/SECURITY.md`          | You touch auth, uploads, sharing, admin, AI tools or secrets                                                                                                                    |
 | `docs/DESIGN_LANGUAGE.md`   | **You build or change any UI** — fonts, colours, glass, buttons, tints, reference screens, mistakes to avoid, how it is enforced                                                |
+| `docs/BRAND.md`             | **You write copy, make an asset, or use the name or logo** — the name Naazhi, the mark, wordmark and lockup, colours of the logo files, clear space, do and don't, voice, which technical names stay |
 | `docs/CONVENTIONS.md`       | Naming, UI patterns, error handling, testing                                                                                                                                    |
 | `docs/AI_WORKFLOW.md`       | **You are an AI agent taking a Jira task** — the exact loop, the Jira helper (`node scripts/jira/jira.mjs`) and what you must not do (never merge; never handle tokens in chat) |
 | `docs/RELEASE_FOR_AGENTS.md` | **You are asked to release, bump the version, write the changelog, tag or push** — the exact checklist (version files, changelog entry, migrations first, commit → push → tag, watching the runs) |

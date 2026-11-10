@@ -10,9 +10,9 @@ import { Tip } from "../../components/landing/Tip";
 import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/PageKit";
 
 export const metadata: Metadata = {
-  title: "Privacy & Security — untitled project",
+  title: "Privacy & Security — Naazhi",
   description:
-    "How untitled project keeps your workspace yours: separate from your AI, connected only to what you choose, and always exportable.",
+    "How Naazhi keeps your workspace yours: separate from your AI, connected only to what you choose, and always exportable.",
 };
 
 const access = [
@@ -43,7 +43,7 @@ export default function Page() {
         eyebrow="Privacy & Security"
         title="Your workspace stays"
         quiet="yours."
-        lead="Your notes, journal and mail are personal. untitled project is designed so that you decide what connects, whether AI is involved at all, and how to take your work with you."
+        lead="Your notes, journal and mail are personal. Naazhi is designed so that you decide what connects, whether AI is involved at all, and how to take your work with you."
       >
         <a className="btn btn-primary" href="#principles" data-cursor="Read">
           Read our principles

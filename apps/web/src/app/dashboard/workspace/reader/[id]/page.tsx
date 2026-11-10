@@ -5,7 +5,7 @@ import { FEATURES } from "../../../../../config/features";
 import ArticleView from "../../../../../features/rss/components/ArticleView";
 
 export const metadata = {
-  title: "Article — untitled project",
+  title: "Article — Naazhi",
   description: "Read an article from your feeds.",
 };
 

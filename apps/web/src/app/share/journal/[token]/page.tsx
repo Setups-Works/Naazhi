@@ -11,7 +11,7 @@ import Markdown from "../../../../components/app/Markdown";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Shared journal entry — untitled project",
+  title: "Shared journal entry — Naazhi",
   robots: { index: false, follow: false },
   referrer: "no-referrer",
 };

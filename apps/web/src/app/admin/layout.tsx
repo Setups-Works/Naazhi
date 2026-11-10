@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { requireAdmin, serverConfigured } from "../../server/session";
 import AdminNav from "../../components/admin/AdminNav";
 
-export const metadata: Metadata = { title: "Admin — untitled project", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Admin — Naazhi", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 export default async function Layout({ children }: { children: ReactNode }) {

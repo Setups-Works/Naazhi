@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "untitled project",
+    "name": "Naazhi",
     "slug": "untitled-project-mobile",
-    "version": "2.7.0",
+    "version": "2.8.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "untitled",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "bundleIdentifier": "com.setupsworks.untitledproject"
+      "bundleIdentifier": "com.setupsworks.naazhi"
     },
     "android": {
       "package": "com.setupsworks.naazhi",
@@ -23,7 +23,7 @@
         "android.permission.REQUEST_INSTALL_PACKAGES"
       ],
       "adaptiveIcon": {
-        "backgroundColor": "#efece3",
+        "backgroundColor": "#f9f4e5",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -40,8 +40,8 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#f5f4eb",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 160
+          "image": "./assets/images/splash-blank.png",
+          "imageWidth": 8
         }
       ],
       "expo-audio",
@@ -49,7 +49,7 @@
       [
         "@kingstinct/react-native-healthkit",
         {
-          "NSHealthShareUsageDescription": "untitled project reads your steps, distance, active energy, heart rate and sleep so you can see them in your workspace and ask the assistant about them.",
+          "NSHealthShareUsageDescription": "Naazhi reads your steps, distance, active energy, heart rate and sleep so you can see them in your workspace and ask the assistant about them.",
           "NSHealthUpdateUsageDescription": false,
           "background": false
         }

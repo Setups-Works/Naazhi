@@ -49,7 +49,7 @@ export function OnboardingScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.top}>
-        <AppText variant="label">untitled project</AppText>
+        <AppText variant="label">Naazhi</AppText>
         {!last ? (
           <Pressable accessibilityRole="button" accessibilityLabel="Skip introduction" hitSlop={12} onPress={() => void finish("/login")}>
             <AppText variant="bodyStrong" color={Palette.fgMuted}>

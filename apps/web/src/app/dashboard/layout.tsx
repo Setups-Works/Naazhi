@@ -13,7 +13,7 @@ import ChatWidget from "../../components/app/ChatWidget";
 import Onboarding from "../../components/app/Onboarding";
 import { cleanOnboarding, shouldShowOnboarding } from "../../lib/onboarding";
 
-export const metadata: Metadata = { title: "Dashboard — untitled project", robots: { index: false } };
+export const metadata: Metadata = { title: "Dashboard — Naazhi", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 export default async function Layout({ children }: { children: ReactNode }) {

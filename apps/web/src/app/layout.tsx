@@ -27,7 +27,7 @@ const serif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "untitled project — one workspace, any AI",
+  title: "Naazhi — one workspace, any AI",
   description:
     "Notes, tasks, journal, email, calendar, meetings and automations in one workspace. Use AI when it helps, ignore it when it doesn't.",
 };

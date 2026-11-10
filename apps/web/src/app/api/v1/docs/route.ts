@@ -13,7 +13,7 @@ export async function GET() {
   if (!apiDocsEnabled()) return NextResponse.json({ error: "Not found." }, { status: 404 });
   const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>untitled project API</title><link rel="stylesheet" href="${UI}/swagger-ui.css" /></head>
+<title>Naazhi API</title><link rel="stylesheet" href="${UI}/swagger-ui.css" /></head>
 <body><div id="ui"></div>
 <script src="${UI}/swagger-ui-bundle.js" crossorigin></script>
 <script>window.ui = SwaggerUIBundle({ url: "/api/v1/openapi.json", dom_id: "#ui", deepLinking: true, persistAuthorization: true });</script>

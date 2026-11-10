@@ -119,7 +119,7 @@ export default function AppNav({
     <header className="ap-bar">
       <Link href="/dashboard" className="logo ap-logo">
         <BrandMark size={28} />
-        <span>untitled project</span>
+        <span>Naazhi</span>
       </Link>
       {/* Liquid-glass section switcher (click, or drag the glass lens across and let go) with the search button beside it. */}
       <div className="flex items-center gap-2.5">

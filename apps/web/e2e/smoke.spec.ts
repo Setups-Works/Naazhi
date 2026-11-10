@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe("smoke: the app is up and its doors are locked", () => {
   test("the home page renders", async ({ page }) => {
     await page.goto("/");
-    await expect(page).toHaveTitle(/untitled project/i);
+    await expect(page).toHaveTitle(/naazhi/i);
     await expect(page.locator("body")).not.toContainText("Application error");
   });
 

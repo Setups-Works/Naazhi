@@ -35,7 +35,7 @@ export async function shareGiftCard(name: string) {
   const blob = await giftCardBlob(name, { serif: fontStack("--serif", "Georgia, serif"), mono: fontStack("--mono", "monospace") });
   if (!blob) return false;
   const file = new File([blob], GIFT_FILE_NAME, { type: "image/png" });
-  const data: ShareData = { files: [file], title: "Welcome to untitled project", text: giftShareText(name, window.location.origin) };
+  const data: ShareData = { files: [file], title: "Welcome to Naazhi", text: giftShareText(name, window.location.origin) };
   if (typeof navigator.share === "function" && navigator.canShare?.(data)) {
     try {
       await navigator.share(data);
@@ -104,7 +104,7 @@ export default function GiftCard({ name }: { name: string }) {
       <div className={styles.content} aria-hidden>
         <div className={styles.brand}>
           <span className={styles.dot} />
-          untitled project
+          Naazhi
           <span className={styles.tag}>Welcome gift</span>
         </div>
         <p className={styles.name}>{name}</p>

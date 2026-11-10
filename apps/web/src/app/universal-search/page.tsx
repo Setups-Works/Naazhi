@@ -7,7 +7,7 @@ import { R, Reveal } from "../../components/landing/Reveal";
 import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/PageKit";
 
 export const metadata: Metadata = {
-  title: "Universal Search — untitled project",
+  title: "Universal Search — Naazhi",
   description: "Find anything across your notes, tasks, journal, email, calendar and meetings from one search box.",
 };
 

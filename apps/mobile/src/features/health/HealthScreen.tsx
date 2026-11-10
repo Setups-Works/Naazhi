@@ -302,7 +302,7 @@ function SetupCard({ onConnect, name }: { onConnect: () => void; name: string })
         </AppText>
       </View>
       <AppText variant="body" color={Palette.fgMuted}>
-        Allow untitled project to read your steps, distance, active energy, heart rate and sleep. They are sent to your account so you
+        Allow Naazhi to read your steps, distance, active energy, heart rate and sleep. They are sent to your account so you
         can see them on the web and ask the assistant about them. You can turn this off any time in your phone’s settings.
       </AppText>
       <Button title="Allow access" icon="shield-heart" onPress={onConnect} />

@@ -4,7 +4,7 @@ import PlanSwitch from "../../../components/app/PlanSwitch";
 import CalendarApp from "../../../features/calendar/components/CalendarApp";
 
 export const metadata = {
-  title: "Calendar — untitled project",
+  title: "Calendar — Naazhi",
   description: "Month, week, day, and agenda views of your events and tasks.",
 };
 

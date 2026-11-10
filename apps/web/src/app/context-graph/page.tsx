@@ -7,7 +7,7 @@ import { Reveal } from "../../components/landing/Reveal";
 import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/PageKit";
 
 export const metadata: Metadata = {
-  title: "Context Graph — untitled project",
+  title: "Context Graph — Naazhi",
   description: "See how your notes, tasks, emails, meetings and journal entries connect to each other.",
 };
 

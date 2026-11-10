@@ -15,7 +15,7 @@ export const ENTRY_CARD = {
   lineHeight: 1.45,
   /** Longest text the card shows; the rest becomes an ellipsis so the picture stays a sensible size. */
   maxLines: 22,
-  brand: "untitled project",
+  brand: "Naazhi",
   brandSize: 30,
 } as const;
 

@@ -28,7 +28,7 @@ export function SiteHeaderBar({ mega, links, menu }: { mega: Mega; links: { href
           className="liquid-bar flex shrink-0 items-center gap-2.5 rounded-pill py-2 pr-5 pl-3.5 font-serif text-[23px] tracking-[-0.02em]"
         >
           <BrandMark size={28} />
-          untitled project
+          Naazhi
         </Link>
         <NavMenu mega={mega} links={links} />
         <div className="flex items-center gap-2">

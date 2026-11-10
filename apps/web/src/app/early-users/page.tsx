@@ -19,8 +19,8 @@ import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/
 import type { Tone } from "../../lib/tones";
 
 export const metadata: Metadata = {
-  title: "Early users — untitled project",
-  description: "Be one of the first to shape untitled project. Early users get a direct line to the team.",
+  title: "Early users — Naazhi",
+  description: "Be one of the first to shape Naazhi. Early users get a direct line to the team.",
 };
 
 const slots: Tone[] = ["blue", "violet", "amber"];
@@ -63,7 +63,7 @@ export default function Page() {
         eyebrow="Early users"
         title="Built with the people"
         quiet="who use it first."
-        lead="untitled project is in its early days. The first people to try it shape what it becomes, and we’ll share what they tell us right here."
+        lead="Naazhi is in its early days. The first people to try it shape what it becomes, and we’ll share what they tell us right here."
       >
         <Magnetic>
           <AuthLink arrow />

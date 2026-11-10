@@ -5,7 +5,7 @@ import { CtaPanel, PageHero } from "../../components/PageKit";
 import Changelog from "../../features/changelog/Changelog";
 
 export const metadata: Metadata = {
-  title: "Changelog — untitled project",
+  title: "Changelog — Naazhi",
   description: "What’s new in the web app and the Android app, newest first.",
 };
 

@@ -81,7 +81,7 @@ function TopBar({ view, onGo }: { view: Id; onGo: (id: Id) => void }) {
     <div className="relative flex items-center justify-center px-3 py-3 sm:px-5">
       <span className="absolute left-4 hidden items-center gap-2 font-serif text-[20px] tracking-[-0.02em] xl:flex">
         <BrandMark size={26} />
-        untitled project
+        Naazhi
       </span>
       <div className="flex items-center gap-2">
         <nav

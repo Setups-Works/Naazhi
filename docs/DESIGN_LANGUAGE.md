@@ -2,6 +2,8 @@
 
 The app has one look: **warm cream canvas, ink text, forest-green accent, soft frosted-glass surfaces, serif display headings, pill buttons, pastel tints.** Every screen must look like it came from the same hand. A screen that is "clean and modern" in a generic way (thin grey borders, `bg-gray-100`, small `text-xs` everything, black rectangles) is **wrong here**, even if it works.
 
+**The product is called Naazhi.** Its name, logo, wordmark, voice and the rules for using them are in [BRAND.md](BRAND.md); this file is the UI side. The two agree on one thing above all: the brand is calm. One serif headline, one green accent, a lot of cream, and the mark kept small and unadorned (always through the `BrandMark` component).
+
 If you are an AI agent: do not invent styling. Copy from the reference screens below, reuse the tokens and classes in this file, and compare your result side by side with the To-do page (`/dashboard/todo`) before opening a PR.
 
 > Source of truth for values: `:root` in `apps/web/src/app/globals.css` (top of file) and `apps/web/src/styles/tailwind.css`. This file explains how to use them.
@@ -195,3 +197,23 @@ The public site (`/`, `/how-it-works`, `/pricing`, …) is the most expressive p
 - **The header bar stays transparent** (no scroll-triggered frost; a past commit removed it on purpose). The glass lives in the nav pill and menus.
 
 New dependency: `gsap` (3.15, includes `ScrollTrigger` and `SplitText`, free to use). It is used only under `apps/web/src/components/landing/`.
+
+## 14. Naazhi in the UI (the brand, applied)
+
+The logo, colours of the logo files and the voice are in [BRAND.md](BRAND.md). This is how they land on screens, on web and in the app.
+
+**The top bar.** Mark + wordmark, left. Web: `BrandMark size={28}` then the word **Naazhi** in `font-serif` at about 22 px, `tracking-[-0.02em]`, `text-fg`. App: the Home header shows the date and plan badge, then the serif greeting; the name Naazhi appears on the launch screen, the onboarding label and Settings → About, not on every screen.
+
+**One accent.** Green is `text-green-fg` (`Palette.greenFg` in the app). It marks the person's own name in greetings (*Good afternoon, <i>Nitheesh</i>*), links, focus and the active state. Don't add a second brand accent; use the tints (§3) for categories only.
+
+**Cream first.** Pages are `--page` cream; cards are glass or white. The mark is always drawn on cream, white or `--fill-dark` (cream version), never on a tint or a photo.
+
+**Empty and loading states.** A short serif line, one sentence of help, one pill button. No illustrations, no mascot. The mark may appear once on a welcome screen (the chat welcome uses it at 40 px) and on the launch screen; it is not a decoration for empty lists.
+
+**Icons.** Font Awesome Free (solid) for everything in the UI; the Naazhi mark is only the brand, never an icon in a list or a button.
+
+**App icon and widgets.** The launcher icon is the mark on cream (`apps/mobile/assets/images`, built by `scripts/brand/build-assets.mjs`). Home-screen widgets use the tints of the feature they show, with the same serif title style; their picker previews are generated from the theme tokens (`scripts/widget-previews.mjs`).
+
+**Email.** Cream page, white rounded card, serif headline, the lockup on top, dark pill button, and the footer line from BRAND.md §6. Written in the product's voice (BRAND.md §1).
+
+**Checklist for anything carrying the brand:** the name is written **Naazhi**; the mark comes from `BrandMark` (or the generated files); the colours are tokens; it works at 375 px; it has no shadow, gradient or recolouring on the mark; it reads on `--fill-dark` with the cream mark.

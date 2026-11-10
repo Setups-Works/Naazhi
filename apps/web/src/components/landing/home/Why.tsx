@@ -95,7 +95,7 @@ export default function Why() {
             </div>
             <div data-label data-reveal className="relative mt-5 flex items-center justify-center gap-2.5 opacity-0">
               <BrandMark size={34} />
-              <span className="font-serif text-[24px] tracking-[-0.02em] text-fg">untitled project</span>
+              <span className="font-serif text-[24px] tracking-[-0.02em] text-fg">Naazhi</span>
             </div>
           </Glass>
         </div>

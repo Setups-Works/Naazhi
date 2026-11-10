@@ -22,7 +22,7 @@ import { Eyebrow, Lead, Section, Title } from "../../components/landing/Kit";
 import { Reveal } from "../../components/landing/Reveal";
 
 export const metadata: Metadata = {
-  title: "How it works — untitled project",
+  title: "How it works — Naazhi",
   description:
     "One workspace for notes, tasks, journal, calendar and chat, with email and meetings on the way. AI that you choose, or no AI at all.",
 };
@@ -96,7 +96,7 @@ export default function Page() {
         eyebrow="How it works"
         title="One workspace."
         quiet="Any AI, or none."
-        lead="untitled project brings your notes, tasks, journal, calendar and chat together, with email and meetings on the way, and keeps all of it separate from whichever AI you choose to use."
+        lead="Naazhi brings your notes, tasks, journal, calendar and chat together, with email and meetings on the way, and keeps all of it separate from whichever AI you choose to use."
       >
         <Link className="btn btn-primary" href="/demo" data-cursor="Play">
           Try the product demo <FA icon={faArrowRight} />

@@ -22,7 +22,7 @@ const verificationRequired = process.env.AUTH_REQUIRE_EMAIL_VERIFICATION?.trim()
 
 function create() {
   return betterAuth({
-    appName: "untitled project",
+    appName: "Naazhi",
     baseURL: env.authUrl,
     secret: env.authSecret,
     database: authPool(),
@@ -193,7 +193,7 @@ function create() {
       }),
       passkey({
         rpID: new URL(env.authUrl).hostname,
-        rpName: "untitled project",
+        rpName: "Naazhi",
         origin: [env.authUrl, ...env.passkeyOrigins],
         schema: {
           passkey: {

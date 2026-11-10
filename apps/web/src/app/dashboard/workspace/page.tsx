@@ -3,7 +3,7 @@ import WorkspaceSwitch from "../../../components/app/WorkspaceSwitch";
 import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
 
 export const metadata = {
-  title: "Workspace — untitled project",
+  title: "Workspace — Naazhi",
   description: "Shared spaces for your team. Coming soon.",
 };
 

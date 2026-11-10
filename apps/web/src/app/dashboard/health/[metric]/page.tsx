@@ -5,7 +5,7 @@ import MetricDetail from "../../../../features/health/components/MetricDetail";
 import { isHealthMetric } from "../../../../features/health/format";
 
 export const metadata = {
-  title: "Health — untitled project",
+  title: "Health — Naazhi",
   description: "One health metric, day by day.",
 };
 

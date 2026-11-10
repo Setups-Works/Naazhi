@@ -23,14 +23,14 @@ export async function sendMail(to: string, subject: string, text: string, action
     return;
   }
   g.__mailer ??= nodemailer.createTransport(url);
-  // Mail clients can only load an absolute https URL, so the ghost mascot comes from the site itself.
-  const logoUrl = `${serverEnv().authUrl.replace(/\/$/, "")}/brand/ghost.png`;
+  // Mail clients can only load an absolute https URL, so the Naazhi mark comes from the site itself.
+  const logoUrl = `${serverEnv().authUrl.replace(/\/$/, "")}/brand/naazhi-mark.png`;
   // Matches the website: cream page, white rounded card, serif headline, forest-green accent, dark pill button.
   const html = `<!doctype html><html><body style="margin:0;padding:0;background:#f5f4eb">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f4eb"><tr><td align="center" style="padding:32px 16px">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px">
       <tr><td style="padding:0 8px 16px;font-family:Georgia,'Times New Roman',serif;font-size:22px;color:#1b1c14">
-        <img src="${esc(logoUrl)}" width="28" height="28" alt="" style="display:inline-block;vertical-align:middle;margin-right:8px;border:0"><span style="vertical-align:middle">untitled project</span>
+        <img src="${esc(logoUrl)}" width="28" height="28" alt="" style="display:inline-block;vertical-align:middle;margin-right:8px;border:0"><span style="vertical-align:middle">Naazhi</span>
       </td></tr>
       <tr><td style="background:#ffffff;border-radius:24px;border:1px solid #e4e1d2;padding:32px 28px;font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;color:#1b1c14">
         <p style="margin:0 0 6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#7e7e72">${esc(subject)}</p>
@@ -39,13 +39,13 @@ export async function sendMail(to: string, subject: string, text: string, action
         ${action ? `<p style="margin:0 0 20px"><a href="${esc(action.url)}" style="display:inline-block;padding:14px 26px;border-radius:999px;background:#191d1a;color:#f4f3e9;text-decoration:none;font-weight:600;font-size:15px">${esc(action.label)} →</a></p><p style="margin:0;font-size:13px;line-height:1.5;color:#7e7e72;word-break:break-all">Button not working? Paste this link into your browser:<br>${esc(action.url)}</p>` : ""}
       </td></tr>
       <tr><td style="padding:16px 8px 0;font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;line-height:1.5;color:#8f9084">
-        You received this because someone used this address on untitled project. If that wasn't you, you can ignore this email.<br>Backed by Setups Works.
+        You received this because someone used this address on Naazhi. If that wasn't you, you can ignore this email.<br>Backed by Setups Works.
       </td></tr>
     </table>
   </td></tr></table></body></html>`;
   await g.__mailer.sendMail({
     // Most SMTP servers only accept a sender they own, so default to the SMTP login when it is an address.
-    from: process.env.MAIL_FROM?.trim() || `untitled project <${smtpUser(url) ?? "no-reply@localhost"}>`,
+    from: process.env.MAIL_FROM?.trim() || `Naazhi <${smtpUser(url) ?? "no-reply@localhost"}>`,
     to,
     subject,
     text: action ? `${text}\n\n${action.label}: ${action.url}` : text,

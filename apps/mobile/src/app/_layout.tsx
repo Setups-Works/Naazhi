@@ -116,7 +116,7 @@ function SetupNotice() {
   return (
     <View style={styles.root}>
       <Screen scroll={false} contentStyle={styles.setup}>
-        <AppText variant="label">untitled project</AppText>
+        <AppText variant="label">Naazhi</AppText>
         <AppText variant="title">Connect your workspace</AppText>
         <AppText variant="body" color={Palette.fgMuted}>
           Set EXPO_PUBLIC_API_URL in apps/mobile/.env.local to the web app’s address, then restart Expo. On a physical phone use your

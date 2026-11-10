@@ -6,7 +6,7 @@ import { FEATURES } from "../../../../config/features";
 import ReaderApp from "../../../../features/rss/components/ReaderApp";
 
 export const metadata = {
-  title: "Reader — untitled project",
+  title: "Reader — Naazhi",
   description: "Follow feeds and read articles in one place.",
 };
 

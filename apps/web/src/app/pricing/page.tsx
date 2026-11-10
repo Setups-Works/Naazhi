@@ -18,7 +18,7 @@ import { listPublicPlans } from "../../server/services/billing/billing.service";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Pricing — untitled project",
+  title: "Pricing — Naazhi",
   description: "One workspace, three ways to pay for AI: a subscription, pay as you go, or your own API key. Change or cancel any time.",
 };
 

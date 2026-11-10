@@ -13,7 +13,7 @@ export const GIFT_H = 1080;
 export const GIFT_RADIUS = 40;
 
 export const GIFT_TEXT = {
-  brand: "untitled project",
+  brand: "Naazhi",
   tag: "WELCOME GIFT",
   foot: "YOUR WORKSPACE, YOUR WAY",
 } as const;
@@ -21,7 +21,7 @@ export const GIFT_TEXT = {
 /** The caption that goes with the card image when it is shared; the link is added when the app knows its address. */
 export function giftShareText(name: string, link?: string) {
   const who = name.trim() || "Someone";
-  return [`${who} just received a welcome gift from untitled project.`, "Notes, tasks, journal, chat, calendar and more in one workspace.", link]
+  return [`${who} just received a welcome gift from Naazhi.`, "Notes, tasks, journal, chat, calendar and more in one workspace.", link]
     .filter(Boolean)
     .join("\n");
 }

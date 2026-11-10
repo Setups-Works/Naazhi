@@ -7,7 +7,7 @@ import { Reveal } from "../../components/landing/Reveal";
 import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/PageKit";
 
 export const metadata: Metadata = {
-  title: "Daily Brief — untitled project",
+  title: "Daily Brief — Naazhi",
   description: "Start the day knowing what matters: your events, tasks, email and journal in one brief, with or without AI.",
 };
 

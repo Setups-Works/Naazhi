@@ -23,6 +23,16 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-11",
+    title: "Version 5.1.1: a new look for shared links",
+    summary: "When you share a link to Naazhi, the preview picture now matches the app’s calm paper-and-ink design.",
+    tone: "sand",
+    appVersion: "v5.1.1",
+    changes: [
+      { kind: "improved", platform: "web", text: "The preview picture shown when a Naazhi link is shared in a chat or on social media has a new look that matches the app: a clean white card with the logo, the tagline and the sections of the workspace." },
+    ],
+  },
+  {
+    date: "2026-11-11",
     title: "Version 5.1.0: share a whole journal day, a new Health page and a sharper admin panel",
     summary: "Send a full day of your journal as one link, connect Health from a clear new screen, and get emails and share pages in the same calm look.",
     tone: "blue",

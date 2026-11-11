@@ -9,6 +9,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return PUBLIC_PAGES.flatMap((p) => {
     const url = absoluteUrl(p.path);
     if (!url) return [];
-    return [{ url, changeFrequency: p.changeFrequency, priority: p.priority, ...(newest && withDate.has(p.path) ? { lastModified: newest } : {}) }];
+    return [{ url, changeFrequency: p.changeFrequency, priority: p.priority, ...(newest && withDate.has(p.path) ? { lastModified: newest } : {}), ...(p.path === "/" ? { images: [absoluteUrl("/opengraph-image")!] } : {}) }];
   });
 }

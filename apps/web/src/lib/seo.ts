@@ -44,6 +44,21 @@ export const PUBLIC_PAGES: { path: string; priority: number; changeFrequency: "w
   { path: "/changelog", priority: 0.6, changeFrequency: "weekly" },
 ];
 
+/**
+ * The main pages as a visitor would name them, with one line each. Search engines choose their own sitelinks, but clear names, short
+ * descriptions and a site-navigation list are the signals they use. Also feeds /llms.txt, so the list lives in one place.
+ */
+export const SITE_NAV: { name: string; path: string; description: string }[] = [
+  { name: "How it works", path: "/how-it-works", description: "How notes, tasks, journal, chat and calendar fit together, and where AI is optional." },
+  { name: "Download", path: "/download", description: "Get the Android app or open the web app." },
+  { name: "Pricing", path: "/pricing", description: "The plans, what each includes, and how AI access works." },
+  { name: "Product demo", path: "/demo", description: "Click around an interactive preview of the workspace." },
+  { name: "Universal search", path: "/universal-search", description: "Find anything across notes, tasks, journal and chat." },
+  { name: "Privacy & security", path: "/privacy-security", description: "How your workspace stays yours." },
+  { name: "Changelog", path: "/changelog", description: "What’s new in the web app and the Android app." },
+  { name: "Contact", path: "/contact", description: "How to reach the team behind Naazhi." },
+];
+
 /** Where the app, not the marketing site, lives. Kept out of search results and the sitemap. */
 export const PRIVATE_PATHS = ["/dashboard", "/admin", "/api", "/share", "/login", "/signup", "/forgot-password", "/reset-password"];
 
@@ -223,3 +238,36 @@ export const webPageSchema = ({ name, description, path }: { name: string; descr
     isPartOf: absoluteUrl("/#website") ? { "@id": absoluteUrl("/#website") } : undefined,
     inLanguage: "en",
   });
+
+/** The site's main navigation as schema.org SiteNavigationElement entries: the structured-data signal for sitelinks. Skipped without an origin. */
+export function siteNavigationSchema(): Json | undefined {
+  if (!siteOrigin()) return undefined;
+  return {
+    "@context": "https://schema.org",
+    "@graph": SITE_NAV.map((n) => ({
+      "@type": "SiteNavigationElement",
+      "@id": absoluteUrl(`${n.path}#nav`),
+      name: n.name,
+      description: n.description,
+      url: absoluteUrl(n.path),
+    })),
+  };
+}
+
+/** The plain-text guide for AI assistants and crawlers (served at /llms.txt): what Naazhi is, then the pages worth reading. */
+export function llmsText(): string {
+  const lines = [
+    `# ${SITE_NAME}`,
+    "",
+    `> ${SITE_TAGLINE}. ${SITE_DESCRIPTION}`,
+    "",
+    "## Pages",
+    ...SITE_NAV.map((n) => `- [${n.name}](${absoluteUrl(n.path) ?? n.path}): ${n.description}`),
+    "",
+    "## Notes",
+    "- The app itself (dashboard, sign-in, shared links) is private and not for indexing.",
+    `- Made by ${SETUPS_WORKS.name} (${SETUPS_WORKS.url}).`,
+    "",
+  ];
+  return lines.join("\n");
+}

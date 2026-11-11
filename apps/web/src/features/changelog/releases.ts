@@ -23,6 +23,19 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-11",
+    title: "Version 5.1.2: easier to find on search engines",
+    summary: "Naazhi now gives search engines and AI assistants a clearer map of the site, so the right pages can show up under the main result.",
+    tone: "mint",
+    appVersion: "v5.1.2",
+    changes: [
+      { kind: "new", platform: "web", text: "The website lists its main pages (How it works, Download, Pricing, Demo, Privacy and more) in a form search engines use to show extra links under the main result." },
+      { kind: "new", platform: "web", text: "A plain-text guide to the site at /llms.txt helps AI assistants and crawlers understand what Naazhi is and which pages to read." },
+      { kind: "improved", platform: "web", text: "The sitemap now includes the share picture for the home page, and the browser’s address bar takes on the app’s colours on phones." },
+      { kind: "improved", platform: "web", text: "The site can be verified with Google Search Console and Bing Webmaster Tools, and shared links name Naazhi’s account on X." },
+    ],
+  },
+  {
+    date: "2026-11-11",
     title: "Version 5.1.1: a new look for shared links",
     summary: "When you share a link to Naazhi, the preview picture now matches the app’s calm paper-and-ink design.",
     tone: "sand",

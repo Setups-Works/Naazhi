@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif, Noto_Sans_Tamil } from "next/font/google";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import "../styles/tailwind.css";
@@ -10,7 +10,7 @@ import Header from "../components/site/Header";
 import Refresh from "../components/site/Refresh";
 import ContextMenu from "../components/app/ContextMenu";
 import JsonLd from "../components/site/JsonLd";
-import { KEYWORDS, organizationSchema, setupsWorksSchema, websiteSchema } from "../lib/seo";
+import { KEYWORDS, organizationSchema, setupsWorksSchema, siteNavigationSchema, websiteSchema } from "../lib/seo";
 import { lookBootScript } from "../lib/look";
 
 config.autoAddCss = false;
@@ -32,6 +32,15 @@ const serif = Instrument_Serif({
 const DESCRIPTION =
   "Notes, tasks, journal, email, calendar, meetings and automations in one workspace. Use AI when it helps, ignore it when it doesn't.";
 
+// The browser's address-bar colour follows the app's paper (light) and its dark surface.
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" }, // design-ok: meta tag value, mirrors --paper
+    { media: "(prefers-color-scheme: dark)", color: "#191919" }, // design-ok: meta tag value, mirrors the dark --paper
+  ],
+  colorScheme: "light dark",
+};
+
 export const metadata: Metadata = {
   // Relative picture addresses (the share image) need to know where the site lives: set NEXT_PUBLIC_SITE_URL (see .env.example).
   ...(publicEnv.siteUrl ? { metadataBase: new URL(publicEnv.siteUrl) } : {}),
@@ -45,9 +54,13 @@ export const metadata: Metadata = {
   publisher: "Naazhi",
   // The marketing pages are indexable; the app itself is kept out by robots.txt and by `noindex` on its own layouts.
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 } },
+  verification: {
+    ...(publicEnv.googleSiteVerification ? { google: publicEnv.googleSiteVerification } : {}),
+    ...(publicEnv.bingSiteVerification ? { other: { "msvalidate.01": publicEnv.bingSiteVerification } } : {}),
+  },
   formatDetection: { telephone: false, email: false, address: false },
   openGraph: { siteName: "Naazhi", title: "Naazhi — one workspace, any AI", description: DESCRIPTION, type: "website", locale: "en_US" },
-  twitter: { card: "summary_large_image", title: "Naazhi — one workspace, any AI", description: DESCRIPTION },
+  twitter: { card: "summary_large_image", title: "Naazhi — one workspace, any AI", description: DESCRIPTION, site: "@setupsworks", creator: "@setupsworks" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -56,7 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {/* App pages paint the person's colour scheme before the first frame (see lib/look.ts). */}
         <script dangerouslySetInnerHTML={{ __html: lookBootScript(publicEnv.appUrl ? new URL(publicEnv.appUrl).host : null) }} />
-        <JsonLd data={[organizationSchema(), setupsWorksSchema(), websiteSchema()]} />
+        <JsonLd data={[organizationSchema(), setupsWorksSchema(), websiteSchema(), siteNavigationSchema()]} />
         {/* Marketing content starts hidden for its entrance animation; without JavaScript it must simply be there. */}
         <noscript>
           <style>{"[data-reveal]{opacity:1!important;transform:none!important}"}</style>

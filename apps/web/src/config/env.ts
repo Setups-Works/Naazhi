@@ -15,6 +15,9 @@ export const publicEnv = {
   posthogKey: process.env.NEXT_PUBLIC_POSTHOG_KEY?.trim() || undefined,
   posthogHost: process.env.NEXT_PUBLIC_POSTHOG_HOST?.trim() || "https://eu.i.posthog.com",
   sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN?.trim() || undefined,
+  /** Search-console ownership tokens (public by design: they are printed in the page's <meta> tags). */
+  googleSiteVerification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim() || undefined,
+  bingSiteVerification: process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION?.trim() || undefined,
 } as const;
 
 /** `API_DOCS=off` hides the Swagger UI and openapi.json (for environments where they must not be public). Read per request. */

@@ -36,6 +36,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import NotesSettings from "../../features/settings/pages/NotesSettings";
 import { HealthPage, ImportsPage, InvitesPage, OtherAppsPage } from "../../features/settings/pages/ConnectionPages";
+import { BrandLogo, brandOf } from "../ui/BrandLogo";
 import { GooglePage, MicrosoftPage, ZohoPage } from "../../features/settings/pages/ProviderPages";
 import { ApiKeysPage, EmailPage, LabelsPage, YouDoPage } from "../../features/settings/pages/AssistantPages";
 import SidebarPortal from "./SidebarPortal";
@@ -173,7 +174,7 @@ export default function SettingsPage({ tab }: { tab: SettingsTab }) {
               <h3>{g.label}</h3>
               {g.tiles.map((t) => (
                 <button key={t.k} type="button" className="sbt-item" data-on={tab === t.k} aria-current={tab === t.k ? "page" : undefined} onClick={() => onTab(t.k)}>
-                  <FA icon={t.icon} /> <span>{t.label}</span>
+                  {brandOf(t.label) && t.k === brandOf(t.label) ? <BrandLogo name={brandOf(t.label)!} /> : <FA icon={t.icon} />} <span>{t.label}</span>
                 </button>
               ))}
             </div>
@@ -263,7 +264,7 @@ export default function SettingsPage({ tab }: { tab: SettingsTab }) {
                         {g.tiles.map((t) => (
                           <li key={t.k}>
                             <button type="button" className="sm-tile" data-danger={t.k === "danger"} onClick={() => onTab(t.k)}>
-                              <FA icon={t.icon} />
+                              {brandOf(t.label) && t.k === brandOf(t.label) ? <BrandLogo name={brandOf(t.label)!} size={14} className="mt-[3px]" /> : <FA icon={t.icon} />}
                               <span>
                                 <b>
                                   {t.label} {t.soon && <Badge variant="secondary" className="ml-1 align-middle text-[11px] font-normal">Soon</Badge>}

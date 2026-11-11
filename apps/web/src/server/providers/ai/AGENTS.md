@@ -8,6 +8,8 @@
 | Puter.js | `puter/` | **browser** (user's own Puter account)         | **stub**                                                                                         | UNT-79 |
 | Your own key | `custom/` | server, with the person's key passed in `req.credentials` | **done** — any OpenAI-compatible provider from the fixed list in `packages/logic/src/billing.ts`; `hidden: true`, so it is never in the picker: the Bring your own key plan selects it (`services/billing` → `aiAccessFor`) | — |
 
+| ChatGPT sign-in | `chatgpt/` | server, tokens in `req.credentials` (+ account header) | **built, unverified against OpenAI's live service** — Responses-format streaming through the person's ChatGPT plan; `hidden: true`, offered by the connections catalog once they sign in | — |
+
 **Adding a provider:** create `<name>/index.ts` exporting an `AiProvider`, add it to `PROVIDERS` in `index.ts`, give it a `label` and `note` (the chat's model picker is built from `/api/v1/ai/status`, nothing is hard-coded in the browser), document env vars in `.env.example` and `apps/web/src/config/env.ts`.
 
 **Rules**

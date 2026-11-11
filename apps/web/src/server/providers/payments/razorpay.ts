@@ -65,6 +65,21 @@ export const createSubscription = (s: { planId: string; interval: "month" | "yea
     notes: { user_id: s.userId },
   });
 
+export type RazorpayOrder = { id: string; amount: number; currency: string; status: string; notes?: Record<string, string> | unknown[] };
+export type RazorpayPayment = { id: string; order_id: string | null; amount: number; currency: string; status: string; notes?: Record<string, string> | unknown[] };
+
+/** A one-time payment (credit top-up). The amount is in paise; `notes` carry who it is for and what it is for. */
+export const createOrder = (o: { amount: number; receipt: string; notes: Record<string, string> }) =>
+  call<RazorpayOrder>("POST", "/orders", { amount: o.amount, currency: "INR", receipt: o.receipt.slice(0, 40), notes: o.notes });
+
+export const fetchPayment = (id: string) => call<RazorpayPayment>("GET", `/payments/${encodeURIComponent(id)}`);
+
+export type RazorpayRefund = { id: string; payment_id: string; amount: number; status: string };
+
+/** Returns money to the customer's original payment method. `amount` is in paise; the refund id makes a repeat of the same call safe to record. */
+export const refundPayment = (paymentId: string, amountCents: number, notes: Record<string, string>) =>
+  call<RazorpayRefund>("POST", `/payments/${encodeURIComponent(paymentId)}/refund`, { amount: amountCents, speed: "normal", notes });
+
 export const fetchSubscription = (id: string) => call<RazorpaySubscription>("GET", `/subscriptions/${encodeURIComponent(id)}`);
 
 /** `atCycleEnd` keeps the paid period running; otherwise it stops now. */
@@ -78,6 +93,12 @@ const hmac = (secret: string, data: string) => createHmac("sha256", secret).upda
 export function verifyCheckoutSignature(paymentId: string, subscriptionId: string, signature: string): boolean {
   const secret = serverEnv().razorpay.keySecret;
   return Boolean(secret) && same(hmac(secret!, `${paymentId}|${subscriptionId}`), signature);
+}
+
+/** For a one-time order the checkout hands back `payment_id` + `signature` over `order_id|payment_id`. */
+export function verifyOrderSignature(orderId: string, paymentId: string, signature: string): boolean {
+  const secret = serverEnv().razorpay.keySecret;
+  return Boolean(secret) && same(hmac(secret!, `${orderId}|${paymentId}`), signature);
 }
 
 /** Webhooks are signed over the exact raw body with the webhook secret. */

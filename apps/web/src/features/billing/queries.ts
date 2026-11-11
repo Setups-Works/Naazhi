@@ -10,6 +10,9 @@ const billingApi = createBillingApi(http);
 
 export const useBilling = () => useQuery({ queryKey: qk.billing.me, queryFn: billingApi.mine });
 
+/** Billing history: every invoice, newest first. */
+export const useInvoices = () => useQuery({ queryKey: qk.billing.invoices, queryFn: billingApi.invoices });
+
 /** Every change answers with the fresh billing state, which replaces the cache so the screen updates at once. */
 export function useBillingActions(onError: (message: string) => void) {
   const qc = useQueryClient();

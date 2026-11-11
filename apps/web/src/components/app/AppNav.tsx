@@ -117,13 +117,16 @@ export default function AppNav({
   const router = useRouter();
   const [menu, setMenu] = useState(false);
   const [drawer, setDrawer] = useState(false);
-  // The sidebar rests as a slim icon rail; the toggle opens the labelled panel and the choice is remembered on this device.
-  const [expanded, setExpanded] = useState(false);
+  // The sidebar is open by default (icons and labels) and the toggle collapses it to the slim icon rail; the choice is remembered on this
+  // device. Below 1200px an open sidebar floats over the page instead of pushing it, so with no saved choice it starts as the rail there.
+  const [expanded, setExpanded] = useState(true);
   useEffect(() => {
     try {
-      if (localStorage.getItem("sb-expanded") === "1") setExpanded(true);
+      const saved = localStorage.getItem("sb-expanded");
+      if (saved === "0") setExpanded(false);
+      else if (saved === null && window.innerWidth < 1200) setExpanded(false);
     } catch {
-      /* storage blocked: stay on the rail */
+      /* storage blocked: stay open */
     }
   }, []);
   const toggleSidebar = () =>

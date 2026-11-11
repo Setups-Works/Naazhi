@@ -54,3 +54,5 @@ page calls `pageMeta` and carries `pageSchemas`. `app/robots.ts` and `app/sitema
 need `NEXT_PUBLIC_SITE_URL`. Setups Works is its own Organization there, using the same `@id` its own site publishes.
 
 **Pricing page:** `app/pricing/page.tsx` is dynamic and reads the plans from the database (`listPublicPlans()`), so a price edited in Admin → Plans shows there without a deploy. Never hard-code a price, allowance or plan name on it; the compare table (`CompareTable`, any number of plans) is built from the plan rows. It says when payments are not switched on (`FEATURES.payments`). See `docs/BILLING.md`.
+
+**Pricing calculator:** `PricingCalculator.tsx` (client) takes the plan rows and calls `estimatePlans` (`packages/logic/src/billing.ts`, unit-tested). Its only own numbers are the assumed tokens per chat; every price and rate comes from the plans. The home page's pricing section (`home/Pro.tsx`) names no prices and points at `/pricing#calculator`; `home/WhatsNew.tsx` reads the newest changelog entry, so it can't drift from what shipped.

@@ -3,6 +3,12 @@ import {
   faCalendarDays,
   faClockRotateLeft,
   faComments,
+  faDesktop,
+  faFileImport,
+  faHeartPulse,
+  faLayerGroup,
+  faRss,
+  faWallet,
   faEnvelope,
   faFileExport,
   faFingerprint,
@@ -62,6 +68,45 @@ export const CAPABILITIES: Capability[] = [
     d: "One search box across tasks, notes, journal and chats. Press ⌘K anywhere.",
     tone: "gold",
     status: "live",
+  },
+  {
+    icon: faUserGroup,
+    t: "Shared journals",
+    d: "Write a journal together with people you invite, as an editor or a viewer.",
+    tone: "violet",
+    status: "live",
+  },
+  { icon: faLayerGroup, t: "Library", d: "Every file from your notes, journal and chats in one place, with search and preview.", tone: "sand", status: "live" },
+  { icon: faRss, t: "Reader", d: "Follow feeds and read articles beside your notes. The app tells you about new ones.", tone: "amber", status: "live" },
+  { icon: faHeartPulse, t: "Health", d: "Steps, sleep and heart rate from your phone, on the web and available to the chat.", tone: "clay", status: "live" },
+  {
+    icon: faKey,
+    t: "Your own AI",
+    d: "Pick the model for each chat and add your own OpenAI, Anthropic, Google or OpenRouter key.",
+    tone: "blue",
+    status: "live",
+  },
+  {
+    icon: faWallet,
+    t: "Pay your way",
+    d: "An autopay subscription, prepaid credit you top up, or your own key, all in rupees.",
+    tone: "green",
+    status: "live",
+  },
+  { icon: faFileImport, t: "Import and export", d: "Bring an Obsidian vault in as notes, and export your notes as Markdown.", tone: "mint", status: "live" },
+  {
+    icon: faComments,
+    t: "ChatGPT sign-in",
+    d: "Use the ChatGPT plan you already pay for inside Naazhi’s chat.",
+    tone: "gold",
+    status: "building",
+  },
+  {
+    icon: faDesktop,
+    t: "Desktop apps and extension",
+    d: "Mac and Windows apps, and a browser extension that turns a meeting into a note.",
+    tone: "sand",
+    status: "soon",
   },
   {
     icon: faEnvelope,
@@ -183,7 +228,7 @@ export const FAQS: [string, string][] = [
   ],
   [
     "What can I use today, and what is still coming?",
-    "Notes, tasks, journal, calendar, chat with AI and universal search are live. Email, meetings and automations are still being built, and the page says so wherever they appear.",
+    "Notes, tasks, journal (including shared journals), calendar, chat with AI, universal search, Library, Reader, Health, imports and plans with autopay are live. Email, meetings, automations, the ChatGPT sign-in, the desktop apps and the browser extension are still being built, and the page says so wherever they appear.",
   ],
   [
     "Can the AI change my things without asking?",
@@ -200,7 +245,7 @@ export const FAQS: [string, string][] = [
   ],
   [
     "Can I bring my existing notes, and take them out again?",
-    "Yes. Import your existing work (including from Notion) and export it whenever you need to. You can also export your data from Settings.",
+    "Yes. Bring an Obsidian vault in as notes (folders stay folders, and duplicates are skipped), and export your notes as Markdown or your data from Settings. Importing from Notion is planned.",
   ],
   [
     "Which email and calendar services will connect?",
@@ -212,7 +257,11 @@ export const FAQS: [string, string][] = [
   ],
   [
     "How do I pay for AI?",
-    "Bring your own API key, connect an AI account you already have, or top up only when you need it. There’s no bundled AI subscription.",
+    "Three ways, all in rupees. Subscribe with autopay for a monthly AI allowance, top up prepaid credit and pay only for the tokens you use, or add your own API key (OpenAI, Anthropic, Google or OpenRouter) and pay that provider directly. Using your ChatGPT plan is on the way. The pricing page has a calculator to compare them.",
+  ],
+  [
+    "Is there an app for my computer?",
+    "Not yet. Naazhi works in any browser on a Mac or a Windows PC, and Mac and Windows apps and a browser extension are marked “Coming soon” on the download page. The Android app is available now; the iPhone app is coming.",
   ],
   [
     "Does it work on my phone?",

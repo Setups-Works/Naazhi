@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { byoKeyInput, planIdInput, planPatchInput } from "../../src/server/services/billing/billing.schema";
+import { billingSettingsInput, byoKeyInput, creditAdjustInput, planIdInput, planPatchInput } from "../../src/server/services/billing/billing.schema";
 import { openKey, sealKey } from "../../src/server/services/billing/keyVault";
 
 describe("billing input", () => {
@@ -51,5 +51,26 @@ describe("key vault", () => {
 
   it("makes a different sealed value each time", () => {
     expect(sealKey("same", "u")).not.toBe(sealKey("same", "u"));
+  });
+});
+
+describe("admin credit settings", () => {
+  const ok = { topup_min_cents: 5_000, topup_max_cents: 1_000_000, topup_options_cents: [10_000, 50_000] };
+  it("accepts whole-rupee limits with quick amounts inside them", () => {
+    expect(billingSettingsInput.safeParse(ok).success).toBe(true);
+  });
+  it("refuses a maximum below the minimum, quick amounts outside the range and part-rupee amounts", () => {
+    expect(billingSettingsInput.safeParse({ ...ok, topup_max_cents: 4_000 }).success).toBe(false);
+    expect(billingSettingsInput.safeParse({ ...ok, topup_options_cents: [1_000] }).success).toBe(false);
+    expect(billingSettingsInput.safeParse({ ...ok, topup_min_cents: 5_050 }).success).toBe(false);
+    expect(billingSettingsInput.safeParse({ ...ok, topup_options_cents: [] }).success).toBe(false);
+    expect(billingSettingsInput.safeParse({ ...ok, topup_options_cents: [6_000, 7_000, 8_000, 9_000, 10_000, 11_000, 12_000] }).success).toBe(false);
+  });
+  it("needs a real person and a non-zero amount to adjust credit", () => {
+    const id = "123e4567-e89b-12d3-a456-426614174000";
+    expect(creditAdjustInput.safeParse({ userId: id, amountCents: 50_000 }).success).toBe(true);
+    expect(creditAdjustInput.safeParse({ userId: id, amountCents: -20_000 }).success).toBe(true);
+    expect(creditAdjustInput.safeParse({ userId: id, amountCents: 0 }).success).toBe(false);
+    expect(creditAdjustInput.safeParse({ userId: "nobody", amountCents: 100 }).success).toBe(false);
   });
 });

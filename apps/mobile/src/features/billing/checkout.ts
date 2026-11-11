@@ -44,7 +44,7 @@ export function usePlanPicker(billing: MyBilling | undefined, onError: (message:
         });
       if (!r) return;
       const data = await billingApi
-        .confirm({ paymentId: r.razorpay_payment_id, subscriptionId: r.razorpay_subscription_id, signature: r.razorpay_signature })
+        .confirm({ paymentId: r.razorpay_payment_id, subscriptionId: r.razorpay_subscription_id ?? s.subscription_id, signature: r.razorpay_signature })
         .catch(() => {
           throw new Error("Your payment went through but we couldn’t confirm it yet. It will appear shortly; contact us if it doesn’t.");
         });
@@ -56,4 +56,42 @@ export function usePlanPicker(billing: MyBilling | undefined, onError: (message:
     }
   }
   return { pick, busy: paying !== null || choose.isPending, loadingId: paying ?? (choose.isPending ? (choose.variables ?? null) : null) };
+}
+
+/** `topUp(amountCents)`: adds Pay as you go credit with a one-time Razorpay payment (the server creates the order and verifies the result). */
+export function useTopUp(onError: (message: string) => void) {
+  const qc = useQueryClient();
+  const [paying, setPaying] = useState(false);
+
+  async function topUp(amountCents: number) {
+    onError("");
+    setPaying(true);
+    try {
+      const s = await billingApi.topup(amountCents);
+      let sdk: typeof import("react-native-razorpay").default;
+      try {
+        sdk = (await import("react-native-razorpay")).default;
+      } catch {
+        throw new Error("Payments need the installed Naazhi app. Update the app, or add credit on the website.");
+      }
+      const r = await sdk
+        .open({ key: s.key_id, order_id: s.order_id, amount: s.amount, currency: s.currency, name: s.name, description: s.description, prefill: s.prefill })
+        .catch((e: Failure) => {
+          if (e?.code === 0 || e?.code === 2) return null;
+          throw new Error("That payment didn’t go through. You haven’t been charged. Try again or use another method.");
+        });
+      if (!r) return;
+      const data = await billingApi
+        .confirmTopup({ paymentId: r.razorpay_payment_id, orderId: r.razorpay_order_id ?? s.order_id, signature: r.razorpay_signature })
+        .catch(() => {
+          throw new Error("Your payment went through but we couldn’t add the credit yet. It will appear shortly; contact us if it doesn’t.");
+        });
+      qc.setQueryData(qk.billing, data);
+    } catch (e) {
+      onError(e instanceof Error && e.message ? e.message : errorMessage(e));
+    } finally {
+      setPaying(false);
+    }
+  }
+  return { topUp, busy: paying };
 }

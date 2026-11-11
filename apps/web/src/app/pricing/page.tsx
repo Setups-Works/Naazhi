@@ -2,22 +2,23 @@ import type { Metadata } from "next";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faBan, faCheck, faCoins, faKey, faWallet } from "@fortawesome/free-solid-svg-icons";
 import type { BillingPlan } from "@untitled/types";
-import { formatTokens, priceLine } from "@untitled/logic/billing";
+import { formatMoney, formatTokens, priceLine } from "@untitled/logic/billing";
 import AuthLink from "../../components/auth/AuthLink";
 import { CompareTable } from "../../components/site/blocks";
+import PricingCalculator from "../../components/site/PricingCalculator";
 import { FaqList } from "../../components/site/Faq";
 import JsonLd from "../../components/site/JsonLd";
 import { breadcrumbSchema, faqSchema, pageMeta, webPageSchema } from "../../lib/seo";
 import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/site/kit";
 import { R, Reveal } from "../../components/site/Reveal";
 import { buttonClass, Section, Surface } from "../../components/site/ui";
-import { listPublicPlans, paymentsLive } from "../../server/services/billing/billing.service";
+import { getTopupLimits, listPublicPlans, paymentsLive } from "../../server/services/billing/billing.service";
 
 // Prices and allowances are edited in Admin → Plans, so this page reads them on every request instead of baking them in at build time.
 export const dynamic = "force-dynamic";
 
 const TITLE = "Pricing — Naazhi";
-const DESCRIPTION = "One workspace, three ways to pay for AI: a subscription, pay as you go, or your own API key. Change or cancel any time.";
+const DESCRIPTION = "One workspace, three ways to pay for AI in rupees: an autopay subscription, prepaid pay as you go credit, or your own API key. Work out what you would pay with the calculator. Change or cancel any time.";
 export const metadata: Metadata = pageMeta({ title: TITLE, description: DESCRIPTION, path: "/pricing" });
 
 function Plan({ plan, emphasis = false }: { plan: BillingPlan; emphasis?: boolean }) {
@@ -58,6 +59,7 @@ const aiLine = (p: BillingPlan) =>
 export default async function Page() {
   const plans = await listPublicPlans().catch(() => [] as BillingPlan[]);
   const live = paymentsLive();
+  const limits = await getTopupLimits();
 
   const faqs: [string, string][] = [
     [
@@ -66,7 +68,15 @@ export default async function Page() {
     ],
     [
       "What do I pay for AI?",
-      "It depends on the plan. A subscription includes a monthly allowance of AI tokens. Pay as you go has no monthly fee and bills the tokens you use. With your own key you pay your AI provider directly and we don’t meter anything.",
+      "It depends on the plan. A subscription includes a monthly allowance of AI tokens. Pay as you go has no monthly fee: you top up credit and the tokens you use come off it. With your own key you pay your AI provider directly and we don’t meter anything.",
+    ],
+    [
+      "How does Pay as you go credit work?",
+      `You top up in whole rupees, from ${formatMoney(limits.minCents)} to ${formatMoney(limits.maxCents)} at a time, and every AI reply takes its token cost off your balance. When the balance reaches zero, AI pauses until you top up again; your notes, tasks and journal are unaffected. The rate is on the plan card above. Refunds follow our refund policy.`,
+    ],
+    [
+      "Can I use my ChatGPT subscription?",
+      "We’re building it: sign in once and use your own ChatGPT plan inside Naazhi’s chat. It isn’t switched on yet, so today you can use your own API key (OpenAI, Anthropic, Google or OpenRouter) or Pay as you go credit.",
     ],
     [
       "Where is my API key kept?",
@@ -94,7 +104,7 @@ export default async function Page() {
         eyebrow="Pricing"
         title="Pick how you pay"
         quiet="for AI."
-        lead="Your workspace is one thing; the AI behind it is another. Choose a subscription, pay for what you use, or bring your own key, and change or cancel any time."
+        lead="Your workspace is one thing; the AI behind it is another. Subscribe with autopay, top up credit and pay for what you use, or bring your own key. Everything is in rupees, and you can change or cancel any time."
       >
         <AuthLink arrow className={buttonClass("primary")} />
       </PageHero>
@@ -111,12 +121,31 @@ export default async function Page() {
         ) : (
           <p className="text-center text-[15px] text-fg-subtle">Plans are being updated. Check back in a moment.</p>
         )}
+        {live && plans.length > 0 && (
+          <p className="mt-5 text-center text-[13.5px] text-fg-subtle">
+            Paid in rupees through Razorpay: UPI AutoPay, cards and more. Pay as you go credit can be topped up from {formatMoney(limits.minCents)}.
+          </p>
+        )}
         {!live && plans.length > 0 && (
           <p className="mt-5 text-center text-[13.5px] text-fg-subtle">
             Payments aren’t switched on yet, so choosing a plan doesn’t charge you.
           </p>
         )}
       </Section>
+
+      {plans.length > 0 && (
+        <Section tight id="calculator">
+          <SectionHead
+            kicker="Calculator"
+            title="Work out what"
+            quiet="you’d pay."
+            lead="Tell us roughly how much you’d use AI and see what each plan would cost. The numbers come straight from the plans above."
+          />
+          <div className="mt-[clamp(28px,4vw,52px)]">
+            <PricingCalculator plans={plans} minTopupCents={limits.minCents} />
+          </div>
+        </Section>
+      )}
 
       {plans.length > 0 && (
         <Section tight>
@@ -146,9 +175,9 @@ export default async function Page() {
         <FeatureCards
           cols={4}
           items={[
-            { icon: faWallet, t: "Subscription", d: "One monthly price with an AI allowance included.", tone: "amber" },
-            { icon: faCoins, t: "Pay as you go", d: "No monthly fee. Pay only for the tokens you use.", tone: "blue" },
-            { icon: faKey, t: "Bring your own API key", d: "Connect your own provider and pay them directly.", tone: "violet" },
+            { icon: faWallet, t: "Subscription", d: "One monthly price, charged by autopay, with an AI allowance included.", tone: "amber" },
+            { icon: faCoins, t: "Pay as you go", d: "No monthly fee. Top up credit and tokens come off it as you use AI.", tone: "blue" },
+            { icon: faKey, t: "Bring your own API key", d: "Add a key for OpenAI, Anthropic, Google or OpenRouter and pay them directly.", tone: "violet" },
             { icon: faBan, t: "Take a break from AI", d: "Keep your workspace fully AI-free.", tone: "clay" },
           ]}
         />

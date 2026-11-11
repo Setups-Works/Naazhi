@@ -1,10 +1,11 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { BYO_PROVIDERS, byoProvider } from "@untitled/logic/billing";
 import type { Prefs } from "../../../lib/prefs";
 import { useConfirm } from "../../../components/ui/Confirm";
-import { useBilling, useBillingActions } from "../../billing/queries";
+import { useAiCatalog, useAiConnectionActions } from "../../ai/connections";
+import { ProviderLogo } from "../../../components/ui/ProviderLogo";
+import ConnectAiDialog from "../../../components/app/chat/ConnectAiDialog";
 import { usePrefsSave } from "../usePrefsSave";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faArrowRight, faArrowUpRightFromSquare, faClock, faEnvelope, faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -13,7 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { AppRow, SettingsEmpty, SettingsNotice, SettingsRow, SettingsSection, Tag } from "../ui";
+import { AppRow, SettingsEmpty, SettingsNotice, SettingsRow, SettingsSection } from "../ui";
 
 const SOON = "Not available yet";
 const later = (what: string) => `${what} isn’t available yet. This page shows what you’ll be able to do.`;
@@ -102,92 +103,123 @@ function SettingsSectionLabel({ children, note }: { children: string; note?: str
   );
 }
 
-/** API keys: bring your own AI provider key. Saved through the same encrypted vault as Plan and billing; needs the "Bring your own key" plan. */
+/**
+ * API keys: connect your own AI. ChatGPT (sign in once, uses your ChatGPT plan) and keys for OpenAI, Anthropic, Google and OpenRouter.
+ * Keys are checked with the provider, stored encrypted and only used to answer your own messages; the models then appear in the chat's
+ * model picker. Same data as the picker's "Connect an AI" dialog (features/ai/connections).
+ */
 export function ApiKeysPage() {
   const [err, setErr] = useState("");
-  const billing = useBilling().data;
-  const { choose, saveKey, removeKey } = useBillingActions(setErr);
+  const catalog = useAiCatalog();
+  const { saveKey, disconnect } = useAiConnectionActions(setErr);
   const { ask, dialog } = useConfirm();
   const [adding, setAdding] = useState<string | null>(null);
-  const [model, setModel] = useState("");
   const [apiKey, setApiKey] = useState("");
-  const onByoPlan = billing?.plan?.id === "byo" && billing.status === "active";
-  const saved = billing?.byo.hint ? byoProvider(billing.byo.provider ?? "") : null;
+  const [connect, setConnect] = useState(false);
+  const groups = catalog.data?.groups ?? [];
+  const chatgpt = groups.find((g) => g.kind === "chatgpt");
+  const keys = groups.filter((g) => g.kind === "key");
+  const mine = groups.filter((g) => g.connected);
+  const tile = (id: string) => (
+    <span className="grid size-11 shrink-0 place-items-center rounded-r2 border bg-raised">
+      <ProviderLogo id={id} size={22} />
+    </span>
+  );
 
-  function open(id: string) {
-    setAdding(id);
-    setModel(byoProvider(id)?.model ?? "");
-    setApiKey("");
-    setErr("");
-  }
   return (
     <>
       {dialog}
-      {billing && !onByoPlan && (
-        <SettingsNotice className="justify-between">
-          <span>Using your own key is a plan. Until you choose it, Naazhi uses your plan’s credit.</span>
-          <Button size="sm" disabled={choose.isPending} onClick={() => choose.mutate("byo")}>
-            Use my own key
-          </Button>
-        </SettingsNotice>
-      )}
+      {connect && <ConnectAiDialog start="chatgpt" onClose={() => setConnect(false)} />}
       {err && (
         <p className="form-err mt-3" role="alert">
           {err}
         </p>
       )}
       <SettingsSection title="Your keys">
-        {saved ? (
-          <AppRow name={saved.label} description={billing?.byo.model} extra={<p className="m-0 mt-0.5 font-mono text-[13px] text-ink-3">{billing?.byo.hint}</p>}>
-            <Button
-              variant="outline"
-              onClick={async () => {
-                if (await ask({ title: "Remove this key?", body: `Naazhi stops using your ${saved.label} key. The saved key is deleted.`, confirmLabel: "Remove key", danger: true })) removeKey.mutate();
-              }}
+        {mine.length ? (
+          mine.map((g) => (
+            <AppRow
+              key={g.id}
+              name={g.kind === "chatgpt" ? "ChatGPT subscription" : g.label}
+              description={g.kind === "chatgpt" ? "Connected. Naazhi uses your ChatGPT plan for chat." : `Key saved, ending ${g.hint ?? "••••"}`}
+              logo={tile(g.id)}
             >
-              Remove
-            </Button>
-          </AppRow>
+              <Button
+                variant="outline"
+                disabled={disconnect.isPending}
+                onClick={async () => {
+                  const what = g.kind === "chatgpt" ? "ChatGPT connection" : `${g.label} key`;
+                  if (await ask({ title: `Remove your ${what}?`, body: `Naazhi stops using it. What we stored is deleted.`, confirmLabel: "Remove", danger: true })) disconnect.mutate(g.id);
+                }}
+              >
+                Remove
+              </Button>
+            </AppRow>
+          ))
         ) : (
           <SettingsEmpty>No keys yet. Naazhi uses your plan’s credit for everything. Add a key below to use your own.</SettingsEmpty>
         )}
       </SettingsSection>
+
       <h2 className="m-0 mt-8 mb-2 flex items-baseline gap-2 text-[15px] font-semibold">
-        Available providers <small className="text-[13px] font-normal text-ink-3">{BYO_PROVIDERS.length} providers</small>
+        Available providers <small className="text-[13px] font-normal text-ink-3">{keys.length + 1} providers</small>
       </h2>
       <h3 className="m-0 mb-2 text-[13.5px] font-medium">
         Chat &amp; writing <span className="font-normal text-ink-3">· Models Naazhi can run on your own key</span>
       </h3>
       <div className="divide-y divide-line overflow-hidden rounded-r3 border bg-raised">
-        {BYO_PROVIDERS.map((p) => (
-          <div key={p.id}>
-            <AppRow name={p.label} description={p.model} extra={<p className="m-0 mt-0.5 text-[13.5px] text-ink-3">Used for chat, writing and other model calls</p>}>
-              <a href={p.keyUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-2 text-[14px] text-ink-2 hover:text-ink">
-                Get a key <FA icon={faArrowUpRightFromSquare} className="text-[11px]" />
-              </a>
-              <Button variant="outline" disabled={!onByoPlan} title={onByoPlan ? undefined : "Choose the Bring your own key plan first"} onClick={() => open(p.id)}>
-                {saved?.id === p.id ? "Replace key" : "Add key"}
+        {chatgpt && (
+          <AppRow
+            name="ChatGPT"
+            description="Naazhi uses your ChatGPT subscription for chat instead of your plan’s credit."
+            logo={tile("chatgpt")}
+          >
+            <Button disabled={!chatgpt.configured} title={chatgpt.configured ? undefined : "Not set up on this server yet"} onClick={() => setConnect(true)}>
+              {chatgpt.connected ? "Manage ChatGPT" : "Connect ChatGPT"}
+            </Button>
+          </AppRow>
+        )}
+        {keys.map((g) => (
+          <div key={g.id}>
+            <AppRow
+              name={g.label}
+              description={g.models.slice(0, 4).map((m) => m.label).join(", ")}
+              extra={<p className="m-0 mt-0.5 text-[13.5px] text-ink-3">Naazhi uses it for chat, writing and other model calls</p>}
+              logo={tile(g.id)}
+            >
+              {g.keyUrl && (
+                <a href={g.keyUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-2 text-[14px] text-ink-2 hover:text-ink">
+                  Get a key <FA icon={faArrowUpRightFromSquare} className="text-[11px]" />
+                </a>
+              )}
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setAdding(adding === g.id ? null : g.id);
+                  setApiKey("");
+                  setErr("");
+                }}
+              >
+                {g.connected ? "Replace key" : "Add key"}
               </Button>
             </AppRow>
-            {adding === p.id && (
+            {adding === g.id && (
               <form
                 className="grid gap-3 bg-side px-4 py-4"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  saveKey.mutate({ provider: p.id, model: model.trim(), apiKey: apiKey.trim() }, { onSuccess: () => setAdding(null) });
+                  setErr("");
+                  saveKey.mutate({ provider: g.id, apiKey: apiKey.trim() }, { onSuccess: () => { setAdding(null); setApiKey(""); } });
                 }}
               >
                 <label className="grid gap-1 text-[13.5px] text-ink-2">
-                  Model
-                  <Input value={model} onChange={(e) => setModel(e.target.value)} maxLength={100} />
+                  {g.label} API key
+                  <Input type="password" autoComplete="off" spellCheck={false} value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Paste your key" maxLength={400} />
                 </label>
-                <label className="grid gap-1 text-[13.5px] text-ink-2">
-                  API key
-                  <Input type="password" autoComplete="off" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Paste your key" />
-                </label>
+                <p className="m-0 text-[12.5px] text-ink-3">We check it with {g.label}, then store it encrypted. It is only used to answer your own messages and is never shown again.</p>
                 <div className="flex gap-2">
-                  <Button type="submit" disabled={!apiKey.trim() || !model.trim() || saveKey.isPending}>
-                    Save key
+                  <Button type="submit" disabled={apiKey.trim().length < 8 || saveKey.isPending}>
+                    {saveKey.isPending ? "Checking…" : "Save key"}
                   </Button>
                   <Button type="button" variant="ghost" onClick={() => setAdding(null)}>
                     Cancel

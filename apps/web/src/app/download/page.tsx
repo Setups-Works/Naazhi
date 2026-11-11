@@ -3,15 +3,20 @@ import {
   faArrowDown,
   faBell,
   faBookOpen,
+  faCheck,
   faCloudArrowDown,
   faDesktop,
   faMicrophone,
   faMobileScreen,
   faPenToSquare,
+  faPlug,
+  faTableColumns,
   faRightToBracket,
   faTabletScreenButton,
 } from "@fortawesome/free-solid-svg-icons";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { Icon as FA } from "@/components/ui/Icon";
+import { AppPreview, type PreviewKind } from "@/components/ui/AppPreview";
 import { StepCards } from "../../components/site/blocks";
 import { FaqList } from "../../components/site/Faq";
 import { Heading } from "../../components/site/Heading";
@@ -27,7 +32,7 @@ import { breadcrumbSchema, faqSchema, pageMeta, softwareSchema, webPageSchema } 
 import { GITHUB_REPO } from "../../lib/site";
 
 const TITLE = "Download — Naazhi";
-const DESCRIPTION = "Get Naazhi on your phone. The Android app is available to download now, the iPhone app is coming soon, and the web app works everywhere.";
+const DESCRIPTION = "Get Naazhi on your phone. The Android app is available to download now, the web app works everywhere, and the iPhone app, Mac and Windows apps and a browser extension are coming soon.";
 export const metadata: Metadata = pageMeta({ title: TITLE, description: DESCRIPTION, path: "/download" });
 
 const RELEASE = `${GITHUB_REPO}/releases/latest`;
@@ -39,11 +44,70 @@ const RELEASED = latest
   ? new Date(`${latest.date}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })
   : undefined;
 
-// Status must match what ships: the Android app is a downloadable APK today; there is no iPhone build yet.
-const platforms: { icon: IconDefinition; name: string; status: Status; d: string; action: "apk" | "web" | "none" }[] = [
-  { icon: faMobileScreen, name: "Android", status: "live", d: "Download the app for phones and tablets and keep your workspace in your pocket.", action: "apk" },
-  { icon: faTabletScreenButton, name: "iPhone and iPad", status: "soon", d: "The iOS app is being built. It will arrive on the App Store when it’s ready.", action: "none" },
-  { icon: faDesktop, name: "Web", status: "live", d: "Nothing to install. Open Naazhi in any modern browser, on your phone or your computer.", action: "web" },
+// Status must match what ships: the Android app is a downloadable APK today; there is no iPhone, desktop or extension build yet.
+const platforms: {
+  icon: IconDefinition;
+  name: string;
+  status: Status;
+  title: string;
+  items: string[];
+  preview: PreviewKind;
+  action: "apk" | "web" | "none";
+}[] = [
+  {
+    icon: faMobileScreen,
+    name: "Android",
+    status: "live",
+    title: "Naazhi, one tap away.",
+    items: ["Quick notes, tasks and journal entries on the go", "Voice notes you can record in one tap", "Your workspace, in sync with the web"],
+    preview: "phone",
+    action: "apk",
+  },
+  {
+    icon: faTabletScreenButton,
+    name: "iPhone and iPad",
+    status: "soon",
+    title: "On the App Store, soon.",
+    items: ["The same workspace on your iPhone and iPad", "Notes, tasks and journal in a couple of taps", "In sync with the web and Android"],
+    preview: "phone",
+    action: "none",
+  },
+  {
+    icon: faDesktop,
+    name: "Web",
+    status: "live",
+    title: "Nothing to install.",
+    items: ["Open Naazhi in any modern browser", "Works at phone width and on a big screen", "The same account everywhere"],
+    preview: "desktop",
+    action: "web",
+  },
+  {
+    icon: faDesktop,
+    name: "Mac",
+    status: "soon",
+    title: "Naazhi on your Mac.",
+    items: ["The whole workspace in its own window", "Quick capture from anywhere on your computer", "In sync with the web and your phone"],
+    preview: "desktop",
+    action: "none",
+  },
+  {
+    icon: faTableColumns,
+    name: "Windows",
+    status: "soon",
+    title: "Naazhi on your PC.",
+    items: ["The whole workspace in its own window", "Quick capture from anywhere on your computer", "In sync with the web and your phone"],
+    preview: "desktop",
+    action: "none",
+  },
+  {
+    icon: faPlug,
+    name: "Browser extension",
+    status: "soon",
+    title: "Every meeting, written down.",
+    items: ["Record a meeting in your browser and get a transcript", "It lands in a Naazhi note, where you can read and edit it", "Share it and turn action items into tasks"],
+    preview: "browser",
+    action: "none",
+  },
 ];
 
 const install = [
@@ -80,6 +144,7 @@ const faqs: [string, string][] = [
   ["Why isn’t it in the Play Store?", "Not yet. For now the Android app is a direct download from our GitHub releases. We’ll add the store listing here when it exists."],
   ["Is the APK safe to install?", "It’s built from this project’s own repository and published on its releases page. As with any app outside a store, only download it from that page."],
   ["When is the iPhone app coming?", "It’s in the plans and marked “Coming soon” here. We won’t say it’s available until you can actually install it."],
+  ["What about Mac, Windows and a browser extension?", "They’re planned and marked “Coming soon” here. Until they exist, the web app works in any browser on a Mac or a Windows PC."],
   ["Do I need the app to use Naazhi on my phone?", "No. The web app is built mobile-first and works at phone width. The Android app adds a home-screen app, notifications and a faster start."],
 ];
 
@@ -122,34 +187,45 @@ export default function Page() {
         <Reveal stagger={0.1} className="mt-[clamp(28px,4vw,52px)] grid gap-4 md:grid-cols-3">
           {platforms.map((p) => (
             <R key={p.name}>
-              <Surface lift className="flex h-full flex-col gap-4 p-7">
-                <div className="flex items-start justify-between">
-                  <IconBadge icon={p.icon} className="size-12" />
-                  <StatusChip status={p.status} />
+              <Surface lift className="flex h-full flex-col overflow-hidden">
+                <AppPreview kind={p.preview} />
+                <div className="flex flex-1 flex-col gap-4 p-6">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="m-0 flex items-center gap-2 text-[14px] text-fg-muted">
+                      <FA icon={p.icon} /> {p.name}
+                    </p>
+                    <StatusChip status={p.status} />
+                  </div>
+                  <h3 className="m-0 font-serif font-semibold text-[26px] leading-tight tracking-[-0.022em]">{p.title}</h3>
+                  <ul className="m-0 flex flex-1 list-none flex-col gap-2.5 p-0 text-[15px] text-fg-muted">
+                    {p.items.map((t) => (
+                      <li key={t} className="flex items-start gap-2.5">
+                        <FA icon={faCheck} className="mt-1.5 text-[12px]" /> {t}
+                      </li>
+                    ))}
+                  </ul>
+                  {p.action === "apk" && (
+                    <>
+                      {VERSION && (
+                        <p className="m-0 font-mono text-[13px] text-fg-muted">
+                          Version {VERSION}
+                          {RELEASED && <span className="text-fg-faint"> · {RELEASED}</span>}
+                        </p>
+                      )}
+                      <ButtonLink href={RELEASE} external arrow>
+                        Download APK
+                      </ButtonLink>
+                    </>
+                  )}
+                  {p.action === "web" && (
+                    <AuthLink className={buttonClass("secondary")} signedIn="Open the web app" href="/signup" arrow>
+                      Open Naazhi
+                    </AuthLink>
+                  )}
+                  {p.action === "none" && (
+                    <span className="inline-flex h-12 items-center justify-center rounded-pill bg-surface-sunken px-6 text-[15px] font-medium text-fg-muted">Coming soon</span>
+                  )}
                 </div>
-                <h3 className="font-serif font-semibold text-[30px] leading-tight tracking-[-0.022em]">{p.name}</h3>
-                <p className="flex-1 text-[15px] leading-relaxed text-fg-muted">{p.d}</p>
-                {p.action === "apk" && (
-                  <>
-                    {VERSION && (
-                      <p className="font-mono text-[13px] text-fg-muted">
-                        Version {VERSION}
-                        {RELEASED && <span className="text-fg-faint"> · {RELEASED}</span>}
-                      </p>
-                    )}
-                    <ButtonLink href={RELEASE} external arrow>
-                      Download APK
-                    </ButtonLink>
-                  </>
-                )}
-                {p.action === "web" && (
-                  <AuthLink className={buttonClass("secondary")} signedIn="Open the web app" href="/signup" arrow>
-                    Open Naazhi
-                  </AuthLink>
-                )}
-                {p.action === "none" && (
-                  <span className="inline-flex h-12 items-center justify-center rounded-pill bg-surface-sunken px-6 text-[15px] font-medium text-fg-muted">Coming soon</span>
-                )}
               </Surface>
             </R>
           ))}

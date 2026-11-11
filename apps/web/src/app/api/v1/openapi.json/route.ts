@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { currentUser, isAdmin } from "../../../../server/session";
 import { apiDocsEnabled } from "../../../../config";
 import { buildOpenApi } from "../../../../lib/api/openapi";
 import { auth } from "../../../../server/auth";
@@ -18,7 +19,8 @@ type Doc = {
  * Set API_DOCS=off to hide it in an environment where it should not be public.
  */
 export async function GET() {
-  if (!apiDocsEnabled()) return NextResponse.json({ error: "Not found." }, { status: 404 });
+  // Admins only. Anyone else (signed out, or signed in without the admin role) gets the same answer as for a page that doesn't exist.
+  if (!apiDocsEnabled() || !isAdmin(await currentUser())) return NextResponse.json({ error: "Not found." }, { status: 404 });
   const ours = buildOpenApi() as unknown as Doc & Record<string, unknown>;
   try {
     const theirs = (await (auth.api as unknown as { generateOpenAPISchema: () => Promise<Doc> }).generateOpenAPISchema()) as Doc;

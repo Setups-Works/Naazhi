@@ -14,7 +14,8 @@ import { ConflictError, ForbiddenError, NotFoundError, RateLimitError, Validatio
 import { underLimit } from "../../rateLimit";
 import * as repo from "../../repositories/collaboration.repository";
 import { deleteObjects } from "../../storage";
-import { sendMail } from "../../mail";
+import { sendEmail } from "../../mail";
+import { templates } from "../../email/templates";
 import { serverEnv } from "../../../config/env";
 import type { FeedQuery } from "./collaboration.schema";
 
@@ -178,11 +179,14 @@ async function invite(
   if (!made) return { id: null };
   // The invitation is saved either way; a mail problem must not fail it (they also see it the next time they open the app).
   if (made.to)
-    void sendMail(
+    void sendEmail(
       made.to.email,
-      "You’re invited to a shared journal",
-      `${made.from?.name || "Someone"} invited you to write in the shared journal “${made.journal ?? "Shared journal"}” as ${role === "editor" ? "an editor" : "a viewer"}. Open the app to accept or decline.`,
-      { label: "View invitation", url: `${serverEnv().authUrl.replace(/\/$/, "")}/dashboard/journal/collaborate` },
+      templates.journalInvite({
+        from: made.from?.name || "Someone",
+        journal: made.journal ?? "Shared journal",
+        role,
+        url: `${serverEnv().authUrl.replace(/\/$/, "")}/dashboard/journal/collaborate`,
+      }),
     ).catch(() => undefined);
   // And a notification in their inbox and on their phone, if they have the app.
   notifyQuietly([made.inviteeId], {

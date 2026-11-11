@@ -7,7 +7,8 @@ import { admin, emailOTP, lastLoginMethod, oneTap, openAPI, username } from "bet
 import { passkey } from "@better-auth/passkey";
 import pg from "pg";
 import { publicEnv, serverEnv } from "../config/env";
-import { sendMail } from "./mail";
+import { sendEmail } from "./mail";
+import { templates } from "./email/templates";
 
 const env = serverEnv();
 const g = globalThis as unknown as { __authPool?: pg.Pool; __auth?: ReturnType<typeof create> };
@@ -55,15 +56,7 @@ function create() {
       changeEmail: {
         enabled: true,
         sendChangeEmailConfirmation: async ({ user, newEmail, url }) => {
-          await sendMail(
-            user.email,
-            "Confirm your email change",
-            `Someone asked to change your email to ${newEmail}. Confirm if that was you.`,
-            {
-              label: "Approve the change",
-              url,
-            },
-          );
+          await sendEmail(user.email, templates.changeEmail({ newEmail, url }));
         },
       },
     },
@@ -107,10 +100,7 @@ function create() {
       requireEmailVerification: verificationRequired,
       autoSignIn: !verificationRequired,
       sendResetPassword: async ({ user, url }) => {
-        await sendMail(user.email, "Reset your password", "We received a request to reset your password. The link works for one hour.", {
-          label: "Choose a new password",
-          url,
-        });
+        await sendEmail(user.email, templates.resetPassword({ url }));
       },
     },
     // Username availability is not exposed publicly, to avoid making account discovery easier.
@@ -121,10 +111,7 @@ function create() {
       sendOnSignIn: verificationRequired,
       autoSignInAfterVerification: true,
       sendVerificationEmail: async ({ user, url }) => {
-        await sendMail(user.email, "Confirm your email", `Hi ${user.name || "there"}, confirm your email to activate your account.`, {
-          label: "Confirm email",
-          url,
-        });
+        await sendEmail(user.email, templates.confirmEmail({ name: user.name, url }));
       },
     },
     socialProviders:
@@ -190,11 +177,7 @@ function create() {
         storeOTP: "hashed",
         rateLimit: { window: 60, max: 3 },
         sendVerificationOTP: async ({ email, otp }) => {
-          await sendMail(
-            email,
-            "Your password reset code",
-            `Your password reset code is ${otp}. It expires in 5 minutes. If you didn’t request this, you can ignore this email.`,
-          );
+          await sendEmail(email, templates.resetCode({ code: otp }));
         },
       }),
       passkey({

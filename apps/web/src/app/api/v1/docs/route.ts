@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { currentUser, isAdmin } from "../../../../server/session";
 import { apiDocsEnabled } from "../../../../config";
 
 export const dynamic = "force-dynamic";
@@ -6,11 +7,12 @@ export const dynamic = "force-dynamic";
 const UI = "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14";
 
 /**
- * Swagger UI for /api/v1/openapi.json. It is served from this site, so "Try it out" sends the signed-in session cookie.
+ * Swagger UI for /api/v1/openapi.json, for admins only. It is served from this site, so "Try it out" sends the signed-in session cookie.
  * The Swagger UI files come from a pinned CDN version; for a strict deployment, self-host them or add integrity hashes.
  */
 export async function GET() {
-  if (!apiDocsEnabled()) return NextResponse.json({ error: "Not found." }, { status: 404 });
+  // Admins only. Anyone else (signed out, or signed in without the admin role) gets the same answer as for a page that doesn't exist.
+  if (!apiDocsEnabled() || !isAdmin(await currentUser())) return NextResponse.json({ error: "Not found." }, { status: 404 });
   const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Naazhi API</title><link rel="stylesheet" href="${UI}/swagger-ui.css" /></head>

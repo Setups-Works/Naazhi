@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/cn";
+import { Logo, hasLogo } from "../../components/site/Logo";
 
 /** A small bold label above a bordered card of rows (the template's section pattern). */
 export function SettingsSection({ title, note, children, className }: { title: string; note?: ReactNode; children: ReactNode; className?: string }) {
@@ -53,7 +54,7 @@ export function SettingsNotice({ children, className }: { children: ReactNode; c
 export function LogoTile({ name, className }: { name: string; className?: string }) {
   return (
     <span aria-hidden className={cn("grid size-10 shrink-0 place-items-center rounded-r2 border bg-raised text-[15px] font-semibold text-ink-2", className)}>
-      {name.charAt(0).toUpperCase()}
+      {hasLogo(name) ? <Logo name={name} size={22} /> : name.charAt(0).toUpperCase()}
     </span>
   );
 }

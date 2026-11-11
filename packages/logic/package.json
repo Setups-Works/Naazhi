@@ -43,6 +43,10 @@
     "./billing": {
       "types": "./src/billing.ts",
       "default": "./src/billing.ts"
+    },
+    "./aiConnections": {
+      "types": "./src/aiConnections.ts",
+      "default": "./src/aiConnections.ts"
     }
   },
   "scripts": {

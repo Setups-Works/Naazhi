@@ -1,3 +1,4 @@
+import { chatgptProvider } from "./chatgpt";
 import { customProvider } from "./custom";
 import { groqProvider } from "./groq";
 import { puterProvider } from "./puter";
@@ -6,7 +7,7 @@ import type { AiProvider } from "./types";
 export * from "./types";
 
 /** Every provider the app knows about. Add new providers here — nothing else needs to change. */
-const PROVIDERS: AiProvider[] = [groqProvider, puterProvider, customProvider];
+const PROVIDERS: AiProvider[] = [groqProvider, puterProvider, customProvider, chatgptProvider];
 
 export const listProviders = () => PROVIDERS;
 export const getProvider = (id: string) => PROVIDERS.find((p) => p.id === id) ?? null;

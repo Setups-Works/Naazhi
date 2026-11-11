@@ -101,3 +101,6 @@ Found a vulnerability or leaked secret? Tell the tech lead immediately, rotate f
 
 ## Razorpay webhook
 `/api/webhooks/razorpay` is unauthenticated by design: the HMAC signature over the raw body is the only gate (timing-safe compare), events are claimed once by id and refused if older than two days. Key secret and webhook secret are server-only; the checkout call is verified by signature and by asking Razorpay who the subscription belongs to.
+
+## Invoices and emails
+An invoice is created only from a payment the server has verified with Razorpay. `/invoice/<id>` is owner-only (the query runs as the signed-in person) and `noindex`. Emails are drawn from one layout with every value escaped, never log their content, and never block a payment. The admin email preview is sandboxed and sends nothing.

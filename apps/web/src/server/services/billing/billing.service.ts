@@ -1,15 +1,18 @@
 import "server-only";
 import type { BillingPlan, MyBilling, PlanId } from "@untitled/types";
-import { addMonths, byoProvider, tokenCostCents } from "@untitled/logic/billing";
+import { addMonths, byoProvider, TOPUP, tokenCostCents, validTopup, type TopupLimits } from "@untitled/logic/billing";
 import { isEnabled } from "../../../config/features";
+import { serverEnv } from "../../../config/env";
 import * as razorpay from "../../providers/payments/razorpay";
 import type { RazorpaySubscription } from "../../providers/payments/razorpay";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "../../errors";
 import * as repo from "../../repositories/billing.repository";
 import type { UserBillingRow } from "../../repositories/billing.repository";
 import { openKey, sealKey } from "./keyVault";
+import { getSeller, issueInvoice, notifyBilling, recordRefund } from "./invoices.service";
+import { templates } from "../../email/templates";
 import type { PlanPatchInput } from "./billing.schema";
-import type { CheckoutSession } from "@untitled/types";
+import type { CheckoutSession, TopupSession } from "@untitled/types";
 
 /**
  * Plans and billing rules. People choose, switch and cancel their own plan here; admins edit plans and assign plans through the
@@ -27,6 +30,11 @@ const now = () => new Date();
 export const paymentsLive = () => isEnabled("payments") && razorpay.razorpayConfigured();
 const isPaid = (plan: Pick<BillingPlan, "id" | "price_cents" | "interval">) => plan.id === "subscription" && plan.price_cents > 0 && plan.interval !== "none";
 const iso = (unix: number | null | undefined) => (unix ? new Date(unix * 1000).toISOString() : null);
+/** The top-up limits: the admin's settings, or the built-in defaults when the settings row isn't there. */
+export async function getTopupLimits(): Promise<TopupLimits> {
+  const s = await repo.getSettings().catch(() => null);
+  return s ? { minCents: s.topup_min_cents, maxCents: s.topup_max_cents, optionsCents: s.topup_options_cents } : { ...TOPUP };
+}
 const PROVIDER_DOWN = "We couldn’t reach our payment provider. Nothing was charged. Try again in a moment.";
 /** Only a subscription has billing periods: a month or a year long. The other plans run until they are cancelled. */
 const periodEnd = (plan: Pick<BillingPlan, "id" | "interval">, from: Date) =>
@@ -64,7 +72,7 @@ export async function getMyBilling(userId: string): Promise<MyBilling> {
   const live = row?.status === "active" ? row : null;
   const plan = live ? (plans.find((p) => p.id === live.plan_id) ?? null) : null;
   const since = live?.period_start ?? new Date(Date.UTC(now().getUTCFullYear(), now().getUTCMonth(), 1)).toISOString();
-  const tokens = await repo.tokensSince(userId, since);
+  const [tokens, credit, creditTotal, limits] = await Promise.all([repo.tokensSince(userId, since), repo.getCredit(userId), repo.getCreditTotal(userId), getTopupLimits()]);
   return {
     plans: plans.filter((p) => p.active),
     plan,
@@ -76,6 +84,9 @@ export async function getMyBilling(userId: string): Promise<MyBilling> {
     cost_cents: plan?.id === "payg" ? tokenCostCents(tokens, plan.token_price_cents_per_million) : 0,
     byo: { provider: key?.provider ?? null, model: key?.model ?? null, hint: key?.key_hint ?? null },
     payments_connected: paymentsLive(),
+    credit_cents: credit,
+    credit_total_cents: creditTotal,
+    topup: { min_cents: limits.minCents, max_cents: limits.maxCents, options_cents: [...limits.optionsCents] },
   };
 }
 
@@ -269,7 +280,7 @@ const SUBSCRIPTION_EVENTS = new Set([
 type WebhookEvent = {
   event?: string;
   created_at?: number;
-  payload?: { subscription?: { entity?: RazorpaySubscription }; payment?: { entity?: { id?: string; subscription_id?: string | null } } };
+  payload?: { refund?: { entity?: { id?: string; payment_id?: string; amount?: number } }; subscription?: { entity?: RazorpaySubscription }; payment?: { entity?: { id?: string; subscription_id?: string | null; amount?: number; currency?: string; notes?: Record<string, string> | unknown[] } } };
 };
 
 /**
@@ -283,18 +294,105 @@ export async function handleWebhook(eventId: string, event: WebhookEvent) {
   const type = event.event ?? "";
   if (!(await repo.claimEvent(eventId, type))) return;
   try {
+    // A refund (made by an admin here, or in Razorpay's own dashboard): applied to its invoice once, whichever path reports it first.
+    if (type === "refund.processed") {
+      const rf = event.payload?.refund?.entity;
+      if (rf?.id && rf.payment_id && typeof rf.amount === "number") await recordRefund(rf.id, rf.payment_id, rf.amount);
+      return;
+    }
+    // A captured one-time payment for a credit top-up (subscription charges also arrive as payment.captured and are ignored here).
+    if (type === "payment.captured") {
+      const pay = event.payload?.payment?.entity;
+      const notes = pay && !Array.isArray(pay.notes) ? pay.notes : undefined;
+      if (pay?.id && notes?.kind === "topup" && notes.user_id && /^[0-9a-f-]{36}$/i.test(notes.user_id)) await creditPayment(notes.user_id, pay.id);
+      return;
+    }
     const sub = event.payload?.subscription?.entity;
     const subId = sub?.id ?? event.payload?.payment?.entity?.subscription_id ?? null;
     if (!subId) return;
     const noted = sub && !Array.isArray(sub.notes) ? sub.notes?.user_id : undefined;
     const userId = (await repo.userIdForSubscription(subId)) ?? (noted && /^[0-9a-f-]{36}$/i.test(noted) ? noted : null);
     if (!userId) return;
-    if (type === "payment.failed") return void (await repo.setProviderStatus(userId, subId, "payment_failed"));
+    if (type === "payment.failed") {
+      await repo.setProviderStatus(userId, subId, "payment_failed");
+      await notifyBilling(userId, (url) => templates.paymentFailed({ url }));
+      return;
+    }
     if (sub && SUBSCRIPTION_EVENTS.has(type)) await applySubscription(userId, sub);
+    // A charge was taken (the first one and every renewal): that is what the invoice is for.
+    const pay = event.payload?.payment?.entity;
+    if (type === "subscription.charged" && sub && pay?.id && typeof pay.amount === "number" && pay.amount > 0) {
+      const plan = await repo.getPlan("subscription");
+      await issueInvoice({
+        userId,
+        kind: "subscription",
+        description: `${plan?.name ?? "Subscription"}, ${plan?.interval === "year" ? "yearly" : "monthly"}`,
+        amountCents: pay.amount,
+        paymentId: pay.id,
+        ref: sub.id,
+        periodStart: iso(sub.current_start),
+        periodEnd: iso(sub.current_end),
+      }).catch(() => undefined);
+    }
+    // The subscription is over (cancelled, ran its course, or stopped after failed payments).
+    if (type === "subscription.cancelled" || type === "subscription.completed" || type === "subscription.expired" || type === "subscription.halted") {
+      const plan = await repo.getPlan("subscription");
+      await notifyBilling(userId, (url) => templates.subscriptionEnded({ planName: plan?.name ?? "Subscription", url }));
+    }
   } catch (e) {
     await repo.releaseEvent(eventId).catch(() => undefined);
     throw e;
   }
+}
+
+/* ---------- AI credit top-ups (one-time Razorpay payments) ---------- */
+
+/** Step 1 of a top-up: creates a Razorpay order for the amount and returns what the checkout window needs. */
+export async function startTopup(userId: string, amountCents: number): Promise<TopupSession> {
+  if (!paymentsLive()) throw new ConflictError("Payments aren’t switched on yet.");
+  const limits = await getTopupLimits();
+  if (!validTopup(amountCents, limits)) throw new ValidationError(`Choose a whole-rupee amount from ₹${limits.minCents / 100} to ₹${limits.maxCents / 100}.`);
+  const row = await settled(userId);
+  if (row?.status !== "active" || row.plan_id !== "payg") throw new ConflictError("Choose the Pay as you go plan to add credit.");
+  const keyId = razorpay.razorpayKeyId();
+  if (!keyId) throw new ConflictError("Payments aren’t switched on yet.");
+  try {
+    const order = await razorpay.createOrder({ amount: amountCents, receipt: `topup_${userId.slice(0, 8)}_${Date.now()}`, notes: { user_id: userId, kind: "topup" } });
+    const who = await repo.getContact(userId);
+    return { key_id: keyId, order_id: order.id, amount: amountCents, currency: "INR", name: "Naazhi AI credit", description: "Pay as you go", prefill: { name: who?.name ?? "", email: who?.email ?? "" } };
+  } catch (e) {
+    if (e instanceof razorpay.RazorpayError) throw new ConflictError(PROVIDER_DOWN);
+    throw e;
+  }
+}
+
+/**
+ * Adds a captured top-up payment to the balance, once. Used by the browser's "payment done" call and the webhook, so it checks with
+ * Razorpay itself that the payment is captured, is for a top-up and belongs to this person; the ledger's unique payment id means a repeat
+ * (or both paths arriving) changes nothing.
+ */
+async function creditPayment(userId: string, paymentId: string): Promise<boolean> {
+  let pay: razorpay.RazorpayPayment;
+  try {
+    pay = await razorpay.fetchPayment(paymentId);
+  } catch {
+    throw new ConflictError(PROVIDER_DOWN);
+  }
+  const notes = Array.isArray(pay.notes) ? {} : (pay.notes ?? {});
+  if (pay.status !== "captured" || pay.currency !== "INR" || notes.kind !== "topup" || notes.user_id !== userId) return false;
+  // A captured payment is credited whatever the limits are now: the person paid it, so an admin tightening the limits later can't strand it.
+  if (!Number.isInteger(pay.amount) || pay.amount < 100) return false;
+  const added = (await repo.applyCredit(userId, pay.amount, "topup", { ref: paymentId })) !== null;
+  // The invoice (and its emailed receipt) is made once, the first time this payment is credited.
+  if (added) await issueInvoice({ userId, kind: "topup", description: "AI credit top-up", amountCents: pay.amount, paymentId, ref: pay.order_id }).catch(() => undefined);
+  return added;
+}
+
+/** Step 2: the checkout window finished. Verifies the signature, then credits the payment. */
+export async function confirmTopup(userId: string, input: { paymentId: string; orderId: string; signature: string }): Promise<MyBilling> {
+  if (!razorpay.verifyOrderSignature(input.orderId, input.paymentId, input.signature)) throw new ForbiddenError("We couldn’t verify that payment.");
+  await creditPayment(userId, input.paymentId);
+  return getMyBilling(userId);
 }
 
 export async function saveByoKey(userId: string, input: { provider: string; model: string; apiKey: string }): Promise<MyBilling> {
@@ -332,8 +430,21 @@ export type AiAccess = {
 export async function aiAccessFor(userId: string): Promise<AiAccess> {
   const row = await settled(userId);
   const planId = row?.status === "active" ? row.plan_id : null;
-  const count = (usage: { inputTokens: number; outputTokens: number }, provider: string) =>
-    repo.addUsage(userId, planId, provider, usage.inputTokens, usage.outputTokens).catch(() => undefined);
+  // Pay as you go is prepaid once payments are live: tokens come off the person's credit and AI pauses when it is gone.
+  const prepaid = planId === "payg" && paymentsLive();
+  const payg = prepaid ? await repo.getPlan("payg") : null;
+  const count = async (usage: { inputTokens: number; outputTokens: number }, provider: string) => {
+    await repo.addUsage(userId, planId, provider, usage.inputTokens, usage.outputTokens).catch(() => undefined);
+    const tokens = usage.inputTokens + usage.outputTokens;
+    const cost = payg ? tokenCostCents(tokens, payg.token_price_cents_per_million) : 0;
+    if (cost > 0) {
+      const after = await repo.applyCredit(userId, -cost, "usage", { tokens }).catch(() => null);
+      // Tell the person once, when this reply is the one that used the last of their credit.
+      if (after !== null && after + cost > 0 && after <= 0) void notifyBilling(userId, (url) => templates.creditEmpty({ url }));
+    }
+  };
+  if (prepaid && (await repo.getCredit(userId)) <= 0)
+    throw new ForbiddenError("You’re out of AI credit. Top up in Settings → Plan and billing to keep going.");
 
   if (planId === "byo") {
     const key = await repo.getAiKey(userId);
@@ -354,13 +465,35 @@ export async function aiAccessFor(userId: string): Promise<AiAccess> {
 // ---- Admin. Callers (app/admin) check the admin first and write the audit entry. ----
 
 export async function adminOverview() {
-  const [plans, totals, subscribers, tokens30d] = await Promise.all([
+  const [plans, totals, subscribers, tokens30d, limits, seller] = await Promise.all([
     repo.listPlans({ activeOnly: false }),
     repo.planTotals(),
     repo.listSubscribers(),
     repo.usageTotal30d(),
+    getTopupLimits(),
+    getSeller(),
   ]);
-  return { plans, totals, subscribers, tokens30d };
+  const r = serverEnv().razorpay;
+  // Whether Razorpay is wired up, never the secrets: test or live comes from the public key id's prefix.
+  const razorpayStatus = {
+    live: paymentsLive(),
+    keys: Boolean(r.keyId && r.keySecret),
+    webhook: Boolean(r.webhookSecret),
+    mode: r.keyId?.startsWith("rzp_live_") ? ("live" as const) : r.keyId ? ("test" as const) : null,
+  };
+  return { plans, totals, subscribers, tokens30d, limits, razorpayStatus, seller };
+}
+
+export async function adminSaveSettings(input: import("zod").infer<typeof import("./billing.schema").billingSettingsInput>) {
+  const options = [...new Set(input.topup_options_cents)].sort((a, b) => a - b);
+  await repo.saveSettings({ topup_min_cents: input.topup_min_cents, topup_max_cents: input.topup_max_cents, topup_options_cents: options });
+}
+
+/** Adds or removes credit for a person (support, goodwill, a correction). Written to the ledger as an adjustment; returns the new balance. */
+export async function adminAdjustCredit(userId: string, amountCents: number): Promise<number> {
+  const balance = await repo.applyCredit(userId, amountCents, "adjust");
+  if (balance === null) throw new ConflictError("That adjustment couldn’t be applied.");
+  return balance;
 }
 
 export async function adminUpdatePlan(id: string, patch: PlanPatchInput) {

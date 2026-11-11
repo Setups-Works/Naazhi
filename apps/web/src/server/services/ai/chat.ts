@@ -2,6 +2,9 @@ import "server-only";
 import { estimateTokens } from "@untitled/logic/billing";
 import { AiProviderError, parseChoice, type AiChunk, type AiMessage, type AiUsage } from "../../providers/ai";
 import { customProvider } from "../../providers/ai/custom";
+import { chatgptProvider } from "../../providers/ai/chatgpt";
+import { parseChatgptChoice, parseOwnChoice } from "@untitled/logic/aiConnections";
+import { chatgptCredentials, keyCredentials } from "./connections.service";
 import { ServiceError } from "../../errors";
 import { aiAccessFor } from "../billing/billing.service";
 import { redis } from "../../redis";
@@ -100,23 +103,37 @@ export async function startChatReply(opts: {
   localDate: string;
   signal?: AbortSignal;
 }): Promise<ChatReply> {
-  // The person's plan decides how AI is paid for: their own key, or ours counted against an allowance or by use.
+  // A model the person connected themselves (their own key, or their ChatGPT sign-in) is paid by them directly: it doesn't go through
+  // the plan's allowance or metering. Everything else follows the plan: their own key plan, or ours counted against an allowance.
+  const own = parseOwnChoice(opts.providerId);
+  const gpt = parseChatgptChoice(opts.providerId);
+  let credentials: { apiKey: string; baseUrl: string; headers?: Record<string, string> } | undefined;
+  let provider: import("../../providers/ai").AiProvider | null;
+  let model: string | undefined;
   let access: Awaited<ReturnType<typeof aiAccessFor>>;
   try {
-    access = await aiAccessFor(opts.userId);
+    if (own || gpt) {
+      credentials = own ? await keyCredentials(opts.userId, own.provider) : await chatgptCredentials(opts.userId);
+      provider = own ? customProvider : chatgptProvider;
+      model = own ? own.model : gpt!;
+      access = { mode: "byo", planId: null, record: async () => undefined };
+    } else {
+      access = await aiAccessFor(opts.userId);
+      const chosen = parseChoice(opts.providerId);
+      const byo = access.byo;
+      provider = byo ? customProvider : chosen.provider;
+      model = byo ? byo.model : chosen.model;
+      if (byo) credentials = { apiKey: byo.apiKey, baseUrl: byo.baseUrl };
+      if (!provider || (!byo && (provider.hidden || provider.runtime !== "server" || !provider.isAvailable())))
+        return { ok: false, status: 400, error: "That AI isn’t available on this server." };
+      // Only models the provider itself lists may be used, so a crafted id can't pick an arbitrary model.
+      if (!byo && model && !(await provider.models?.().catch(() => []))?.some((m) => m.id === model))
+        return { ok: false, status: 400, error: "That model isn’t available." };
+    }
   } catch (e) {
     if (e instanceof ServiceError) return { ok: false, status: e.status, error: e.message };
     throw e;
   }
-  const chosen = parseChoice(opts.providerId);
-  const byo = access.byo;
-  const provider = byo ? customProvider : chosen.provider;
-  const model = byo ? byo.model : chosen.model;
-  if (!provider || (!byo && (provider.hidden || provider.runtime !== "server" || !provider.isAvailable())))
-    return { ok: false, status: 400, error: "That AI isn’t available on this server." };
-  // Only models the provider itself lists may be used, so a crafted id can't pick an arbitrary model.
-  if (!byo && model && !(await provider.models?.().catch(() => []))?.some((m) => m.id === model))
-    return { ok: false, status: 400, error: "That model isn’t available." };
   if (!(await underRateLimit(opts.userId)))
     return { ok: false, status: 429, error: "You’re sending messages very fast. Wait a moment and try again." };
 
@@ -142,7 +159,7 @@ export async function startChatReply(opts: {
     ...rows.map((m) => ({ role: m.role, content: m.body.slice(0, LIMITS.charsPerMessage) })),
   ];
   const it = provider
-    .stream({ messages, model, signal: opts.signal, ...(byo ? { credentials: { apiKey: byo.apiKey, baseUrl: byo.baseUrl } } : {}) })
+    .stream({ messages, model, signal: opts.signal, ...(credentials ? { credentials } : {}) })
     [Symbol.asyncIterator]();
   const promptChars = messages.reduce((n, m) => n + m.content.length, 0);
 

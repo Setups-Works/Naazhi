@@ -8,6 +8,7 @@ export const qk = {
   health: ["health"] as const,
   calendar: ["calendar"] as const,
   billing: ["billing"] as const,
+  billingInvoices: ["billing", "invoices"] as const,
   rss: {
     all: ["rss"] as const,
     feeds: ["rss", "feeds"] as const,

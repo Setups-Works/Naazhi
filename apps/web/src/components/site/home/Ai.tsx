@@ -3,10 +3,10 @@ import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { R, Reveal } from "../Reveal";
 import { IconBadge, Section, SectionHead } from "../ui";
 
-const OPTIONS: { icon: IconDefinition; t: string; d: string }[] = [
-  { icon: faPlug, t: "Use a supported AI account", d: "Connect an AI account you already have." },
-  { icon: faKey, t: "Bring your own API key", d: "Choose your model provider and connect it directly." },
-  { icon: faWallet, t: "Pay for usage when you need it", d: "Top up only when you need AI. No bundled AI subscription." },
+const OPTIONS: { icon: IconDefinition; t: string; d: string; soon?: boolean }[] = [
+  { icon: faWallet, t: "Pay for what you use", d: "Top up credit in rupees and tokens come off it. Or subscribe with autopay for a monthly allowance." },
+  { icon: faKey, t: "Bring your own API key", d: "Add a key for OpenAI, Anthropic, Google or OpenRouter and pick the model for each chat." },
+  { icon: faPlug, t: "Use your ChatGPT plan", d: "Sign in once and use the ChatGPT plan you already pay for. We’re building it.", soon: true },
   { icon: faBan, t: "Or keep it AI-free", d: "Switch AI off completely. The workspace works the same." },
 ];
 
@@ -24,14 +24,17 @@ export default function Ai() {
         kicker="AI on your terms"
         title="Pick the AI."
         quiet="Keep the workspace."
-        lead="Your notes, tasks and journal never depend on one provider. Change the model, change the account, or turn it all off."
+        lead="Your notes, tasks and journal never depend on one provider. Change the model, bring your own key, or turn it all off."
       />
       <Reveal stagger={0.08} className="mt-[clamp(28px,4vw,52px)] grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {OPTIONS.map((o) => (
           <R key={o.t}>
             <div className="flex h-full flex-col gap-3 rounded-r4 bg-on-dark/5 p-6 text-on-dark ring-1 ring-on-dark/15">
               <IconBadge icon={o.icon} />
-              <h3 className="text-[17px] font-semibold">{o.t}</h3>
+              <h3 className="flex items-center gap-2 text-[17px] font-semibold">
+                {o.t}
+                {o.soon && <span className="rounded-pill bg-on-dark/10 px-2 py-0.5 text-[11.5px] font-medium text-on-dark/80">Coming soon</span>}
+              </h3>
               <p className="text-[14.5px] leading-relaxed text-on-dark/70">{o.d}</p>
             </div>
           </R>

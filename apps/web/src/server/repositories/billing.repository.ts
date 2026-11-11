@@ -128,6 +128,8 @@ export type SubscriberRow = {
   period_end: string | null;
   cancel_at_period_end: boolean;
   tokens_30d: number;
+  /** Prepaid AI credit left, in paise. */
+  credit_cents: number;
 };
 
 export const listSubscribers = () =>
@@ -136,7 +138,8 @@ export const listSubscribers = () =>
       (await c.query<SubscriberRow>(
         `select b.user_id, u.email, u.name, b.plan_id, b.status, b.period_end, b.cancel_at_period_end,
                 coalesce((select sum(a.input_tokens + a.output_tokens) from public.ai_usage a
-                          where a.user_id = b.user_id and a.created_at >= now() - interval '30 days'), 0)::float8 as tokens_30d
+                          where a.user_id = b.user_id and a.created_at >= now() - interval '30 days'), 0)::float8 as tokens_30d,
+                coalesce((select c.balance_cents from public.user_ai_credit c where c.user_id = b.user_id), 0)::float8 as credit_cents
          from public.user_billing b join auth.users u on u.id = b.user_id
          order by b.updated_at desc limit 500`,
       )).rows,
@@ -206,4 +209,73 @@ export const setProviderStatus = (userId: string, subscriptionId: string, status
         subscriptionId,
         status.slice(0, 40),
       ])),
+  );
+
+/* ---------- AI credit (Pay as you go) ---------- */
+
+export const getCredit = (userId: string) =>
+  withUser(
+    userId,
+    async (c) => Number((await c.query<{ b: string }>("select coalesce((select balance_cents from public.user_ai_credit where user_id = $1), 0)::text as b", [userId])).rows[0]!.b),
+  );
+
+/** The total of every top-up, in paise (the "of ₹X" beside the balance). */
+export const getCreditTotal = (userId: string) =>
+  withUser(
+    userId,
+    async (c) =>
+      Number((await c.query<{ t: string }>("select coalesce(sum(amount_cents), 0)::text as t from public.ai_credit_ledger where user_id = $1 and kind = 'topup'", [userId])).rows[0]!.t),
+  );
+
+/**
+ * Moves a person's balance by `delta` paise and writes the ledger line, in one transaction. With a `ref` (a Razorpay payment id) the same
+ * movement is applied once: a second call returns false and changes nothing. Returns the new balance, or null when it was a repeat.
+ */
+export const applyCredit = (userId: string, delta: number, kind: "topup" | "usage" | "adjust", opts: { tokens?: number; ref?: string } = {}) =>
+  withOwner(async (c) => {
+    const line = await c.query(
+      "insert into public.ai_credit_ledger (user_id, kind, amount_cents, tokens, ref) values ($1, $2, $3, $4, $5) on conflict (ref) do nothing",
+      [userId, kind, delta, opts.tokens ?? null, opts.ref ?? null],
+    );
+    if (line.rowCount === 0) return null;
+    const r = await c.query<{ b: string }>(
+      `insert into public.user_ai_credit (user_id, balance_cents) values ($1, $2)
+       on conflict (user_id) do update set balance_cents = public.user_ai_credit.balance_cents + excluded.balance_cents, updated_at = now()
+       returning balance_cents::text as b`,
+      [userId, delta],
+    );
+    return Number(r.rows[0]!.b);
+  });
+
+export type LedgerRow = { id: string; kind: "topup" | "usage" | "adjust"; amount_cents: number; tokens: number | null; created_at: string };
+
+export const recentLedger = (userId: string, limit = 8) =>
+  withUser(
+    userId,
+    async (c) =>
+      (await c.query<LedgerRow>(
+        "select id, kind, amount_cents::float8 as amount_cents, tokens, created_at from public.ai_credit_ledger where user_id = $1 order by created_at desc limit $2",
+        [userId, limit],
+      )).rows,
+  );
+
+/* ---------- billing settings (top-up limits) ---------- */
+
+export type BillingSettings = { topup_min_cents: number; topup_max_cents: number; topup_options_cents: number[] };
+
+export const getSettings = () =>
+  withOwner(
+    async (c) =>
+      (await c.query<BillingSettings>("select topup_min_cents, topup_max_cents, topup_options_cents from public.billing_settings where id")).rows[0] ?? null,
+  );
+
+export const saveSettings = (s: BillingSettings) =>
+  withOwner(
+    async (c) =>
+      void (await c.query(
+        `insert into public.billing_settings (id, topup_min_cents, topup_max_cents, topup_options_cents) values (true, $1, $2, $3)
+         on conflict (id) do update set topup_min_cents = excluded.topup_min_cents, topup_max_cents = excluded.topup_max_cents,
+           topup_options_cents = excluded.topup_options_cents, updated_at = now()`,
+        [s.topup_min_cents, s.topup_max_cents, s.topup_options_cents],
+      )),
   );

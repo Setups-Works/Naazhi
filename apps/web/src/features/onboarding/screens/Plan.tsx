@@ -1,10 +1,12 @@
 "use client";
+import { useState } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faArrowRight, faCheck } from "@fortawesome/free-solid-svg-icons";
-import { needsCheckout, priceLine } from "@untitled/logic/billing";
+import { formatBalance, needsCheckout, priceLine } from "@untitled/logic/billing";
 import { cn } from "@/lib/cn";
 import { useBilling } from "../../billing/queries";
 import { usePlanPicker } from "../../billing/razorpay";
+import TopUpDialog from "../../billing/TopUpDialog";
 import { Card, Title, Lead, type Ctx } from "../ui";
 
 /**
@@ -17,6 +19,7 @@ export function PlanScreen({ ctx }: { ctx: Ctx }) {
   const { pick, busy } = usePlanPicker(b, (m) => ctx.setErr(m));
   const plans = (b?.plans ?? []).filter((p) => p.active).sort((a, c) => a.sort - c.sort);
   const chosen = b?.plan?.id ?? null;
+  const [topup, setTopup] = useState(false);
 
   return (
     <div className="mx-auto w-full max-w-[1000px] px-6 py-8">
@@ -51,6 +54,16 @@ export function PlanScreen({ ctx }: { ctx: Ctx }) {
                       </li>
                     ))}
                   </ul>
+                  {mine && p.id === "payg" && b?.payments_connected && (
+                    <p className="m-0 mt-4 rounded-r2 bg-hover px-3 py-2.5 text-[14px] text-ink-2">
+                      AI balance <b className="text-ink">{formatBalance(b.credit_cents, p.currency)}</b>. AI works once you add credit (from ₹{b.topup.min_cents / 100}).
+                    </p>
+                  )}
+                  {mine && p.id === "payg" && b?.payments_connected && (
+                    <button type="button" className="btn btn-primary mt-3" onClick={() => setTopup(true)}>
+                      Add credit
+                    </button>
+                  )}
                   <button
                     type="button"
                     className={cn("btn mt-5", mine ? "btn-secondary" : "btn-primary")}
@@ -69,6 +82,7 @@ export function PlanScreen({ ctx }: { ctx: Ctx }) {
         </ul>
       )}
 
+      {topup && b && <TopUpDialog billing={b} onClose={() => setTopup(false)} />}
       {b && !b.payments_connected && (
         <p className="m-0 mt-4 text-center text-[14px] text-fg-subtle">Payments aren’t connected yet, so choosing a plan is recorded and nobody is charged.</p>
       )}

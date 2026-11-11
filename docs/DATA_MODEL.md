@@ -98,3 +98,9 @@ Public link for one whole journal day. One row per `(user_id, entry_date)`; `sha
 
 ## Razorpay (migration 20261111180000)
 `billing_plans.razorpay_plan_id/_key` (the matching Razorpay plan), `user_billing.provider_subscription_id/provider_status`, and `billing_events` (webhook ids handled; RLS on, no policies, owner only).
+
+## AI credit
+`user_ai_credit` (balance in paise) and `ai_credit_ledger` (top-up / usage / adjust lines, unique Razorpay payment id). RLS on: people read their own rows, only the billing service writes. See docs/BILLING.md. Also `user_ai_connections` and `ai_device_logins` (model picker connections; owner only, see docs/AI_CONNECTIONS.md).
+
+## Invoices and billing settings
+`billing_invoices` (one row per Razorpay payment: number `NZ-YYYY-NNNNNN`, kind subscription/topup, amount in paise, period, who it was billed to; people read their own, only the service writes) and `billing_settings` (one row: top-up limits and the seller details printed on invoices). See docs/BILLING.md.

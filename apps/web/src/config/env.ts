@@ -78,6 +78,13 @@ export function serverEnv() {
     groqApiKey: optional("GROQ_API_KEY"),
     composioApiKey: optional("COMPOSIO_API_KEY"),
     /** Razorpay: the key id is public (the checkout window needs it); the secret and webhook secret never leave the server. */
+    /** "Sign in with ChatGPT" (device-code OAuth). Off until an OAuth client id that OpenAI has registered for this app is set. */
+    chatgptOauth: {
+      clientId: optional("OPENAI_OAUTH_CLIENT_ID"),
+      issuer: (optional("OPENAI_OAUTH_ISSUER") ?? "https://auth.openai.com").replace(/\/+$/, ""),
+      apiBase: (optional("CHATGPT_API_BASE") ?? "https://chatgpt.com/backend-api/codex").replace(/\/+$/, ""),
+      models: (optional("CHATGPT_MODELS") ?? "gpt-5").split(",").map((m) => m.trim()).filter(Boolean),
+    },
     razorpay: {
       keyId: optional("RAZORPAY_KEY_ID"),
       keySecret: optional("RAZORPAY_KEY_SECRET"),

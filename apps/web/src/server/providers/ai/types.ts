@@ -15,7 +15,7 @@ export type AiRequest = {
   /** Lets the caller cancel a streaming request (user pressed Stop, navigated away). */
   signal?: AbortSignal;
   /** For providers that run on a person's own key: their key and the provider's fixed address, for this one request only. */
-  credentials?: { apiKey: string; baseUrl: string };
+  credentials?: { apiKey: string; baseUrl: string; /** Extra headers the provider needs with this credential (ChatGPT's account id). */ headers?: Record<string, string> };
 };
 
 export type AiUsage = { inputTokens: number; outputTokens: number };

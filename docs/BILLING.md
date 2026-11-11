@@ -55,7 +55,15 @@ Data flow, as everywhere: `component → queries.ts → api-client → /api/v1/b
 - Provider error bodies are never passed on (they can echo the request or the key). Never log keys, prompts or answers.
 - Admin changes call `assertAdmin()` first and write `admin_audit` (`plan.update`, `plan.assign`, `plan.clear`). Admins see counts and token totals only.
 
-## Admin → Plans
+## Admin → Plans (what an admin can change)
+
+- **Each plan:** name, tagline, price (₹), billing interval, tokens included, **token price per 1M tokens** (the form shows it as "= ₹X per 100 tokens"), features, visible, order. A new subscription price applies to people who subscribe from then on (a Razorpay plan is created for the new amount); current subscribers keep their price until they subscribe again. A new token price applies to AI used from then on.
+- **AI credit top-ups** (Pay as you go): the smallest and largest top-up and up to six quick amounts, in whole rupees (`billing_settings`, migration `20261111210000_billing_settings.sql`; the Top up dialog, the pricing page and the server all read them; `TOPUP` in `packages/logic/src/billing.ts` is only the default). A payment already made is credited whatever the limits are now.
+- **Per person:** the subscriber table shows each person's AI credit and an **Adjust** button (add or remove rupees, written to their ledger as an `adjust` line and to the admin audit as `credit.adjust`).
+- **Payments strip:** whether Razorpay is live, which keys are set, and test vs live mode (from the key id's prefix). Never the secrets.
+- Every change is audited (`plan.update`, `billing.settings`, `credit.adjust`, `plan.assign`).
+
+## Admin → Plans (details)
 
 `/admin/plans`: one form per plan (name, tagline, price, currency, billing interval, tokens included, price per 1M tokens, feature lines, visible, order), counts of people per plan, tokens in the last 30 days, and a subscriber table where an admin can move a person to another plan or off all plans (support, or people who pay outside the app). Prices are typed in major units and converted to cents in `PlansEditor.tsx`, the only place that converts. Saving also revalidates `/pricing`.
 
@@ -73,6 +81,26 @@ A **Subscription** is a Razorpay Subscription, i.e. **autopay**: the person appr
 5. **The phone app** uses Razorpay's native SDK (`react-native-razorpay`, `apps/mobile/src/features/billing/checkout.ts`) against the same `checkout` and `confirm` endpoints, so the rules are identical. It is a native module: the app needs a new native build (not Expo Go); in Expo Go the button explains this instead of crashing. `needsCheckout` lives in `packages/logic/src/billing.ts` and is shared.
 
 Code: `server/providers/payments/razorpay.ts` (REST + signatures, no SDK), `billing.service.ts` (`startCheckout`, `confirmCheckout`, `handleWebhook`), `app/api/webhooks/razorpay/route.ts`, migration `20261111180000_razorpay_payments.sql`. Test with `rzp_test_` keys and Razorpay's test UPI/cards; tests in `tests/unit/razorpay.test.ts`.
+
+## Pay as you go: prepaid AI credit (rupees)
+
+Once payments are live, Pay as you go is **prepaid**: the person tops up their **AI balance** in rupees and every reply takes its token cost off it. The stated rate is **100 tokens = ₹0.02** (₹200 per million, `billing_plans.token_price_cents_per_million = 20000`, editable in Admin → Plans). Cost is `ceil(tokens × rate / 1M)` paise per reply (`tokenCostCents`), so a tiny reply is never free.
+
+- **Top up** (`POST /api/v1/billing/topup`, then `/topup/confirm`): ₹50 minimum, ₹10,000 maximum, whole rupees (`TOPUP` and `validTopup` in `packages/logic/src/billing.ts`, used by the dialog and the server). The server creates a Razorpay **order** with `notes {user_id, kind: "topup"}`; the browser or app opens Razorpay; on success the server verifies the signature (`order_id|payment_id`), asks Razorpay for the payment (captured, INR, `kind = topup`, same person) and adds it to the balance. The `payment.captured` webhook does the same, so a closed tab still gets credited. The ledger's unique Razorpay payment id means it is added **once**, whichever path arrives first.
+- **Using it:** `aiAccessFor` refuses Pay as you go AI at a zero balance ("You’re out of AI credit…"); `record()` writes the usage row and a negative ledger line. A long reply can take the balance a little below zero; the next request is refused until the person tops up. Plans other than Pay as you go ignore the balance. Before payments are live Pay as you go stays free and only metered, as before.
+- **Where:** `user_ai_credit` (balance) and `ai_credit_ledger` (top-up, usage, adjust lines) from migration `20261111200000_ai_credit.sql`; people may read their own rows, only the service writes. UI: the **AI balance** card and **Top up** dialog in Settings → Plan and billing (`features/billing/TopUpDialog.tsx`), the Plan step of onboarding, and the phone app's Plan and billing section (native Razorpay).
+- Webhook events to enable in Razorpay for this: `payment.captured` (plus the subscription ones).
+- Not built: refunds and balance expiry (an admin correction is an `adjust` ledger line), and a ledger list in the UI.
+
+## Invoices, billing history and emails
+
+- **An invoice is made for every payment taken**, once per Razorpay payment (`billing_invoices.provider_payment_id` is unique): the `subscription.charged` webhook for a subscription period (first charge and every renewal), and the moment a top-up is verified and credited. Numbers are `NZ-<year>-<6 digits>` from a sequence. People read only their own invoices (row-level security); the service writes them (migration `20261111220000_invoices.sql`). Deleting an account deletes its invoices.
+- **Billing history** is the list in Settings → Plans & billing (`features/billing/BillingHistory.tsx`, `GET /api/v1/billing/invoices`). Each row opens the printable invoice at `/invoice/<id>` (signed in, owner only, "Print or save as PDF").
+- **No tax is calculated.** An invoice shows the amount paid. The From block (business name, address, tax or GST id) and footer come from **Admin → Plans → Invoice details**; have an accountant check the layout before relying on it for tax purposes.
+- **Emails:** one layout (`server/email/render.ts`) and one catalogue of templates (`server/email/templates.ts`) cover every email: confirm email, password reset link and code, email change, shared journal invitation, the **receipt** (sent with each invoice), **payment failed**, **subscription ended** and **AI credit finished** (sent once, when a reply uses the last of the balance). A mail problem never fails a payment. Admin → Emails previews every template with example data.
+- **Refunds** (Admin → Invoices, migration `20261111230000_refunds.sql`): an admin refunds an invoice in full or in part through Razorpay (`refundInvoice`). The invoice then shows what was returned (`partially_refunded` → `refunded`), the person is emailed, and **a refunded credit top-up comes off their AI balance**. A top-up can only be refunded up to what is still unspent, so the balance never goes negative. Each Razorpay refund id is recorded once (`billing_refunds`), so the admin's refund and Razorpay's `refund.processed` webhook (also for a refund made in Razorpay's own dashboard) apply exactly once. Add `refund.processed` to the webhook events. Refunding a subscription charge returns the money but does **not** cancel the subscription: cancel it separately.
+- **Phone app:** Settings → Plan and billing lists the billing history; "Invoice" asks for a ten-minute signed link (`POST /api/v1/billing/invoices/<id>/link`) and opens the invoice in the browser, because the phone has no web sign-in to carry over. The link opens only that invoice, for that person.
+- Not built: credit notes, and a refund button for the person themselves (refunds follow the refund policy and go through an admin).
 
 ## Changing things
 

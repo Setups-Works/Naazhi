@@ -3,11 +3,14 @@ import { useState } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faCheck, faKey } from "@fortawesome/free-solid-svg-icons";
 import type { BillingPlan, MyBilling } from "@untitled/types";
-import { BYO_PROVIDERS, byoProvider, formatMoney, formatTokens, needsCheckout, priceLine } from "@untitled/logic/billing";
+import { BYO_PROVIDERS, byoProvider, formatBalance, formatMoney, formatTokens, needsCheckout, priceLine } from "@untitled/logic/billing";
 import { useConfirm } from "../../components/ui/Confirm";
-import { SettingsRow, SettingsSection } from "../settings/ui";
 import { useBilling, useBillingActions } from "./queries";
 import { usePlanPicker } from "./razorpay";
+import TopUpDialog from "./TopUpDialog";
+import BillingHistory from "./BillingHistory";
+import ConnectAiDialog from "../../components/app/chat/ConnectAiDialog";
+import { useAiCatalog } from "../ai/connections";
 
 const day = (iso: string) => new Date(iso).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
 
@@ -148,9 +151,25 @@ function PlanCard({ plan, current, busy, autopay, onChoose }: { plan: BillingPla
   );
 }
 
+function Meter({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="h-1.5 overflow-hidden rounded-pill bg-line" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={value}>
+      <i className="block h-full rounded-pill bg-ink" style={{ width: `${value}%` }} />
+    </div>
+  );
+}
+
+/** A small status dot: filled when connected, a ring when not. */
+const Dot = ({ on }: { on: boolean }) => <i aria-hidden className={`size-2 rounded-full border ${on ? "border-ink bg-ink" : "border-ink-3"}`} />;
+
 /** Settings → Plan and billing: where you stand, the three plans, your own key, and cancelling. */
 export default function BillingPanel() {
   const [err, setErr] = useState("");
+  const [topup, setTopup] = useState(false);
+  const [connect, setConnect] = useState<null | "chatgpt" | "keys">(null);
+  const catalog = useAiCatalog().data;
+  const chatgpt = catalog?.groups.find((g) => g.kind === "chatgpt");
+  const keyCount = (catalog?.groups ?? []).filter((g) => g.kind === "key" && g.connected).length;
   const q = useBilling();
   const { cancel, resume } = useBillingActions(setErr);
   const { ask, dialog } = useConfirm();
@@ -199,25 +218,81 @@ export default function BillingPanel() {
         </div>
       </section>
 
-      <SettingsSection title="Usage">
-        <SettingsRow
-          title="AI use this period"
-          description={`${formatTokens(b.tokens_used)} tokens${b.cost_cents > 0 && b.plan ? `, about ${formatMoney(b.cost_cents, b.plan.currency)}` : ""}${allowance > 0 ? ` of ${formatTokens(allowance)} included` : ""}`}
-        />
-        {allowance > 0 && (
-          <div className="px-4 pb-4">
-            <div className="h-1.5 overflow-hidden rounded-pill bg-line" role="progressbar" aria-label="AI allowance used" aria-valuemin={0} aria-valuemax={100} aria-valuenow={used}>
-              <i className="block h-full rounded-pill bg-ink" style={{ width: `${used}%` }} />
+      <section className="flex flex-col gap-3.5" aria-label="Usage">
+        <h2 className="m-0 text-[15px] font-semibold">Usage</h2>
+
+        {b.plan?.id === "payg" && b.payments_connected ? (
+          <div className="rounded-r3 border">
+            <div className="grid gap-3 p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="m-0 text-[14px] text-ink-3">AI balance</p>
+                  <p className="m-0 mt-1.5 flex items-baseline gap-2">
+                    <b className="text-[34px] leading-none font-semibold tracking-[-0.02em]">{formatBalance(b.credit_cents, b.plan.currency)}</b>
+                    <span className="text-[15px] text-ink-3">of {formatBalance(b.credit_total_cents, b.plan.currency)}</span>
+                  </p>
+                </div>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => setTopup(true)}>
+                  Top up
+                </button>
+              </div>
+              <Meter value={b.credit_total_cents > 0 ? Math.round((Math.max(0, b.credit_cents) / b.credit_total_cents) * 100) : 0} label="AI balance left" />
+              <p className="m-0 text-[13px] text-ink-3">
+                {b.credit_cents > 0 ? "Tokens come off this balance as you use AI." : "AI is paused until you add credit."}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t px-5 py-3.5 text-[14px]">
+              <span className="text-ink-3">Or pay with</span>
+              <span className="flex items-center gap-2">
+                <span className="text-ink-2">ChatGPT</span>
+                <Dot on={!!chatgpt?.connected} />
+                <span>{chatgpt?.connected ? "Connected" : "Not connected"}</span>
+                <button type="button" className="cursor-pointer border-b border-line-2 text-ink-2 hover:text-ink" onClick={() => setConnect("chatgpt")}>
+                  {chatgpt?.connected ? "Manage" : "Connect"}
+                </button>
+              </span>
+              <span className="flex items-center gap-2">
+                <span className="text-ink-2">Your API keys</span>
+                <Dot on={keyCount > 0} />
+                <span>{keyCount > 0 ? `${keyCount} saved` : "None"}</span>
+                <button type="button" className="cursor-pointer border-b border-line-2 text-ink-2 hover:text-ink" onClick={() => setConnect("keys")}>
+                  {keyCount > 0 ? "Manage" : "Add a key"}
+                </button>
+              </span>
             </div>
           </div>
-        )}
-      </SettingsSection>
+        ) : null}
+
+        <div className="rounded-r3 border p-5">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="m-0 text-[14px] text-ink-3">{allowance > 0 ? "AI allowance" : "AI use this period"}</p>
+              <p className="m-0 mt-1.5 flex items-baseline gap-2">
+                <b className="text-[30px] leading-none font-semibold tracking-[-0.02em]">{formatTokens(b.tokens_used)}</b>
+                <span className="text-[15px] text-ink-3">{allowance > 0 ? `of ${formatTokens(allowance)} tokens` : "tokens"}</span>
+              </p>
+            </div>
+            <span className="text-[13.5px] text-ink-3">
+              {b.plan?.id === "payg" && b.cost_cents > 0 ? `About ${formatMoney(b.cost_cents, b.plan.currency)} this period` : b.period_end ? "Resets with your plan" : "This month"}
+            </span>
+          </div>
+          {allowance > 0 && (
+            <div className="mt-3">
+              <Meter value={used} label="AI allowance used" />
+            </div>
+          )}
+        </div>
+      </section>
+      {topup && <TopUpDialog billing={b} onClose={() => setTopup(false)} />}
+      {connect && <ConnectAiDialog start={connect} onClose={() => setConnect(null)} />}
 
       {!b.payments_connected && (
         <p className="m-0 rounded-r2 bg-surface-muted px-3.5 py-2.5 text-[13px] text-fg-muted">
           Payments aren’t connected yet, so choosing or changing a plan doesn’t charge you.
         </p>
       )}
+
+      <BillingHistory />
 
       <h2 className="m-0 mt-2 text-[15px] font-semibold">Plans</h2>
       <div className="grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(210px,1fr))]">

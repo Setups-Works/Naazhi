@@ -8,6 +8,24 @@ const FILE: Record<string, string> = {
   "Google Sheets": "google-sheets.svg",
   Maps: "maps.svg",
   Outlook: "outlook.svg",
+  OneDrive: "onedrive.svg",
+  "Microsoft To Do": "microsoft-todo.svg",
+  Microsoft: "microsoft.svg",
+  Google: "google.svg",
+  Zoho: "zoho.svg",
+  "Zoho Mail": "zoho-mail.svg",
+  "Zoho Calendar": "zoho-calendar.svg",
+  "Zoho Cliq": "zoho-cliq.svg",
+  "Zoho WorkDrive": "zoho-workdrive.svg",
+  "Zoho Projects": "zoho-projects.svg",
+  "Zoho Sign": "zoho-sign.svg",
+  "Zoho CRM": "zoho-crm.svg",
+  "Zoho Books": "zoho-books.svg",
+  "Zoho Billing": "zoho-billing.svg",
+  "Zoho Expense": "zoho-expense.svg",
+  "Zoho Desk": "zoho-desk.svg",
+  "Zoho People": "zoho-people.svg",
+  "Zoho Recruit": "zoho-recruit.svg",
   "Microsoft Teams": "microsoft-teams.svg",
   Slack: "slack.svg",
   Zoom: "zoom.svg",
@@ -17,6 +35,9 @@ const FILE: Record<string, string> = {
   Cloudflare: "cloudflare.svg",
   Eventbrite: "eventbrite.png",
 };
+
+/** True when `Logo` has a real logo for this name (otherwise it would draw the initial). */
+export const hasLogo = (name: string) => name in FILE || name in ICONS;
 
 /** A service's logo: an image from /public/logos, an inline brand mark, or its initial. */
 export function Logo({ name, size = 24 }: { name: string; size?: number }) {

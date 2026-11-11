@@ -23,6 +23,27 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-11",
+    title: "Version 5.3.0: credit for Pay as you go, your own AI, invoices and a pricing calculator",
+    summary: "Top up credit and pay only for the AI you use, pick your own model with your own key, get invoices for every payment, and work out what you’d pay before you choose a plan.",
+    tone: "violet",
+    appVersion: "v5.3.0",
+    changes: [
+      { kind: "new", platform: "web", text: "Pay as you go now runs on prepaid credit. Top up in rupees with Razorpay and tokens come off your balance as you use AI; AI pauses at zero until you top up, and you get an email when it does." },
+      { kind: "new", platform: "app", text: "Add AI credit from the app’s Plan and billing screen and see your balance, using Razorpay’s own payment sheet." },
+      { kind: "new", platform: "web", text: "A new model picker in chat, grouped by provider. Add your own key for OpenAI, Anthropic, Google or OpenRouter, pick the model for each chat, and manage your keys in Settings → API keys. Keys are checked before they are saved and stored encrypted." },
+      { kind: "new", platform: "web", text: "Billing history and invoices. Every subscription charge and credit top-up gets a numbered invoice you can open, print or save as a PDF, and a receipt by email." },
+      { kind: "new", platform: "app", text: "See your billing history in the app and open any invoice in your browser." },
+      { kind: "new", platform: "web", text: "A pricing calculator on the pricing page: say how much you’d use AI and see what each plan would cost." },
+      { kind: "new", platform: "web", text: "The Download page now shows the Mac and Windows apps and a browser extension as coming soon." },
+      { kind: "improved", platform: "web", text: "Searching chats now looks inside your chat titles and messages, instead of opening the global search." },
+      { kind: "improved", platform: "web", text: "The sidebar is open by default and stays however you leave it." },
+      { kind: "improved", platform: "web", text: "Google, Microsoft and Zoho show their own logos in Settings and during setup, including a logo for each Zoho and Microsoft service." },
+      { kind: "improved", platform: "web", text: "Every email now shares one design, with the Setups Works logo in the footer. New emails tell you when a payment fails, a subscription ends, your AI credit runs out, or a refund is issued." },
+      { kind: "improved", platform: "web", text: "The landing and pricing pages are updated with everything above, and the API documentation is now visible to admins only." },
+    ],
+  },
+  {
+    date: "2026-11-11",
     title: "Version 5.2.0: pay with autopay, a new setup flow and a calmer admin",
     summary: "Subscriptions can now be paid for with autopay in rupees, new accounts get a full setup flow, and the admin panel and To-do filters share the app’s paper-and-ink look.",
     tone: "amber",

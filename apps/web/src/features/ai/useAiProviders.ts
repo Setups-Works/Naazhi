@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { NO_AI, type Provider } from "../../lib/ai";
 import { qk } from "../../lib/query/keys";
+import { chatgptChoice, ownChoice } from "@untitled/logic/aiConnections";
+import { useAiCatalog } from "./connections";
 
 const KEY = "up_ai_provider";
 
@@ -22,7 +24,24 @@ export function useAiProviders() {
     },
   });
 
-  const providers = useMemo<Provider[]>(() => [NO_AI, ...(q.data ?? [])], [q.data]);
+  // Models the person connected themselves (their own keys, their ChatGPT sign-in) are choices too, once connected.
+  const catalog = useAiCatalog().data;
+  const mine = useMemo<Provider[]>(
+    () =>
+      (catalog?.groups ?? [])
+        .filter((g) => g.connected)
+        .flatMap((g) =>
+          g.models.map((m) => ({
+            id: g.kind === "chatgpt" ? chatgptChoice(m.id) : ownChoice(g.id, m.id),
+            label: m.label,
+            note: g.label,
+            available: true,
+            runtime: "server" as const,
+          })),
+        ),
+    [catalog],
+  );
+  const providers = useMemo<Provider[]>(() => [NO_AI, ...(q.data ?? []), ...mine], [q.data, mine]);
   const [chosen, setChosen] = useState<string | null>(null);
   useEffect(() => {
     try {

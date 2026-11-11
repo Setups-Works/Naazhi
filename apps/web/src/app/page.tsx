@@ -15,6 +15,7 @@ import Pro from "../components/site/home/Pro";
 import Shortcuts from "../components/site/home/Shortcuts";
 import Story from "../components/site/home/Story";
 import Trust from "../components/site/home/Trust";
+import WhatsNew from "../components/site/home/WhatsNew";
 import AuthLink from "../components/auth/AuthLink";
 import { buttonClass, Kicker, Lead, Section } from "../components/site/ui";
 
@@ -33,6 +34,7 @@ export default function Page() {
       <IntegrationsTicker />
       <Story />
       <Capabilities />
+      <WhatsNew />
       <Integrations />
       <Shortcuts />
       <Ai />

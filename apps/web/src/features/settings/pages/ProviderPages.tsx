@@ -25,6 +25,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import Modal from "../../../components/ui/Modal";
 import { PROVIDERS, type Provider, type ProviderId } from "../../../lib/composio/catalog";
+import { BrandLogo, brandOf } from "@/components/ui/BrandLogo";
+import { Logo } from "../../../components/site/Logo";
 import { LogoTile } from "../ui";
 
 /** Each service's own icon and colour, so Outlook mail and Outlook calendar (or Zoho's thirteen apps) can be told apart at a glance. */
@@ -50,8 +52,39 @@ const LOOK: Record<string, [IconDefinition, string]> = {
   recruit: [faUserTie, "text-clay-fg"],
 };
 
-/** The service's icon in a rounded tile; a letter for the provider itself. */
-function Mark({ id, name, size = "size-10" }: { id?: string; name: string; size?: string }) {
+/** Each service's real logo, by provider and service id. Anything without one keeps its line icon. */
+const SERVICE_LOGO: Record<string, string> = {
+  "google:gmail": "Gmail",
+  "google:calendar": "Google Calendar",
+  "google:drive": "Google Drive",
+  "microsoft:outlook": "Outlook",
+  "microsoft:outlook-calendar": "Outlook",
+  "microsoft:onedrive": "OneDrive",
+  "microsoft:todo": "Microsoft To Do",
+  "zoho:mail": "Zoho Mail",
+  "zoho:calendar": "Zoho Calendar",
+  "zoho:cliq": "Zoho Cliq",
+  "zoho:workdrive": "Zoho WorkDrive",
+  "zoho:projects": "Zoho Projects",
+  "zoho:sign": "Zoho Sign",
+  "zoho:crm": "Zoho CRM",
+  "zoho:books": "Zoho Books",
+  "zoho:billing": "Zoho Billing",
+  "zoho:expense": "Zoho Expense",
+  "zoho:desk": "Zoho Desk",
+  "zoho:people": "Zoho People",
+  "zoho:recruit": "Zoho Recruit",
+};
+
+/** The service's logo (or icon) in a rounded tile; a letter for the provider itself. */
+function Mark({ provider, id, name, size = "size-10" }: { provider?: ProviderId; id?: string; name: string; size?: string }) {
+  const logo = provider && id ? SERVICE_LOGO[`${provider}:${id}`] : undefined;
+  if (logo)
+    return (
+      <span aria-hidden className={`grid shrink-0 place-items-center rounded-r2 border bg-raised ${size}`}>
+        <Logo name={logo} size={size === "size-8" ? 18 : 22} />
+      </span>
+    );
   const look = id ? LOOK[id] : undefined;
   if (!look) return <LogoTile name={name} className={size} />;
   return (
@@ -76,7 +109,13 @@ function ConnectDialog({ provider, onClose }: { provider: Provider; onClose: () 
   return (
     <Modal label={`Connect ${provider.name}`} onClose={onClose} size="lg">
       <div className="p-6">
-        <Mark name={provider.name.charAt(0)} />
+        {brandOf(provider.name) ? (
+          <span aria-hidden className="grid size-11 place-items-center rounded-r2 border bg-raised">
+            <BrandLogo name={brandOf(provider.name)!} size={24} />
+          </span>
+        ) : (
+          <Mark name={provider.name.charAt(0)} />
+        )}
         <h2 className="m-0 mt-4 text-[22px] font-semibold tracking-[-0.02em]">Connect {provider.name}</h2>
         <p className="m-0 mt-1 text-[14.5px] text-ink-2">Choose what Naazhi can use. You can add more later.</p>
         <div className="mt-5 flex items-center justify-between text-[14px] text-ink-2">
@@ -94,7 +133,7 @@ function ConnectDialog({ provider, onClose }: { provider: Provider; onClose: () 
               {g.services.map((s) => (
                 <li key={s.id}>
                   <label className="flex cursor-pointer items-start gap-3">
-                    <Mark id={s.id} name={s.name} size="size-8" />
+                    <Mark provider={provider.id} id={s.id} name={s.name} size="size-8" />
                     <span className="min-w-0 flex-1">
                       <b className="block text-[15px] font-semibold">{s.name}</b>
                       <small className="block text-[13.5px] text-ink-2">{s.description}</small>
@@ -148,7 +187,8 @@ function ProviderPage({ id }: { id: ProviderId }) {
   return (
     <>
       <div className="mt-2 flex items-center justify-between gap-3 max-[600px]:flex-wrap">
-        <h2 className="m-0 flex items-baseline gap-2 text-[15px] font-semibold">
+        <h2 className="m-0 flex items-center gap-2 text-[15px] font-semibold">
+          <BrandLogo name={id} size={20} />
           Accounts <small className="text-[13px] font-normal text-ink-3">{provider.covers}</small>
         </h2>
         <Button onClick={() => setOpen(true)}>Connect {provider.name} account</Button>

@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/cn";
+import { BrandLogo, brandOf } from "@/components/ui/BrandLogo";
+import { Logo, hasLogo } from "../../../components/site/Logo";
 import { Actions, Card, Lead, Soon, Tile, Title, type Ctx } from "../ui";
 
 /**
@@ -29,7 +31,7 @@ export function Accounts({ ctx }: { ctx: Ctx }) {
           return (
             <Card key={a.name} className="overflow-hidden">
               <div className="flex items-center gap-4 px-5 py-4">
-                <Tile className="text-[17px] font-semibold">{a.name.charAt(0)}</Tile>
+                <Tile className="text-[17px] font-semibold">{brandOf(a.name) ? <BrandLogo name={brandOf(a.name)!} size={22} wide={false} /> : a.name.charAt(0)}</Tile>
                 <button
                   type="button"
                   className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
@@ -81,7 +83,7 @@ export function Apps({ ctx }: { ctx: Ctx }) {
         {APPS.map(([name, what]) => (
           <li key={name}>
             <Card className="flex items-center gap-3.5 px-4 py-3.5">
-              <Tile className="font-semibold">{name.charAt(0)}</Tile>
+              <Tile className="font-semibold">{hasLogo(name) ? <Logo name={name} size={22} /> : name.charAt(0)}</Tile>
               <span className="min-w-0 flex-1">
                 <b className="block text-[15.5px] font-semibold text-fg">{name}</b>
                 <span className="block truncate text-[13.5px] text-fg-subtle">{what}</span>

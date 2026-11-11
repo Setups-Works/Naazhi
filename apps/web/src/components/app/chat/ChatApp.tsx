@@ -40,7 +40,6 @@ import AttachmentImage from "../../ui/AttachmentImage";
 import AudioWave from "../../ui/AudioWave";
 import Markdown from "../Markdown";
 import { useAiProviders } from "../../../features/ai/useAiProviders";
-import { openSearch } from "../UniversalSearch";
 import ChatSidebar, { type Tab } from "./ChatSidebar";
 import Composer from "./Composer";
 import {
@@ -54,6 +53,7 @@ import {
   ChatToolCalls,
 } from "./kit";
 import ShareDialog from "./ShareDialog";
+import ConnectAiDialog from "./ConnectAiDialog";
 import { parseChatAction, parseChatActions } from "../../../lib/chat-actions";
 import { isoDate } from "../../../lib/dates";
 import { useCtxActions } from "../../../lib/context-actions";
@@ -101,6 +101,7 @@ export default function ChatApp({ name }: { name: string }) {
 
   // Which AI answers: the server says what is configured, the person's choice is remembered in this browser.
   const { providers, provider, select: selectProvider } = useAiProviders();
+  const [connectOpen, setConnectOpen] = useState(false);
   // The reply that is being written right now (shown as it arrives; the saved copy replaces it when finished).
   const [streaming, setStreaming] = useState<{ chatId: string; text: string } | null>(null);
   const hello = useMemo(() => chatGreeting(name), [name]);
@@ -523,7 +524,6 @@ export default function ChatApp({ name }: { name: string }) {
           onTab={setTab}
           onOpen={open}
           onNew={fresh}
-          onSearch={openSearch}
           onAddFolder={addFolder}
           onRenameFolder={renameFolder}
           onDeleteFolder={deleteFolder}
@@ -630,13 +630,17 @@ export default function ChatApp({ name }: { name: string }) {
           </p>
         )}
 
+        {connectOpen && <ConnectAiDialog onClose={() => setConnectOpen(false)} />}
         <ChatLayout
           footer={
             activeId ? (
             <>
               {activeId && provider === "none" && (
                 <ChatSystemMessage icon={<FA icon={faTriangleExclamation} />}>
-                  No AI is selected, so replies aren’t generated. Your messages are saved to this chat.
+                  No AI is selected, so replies aren’t generated. Your messages are saved to this chat.{" "}
+                  <button type="button" className="cursor-pointer underline" onClick={() => setConnectOpen(true)}>
+                    Connect an AI
+                  </button>
                 </ChatSystemMessage>
               )}
               <Composer

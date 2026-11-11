@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
 import {
   faChevronDown,
@@ -14,6 +14,7 @@ import {
   faFolderPlus,
   faShareNodes,
   faMagnifyingGlass,
+  faXmark,
   faPen,
   faPlus,
   faThumbtack,
@@ -24,6 +25,7 @@ import { ageShort, groupByDate, isUnread, prettyTitle } from "../../../lib/chat"
 import Menu, { MenuItem, MenuLabel, MenuRadioGroup, MenuRadioItem, MenuSeparator } from "../../ui/Menu";
 import { Tabs, TabsList, TabsTrigger } from "../../ui/Tabs";
 import { ctxProps } from "../../../lib/context-actions";
+import { api } from "../../../lib/api/client";
 
 export type Tab = "all" | "unread";
 
@@ -36,7 +38,6 @@ export type SidebarProps = {
   onTab: (t: Tab) => void;
   onOpen: (id: string) => void;
   onNew: () => void;
-  onSearch: () => void;
   onAddFolder: () => void;
   onRenameFolder: (f: ChatFolder) => void;
   onDeleteFolder: (f: ChatFolder) => void;
@@ -126,9 +127,31 @@ function Row({ c, p }: { c: Chat; p: SidebarProps }) {
 }
 
 export default function ChatSidebar(p: SidebarProps) {
-  const [mac, setMac] = useState(false);
   const [closed, setClosed] = useState<Set<string>>(new Set());
-  useEffect(() => setMac(/Mac|iPhone|iPad/.test(navigator.platform)), []);
+  // Searching chats: titles match at once; message text is looked up (as the signed-in person) a moment after typing stops.
+  const sb = useMemo(api, []);
+  const [q, setQ] = useState("");
+  const [textHits, setTextHits] = useState<Set<string>>(new Set());
+  const [searching, setSearching] = useState(false);
+  const seq = useRef(0);
+  const term = q.trim().replace(/[%_\\"',()]/g, " ").replace(/\s+/g, " ").trim();
+  useEffect(() => {
+    if (term.length < 2) {
+      setTextHits(new Set());
+      setSearching(false);
+      return;
+    }
+    const mine = ++seq.current;
+    setSearching(true);
+    const t = setTimeout(async () => {
+      const { data } = await sb.from("chat_messages").select("chat_id").ilike("body", `%${term}%`).limit(60);
+      if (mine !== seq.current) return;
+      setTextHits(new Set(((data ?? []) as { chat_id: string }[]).map((r) => r.chat_id)));
+      setSearching(false);
+    }, 250);
+    return () => clearTimeout(t);
+  }, [term, sb]);
+  const results = term.length >= 1 ? p.chats.filter((c) => c.title.toLowerCase().includes(term.toLowerCase()) || textHits.has(c.id)) : [];
 
   const shown = p.tab === "unread" ? p.chats.filter((c) => isUnread(c) && c.id !== p.activeId) : p.chats;
   const unreadCount = p.chats.filter((c) => isUnread(c) && c.id !== p.activeId).length;
@@ -154,17 +177,47 @@ export default function ChatSidebar(p: SidebarProps) {
           <FA icon={faFolderPlus} />
         </button>
       </div>
-      <button className="cx-search" onClick={p.onSearch}>
-        <FA icon={faMagnifyingGlass} /> <span>Search</span> <kbd>{mac ? "⌘K" : "Ctrl K"}</kbd>
-      </button>
-      <Tabs value={p.tab} onValueChange={(v) => p.onTab(v as Tab)}>
+      <div className="cx-search" role="search">
+        <FA icon={faMagnifyingGlass} />
+        <input
+          type="search"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setQ("");
+          }}
+          placeholder="Search chats"
+          aria-label="Search chats"
+          autoComplete="off"
+          spellCheck={false}
+          maxLength={80}
+          className="min-w-0 flex-1 border-0 bg-transparent p-0 text-fg outline-none placeholder:text-fg-subtle [&::-webkit-search-cancel-button]:hidden"
+        />
+        {q && (
+          <button type="button" className="cursor-pointer text-[12px] text-fg-subtle hover:text-fg" aria-label="Clear search" onClick={() => setQ("")}>
+            <FA icon={faXmark} />
+          </button>
+        )}
+      </div>
+      {term.length < 1 && (<Tabs value={p.tab} onValueChange={(v) => p.onTab(v as Tab)}>
         <TabsList className="cx-tabs" aria-label="Show chats">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="unread">Unread{unreadCount > 0 && <em>{unreadCount}</em>}</TabsTrigger>
         </TabsList>
-      </Tabs>
+      </Tabs>)}
 
       <div className="cx-list">
+        {term.length >= 1 ? (
+          <div className="cx-group">
+            <h3>{searching ? "Searching…" : results.length ? `${results.length} ${results.length === 1 ? "chat" : "chats"}` : "No chats match"}</h3>
+            <ul>
+              {results.map((c) => (
+                <Row key={c.id} c={c} p={p} />
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <>
         {p.ready && shown.length === 0 && (
           <p className="cx-none">{p.tab === "unread" ? "You’re all caught up." : "No chats yet. Start one!"}</p>
         )}
@@ -224,6 +277,8 @@ export default function ChatSidebar(p: SidebarProps) {
             </ul>
           </div>
         ))}
+          </>
+        )}
       </div>
     </aside>
   );

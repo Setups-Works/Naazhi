@@ -199,7 +199,31 @@ export type MyBilling = {
   byo: { provider: string | null; model: string | null; hint: string | null };
   /** False until a payment provider is connected: plan changes are recorded but nobody is charged. */
   payments_connected: boolean;
+  /** Prepaid AI credit left for Pay as you go, in paise. Can dip a little below zero after a long reply; AI pauses at zero. */
+  credit_cents: number;
+  /** Everything the person has ever added, in paise: the "of ₹X" next to the balance. */
+  credit_total_cents: number;
+  topup: { min_cents: number; max_cents: number; options_cents: number[] };
 };
+
+/** One invoice: a payment taken for a subscription period or an AI credit top-up. Amounts in paise. */
+export type BillingInvoice = {
+  id: string;
+  number: string;
+  kind: "subscription" | "topup";
+  description: string;
+  amount_cents: number;
+  currency: string;
+  status: "paid" | "partially_refunded" | "refunded";
+  /** Total returned so far, in paise. */
+  refunded_cents: number;
+  period_start: string | null;
+  period_end: string | null;
+  issued_at: string;
+};
+
+/** What the browser needs to open Razorpay for a credit top-up. */
+export type TopupSession = { key_id: string; order_id: string; amount: number; currency: string; name: string; description: string; prefill: { name: string; email: string } };
 
 /** What the browser needs to open Razorpay's checkout window for a subscription (the key id is public by design). */
 export type CheckoutSession = {
@@ -212,6 +236,26 @@ export type CheckoutSession = {
   currency: string;
   prefill: { name: string; email: string };
 };
+
+/* ---------- AI connections (the model picker) ---------- */
+
+export type AiCatalogModel = { id: string; label: string; note: string };
+/** One provider in the picker: the person's ChatGPT sign-in, or a provider they can add an API key for. */
+export type AiCatalogGroup = {
+  id: string;
+  label: string;
+  kind: "chatgpt" | "key";
+  /** For ChatGPT: false when this server has no OAuth client configured, so the sign-in can't start. */
+  configured: boolean;
+  connected: boolean;
+  /** Last four characters of a saved key; never the key. */
+  hint: string | null;
+  keyUrl: string | null;
+  models: AiCatalogModel[];
+};
+export type AiCatalog = { groups: AiCatalogGroup[] };
+export type DeviceLoginStart = { user_code: string; verification_url: string; interval_seconds: number; expires_at: string };
+export type DeviceLoginPoll = { status: "pending" | "connected" | "expired" };
 
 /* ---------- notification inbox ---------- */
 

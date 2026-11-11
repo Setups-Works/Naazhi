@@ -1,7 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
 import type { BillingPlan } from "@untitled/types";
-import { priceLine } from "@untitled/logic/billing";
+import { formatBalance, priceLine, tokenCostCents } from "@untitled/logic/billing";
 import { savePlan } from "../../app/admin/plans/actions";
 
 /** Prices are typed in major units (9.50) and stored in the smallest unit (950); this is the only place that converts. */
@@ -121,8 +121,13 @@ function PlanForm({ plan }: { plan: BillingPlan }) {
         <Field label="Tokens included">
           <input className={INPUT} value={included} onChange={(e) => setIncluded(e.target.value)} inputMode="numeric" />
         </Field>
-        <Field label="Price per 1M tokens">
+        <Field label="Price per 1M tokens (₹)">
           <input className={INPUT} value={rate} onChange={(e) => setRate(e.target.value)} inputMode="decimal" />
+          {toMinor(rate) > 0 && (
+            <small className="text-[12.5px] text-fg-subtle">
+              = {formatBalance(Math.max(1, tokenCostCents(100, toMinor(rate))))} per 100 tokens
+            </small>
+          )}
         </Field>
       </div>
 
@@ -136,7 +141,11 @@ function PlanForm({ plan }: { plan: BillingPlan }) {
       </Field>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <small className="text-[13px] text-fg-subtle">Changes show on the pricing page and in Settings straight away.</small>
+        <small className="text-[13px] text-fg-subtle">
+          Changes show on the pricing page and in Settings straight away.
+          {plan.id === "subscription" && " A new price applies to people who subscribe from now on; current subscribers keep their price until they subscribe again."}
+          {plan.id === "payg" && " A new token price applies to AI used from now on."}
+        </small>
         <button className="btn btn-primary btn-sm" disabled={pending || !numbersOk || !name.trim()}>
           {pending ? "Saving…" : "Save plan"}
         </button>

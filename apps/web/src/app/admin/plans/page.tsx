@@ -4,6 +4,8 @@ import { formatTokens } from "@untitled/logic/billing";
 import SetupNotice from "../../../components/admin/SetupNotice";
 import PlansEditor from "../../../components/admin/PlansEditor";
 import SubscribersTable from "../../../components/admin/SubscribersTable";
+import CreditSettings from "../../../components/admin/CreditSettings";
+import InvoiceSettings from "../../../components/admin/InvoiceSettings";
 
 export const dynamic = "force-dynamic";
 
@@ -11,13 +13,16 @@ const TONES = ["violet", "blue", "amber", "mint", "clay"];
 
 export default async function Page() {
   if (!serverConfigured()) return <SetupNotice />;
-  const { plans, totals, subscribers, tokens30d } = await adminOverview().catch(() => ({
+  const { plans, totals, subscribers, tokens30d, limits, razorpayStatus, seller } = await adminOverview().catch(() => ({
     plans: null,
     totals: [],
     subscribers: [],
     tokens30d: 0,
+    limits: null,
+    razorpayStatus: null,
+    seller: null,
   }));
-  if (!plans)
+  if (!plans || !limits || !razorpayStatus || !seller)
     return (
       <div className="dash">
         <p className="form-err" role="alert">
@@ -53,7 +58,22 @@ export default async function Page() {
           <small>Tokens, last 30 days</small>
         </div>
       </div>
+      <section className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-r3 border bg-paper px-5 py-3.5 text-[14px]" aria-label="Payments">
+        <b className="font-semibold">Razorpay</b>
+        <span>{razorpayStatus.live ? `Live${razorpayStatus.mode ? ` (${razorpayStatus.mode} keys)` : ""}` : "Not connected"}</span>
+        <span className="text-fg-muted">API keys: {razorpayStatus.keys ? "set" : "missing"}</span>
+        <span className="text-fg-muted">Webhook secret: {razorpayStatus.webhook ? "set" : "missing"}</span>
+        {!razorpayStatus.live && <span className="text-fg-subtle">Set RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET and RAZORPAY_WEBHOOK_SECRET to take payments.</span>}
+      </section>
       <PlansEditor plans={plans} />
+      <h2 className="h3" style={{ margin: "28px 0 12px" }}>
+        AI credit (Pay as you go)
+      </h2>
+      <CreditSettings limits={limits} />
+      <h2 className="h3" style={{ margin: "28px 0 12px" }}>
+        Invoice details
+      </h2>
+      <InvoiceSettings seller={seller} />
       <h2 className="h3" style={{ margin: "28px 0 12px" }}>
         Subscribers
       </h2>

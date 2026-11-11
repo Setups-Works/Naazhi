@@ -9,9 +9,11 @@
 | `/admin`               | Overview stats and charts                           | auth admin API, row counts, `profiles`                     |
 | `/admin/users`         | Search/filter/sort/page, CSV, invite, detail drawer | `components/admin/UsersTable.tsx`, actions in `actions.ts` |
 | `/admin/usage`         | Item counts per user (ids only)                     | scans tables (to move into SQL: UNT-35)                    |
-| `/admin/plans`         | Plans: prices, allowances, wording; who is on which plan | `components/admin/PlansEditor.tsx`, `SubscribersTable.tsx`, actions in `plans/actions.ts`; `billing_plans`, `user_billing`, `ai_usage` (counts and token totals only) — see `docs/BILLING.md` |
+| `/admin/plans`         | Plans: prices, allowances, token price (per 1M, shown per 100), wording; Razorpay status; AI credit top-up limits (`CreditSettings.tsx`); who is on which plan, their AI credit and an Adjust button | `components/admin/PlansEditor.tsx`, `SubscribersTable.tsx`, actions in `plans/actions.ts`; `billing_plans`, `user_billing`, `ai_usage` (counts and token totals only) — see `docs/BILLING.md` |
 | `/admin/announcements` | Banners for all users                               | `announcements`                                            |
 | `/admin/messages`      | Write to everyone or one person (inbox + push)      | `components/admin/MessageComposer.tsx`, `sendMessageToUsers` in `actions.ts` → `services/notifications`; `notifications`, `push_devices` (the audit log keeps the title, never the text) |
+| `/admin/invoices`      | Every invoice (search by email or number) and Refund (full or partial, through Razorpay) | `components/admin/InvoicesTable.tsx`, `app/admin/invoices/actions.ts`, `invoices.service.ts` |
+| `/admin/emails`        | Preview of every email template with example data (sends nothing) | `server/email/*` |
 | `/admin/audit`         | Admin action log: filter by action, person, period; CSV export | `admin_audit`, `components/admin/AuditExport.tsx`        |
 | `/admin/system`        | Database status, latency and row counts (never content) | `countRows`, `adminDb()`                               |
 

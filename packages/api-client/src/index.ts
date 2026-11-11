@@ -65,3 +65,4 @@ export * from "./notes";
 export * from "./notifications";
 export * from "./rss";
 export * from "./billing";
+export * from "./aiConnections";

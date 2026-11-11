@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faCircleCheck, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/cn";
+import { Logo } from "../../../components/site/Logo";
 import { api } from "../../../lib/api/client";
 import { qk } from "../../../lib/query/keys";
 import { fromDrop, fromFileList, importSummary, importVault, type VaultFile } from "../../settings/importVault";
@@ -86,7 +87,7 @@ export function ImportScreen({ ctx }: { ctx: Ctx }) {
           </div>
         </Card>
         <Card className="flex items-center gap-4 px-5 py-4">
-          <Tile className="font-semibold">N</Tile>
+          <Tile className="font-semibold"><Logo name="Notion" size={22} /></Tile>
           <div className="min-w-0 flex-1">
             <b className="block text-[16.5px] font-semibold text-fg">Notion</b>
             <span className="block text-[14.5px] text-fg-muted">Pick the pages Naazhi should read</span>

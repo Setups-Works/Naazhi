@@ -1,9 +1,9 @@
 "use client";
 import { useRef } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
-import { faChevronDown, faPaperclip } from "@fortawesome/free-solid-svg-icons";
+import { faPaperclip } from "@fortawesome/free-solid-svg-icons";
 import type { Provider } from "../../../lib/ai";
-import Menu, { MenuLabel, MenuRadioGroup, MenuRadioItem } from "../../ui/Menu";
+import ModelPicker from "./ModelPicker";
 import FilePreviewList from "../../ui/FilePreviewList";
 import {
   ChatComposer,
@@ -136,29 +136,7 @@ export default function Composer({
             e.target.value = "";
           }}
         />
-        <Menu
-          label="Choose AI"
-          side="top"
-          align="start"
-          className="cx-model"
-          trigger={
-            <>
-              {current.label} <FA icon={faChevronDown} />
-            </>
-          }
-        >
-          <MenuLabel>AI</MenuLabel>
-          <MenuRadioGroup value={current.id} onValueChange={onProvider}>
-            {providers.map((p) => (
-              <MenuRadioItem key={p.id} value={p.id} disabled={!p.available}>
-                <span className="cx-prov">
-                  <b>{p.label}</b>
-                  <small>{p.available ? p.note : "Not connected yet"}</small>
-                </span>
-              </MenuRadioItem>
-            ))}
-          </MenuRadioGroup>
-        </Menu>
+        <ModelPicker providers={providers} current={current} onSelect={onProvider} />
         <span className="cx-spacer" />
         <ChatDictationButton recording={rec.recording} secs={rec.secs} onToggle={rec.toggle} />
         <ChatSendButton disabled={!canSend} />

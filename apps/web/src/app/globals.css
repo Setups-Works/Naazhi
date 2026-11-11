@@ -9830,6 +9830,9 @@
   .cx-search span {
     flex: 1;
   }
+  .cx-search input {
+    font: inherit;
+  }
   .cx-tabs {
     display: flex;
     gap: 18px;

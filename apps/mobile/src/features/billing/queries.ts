@@ -10,6 +10,12 @@ const billingApi = createBillingApi(api);
 
 export const useBilling = () => useQuery({ queryKey: qk.billing, queryFn: billingApi.mine });
 
+/** Billing history: every invoice, newest first. */
+export const useInvoices = () => useQuery({ queryKey: qk.billingInvoices, queryFn: billingApi.invoices });
+
+/** A ten-minute link that opens one invoice in the browser (the phone has no web sign-in to carry over). */
+export const invoiceLink = (id: string) => billingApi.invoiceLink(id);
+
 /** Every change answers with the fresh billing state, which replaces the cache so the screen updates at once. */
 export function useBillingActions(onError: (message: string) => void) {
   const qc = useQueryClient();

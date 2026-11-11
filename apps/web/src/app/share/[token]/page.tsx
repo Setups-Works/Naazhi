@@ -29,7 +29,7 @@ export default async function Page({ params }: { params: Promise<{ token: string
     return (
       <main className="section">
         <div className="container" style={{ maxWidth: 640 }}>
-          <div className="panel" data-tone="amber">
+          <div className="panel">
             <p className="body">Shared chats aren’t available until the server is configured.</p>
           </div>
         </div>
@@ -92,7 +92,7 @@ export default async function Page({ params }: { params: Promise<{ token: string
           ))}
         </div>
 
-        <aside className="sh-cta panel" data-tone="forest">
+        <aside className="sh-cta">
           <div>
             <h2 className="h3">Want a workspace like this?</h2>
             <p className="body">Notes, tasks, journal and chat in one place — with any AI, or none.</p>

@@ -23,7 +23,7 @@ export default async function Page({ params }: { params: Promise<{ token: string
     return (
       <main className="section">
         <div className="container" style={{ maxWidth: 640 }}>
-          <div className="panel" data-tone="amber">
+          <div className="panel">
             <p className="body">Shared notes aren’t available until the server is configured.</p>
           </div>
         </div>
@@ -47,7 +47,7 @@ export default async function Page({ params }: { params: Promise<{ token: string
           <p className="body">Last edited {updated}</p>
         </header>
 
-        <article className="jr-entry at-violet">
+        <article className="jr-entry">
           {note.body && <Markdown text={note.body} />}
           {note.files.length > 0 && (
             <ul className="jr-files">
@@ -70,7 +70,7 @@ export default async function Page({ params }: { params: Promise<{ token: string
           )}
         </article>
 
-        <aside className="sh-cta panel" data-tone="forest">
+        <aside className="sh-cta">
           <div>
             <h2 className="h3">Want notes like this?</h2>
             <p className="body">Notes, tasks, journal and chat in one place — with any AI, or none.</p>

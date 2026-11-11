@@ -12,7 +12,8 @@
 | `/admin/plans`         | Plans: prices, allowances, wording; who is on which plan | `components/admin/PlansEditor.tsx`, `SubscribersTable.tsx`, actions in `plans/actions.ts`; `billing_plans`, `user_billing`, `ai_usage` (counts and token totals only) — see `docs/BILLING.md` |
 | `/admin/announcements` | Banners for all users                               | `announcements`                                            |
 | `/admin/messages`      | Write to everyone or one person (inbox + push)      | `components/admin/MessageComposer.tsx`, `sendMessageToUsers` in `actions.ts` → `services/notifications`; `notifications`, `push_devices` (the audit log keeps the title, never the text) |
-| `/admin/audit`         | Admin action log                                    | `admin_audit`                                              |
+| `/admin/audit`         | Admin action log: filter by action, person, period; CSV export | `admin_audit`, `components/admin/AuditExport.tsx`        |
+| `/admin/system`        | Database status, latency and row counts (never content) | `countRows`, `adminDb()`                               |
 
 Add a section: create `app/admin/<section>/page.tsx` and one line in `components/admin/AdminNav.tsx`.
 

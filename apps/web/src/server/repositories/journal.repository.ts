@@ -46,3 +46,36 @@ export async function findSharedEntry(db: Db, token: string) {
     .maybeSingle();
   return (data as SharedEntryRow | null) ?? null;
 }
+
+/** The day's public link token, if the person has shared that day. Runs as the user. */
+export async function findDayShareToken(db: Db, date: string) {
+  const { data } = await db.from("journal_day_shares").select("share_token").eq("entry_date", date).maybeSingle();
+  return (data as { share_token: string } | null)?.share_token ?? null;
+}
+
+/** Turns a day's link on (a fresh token replaces any old one) or off. Runs as the user, so only the owner's own rows are touched. */
+export async function setDayShareToken(db: Db, date: string, token: string | null) {
+  const del = await db.from("journal_day_shares").delete().eq("entry_date", date);
+  if (del.error) throw new Error("Could not change journal sharing");
+  if (!token) return null;
+  const { error } = await db.from("journal_day_shares").insert({ entry_date: date, share_token: token });
+  if (error) throw new Error("Could not change journal sharing");
+  return token;
+}
+
+/** Who owns the day behind a public token. Takes the owner-level handle the service chose. */
+export async function findSharedDay(db: Db, token: string) {
+  const { data } = await db.from("journal_day_shares").select("user_id,entry_date").eq("share_token", token).maybeSingle();
+  return (data as { user_id: string; entry_date: string } | null) ?? null;
+}
+
+/** Every entry the author wrote on a day, oldest first. */
+export async function listDayEntries(db: Db, userId: string, date: string) {
+  const { data } = await db
+    .from<SharedEntryRow>("journal_entries")
+    .select("id,user_id,entry_date,body,kind,attachments,created_at,shared_at")
+    .eq("user_id", userId)
+    .eq("entry_date", date)
+    .order("created_at");
+  return (data as SharedEntryRow[] | null) ?? [];
+}

@@ -34,7 +34,7 @@ export default function MessageComposer({ push }: { push: boolean }) {
   return (
     <>
       {dialog}
-      <form className="dash-card at-blue adm-compose" onSubmit={submit}>
+      <form className="dash-card adm-compose" onSubmit={submit}>
         <h4>New message</h4>
         <p className="meta">
           It appears in the Notifications inbox in the app.{" "}

@@ -7,6 +7,7 @@ import { accountInfo, currentUser, isAdmin, serverConfigured, userDb } from "../
 import { CATEGORIES } from "../../lib/notes";
 import { cleanPrefs } from "../../lib/prefs";
 import AppNav from "../../components/app/AppNav";
+import { SettingsDataProvider } from "../../components/app/SettingsData";
 import QueryProvider from "../../components/providers/QueryProvider";
 import AnnouncementBanner from "../../components/app/AnnouncementBanner";
 import ChatWidget from "../../components/app/ChatWidget";
@@ -46,31 +47,34 @@ export default async function Layout({ children }: { children: ReactNode }) {
   const announcements = (ann.data ?? []) as { id: string; message: string; tone: string }[];
   const prefs = cleanPrefs(profile.data?.preferences, CATEGORIES);
   const onboarding = cleanOnboarding(profile.data?.onboarding);
+  const account = {
+    name: user.name,
+    email: user.email,
+    username: user.username ?? null,
+    displayUsername: user.displayUsername ?? null,
+    hasPassword: info.providers.includes("email"),
+    providers: info.providers,
+    createdAt: user.createdAt,
+    avatarUrl: user.image,
+    lastSignIn: info.lastSignIn,
+  };
   return (
     <QueryProvider>
+      <SettingsDataProvider value={{ account, prefs }}>
       <div className="ap">
         <AppNav
           name={name}
           email={user.email}
           admin={isAdmin(user)}
           prefs={prefs}
-          account={{
-            name: user.name,
-            email: user.email,
-            username: user.username ?? null,
-            displayUsername: user.displayUsername ?? null,
-            hasPassword: info.providers.includes("email"),
-            providers: info.providers,
-            createdAt: user.createdAt,
-            avatarUrl: user.image,
-            lastSignIn: info.lastSignIn,
-          }}
+          account={account}
         />
         <AnnouncementBanner items={announcements} />
         <div className="ap-body">{children}</div>
         <Onboarding name={name} prefs={prefs} state={onboarding} show={shouldShowOnboarding(onboarding)} />
         <ChatWidget />
       </div>
+      </SettingsDataProvider>
     </QueryProvider>
   );
 }

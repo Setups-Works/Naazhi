@@ -4,7 +4,7 @@
 
 **Addresses:** every section has its own URL — `/dashboard/settings/{profile,preferences,appearance,billing,security,data,danger}` (`/dashboard/settings` opens Profile). `tabs.ts` maps sections ↔ slugs; `AppNav` opens the popup with `history.pushState` so the page behind stays put, and Back or ✕ returns to it. Add a section by extending `tabs.ts` and `SettingsView`.
 
-**Today (legacy):** `components/app/{SettingsView,SettingsModal,PrefsSync}.tsx`, `lib/prefs.ts`, `app/dashboard/settings/actions.ts`.
+**Today (legacy):** `components/app/{SettingsView,SettingsPage,PrefsSync}.tsx`, `lib/prefs.ts`, `app/dashboard/settings/actions.ts`.
 
 **Backed by:** Better Auth (`name`, `image`, email, password), `profiles.preferences`, bucket `avatars`.
 

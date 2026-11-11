@@ -22,11 +22,12 @@ import {
 import { useHealthDays } from "../queries";
 import HealthActions from "./HealthActions";
 import RangeFilter from "./RangeFilter";
+import HealthSources from "./HealthSources";
 import SetupCard from "./SetupCard";
 import StatTile from "./StatTile";
 import WeeklyRing from "./WeeklyRing";
 
-const SECTION_LABEL = "text-[11px] font-semibold tracking-[0.1em] text-fg-faint uppercase";
+const SECTION_LABEL = "text-[13px] font-semibold text-ink";
 
 export default function HealthApp() {
   const { days, isPending, isError } = useHealthDays(HEALTH_SPAN);
@@ -60,18 +61,18 @@ export default function HealthApp() {
   return (
     <div className="mx-auto w-full max-w-[1120px]">
       <header className="mb-[18px] flex flex-col gap-1">
-        <h1 className="font-serif text-[clamp(30px,3.4vw,42px)] leading-[1.04] font-semibold tracking-[-0.03em] text-balance">Health</h1>
-        <p className="text-[14px] text-fg-muted">
+        <h1 className="m-0 text-[28px] leading-tight font-semibold tracking-[-0.02em]">Health</h1>
+        <p className="text-[14px] text-ink-3">
           {latest ? `Synced from ${SOURCE_LABEL[latest.source]} at ${syncedAt}` : "Activity, sleep and heart rate from your phone"}
         </p>
       </header>
 
       {isError ? (
-        <p className="bg-critical-wash text-critical rounded-r3 p-4 text-[14px]" role="alert">
+        <p className="rounded-r3 border bg-paper p-4 text-[14px] text-critical" role="alert">
           Couldn’t load your health data. Please try again.
         </p>
       ) : isPending ? (
-        <p className="p-6 text-xs text-fg-muted">Loading health…</p>
+        <p className="p-6 text-[13px] text-ink-3">Loading health…</p>
       ) : !latest ? (
         <SetupCard />
       ) : (
@@ -89,7 +90,7 @@ export default function HealthApp() {
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,340px)_1fr]">
-            <section className="glass rounded-r4 p-5" aria-label={meta.label}>
+            <section className="rounded-r4 border bg-paper p-5" aria-label={meta.label}>
               <WeeklyRing
                 fraction={ratio(sum.steps ?? 0, goal)}
                 label={multi ? `Steps, ${meta.label}` : "Steps"}
@@ -104,7 +105,7 @@ export default function HealthApp() {
                       title={`${d.day}: ${fmtNumber(d.steps ?? 0)} steps`}
                     >
                       <span
-                        className={`at-blue block min-h-1 rounded-pill ${d.steps === null ? "bg-(--abl)" : "bg-(--abf)"}`}
+                        className={`block min-h-1 rounded-pill ${d.steps === null ? "bg-hover" : "bg-ink"}`}
                         style={{ height: `${Math.max(ratio(d.steps ?? 0, HEALTH_GOALS.steps) * 100, 4)}%` }}
                       />
                     </li>
@@ -119,14 +120,13 @@ export default function HealthApp() {
                 {multi && ` · ${sum.recorded} ${sum.recorded === 1 ? "day" : "days"} with data`}
               </p>
               {sum.recorded === 0 ? (
-                <p className="ap-none glass rounded-r3 p-5 text-[14px] text-fg-muted">
+                <p className="ap-none rounded-r3 border bg-paper p-5 text-[14px] text-ink-3">
                   Nothing was recorded {multi ? "in this period" : meta.label === "Today" || meta.label === "Yesterday" ? meta.label.toLowerCase() : `on ${meta.label}`}
                   {meta.label === "Today" ? " yet" : ""}. Sync in the phone app, or pick another day.
                 </p>
               ) : (
                 <div className="grid gap-3 sm:grid-cols-2">
                   <StatTile
-                    tint="green"
                     href={`/dashboard/health/steps?range=${range}`}
                     icon={faShoePrints}
                     label="Steps"
@@ -139,7 +139,6 @@ export default function HealthApp() {
                     fill={ratio(multi ? (sum.stepsAvg ?? 0) : (sum.steps ?? 0), HEALTH_GOALS.steps)}
                   />
                   <StatTile
-                    tint="violet"
                     href={`/dashboard/health/sleep?range=${range}`}
                     icon={faMoon}
                     label={multi ? "Sleep, average" : "Sleep"}
@@ -148,28 +147,24 @@ export default function HealthApp() {
                     fill={ratio(sum.sleepAvg ?? 0, HEALTH_GOALS.sleepMinutes)}
                   />
                   <StatTile
-                    tint="mint"
                     href={`/dashboard/health/distance?range=${range}`}
                     icon={faLocationDot}
                     label="Distance"
                     value={sum.distance === null ? null : fmtDistance(sum.distance)}
                   />
                   <StatTile
-                    tint="amber"
                     href={`/dashboard/health/energy?range=${range}`}
                     icon={faFire}
                     label="Active energy"
                     value={sum.activeKcal === null ? null : `${fmtNumber(sum.activeKcal)} kcal`}
                   />
                   <StatTile
-                    tint="clay"
                     href={`/dashboard/health/heart?range=${range}`}
                     icon={faHeart}
                     label="Heart rate"
                     value={sum.hrMin === null || sum.hrMax === null ? null : `${sum.hrMin}–${sum.hrMax} bpm`}
                   />
                   <StatTile
-                    tint="blue"
                     href={`/dashboard/health/resting?range=${range}`}
                     icon={faHeartPulse}
                     label={multi ? "Resting heart rate, average" : "Resting heart rate"}
@@ -179,6 +174,13 @@ export default function HealthApp() {
               )}
             </section>
           </div>
+
+          <section className="mt-8" aria-label="Sources">
+            <h2 className="m-0 mb-2 flex items-baseline gap-2 text-[15px] font-semibold">
+              Sources <small className="text-[13px] font-normal text-ink-3">Connected from the phone app</small>
+            </h2>
+            <HealthSources days={days} />
+          </section>
         </>
       )}
     </div>

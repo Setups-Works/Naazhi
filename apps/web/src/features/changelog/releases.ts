@@ -23,6 +23,25 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-11",
+    title: "Version 5.1.0: share a whole journal day, a new Health page and a sharper admin panel",
+    summary: "Send a full day of your journal as one link, connect Health from a clear new screen, and get emails and share pages in the same calm look.",
+    tone: "blue",
+    appVersion: "v5.1.0",
+    changes: [
+      { kind: "new", platform: "web", text: "Share a whole journal day with one link. It shows every entry from that day, including ones you add later, and you can switch it off any time." },
+      { kind: "improved", platform: "web", text: "Sharing a note, a journal entry, a journal day or a chat now uses the same simple window, with the link, Copy link and Stop sharing in one place." },
+      { kind: "improved", platform: "web", text: "Shared journal pages show the time of each entry and match the journal’s look, with no purple." },
+      { kind: "improved", platform: "web", text: "Health has a new look, a clear Not connected screen with How to connect steps for Apple Health and Health Connect, and a Sources list once you are connected." },
+      { kind: "improved", platform: "web", text: "Every email Naazhi sends, such as confirm email and password reset, now matches the app’s design." },
+      { kind: "new", platform: "web", text: "Admins can filter the audit log by action, person and period, and export it as a file." },
+      { kind: "new", platform: "web", text: "The admin overview shows what needs attention, how many people are on each plan and the latest admin activity." },
+      { kind: "improved", platform: "web", text: "The admin panel and its forms use the same flat look as the rest of the app." },
+      { kind: "improved", platform: "web", text: "Settings is now a normal page instead of a popup, so the Back button and links to a settings section work as expected, and the sidebar menu opens on a phone." },
+      { kind: "fixed", platform: "web", text: "On a phone, the rows in Settings and Health no longer squeeze their text into one word per line." },
+    ],
+  },
+  {
+    date: "2026-11-11",
     title: "Version 5.0.0: a new paper-and-ink look across the app",
     summary: "Every page has been redesigned with a calmer paper-and-ink style, plus note sharing and trash, low priority and date ranges for tasks, and a notifications bell.",
     tone: "gold",

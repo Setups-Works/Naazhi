@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Icon as FA } from "@/components/ui/Icon";
 import {
   faUsers,
@@ -38,7 +39,7 @@ function Bars({ title, tone, data, note }: { title: string; tone: string; data: 
 
 export default async function Page() {
   if (!serverConfigured()) return <SetupNotice />;
-  const [users, notes, tasks, journal, chats, messages, profiles] = await Promise.all([
+  const [users, notes, tasks, journal, chats, messages, profiles, recentAudit] = await Promise.all([
     listAllUsers(),
     countRows("notes"),
     countRows("tasks"),
@@ -46,6 +47,7 @@ export default async function Page() {
     countRows("chats"),
     countRows("chat_messages"),
     adminDb().from("profiles").select("plan"),
+    adminDb().from("admin_audit").select("id,admin_email,action,target,created_at").order("created_at", { ascending: false }).limit(5),
   ]);
   const now = Date.now();
   const since = (iso?: string | null, days = 7) => !!iso && now - new Date(iso).getTime() < days * DAY;
@@ -77,6 +79,18 @@ export default async function Page() {
   });
   const recent = [...users].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt)).slice(0, 6);
   const google = users.filter((u) => u.providers.includes("google")).length;
+  const planCounts = (profiles.data ?? []).reduce<Record<string, number>>((m, p) => {
+    const k = String(p.plan ?? "free");
+    m[k] = (m[k] ?? 0) + 1;
+    return m;
+  }, {});
+  const stale = users.filter((u) => !u.emailVerified && now - new Date(u.createdAt).getTime() > 3 * DAY).length;
+  const dormant = users.filter((u) => !since(u.lastSignIn, 30)).length;
+  const attention = [
+    [stale, "Email not confirmed after 3 days", "/admin/users"],
+    [users.filter((u) => u.banned).length, "Banned accounts", "/admin/users"],
+    [dormant, "Not seen in 30 days", "/admin/users"],
+  ] as const;
   const avgNotes = users.length ? (notes / users.length).toFixed(1) : "0";
 
   return (
@@ -161,6 +175,43 @@ export default async function Page() {
               <dd>{users.filter((u) => !u.emailVerified).length}</dd>
             </div>
           </dl>
+        </div>
+        <div className="dash-card">
+          <h4>Needs attention</h4>
+          {attention.map(([n, label, href]) => (
+            <blockquote key={label} style={{ fontStyle: "normal" }}>
+              <Link href={href}>
+                <b>{n}</b> {label}
+              </Link>
+            </blockquote>
+          ))}
+        </div>
+        <div className="dash-card">
+          <h4>Plans</h4>
+          <dl className="st-facts">
+            {Object.entries(planCounts).map(([k, n]) => (
+              <div key={k}>
+                <dt>{k.charAt(0).toUpperCase() + k.slice(1)}</dt>
+                <dd>{n}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+        <div className="dash-card" style={{ gridColumn: "1 / -1" }}>
+          <h4>Recent admin activity</h4>
+          {(recentAudit.data ?? []).length === 0 && <p className="meta">Nothing yet.</p>}
+          {(recentAudit.data ?? []).map((r) => (
+            <blockquote key={String(r.id)} style={{ fontStyle: "normal" }}>
+              {String(r.action)}
+              <small>
+                {String(r.admin_email)}
+                {r.target ? ` · ${String(r.target)}` : ""} · {new Date(String(r.created_at)).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+              </small>
+            </blockquote>
+          ))}
+          <Link href="/admin/audit" className="meta">
+            Open the full audit log
+          </Link>
         </div>
       </div>
     </div>

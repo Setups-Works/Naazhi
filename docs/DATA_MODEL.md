@@ -91,3 +91,7 @@ PostgreSQL 16 (Docker). **All tables have Row-Level Security enabled.** Migratio
 16. `20261025120000_rss_reader.sql` — Reader: `rss_feeds`, `rss_items` + RLS
 17. `20261026120000_billing_plans.sql` — plans and billing: `billing_plans` (seeded with placeholder prices), `user_billing`, `ai_usage`, `user_ai_keys`; RLS, and writes revoked from `authenticated` (see `docs/BILLING.md`)
 18. `20261110120000_notifications.sql` — notifications: `push_devices` (a phone's push token per person, unique token) and `notifications` (the inbox: `kind` admin/invite/reader, `title`, `body`, in-app `url`, `read_at`). RLS: people read, mark read and delete only their own; there is no insert policy, only the server (as owner) creates them. See `apps/mobile/src/features/notifications/AGENTS.md`.
+
+## journal_day_shares
+
+Public link for one whole journal day. One row per `(user_id, entry_date)`; `share_token` (32 hex characters, unique) is the secret in `/share/journal/day/<token>`. Deleting the row ends the link. Owner-only RLS (`owner all`); the public page reads it on the server by exact token. Migration `20261111170000_journal_day_share.sql`.

@@ -68,12 +68,12 @@ export function AppRow({ name, description, extra, logo, children }: { name: str
   return (
     <div className="flex items-center gap-4 px-4 py-3.5 max-[600px]:flex-wrap">
       {logo ?? <LogoTile name={name} />}
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 max-[600px]:basis-[60%]">
         <b className="block text-[15px] font-semibold">{name}</b>
         {description && <p className="m-0 mt-0.5 text-[14px] text-ink-2">{description}</p>}
         {extra}
       </div>
-      {children && <div className="flex shrink-0 items-center gap-2">{children}</div>}
+      {children && <div className="flex shrink-0 items-center gap-2 max-[600px]:basis-full">{children}</div>}
     </div>
   );
 }

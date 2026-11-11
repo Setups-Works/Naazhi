@@ -38,7 +38,7 @@ export function AppearancePrefs() {
                   onTouchEnd={() => void change({ accent: a })}
                   style={[styles.swatch, { backgroundColor: ACCENT_SWATCH[a] }, prefs.accent === a ? styles.swatchOn : null]}
                 >
-                  {prefs.accent === a ? <Icon name="check" size={12} color={Palette.onDark} /> : null}
+                  {prefs.accent === a ? <Icon name="check" size={12} color={Palette.white} /> : null}
                 </View>
               </View>
             ))}

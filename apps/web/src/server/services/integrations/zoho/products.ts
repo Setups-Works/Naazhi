@@ -124,18 +124,52 @@ const booksOrg = (ctx: Ctx) =>
     return str((orgs.find((o) => o.is_default_org === true) ?? orgs[0])?.organization_id);
   });
 
+/** One invoice or bill in full: who and when, each line, then the totals. `number` is what is printed on it (INV-000010). */
+async function booksDetail(ctx: Ctx, org: string, kind: "invoices" | "bills", number: string, app: string): Promise<ZohoRow[]> {
+  const one = kind === "bills" ? "bill" : "invoice";
+  const find = obj(await zoho(ctx, `${apisHost(ctx.zone)}/books/v3/${kind}?organization_id=${q(org)}&per_page=5&search_text=${q(number.slice(0, 100))}`));
+  const hits = arr(find[kind]).map(obj);
+  const hit = hits.find((r) => str(r[`${one}_number`]).toLowerCase() === number.trim().toLowerCase()) ?? hits[0];
+  const id = str(hit?.[`${one}_id`]);
+  if (!id) return [];
+  const d = obj(obj(await zoho(ctx, `${apisHost(ctx.zone)}/books/v3/${kind}/${q(id)}?organization_id=${q(org)}`))[one]);
+  const url = `${app}#/${kind}/${id}`;
+  const cur = d.currency_code;
+  const party = str(d.customer_name) || str(d.vendor_name);
+  const rows: ZohoRow[] = [
+    row(id, dot(str(d[`${one}_number`]), party), dot(str(d.status), str(d.date) && `dated ${str(d.date)}`, str(d.due_date) && `due ${str(d.due_date)}`), url),
+  ];
+  arr(d.line_items)
+    .map(obj)
+    .slice(0, LIMIT)
+    .forEach((l, i) =>
+      rows.push(row(`${id}-line-${i}`, `${str(l.name) || str(l.description) || "Item"}${l.quantity !== undefined ? ` × ${str(l.quantity)}` : ""}`, dot(l.rate !== undefined ? `${money(cur, l.rate)} each` : "", money(cur, l.item_total)), url)),
+    );
+  const total = (label: string, v: unknown, key: string) => (v === undefined || v === null || v === "" ? [] : [row(`${id}-${key}`, label, money(cur, v), url)]);
+  rows.push(...total("Subtotal", d.sub_total, "sub"), ...total("Tax", d.tax_total, "tax"), ...total("Total", d.total, "total"), ...total("Balance due", d.balance, "balance"));
+  return rows;
+}
+
 const books: Reader = async (ctx, view, query) => {
   const org = await booksOrg(ctx);
-  const kind = view === "bills" ? "bills" : "invoices";
+  // "invoice" / "bill" (singular) with the printed number as the query: that one document in full. Without a number they list as usual.
+  if ((view === "invoice" || view === "bill") && query.trim()) {
+    return booksDetail(ctx, org, view === "bill" ? "bills" : "invoices", query.trim(), `${productHost("books", ctx.zone)}/app/${org}`);
+  }
+  // "items" are the products and services you sell (the Items module sits under the same settings permission the connection already has).
+  const kind = view === "bills" || view === "bill" ? "bills" : view === "items" ? "items" : "invoices";
   const j = obj(await zoho(ctx, `${apisHost(ctx.zone)}/books/v3/${kind}?organization_id=${q(org)}&per_page=${LIMIT}${query ? `&search_text=${q(query.slice(0, 100))}` : ""}`));
-  const web = `${productHost("books", ctx.zone)}/`;
+  // Each row opens that very record in the Books app (https://books.zoho.in/app/<organization>#/invoices/<id>), not Books' front page.
+  const app = `${productHost("books", ctx.zone)}/app/${org}`;
+  const link = (section: string, id: unknown) => (str(id) ? `${app}#/${section}/${str(id)}` : `${app}#/home`);
   return arr(j[kind])
     .slice(0, LIMIT)
     .map((x) => {
       const r = obj(x);
+      if (kind === "items") return row(str(r.item_id), str(r.name), dot(str(r.sku), r.rate !== undefined ? `Rate ${str(r.rate)}` : "", str(r.unit), str(r.status)), link("items", r.item_id));
       return kind === "bills"
-        ? row(str(r.bill_id), dot(str(r.bill_number), str(r.vendor_name)), dot(str(r.status), money(r.currency_code, r.total), str(r.due_date) && `due ${str(r.due_date)}`), web)
-        : row(str(r.invoice_id), dot(str(r.invoice_number), str(r.customer_name)), dot(str(r.status), money(r.currency_code, r.total), str(r.due_date) && `due ${str(r.due_date)}`), web);
+        ? row(str(r.bill_id), dot(str(r.bill_number), str(r.vendor_name)), dot(str(r.status), money(r.currency_code, r.total), str(r.due_date) && `due ${str(r.due_date)}`), link("bills", r.bill_id))
+        : row(str(r.invoice_id), dot(str(r.invoice_number), str(r.customer_name)), dot(str(r.status), money(r.currency_code, r.total), str(r.due_date) && `due ${str(r.due_date)}`), link("invoices", r.invoice_id));
     });
 };
 

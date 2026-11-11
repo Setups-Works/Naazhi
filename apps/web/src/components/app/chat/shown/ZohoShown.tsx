@@ -19,6 +19,7 @@ import {
 import { ZOHO_SERVICES, type ZohoServiceId } from "../../../../lib/zoho";
 import { useZohoItems } from "../../../../features/integrations/zoho";
 import ShownGroup, { ShownEmpty } from "./ShownGroup";
+import ToolCallLog from "../kit/ToolCallLog";
 
 const ICON: Record<ZohoServiceId, IconDefinition> = {
   crm: faAddressCard,
@@ -46,15 +47,25 @@ export default function ZohoShown({ service, view = "", query = "" }: { service:
   const q = useZohoItems(service, view, query);
   const title = q.data?.title ?? ZOHO_SERVICES[service].name;
   const external = q.data?.openUrl;
+  const app = ZOHO_SERVICES[service].name;
+  const n = q.data?.rows.length ?? 0;
+  const about = query ? ` for “${query}”` : "";
+  // The activity log: what the assistant is doing with the Zoho connection, then how it ended.
+  const log = q.isPending
+    ? { state: "running" as const, text: query ? `Searching ${app}${about}…` : `Getting data from ${app}…` }
+    : q.isError
+      ? { state: "error" as const, text: `Couldn’t read ${app}` }
+      : { state: "done" as const, text: n ? `Got ${n} ${n === 1 ? "result" : "results"}${about} from ${app}` : `Nothing found${about} in ${app}` };
   return (
-    <ShownGroup tone="clay" icon={ICON[service]} title={title} openLabel={external ? `Open ${ZOHO_SERVICES[service].name}` : "Zoho settings"} openHref={external ?? SETTINGS}>
-      {q.isPending && <ShownEmpty>Loading…</ShownEmpty>}
+    <ShownGroup tone="clay" icon={ICON[service]} logo={`/logos/zoho-${service}.svg`} title={title} openLabel={external ? `Open ${ZOHO_SERVICES[service].name}` : "Zoho settings"} openHref={external ?? SETTINGS}>
+      <li>
+        <ToolCallLog logo={`/logos/zoho-${service}.svg`} state={log.state} text={log.text} />
+      </li>
       {q.isError && (
         <ShownEmpty>
           {q.error.message} <Link href={SETTINGS} className="underline">Zoho settings</Link>
         </ShownEmpty>
       )}
-      {q.data && q.data.rows.length === 0 && <ShownEmpty>Nothing found.</ShownEmpty>}
       {q.data?.rows.map((r, i) => {
         const body = (
           <>

@@ -1,6 +1,6 @@
 import { GlassPill } from "@/components/ui/GlassPill";
 import { Icon } from "@/components/ui/Icon";
-import { Palette, Radius, Shadow, themedStyles } from "@/constants/theme";
+import { Palette, Radius, themedStyles } from "@/constants/theme";
 
 /** Floats above the composer once the reader has scrolled up; jumps back to the newest message. */
 export function ChatLayoutScrollButton({ visible, onPress }: { visible: boolean; onPress: () => void }) {
@@ -22,9 +22,8 @@ const styles = themedStyles(() => ({
     borderRadius: Radius.pill,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: Palette.glassHi,
+    backgroundColor: Palette.surface,
     borderWidth: 1,
-    borderColor: Palette.glassRing,
-    ...Shadow.e2,
+    borderColor: Palette.lineStrong,
   },
 }));

@@ -91,7 +91,7 @@ export const PROVIDERS: Record<ProviderId, Provider> = {
         label: "Business",
         services: [
           { id: "crm", name: "Zoho CRM", description: "Leads and deals", access: "Read leads and deals." },
-          { id: "books", name: "Zoho Books", description: "Accounting", access: "Read invoices and bills." },
+          { id: "books", name: "Zoho Books", description: "Accounting", access: "Read invoices, bills and products." },
           { id: "billing", name: "Zoho Billing", description: "Subscriptions and invoices", access: "Read subscriptions and invoices." },
           { id: "expense", name: "Zoho Expense", description: "Expenses and reports", access: "Read expense reports." },
           { id: "desk", name: "Zoho Desk", description: "Support tickets", access: "Read and reply to tickets when you ask." },

@@ -1,5 +1,5 @@
 "use client";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faPaperclip } from "@fortawesome/free-solid-svg-icons";
 import type { Provider } from "../../../lib/ai";
@@ -18,6 +18,8 @@ import { useRecorder } from "../useRecorder";
 import { useDraftFiles, useDraftText } from "../../../hooks/useDraft";
 import { clearDraft } from "../../../lib/drafts";
 import { useSkills } from "../../../features/settings/useSkills";
+import { useZohoStatus } from "../../../features/integrations/zoho";
+import { matchConnectors, mentionAt, mentionedConnectors, zohoConnectors } from "../../../lib/connectors";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -53,6 +55,30 @@ export default function Composer({
   const { skills } = useSkills();
   const slash = /^\/([a-z0-9-]*)$/i.exec(text);
   const skillMatches = slash ? skills.filter((s) => s.name.startsWith(slash[1].toLowerCase())) : [];
+  // Typing "@" lists the apps the person connected (each with its logo); picking one puts "@Zoho Books" in the message, and the
+  // assistant uses that app for the request. A chip with the logo shows above the box for every app the message names.
+  const zoho = useZohoStatus();
+  const connectors = zohoConnectors(zoho.data?.connected ? zoho.data.services : []);
+  const mention = mentionAt(text);
+  const [active, setActive] = useState(0);
+  const [closedFor, setClosedFor] = useState("");
+  const atMatches = mention && closedFor !== text ? matchConnectors(connectors, mention.query) : [];
+  const showAt = !!mention && closedFor !== text && (connectors.length > 0 || zoho.isFetched);
+  const named = mentionedConnectors(connectors, text);
+  const pickConnector = (label: string) => {
+    if (!mention) return;
+    setText(`${text.slice(0, mention.start)}@${label} `);
+    setActive(0);
+    ta.current?.focus();
+  };
+  const onKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (!showAt || atMatches.length === 0) return e.key === "Escape" && showAt ? (setClosedFor(text), true) : false;
+    if (e.key === "ArrowDown") return setActive((i) => (i + 1) % atMatches.length), true;
+    if (e.key === "ArrowUp") return setActive((i) => (i - 1 + atMatches.length) % atMatches.length), true;
+    if (e.key === "Enter" || e.key === "Tab") return pickConnector(atMatches[Math.min(active, atMatches.length - 1)].label), true;
+    if (e.key === "Escape") return setClosedFor(text), true;
+    return false;
+  };
   const ta = useRef<HTMLTextAreaElement>(null);
   const picker = useRef<HTMLInputElement>(null);
   const current = providers.find((p) => p.id === provider) ?? providers[0];
@@ -113,6 +139,36 @@ export default function Composer({
             )}
           </ul>
         )}
+        {showAt && (
+          <ul className="cx-slash" aria-label="Connected apps" role="listbox">
+            {atMatches.length === 0 ? (
+              <li className="cx-slash-none">{connectors.length === 0 ? "No apps connected. Connect Zoho in Settings → Zoho." : "No connected app with that name."}</li>
+            ) : (
+              atMatches.map((c, i) => (
+                <li key={c.id} role="option" aria-selected={i === Math.min(active, atMatches.length - 1)}>
+                  <button type="button" data-active={i === Math.min(active, atMatches.length - 1)} className="data-[active=true]:bg-hover" onClick={() => pickConnector(c.label)}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={c.logo} alt="" width={18} height={18} className="shrink-0 self-center object-contain" />
+                    <b>@{c.label}</b>
+                    <small>Use in this message</small>
+                  </button>
+                </li>
+              ))
+            )}
+          </ul>
+        )}
+        {named.length > 0 && (
+          <p className="m-0 flex flex-wrap items-center gap-1.5" aria-label="Connected apps in this message">
+            {named.map((c) => (
+              <ChatComposerTokenElement key={c.id} onRemove={() => setText(text.replace(`@${c.label} `, "").replace(`@${c.label}`, ""))} removeLabel={`Remove ${c.label}`}>
+                <span className="inline-flex items-center gap-1.5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={c.logo} alt="" width={14} height={14} className="object-contain" />@{c.label}
+                </span>
+              </ChatComposerTokenElement>
+            ))}
+          </p>
+        )}
         {restored && !starter && (
           <p className="m-0 flex items-center gap-2 text-[12.5px] text-fg-subtle" role="status">
             <ChatComposerTokenElement onRemove={sent} removeLabel="Discard the restored draft">
@@ -121,7 +177,7 @@ export default function Composer({
           </p>
         )}
       </ChatComposerDrawer>
-      <ChatComposerInput ref={ta} value={text} onChange={setText} onSubmit={submit} autoFocus={autoFocus} />
+      <ChatComposerInput ref={ta} value={text} onChange={setText} onSubmit={submit} autoFocus={autoFocus} onKey={onKey} />
       <ChatComposerToolbar>
         <button type="button" className="ne-btn" aria-label="Attach files" onClick={() => picker.current?.click()}>
           <FA icon={faPaperclip} />

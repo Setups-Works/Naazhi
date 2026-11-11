@@ -43,7 +43,7 @@ export const ZOHO_SERVICES: Record<ZohoServiceId, ZohoServiceDef> = {
   mail: { name: "Zoho Mail", scopes: ["ZohoMail.accounts.READ", "ZohoMail.messages.READ", "ZohoMail.messages.CREATE"], views: ["inbox", "unread"], web: "mail" },
   calendar: { name: "Zoho Calendar", scopes: ["ZohoCalendar.calendar.READ", "ZohoCalendar.event.READ"], views: ["upcoming"], web: "calendar" },
   cliq: { name: "Zoho Cliq", scopes: ["ZohoCliq.Channels.READ", "ZohoCliq.Webhooks.CREATE"], views: ["channels"], web: "cliq" },
-  books: { name: "Zoho Books", scopes: ["ZohoBooks.settings.READ", "ZohoBooks.invoices.READ", "ZohoBooks.bills.READ"], views: ["invoices", "bills"], web: "books" },
+  books: { name: "Zoho Books", scopes: ["ZohoBooks.settings.READ", "ZohoBooks.invoices.READ", "ZohoBooks.bills.READ"], views: ["invoices", "bills", "items", "invoice", "bill"], web: "books" },
   expense: { name: "Zoho Expense", scopes: ["ZohoExpense.orgsettings.READ", "ZohoExpense.expensereport.READ"], views: ["reports"], web: "expense" },
   desk: { name: "Zoho Desk", scopes: ["Desk.tickets.READ", "Desk.basic.READ", "Desk.search.READ"], views: ["tickets"], web: "desk" },
   workdrive: {

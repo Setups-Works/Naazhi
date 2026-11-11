@@ -18,6 +18,8 @@ import {
   faLock,
   faMagnifyingGlass,
   faMicrophone,
+  faMobileScreen,
+  faPlug,
   faPenToSquare,
   faRoute,
   faShareNodes,
@@ -42,7 +44,7 @@ export const CAPABILITIES: Capability[] = [
   {
     icon: faPenToSquare,
     t: "Notes",
-    d: "Rich notes with colours, slash commands, voice, attachments and version history.",
+    d: "Rich notes with colours, slash commands, voice, attachments, version history, a Trash you can restore from, and an Atlas that maps how notes connect.",
     tone: "blue",
     status: "live",
   },
@@ -63,6 +65,13 @@ export const CAPABILITIES: Capability[] = [
     status: "live",
   },
   {
+    icon: faPlug,
+    t: "Your apps in chat",
+    d: "Type @ and pick a connected app, like Zoho Books. Chat shows what it is doing, reads your real records, and drafts wait for you to press Create.",
+    tone: "clay",
+    status: "live",
+  },
+  {
     icon: faMagnifyingGlass,
     t: "Universal search",
     d: "One search box across tasks, notes, journal and chats. Press ⌘K anywhere.",
@@ -78,6 +87,13 @@ export const CAPABILITIES: Capability[] = [
   },
   { icon: faLayerGroup, t: "Library", d: "Every file from your notes, journal and chats in one place, with search and preview.", tone: "sand", status: "live" },
   { icon: faRss, t: "Reader", d: "Follow feeds and read articles beside your notes. The app tells you about new ones.", tone: "amber", status: "live" },
+  {
+    icon: faMobileScreen,
+    t: "Android app",
+    d: "The same workspace on your phone, in the same look: a floating navbar, light, cream or charcoal, and sign-in with Google or a passkey.",
+    tone: "mint",
+    status: "live",
+  },
   { icon: faHeartPulse, t: "Health", d: "Steps, sleep and heart rate from your phone, on the web and available to the chat.", tone: "clay", status: "live" },
   {
     icon: faKey,
@@ -265,7 +281,7 @@ export const FAQS: [string, string][] = [
   ],
   [
     "Does it work on my phone?",
-    "Yes. Every screen is built mobile-first, so the calendar opens on the agenda and the workspace works at phone width.",
+    "Yes. Every page is built mobile-first, and the Android app gives you the same workspace in the same look, with a Menu for Notes, Library, Calendar, Health and Reader, and sign-in with Google or a passkey.",
   ],
 ];
 
@@ -311,7 +327,7 @@ export const GROUPS = [
       { name: "Zoho Mail", use: "Read and send mail" },
       { name: "Zoho Desk", use: "Support tickets" },
       { name: "Zoho Cliq", use: "Post to channels" },
-      { name: "Zoho Books", use: "Invoices and bills" },
+      { name: "Zoho Books", use: "Invoices, bills and products" },
       { name: "Zoho Calendar", use: "Upcoming events" },
     ],
   },

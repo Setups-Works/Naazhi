@@ -2,6 +2,7 @@ import type { Tone } from "@untitled/types";
 import type { ReactNode } from "react";
 import { Pressable, View } from "react-native";
 
+import { AppLogo, type LogoName } from "@/components/ui/AppLogo";
 import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -15,6 +16,7 @@ import { Palette, Radius, Space, themedStyles, Neutral } from "@/constants/theme
 export function ShownGroup({
   tone,
   icon,
+  logo,
   title,
   openLabel,
   onOpen,
@@ -23,6 +25,8 @@ export function ShownGroup({
 }: {
   tone: Tone;
   icon: IconName;
+  /** The app's logo, drawn in place of the icon. */
+  logo?: LogoName;
   title: string;
   openLabel: string;
   onOpen: () => void;
@@ -34,9 +38,13 @@ export function ShownGroup({
   return (
     <Card style={styles.card}>
       <View style={styles.head}>
-        <View style={[styles.badge, { borderColor: t.line }]}>
-          <Icon name={icon} size={13} color={t.fg} />
-        </View>
+        {logo ? (
+          <AppLogo name={logo} size={28} />
+        ) : (
+          <View style={[styles.badge, { borderColor: t.line }]}>
+            <Icon name={icon} size={13} color={t.fg} />
+          </View>
+        )}
         <AppText variant="label" color={t.fg}>
           {title}
         </AppText>

@@ -23,6 +23,23 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-12",
+    title: "Version 6.1.0: use your apps in chat with @",
+    summary: "Type @ in chat to pick a connected app like Zoho Books, watch what it is doing, and open a single invoice in full. The Android app gets the same, plus the website’s thin line icons.",
+    tone: "clay",
+    appVersion: "v6.1.0",
+    changes: [
+      { kind: "new", platform: "web", text: "Type @ in the chat box to list the apps you connected, each with its logo, and pick one to use for that message. A chip with the logo shows above the box." },
+      { kind: "new", platform: "web", text: "Chat now shows what it is doing with a connected app, such as “Getting data from Zoho Books…” with the app’s logo, and how it ended." },
+      { kind: "new", platform: "web", text: "Zoho Books can show your products, and “show invoice INV-000010” opens that invoice in full, with its lines and totals. Bills work the same way." },
+      { kind: "new", platform: "app", text: "The same @ menu, activity line and Zoho Books cards work in the app’s chat." },
+      { kind: "improved", platform: "web", text: "Clicking an invoice, bill or product in a Zoho Books card now opens that record in Zoho Books, not the Books front page." },
+      { kind: "improved", platform: "web", text: "The home page now lists the Android app, apps in chat, and the Notes Trash and Atlas." },
+      { kind: "improved", platform: "app", text: "Icons now use the same thin line set as the website." },
+      { kind: "improved", platform: "app", text: "Buttons and your own chat bubbles stay ink whichever accent colour you pick, as on the website. The message box is a flat grey card." },
+    ],
+  },
+  {
+    date: "2026-11-12",
     title: "Version 6.0.0: the app, redrawn to match the website",
     summary: "The Android app now looks and works like the website, with a floating navbar, light, cream and charcoal looks, a full Settings, Notes Trash and Atlas, share links, and sign-in with Google or a passkey.",
     tone: "mint",

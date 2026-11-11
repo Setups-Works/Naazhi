@@ -80,8 +80,10 @@ function buildPalette(look: Look) {
     surfaceMuted: B.side,
     surfaceSunken: B.sunken,
     surfaceAccent: B.side,
-    fillDark: accent,
-    onDark: dark && look.accent === "default" ? B.paper : "#ffffff",
+    // As on the web, ink stays ink whatever the accent is (buttons, your chat bubbles); the accent only tints links, progress and highlights.
+    fillDark: B.ink,
+    onDark: B.paper,
+    white: "#ffffff",
     fg: B.ink,
     fgMuted: B.ink2,
     fgSubtle: B.ink3,
@@ -92,7 +94,7 @@ function buildPalette(look: Look) {
     glassHi: B.side,
     glassRing: B.line,
     // "greenFg" is the accent: ink by default, as on the web (the name stays so every screen keeps working).
-    greenBg: B.sunken,
+    greenBg: look.accent === "default" ? B.sunken : mix(accent, B.paper, 0.1),
     greenFg: accent,
     greenLine: B.line2,
     clayBg: mix(F.red, B.raised, 0.13),

@@ -2,9 +2,9 @@ import type { ReactNode } from "react";
 import { View } from "react-native";
 
 import { GlassSurface } from "@/components/ui/GlassSurface";
-import { Radius, themedStyles } from "@/constants/theme";
+import { Palette, Radius, themedStyles } from "@/constants/theme";
 
-/** The composer's glass card: the drawer above, the message box, then the toolbar (attach, AI choice, dictation, send). */
+/** The composer: a flat grey card like the web's: the drawer above, the message box, then the toolbar (attach, AI choice, dictation, send). */
 export function ChatComposer({ bottomInset, children }: { bottomInset: number; children: ReactNode }) {
   return (
     <View style={[styles.wrap, { paddingBottom: bottomInset }]}>
@@ -22,6 +22,6 @@ export function ChatComposerToolbar({ children }: { children: ReactNode }) {
 
 const styles = themedStyles(() => ({
   wrap: { paddingHorizontal: 14, paddingTop: 8 },
-  card: { borderRadius: Radius.r4, paddingHorizontal: 18, paddingTop: 14, paddingBottom: 10 },
+  card: { borderRadius: Radius.r4, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 10, backgroundColor: Palette.surfaceMuted },
   bar: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 8 },
 }));

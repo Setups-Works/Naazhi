@@ -12,6 +12,7 @@ import type { Tone } from "../../../../lib/tones";
 export default function ShownGroup({
   tone,
   icon,
+  logo,
   title,
   openLabel,
   openHref,
@@ -20,6 +21,8 @@ export default function ShownGroup({
 }: {
   tone: Tone;
   icon: IconDefinition;
+  /** The app's logo (an address under /logos), drawn in place of the icon. */
+  logo?: string;
   title: string;
   openLabel: string;
   openHref: string;
@@ -31,7 +34,12 @@ export default function ShownGroup({
     <section className="mt-3 rounded-r3 border bg-raised p-4 text-ink" data-tone={tone} aria-label={title}>
       <p className="m-0 flex items-center gap-2 text-[13px] font-medium text-ink-2">
         <span className="grid size-7 place-items-center rounded-ctl bg-hover text-[12px] text-ink-2">
-          <FA icon={icon} />
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logo} alt="" width={16} height={16} className="object-contain" />
+          ) : (
+            <FA icon={icon} />
+          )}
         </span>
         {title}
       </p>

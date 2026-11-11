@@ -2,12 +2,12 @@ import { View } from "react-native";
 
 import { AppText } from "./AppText";
 import { Icon } from "./Icon";
-import { Palette, Radius, themedStyles } from "@/constants/theme";
+import { Palette, Radius, Tints, themedStyles } from "@/constants/theme";
 
 type Kind = "error" | "success" | "info";
 const look = (): Record<Kind, { bg: string; fg: string; icon: "circle-exclamation" | "circle-check" | "circle-info" }> => ({
   error: { bg: Palette.clayBg, fg: Palette.clayFg, icon: "circle-exclamation" },
-  success: { bg: Palette.greenBg, fg: Palette.greenFg, icon: "circle-check" },
+  success: { bg: Tints.green.bg, fg: Tints.green.fg, icon: "circle-check" },
   info: { bg: Palette.surfaceMuted, fg: Palette.fgMuted, icon: "circle-info" },
 });
 

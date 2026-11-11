@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 
-import { LOOK, Palette } from "@/constants/theme";
+import { Palette } from "@/constants/theme";
 
 const INK = require("../../../assets/images/naazhi-mark.png") as number;
 const LIGHT = require("../../../assets/images/naazhi-mark-light.png") as number;
@@ -10,7 +10,7 @@ const LIGHT = require("../../../assets/images/naazhi-mark-light.png") as number;
  * coloured fill, the ink mark on the pale fill the charcoal scheme uses. Pass `on="page"` for the mark straight on the page background.
  */
 export function BrandMark({ size = 24, on = "fill" }: { size?: number; on?: "fill" | "page" }) {
-  const paleFill = Palette.dark && LOOK.accent === "default";
-  const useLight = on === "fill" ? !paleFill : Palette.dark;
+  // On the ink fill the charcoal scheme turns pale, so it needs the ink mark; everywhere else the fill is dark and takes the cream mark.
+  const useLight = on === "fill" ? !Palette.dark : Palette.dark;
   return <Image source={useLight ? LIGHT : INK} style={{ width: size, height: size }} contentFit="contain" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />;
 }

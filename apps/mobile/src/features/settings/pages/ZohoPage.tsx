@@ -31,7 +31,7 @@ const SERVICES: { group: string; items: { id: string; name: string; description:
   ] },
   { group: "Sales & finance", items: [
     { id: "crm", name: "Zoho CRM", description: "Leads, contacts, accounts and deals.", icon: "address-card" },
-    { id: "books", name: "Zoho Books", description: "Invoices and bills.", icon: "receipt" },
+    { id: "books", name: "Zoho Books", description: "Invoices, bills and products.", icon: "receipt" },
     { id: "billing", name: "Zoho Billing", description: "Subscriptions and invoices.", icon: "file-invoice-dollar", beta: true },
     { id: "expense", name: "Zoho Expense", description: "Expense reports.", icon: "money-bill-wave" },
     { id: "desk", name: "Zoho Desk", description: "Support tickets.", icon: "headset" },

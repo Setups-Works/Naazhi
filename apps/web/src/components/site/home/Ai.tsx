@@ -30,11 +30,11 @@ export default function Ai() {
         {OPTIONS.map((o) => (
           <R key={o.t}>
             <div className="flex h-full flex-col gap-3 rounded-r4 bg-on-dark/5 p-6 text-on-dark ring-1 ring-on-dark/15">
-              <IconBadge icon={o.icon} />
-              <h3 className="flex items-center gap-2 text-[17px] font-semibold">
-                {o.t}
-                {o.soon && <span className="rounded-pill bg-on-dark/10 px-2 py-0.5 text-[11.5px] font-medium text-on-dark/80">Coming soon</span>}
-              </h3>
+              <div className="flex items-start justify-between gap-3">
+                <IconBadge icon={o.icon} dark />
+                {o.soon && <span className="rounded-pill bg-on-dark/10 px-2.5 py-1 text-[11.5px] font-medium whitespace-nowrap text-on-dark/80">Coming soon</span>}
+              </div>
+              <h3 className="text-[17px] font-semibold">{o.t}</h3>
               <p className="text-[14.5px] leading-relaxed text-on-dark/70">{o.d}</p>
             </div>
           </R>
@@ -44,7 +44,7 @@ export default function Ai() {
         {RULES.map((o) => (
           <R key={o.t}>
             <div className="flex h-full items-start gap-4 rounded-r4 bg-on-dark/5 p-6 text-on-dark ring-1 ring-on-dark/15">
-              <IconBadge icon={o.icon} />
+              <IconBadge icon={o.icon} dark />
               <div>
                 <h3 className="text-[17px] font-semibold">{o.t}</h3>
                 <p className="mt-1 text-[14.5px] leading-relaxed text-on-dark/70">{o.d}</p>

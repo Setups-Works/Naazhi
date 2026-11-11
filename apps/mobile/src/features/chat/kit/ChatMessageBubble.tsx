@@ -4,7 +4,7 @@ import { View } from "react-native";
 import { GlassSurface } from "@/components/ui/GlassSurface";
 import { Palette, Radius, themedStyles } from "@/constants/theme";
 
-/** Your messages are solid ink; the assistant's are liquid glass. `wide` gives cards and drafts more room. */
+/** Your messages are solid ink; the assistant's are white with a hairline (as on the web). `wide` gives cards and drafts more room. */
 export function ChatMessageBubble({ mine, wide, children }: { mine: boolean; wide?: boolean; children: ReactNode }) {
   if (mine) return <View style={[styles.bubble, styles.mine, wide ? styles.wide : null]}>{children}</View>;
   return (

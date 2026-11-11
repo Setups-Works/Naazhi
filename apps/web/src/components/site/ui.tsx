@@ -173,9 +173,9 @@ export function TextLink({ href, children, external = false }: { href: string; c
 }
 
 /** The rounded square an icon sits in. */
-export function IconBadge({ icon, className = "" }: { icon: IconDefinition; className?: string }) {
+export function IconBadge({ icon, className = "", dark = false }: { icon: IconDefinition; className?: string; /** On an ink panel: light icon on a faint light square (the accent colours would be dark on dark). */ dark?: boolean }) {
   return (
-    <span className={`grid size-11 shrink-0 place-items-center rounded-r2 bg-green-bg text-[17px] text-green-fg ${className}`}>
+    <span className={`grid size-11 shrink-0 place-items-center rounded-r2 text-[17px] ${dark ? "bg-on-dark/10 text-on-dark" : "bg-green-bg text-green-fg"} ${className}`}>
       <FA icon={icon} />
     </span>
   );

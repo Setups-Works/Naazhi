@@ -12,5 +12,6 @@ export const ICONS: Record<string, { path: string; hex: string }> = {
   },
 };
 
-// Only Google products are live for now; everything else is marked "Coming soon".
-export const isLive = (name: string) => /^Google/.test(name) || name === "Gmail" || name === "Maps";
+// Google products and the Zoho services we have verified are live; everything else is marked "Coming soon".
+const LIVE_ZOHO = new Set(["Zoho CRM", "Zoho Mail", "Zoho Desk", "Zoho Cliq", "Zoho Books", "Zoho Calendar", "Zoho Expense"]);
+export const isLive = (name: string) => /^Google/.test(name) || name === "Gmail" || name === "Maps" || LIVE_ZOHO.has(name);

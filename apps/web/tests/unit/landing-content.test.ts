@@ -29,7 +29,7 @@ describe("landing content stays honest", () => {
 
   it("lists every integration once and marks the live ones from lib/logos", () => {
     expect(new Set(ALL_INTEGRATIONS).size).toBe(ALL_INTEGRATIONS.length);
-    expect(GROUPS.length).toBe(5);
+    expect(GROUPS.length).toBe(6);
     expect(ALL_INTEGRATIONS.filter(isLive).length).toBeGreaterThan(0);
   });
 });

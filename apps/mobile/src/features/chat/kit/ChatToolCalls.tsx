@@ -1,9 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Linking, StyleSheet, View } from "react-native";
 import { stripRefs, type ChatAction, type ChatProposal, type ShowItem } from "@untitled/validation";
-import { Linking } from "react-native";
 
 import { ShownItems } from "../shown/ShownItems";
 import { AppText } from "@/components/ui/AppText";

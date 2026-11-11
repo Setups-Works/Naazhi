@@ -23,6 +23,21 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-11",
+    title: "Version 5.4.0: connect Zoho and use it from chat",
+    summary: "Sign in to Zoho once, pick the services you use, and ask chat to show your leads, mail, invoices or tickets, or to add a record, send an email or post a message after you confirm.",
+    tone: "clay",
+    appVersion: "v5.4.0",
+    changes: [
+      { kind: "new", platform: "web", text: "Connect your Zoho account from Settings and choose which services Naazhi may use. You sign in on Zoho’s own page, can change the services later and can disconnect at any time." },
+      { kind: "new", platform: "web", text: "Ask chat about your Zoho data, for example “show my latest leads”, “unread Zoho mail” or “invoices matching Acme”. Zoho CRM, Mail, Calendar, Cliq, Books, Expense and Desk are supported, and the AI never sees the records." },
+      { kind: "new", platform: "web", text: "Chat can prepare a CRM lead, contact or account, a Zoho Mail email or a Cliq message. Nothing is sent to Zoho until you press the button on the card." },
+      { kind: "new", platform: "app", text: "The same Zoho cards and confirm-first buttons now work in the app’s chat. Connect Zoho from Settings on the web." },
+      { kind: "improved", platform: "web", text: "WorkDrive, Projects, Sign, Billing, People and Recruit can be connected too, as beta. They start unticked while we test them with real accounts." },
+      { kind: "improved", platform: "web", text: "The landing page now lists the Zoho services that are live." },
+    ],
+  },
+  {
+    date: "2026-11-11",
     title: "Version 5.3.0: credit for Pay as you go, your own AI, invoices and a pricing calculator",
     summary: "Top up credit and pay only for the AI you use, pick your own model with your own key, get invoices for every payment, and work out what you’d pay before you choose a plan.",
     tone: "violet",

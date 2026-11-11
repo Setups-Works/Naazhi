@@ -249,7 +249,7 @@ export const FAQS: [string, string][] = [
   ],
   [
     "Which email and calendar services will connect?",
-    "Gmail and Outlook for email, and Google Calendar for events. With Pro you can connect up to 5 email accounts and up to 5 calendars.",
+    "Zoho Mail and Zoho Calendar are live now, and you can ask chat about them. Gmail and Outlook for email, and Google Calendar for events, are planned. With Pro you can connect up to 5 email accounts and up to 5 calendars.",
   ],
   [
     "Does it connect to the tools my team already uses?",
@@ -302,6 +302,17 @@ export const GROUPS = [
       { name: "GitHub", use: "Track issues" },
       { name: "Linear", use: "Move tickets" },
       { name: "HubSpot", use: "Log CRM activity" },
+    ],
+  },
+  {
+    name: "Zoho",
+    items: [
+      { name: "Zoho CRM", use: "Leads, deals, add records" },
+      { name: "Zoho Mail", use: "Read and send mail" },
+      { name: "Zoho Desk", use: "Support tickets" },
+      { name: "Zoho Cliq", use: "Post to channels" },
+      { name: "Zoho Books", use: "Invoices and bills" },
+      { name: "Zoho Calendar", use: "Upcoming events" },
     ],
   },
   {

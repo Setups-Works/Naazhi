@@ -201,6 +201,18 @@ export type MyBilling = {
   payments_connected: boolean;
 };
 
+/** What the browser needs to open Razorpay's checkout window for a subscription (the key id is public by design). */
+export type CheckoutSession = {
+  key_id: string;
+  subscription_id: string;
+  name: string;
+  description: string;
+  /** Smallest currency unit (paise). */
+  amount: number;
+  currency: string;
+  prefill: { name: string; email: string };
+};
+
 /* ---------- notification inbox ---------- */
 
 export type NotificationKind = "admin" | "invite" | "reader";

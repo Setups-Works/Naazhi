@@ -14,6 +14,7 @@ import Modal from "../../../components/ui/Modal";
 import { useHealthDays } from "../../health/queries";
 import { HEALTH_SOURCES, type HealthSource } from "../../health/sources";
 import ConnectHealthDialog from "../../health/components/ConnectHealthDialog";
+import { fromFileList, importSummary, importVault } from "../importVault";
 import { AppRow, LogoTile, SettingsEmpty, SettingsNotice, SettingsRow, SettingsSection, Tag } from "../ui";
 
 const SOON = "Not available yet";
@@ -168,15 +169,6 @@ export function OtherAppsPage() {
   );
 }
 
-const MAX_FILES = 500;
-const MAX_FILE_BYTES = 1_000_000;
-
-/** The folder a vault file sits in, one level below the vault root ("Vault/Work/a.md" → "Work"); files at the root have none. */
-function topFolder(path: string): string | null {
-  const parts = path.split("/");
-  return parts.length > 2 ? parts[1] : null;
-}
-
 /** Imports & backup: bring an Obsidian vault in as notes (folders kept, duplicates skipped). Other services need connections. */
 export function ImportsPage({ prefs: initial }: { prefs: Prefs }) {
   const { prefs, change } = usePrefsSave(initial);
@@ -186,50 +178,17 @@ export function ImportsPage({ prefs: initial }: { prefs: Prefs }) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
 
-  async function importVault(list: FileList | null) {
-    const all = Array.from(list ?? []);
-    const md = all.filter((f) => f.name.toLowerCase().endsWith(".md") && !f.webkitRelativePath.split("/").some((p) => p.startsWith(".")));
-    if (md.length === 0) return setMsg("That folder has no Markdown notes.");
+  async function runImport(list: FileList | null) {
     setBusy(true);
     setMsg("");
     try {
-      const files = md.slice(0, MAX_FILES).filter((f) => f.size <= MAX_FILE_BYTES);
-      const [notesQ, foldersQ] = await Promise.all([
-        sb.from("notes").select("title,body").limit(5000),
-        sb.from("note_folders").select("id,name").limit(500),
-      ]);
-      if (notesQ.error || foldersQ.error) throw new Error("load");
-      const seen = new Set((notesQ.data ?? []).map((n) => `${n.title}\u0000${n.body}`));
-      const folderIds = new Map<string, string>((foldersQ.data ?? []).map((f) => [f.name as string, f.id as string]));
-      let newFolders = 0;
-      const rows: { title: string; body: string; category: string; folder_id?: string }[] = [];
-      for (const f of files) {
-        const title = f.name.replace(/\.md$/i, "").slice(0, 200);
-        const body = (await f.text()).slice(0, 100_000);
-        if (seen.has(`${title}\u0000${body}`)) continue;
-        seen.add(`${title}\u0000${body}`);
-        const folder = topFolder(f.webkitRelativePath)?.slice(0, 60) ?? null;
-        let folder_id: string | undefined;
-        if (folder) {
-          if (!folderIds.has(folder)) {
-            const made = await sb.from("note_folders").insert({ name: folder }).select("id").single();
-            if (made.error || !made.data) throw new Error("folder");
-            folderIds.set(folder, made.data.id as string);
-            newFolders++;
-          }
-          folder_id = folderIds.get(folder);
-        }
-        rows.push({ title, body, category: readPrefs().defaultCategory, ...(folder_id ? { folder_id } : {}) });
+      const r = await importVault(sb, fromFileList(list), readPrefs().defaultCategory);
+      setMsg(importSummary(r));
+      if (r.imported > 0) {
+        await change({ recentImports: [{ at: new Date().toISOString(), source: "Obsidian", notes: r.imported, folders: r.folders }, ...prefs.recentImports].slice(0, 10) });
+        qc.invalidateQueries({ queryKey: qk.notes.all });
+        qc.invalidateQueries({ queryKey: qk.notes.folders });
       }
-      for (let i = 0; i < rows.length; i += 50) {
-        const { error } = await sb.from("notes").insert(rows.slice(i, i + 50));
-        if (error) throw new Error("notes");
-      }
-      const skipped = md.length - rows.length;
-      setMsg(`Imported ${rows.length} ${rows.length === 1 ? "note" : "notes"}${skipped > 0 ? `, skipped ${skipped} (duplicates, too large or over ${MAX_FILES})` : ""}.`);
-      await change({ recentImports: [{ at: new Date().toISOString(), source: "Obsidian", notes: rows.length, folders: newFolders }, ...prefs.recentImports].slice(0, 10) });
-      qc.invalidateQueries({ queryKey: qk.notes.all });
-      qc.invalidateQueries({ queryKey: qk.notes.folders });
     } catch {
       setMsg("Couldn’t finish that import. Some notes may already have been added.");
     } finally {
@@ -252,7 +211,7 @@ export function ImportsPage({ prefs: initial }: { prefs: Prefs }) {
             multiple
             // A folder picker: the browser hands back every file with its path inside the folder.
             {...({ webkitdirectory: "", directory: "" } as Record<string, string>)}
-            onChange={(e) => void importVault(e.target.files)}
+            onChange={(e) => void runImport(e.target.files)}
           />
         </AppRow>
         <AppRow name="Notion" description="Import pages from Notion as notes.">

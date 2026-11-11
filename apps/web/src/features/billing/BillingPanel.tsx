@@ -3,10 +3,11 @@ import { useState } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faCheck, faKey } from "@fortawesome/free-solid-svg-icons";
 import type { BillingPlan, MyBilling } from "@untitled/types";
-import { BYO_PROVIDERS, byoProvider, formatMoney, formatTokens, priceLine } from "@untitled/logic/billing";
+import { BYO_PROVIDERS, byoProvider, formatMoney, formatTokens, needsCheckout, priceLine } from "@untitled/logic/billing";
 import { useConfirm } from "../../components/ui/Confirm";
 import { SettingsRow, SettingsSection } from "../settings/ui";
 import { useBilling, useBillingActions } from "./queries";
+import { usePlanPicker } from "./razorpay";
 
 const day = (iso: string) => new Date(iso).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
 
@@ -17,7 +18,7 @@ function standing(b: MyBilling): string {
       ? "Your last plan has ended. Choose a plan below to start again."
       : "You haven’t chosen a plan yet. AI works as it always has until you do.";
   if (b.plan.id === "subscription" && b.period_end)
-    return b.cancel_at_period_end ? `Cancels on ${day(b.period_end)}. You keep everything until then.` : `Renews on ${day(b.period_end)}.`;
+    return b.cancel_at_period_end ? `Autopay is off. Ends on ${day(b.period_end)}; you keep everything until then.` : `Autopay is on. Next charge on ${day(b.period_end)}.`;
   if (b.plan.id === "payg")
     return `${formatTokens(b.tokens_used)} tokens used this period${b.cost_cents > 0 ? `, about ${formatMoney(b.cost_cents, b.plan.currency)}` : ""}.`;
   return b.byo.hint ? "Your own key is saved." : "Add your API key to start using AI.";
@@ -109,7 +110,7 @@ function KeyForm({ billing, onError }: { billing: MyBilling; onError: (m: string
   );
 }
 
-function PlanCard({ plan, current, busy, onChoose }: { plan: BillingPlan; current: boolean; busy: boolean; onChoose: () => void }) {
+function PlanCard({ plan, current, busy, autopay, onChoose }: { plan: BillingPlan; current: boolean; busy: boolean; autopay: boolean; onChoose: () => void }) {
   return (
     <article
       className="liquid-flat flex flex-col gap-3 rounded-r3 p-[18px] [backdrop-filter:var(--glass-blur)]"
@@ -139,8 +140,9 @@ function PlanCard({ plan, current, busy, onChoose }: { plan: BillingPlan; curren
       </ul>
       <div className="mt-auto pt-1">
         <button className={`btn btn-sm ${current ? "btn-secondary" : "btn-primary"}`} disabled={current || busy} onClick={onChoose}>
-          {current ? "Your plan" : "Choose this plan"}
+          {current ? "Your plan" : autopay ? "Subscribe with autopay" : "Choose this plan"}
         </button>
+        {autopay && !current && <p className="m-0 mt-2 text-[12.5px] text-fg-subtle">Charged automatically each period by UPI AutoPay or card. Cancel any time.</p>}
       </div>
     </article>
   );
@@ -150,9 +152,10 @@ function PlanCard({ plan, current, busy, onChoose }: { plan: BillingPlan; curren
 export default function BillingPanel() {
   const [err, setErr] = useState("");
   const q = useBilling();
-  const { choose, cancel, resume } = useBillingActions(setErr);
+  const { cancel, resume } = useBillingActions(setErr);
   const { ask, dialog } = useConfirm();
   const b = q.data;
+  const { pick, busy: picking } = usePlanPicker(b, setErr);
 
   if (q.isError)
     return (
@@ -162,7 +165,7 @@ export default function BillingPanel() {
     );
   if (!b) return <p className="ap-none">Loading your plan…</p>;
 
-  const busy = choose.isPending || cancel.isPending || resume.isPending;
+  const busy = picking || cancel.isPending || resume.isPending;
   const allowance = b.plan?.id === "subscription" ? b.plan.included_tokens : 0;
   const used = allowance > 0 ? Math.min(100, Math.round((b.tokens_used / allowance) * 100)) : 0;
 
@@ -219,7 +222,7 @@ export default function BillingPanel() {
       <h2 className="m-0 mt-2 text-[15px] font-semibold">Plans</h2>
       <div className="grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(210px,1fr))]">
         {b.plans.map((p) => (
-          <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={busy} onChoose={() => choose.mutate(p.id)} />
+          <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={busy} autopay={needsCheckout(b, p)} onChoose={() => pick(p)} />
         ))}
       </div>
 

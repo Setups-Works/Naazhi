@@ -20,8 +20,8 @@ describe("billing input", () => {
     expect(planPatchInput.safeParse({ price_cents: -1 }).success).toBe(false);
     expect(planPatchInput.safeParse({ currency: "dollars" }).success).toBe(false);
     expect(planPatchInput.safeParse({ features: Array.from({ length: 13 }, () => "x") }).success).toBe(false);
-    const parsed = planPatchInput.parse({ name: "  Plus ", currency: "USD", id: "byo", price_cents: 900 });
-    expect(parsed).toEqual({ name: "Plus", currency: "usd", price_cents: 900 });
+    const parsed = planPatchInput.parse({ name: "  Plus ", currency: "inr", id: "byo", price_cents: 900 });
+    expect(parsed).toEqual({ name: "Plus", currency: "inr", price_cents: 900 });
   });
 });
 

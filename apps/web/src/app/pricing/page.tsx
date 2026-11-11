@@ -11,8 +11,7 @@ import { breadcrumbSchema, faqSchema, pageMeta, webPageSchema } from "../../lib/
 import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/site/kit";
 import { R, Reveal } from "../../components/site/Reveal";
 import { buttonClass, Section, Surface } from "../../components/site/ui";
-import { isEnabled } from "../../config/features";
-import { listPublicPlans } from "../../server/services/billing/billing.service";
+import { listPublicPlans, paymentsLive } from "../../server/services/billing/billing.service";
 
 // Prices and allowances are edited in Admin → Plans, so this page reads them on every request instead of baking them in at build time.
 export const dynamic = "force-dynamic";
@@ -58,7 +57,7 @@ const aiLine = (p: BillingPlan) =>
 
 export default async function Page() {
   const plans = await listPublicPlans().catch(() => [] as BillingPlan[]);
-  const live = isEnabled("payments");
+  const live = paymentsLive();
 
   const faqs: [string, string][] = [
     [
@@ -76,7 +75,7 @@ export default async function Page() {
     [
       live ? "How do I pay?" : "Is anyone being charged yet?",
       live
-        ? "You choose a plan in Settings and pay through our payment provider."
+        ? "Subscribing sets up autopay through Razorpay (UPI AutoPay, cards and more): you approve it once and each month’s charge happens on its own. Cancel any time in Settings and it stops at the end of the month you paid for."
         : "Not yet. Plans can be chosen in Settings, but payments aren’t switched on, so nobody is charged until we say so on this page.",
     ],
     ["Can I use the workspace without AI at all?", "Yes. AI-free mode is always available, and the workspace works the same either way."],

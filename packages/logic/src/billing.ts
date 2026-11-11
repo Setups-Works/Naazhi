@@ -1,4 +1,4 @@
-import type { BillingPlan } from "@untitled/types";
+import type { BillingPlan, MyBilling } from "@untitled/types";
 
 /** AI providers a person can bring their own key for. Fixed on purpose: the server only ever calls these addresses. */
 export const BYO_PROVIDERS = [
@@ -63,3 +63,7 @@ export function addMonths(from: Date, n: number): Date {
   return d;
 }
 export const addMonth = (from: Date) => addMonths(from, 1);
+
+/** True when picking this plan means paying through Razorpay checkout (autopay) rather than just switching. Same rule on web and in the app. */
+export const needsCheckout = (b: Pick<MyBilling, "payments_connected" | "plan" | "cancel_at_period_end">, p: Pick<BillingPlan, "id" | "price_cents" | "interval">) =>
+  b.payments_connected && p.id === "subscription" && p.price_cents > 0 && p.interval !== "none" && !(b.plan?.id === p.id && !b.cancel_at_period_end);

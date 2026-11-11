@@ -20,6 +20,9 @@ export type UserBillingRow = {
   cancel_at_period_end: boolean;
   started_at: string;
   canceled_at: string | null;
+  /** The Razorpay subscription paying for this plan, when there is one. */
+  provider_subscription_id: string | null;
+  provider_status: string | null;
 };
 
 export const listPlans = (opts: { activeOnly: boolean }) =>
@@ -51,19 +54,24 @@ export const updatePlan = (id: string, patch: PlanPatch) =>
 export const getUserBilling = (userId: string) =>
   withUser(userId, async (c) => (await c.query<UserBillingRow>("select * from public.user_billing where user_id = $1", [userId])).rows[0] ?? null);
 
-type BillingWrite = Pick<UserBillingRow, "plan_id" | "status" | "period_start" | "period_end" | "cancel_at_period_end" | "canceled_at">;
+type BillingWrite = Pick<
+  UserBillingRow,
+  "plan_id" | "status" | "period_start" | "period_end" | "cancel_at_period_end" | "canceled_at" | "provider_subscription_id" | "provider_status"
+>;
 
 export const saveUserBilling = (userId: string, b: BillingWrite) =>
   withOwner(async (c) => {
     await c.query(
-      `insert into public.user_billing (user_id, plan_id, status, period_start, period_end, cancel_at_period_end, canceled_at)
-       values ($1, $2, $3, $4, $5, $6, $7)
+      `insert into public.user_billing (user_id, plan_id, status, period_start, period_end, cancel_at_period_end, canceled_at,
+         provider_subscription_id, provider_status)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        on conflict (user_id) do update set plan_id = excluded.plan_id, status = excluded.status, period_start = excluded.period_start,
          period_end = excluded.period_end, cancel_at_period_end = excluded.cancel_at_period_end, canceled_at = excluded.canceled_at,
+         provider_subscription_id = excluded.provider_subscription_id, provider_status = excluded.provider_status,
          started_at = case when public.user_billing.plan_id = excluded.plan_id and public.user_billing.status = 'active'
                            then public.user_billing.started_at else now() end,
          updated_at = now()`,
-      [userId, b.plan_id, b.status, b.period_start, b.period_end, b.cancel_at_period_end, b.canceled_at],
+      [userId, b.plan_id, b.status, b.period_start, b.period_end, b.cancel_at_period_end, b.canceled_at, b.provider_subscription_id, b.provider_status],
     );
   });
 
@@ -150,4 +158,52 @@ export const usageTotal30d = () =>
       Number(
         (await c.query<{ n: string }>("select coalesce(sum(input_tokens + output_tokens), 0)::text as n from public.ai_usage where created_at >= now() - interval '30 days'")).rows[0]!.n,
       ),
+  );
+
+/* ---------- Razorpay ---------- */
+
+/** Who is paid for by this Razorpay subscription (the webhook's way back to a person). */
+export const userIdForSubscription = (subscriptionId: string) =>
+  withOwner(
+    async (c) =>
+      (await c.query<{ user_id: string }>("select user_id from public.user_billing where provider_subscription_id = $1", [subscriptionId])).rows[0]?.user_id ??
+      null,
+  );
+
+export const getPlanProvider = (id: string) =>
+  withOwner(
+    async (c) =>
+      (await c.query<{ razorpay_plan_id: string | null; razorpay_plan_key: string | null }>(
+        "select razorpay_plan_id, razorpay_plan_key from public.billing_plans where id = $1",
+        [id],
+      )).rows[0] ?? null,
+  );
+
+export const setPlanProvider = (id: string, razorpayPlanId: string, key: string) =>
+  withOwner(
+    async (c) =>
+      void (await c.query("update public.billing_plans set razorpay_plan_id = $2, razorpay_plan_key = $3 where id = $1", [id, razorpayPlanId, key])),
+  );
+
+export const getContact = (userId: string) =>
+  withOwner(async (c) => (await c.query<{ email: string; name: string }>("select email, name from auth.users where id = $1", [userId])).rows[0] ?? null);
+
+/** Claims a webhook event: true if this call is the first to see it. Concurrent retries of one event can't both win. */
+export const claimEvent = (id: string, type: string) =>
+  withOwner(
+    async (c) =>
+      (await c.query("insert into public.billing_events (id, type) values ($1, $2) on conflict (id) do nothing", [id, type.slice(0, 80)])).rowCount === 1,
+  );
+
+/** Gives a claim back when handling failed, so Razorpay's retry is processed instead of skipped. */
+export const releaseEvent = (id: string) => withOwner(async (c) => void (await c.query("delete from public.billing_events where id = $1", [id])));
+
+export const setProviderStatus = (userId: string, subscriptionId: string, status: string) =>
+  withOwner(
+    async (c) =>
+      void (await c.query("update public.user_billing set provider_status = $3, updated_at = now() where user_id = $1 and provider_subscription_id = $2", [
+        userId,
+        subscriptionId,
+        status.slice(0, 40),
+      ])),
   );

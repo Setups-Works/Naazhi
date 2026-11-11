@@ -98,3 +98,6 @@ Found a vulnerability or leaked secret? Tell the tech lead immediately, rotate f
 ### Service-role usage (keep this list current)
 
 `apps/web/src/server/session.ts` `adminDb()` / `withOwner()` (admin panel, share page, announcements, audit) · `apps/web/src/server/repositories/billing.repository.ts` (writes to plans, a person's plan, usage and saved keys; reached only from `services/billing` after the caller is checked) · `apps/web/src/app/admin/plans/actions.ts` · `apps/web/src/app/admin/actions.ts` · `apps/web/src/app/dashboard/settings/actions.ts` (delete account) · `apps/web/src/app/share/[token]/page.tsx`.
+
+## Razorpay webhook
+`/api/webhooks/razorpay` is unauthenticated by design: the HMAC signature over the raw body is the only gate (timing-safe compare), events are claimed once by id and refused if older than two days. Key secret and webhook secret are server-only; the checkout call is verified by signature and by asking Razorpay who the subscription belongs to.

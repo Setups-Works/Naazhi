@@ -11,3 +11,4 @@
 - Full design, rules and security: `docs/BILLING.md`. Nothing about plans is hard-coded: names, prices, allowances and feature lines come from the server (`MyBilling.plans`); format them with `priceLine`, `formatMoney`, `formatTokens` from `@untitled/logic`.
 - The API key is write-only: never keep it after saving, never log it.
 - While payments are not connected (`MyBilling.payments_connected` is false) the screen says nobody is charged.
+- A paid subscription is paid with Razorpay's native SDK (`checkout.ts`, `usePlanPicker`): the server creates the subscription and verifies the result (`docs/BILLING.md`). The SDK is a native module, so changing it needs a new native build, and it is absent in Expo Go.

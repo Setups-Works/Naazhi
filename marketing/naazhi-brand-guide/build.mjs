@@ -1,7 +1,6 @@
 // Builds the Naazhi brand guidelines book: index.html (screen) + Naazhi-Brand-Guidelines.pdf (print).
 // Run: node marketing/naazhi-brand-guide/build.mjs   (needs Google Chrome or CHROME_PATH for the PDF)
-// Facts come from docs/BRAND.md, docs/DESIGN_LANGUAGE.md and the CSS tokens. Strategy pages (personas, archetype, vision…) are drafts
-// written from the product docs and should be reviewed by the brand owner.
+// Facts come from docs/BRAND.md, docs/DESIGN_LANGUAGE.md and the CSS tokens.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -46,16 +45,49 @@ const contrast = (a, b) => {
   const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
   return (x + 0.05) / (y + 0.05);
 };
-const readableOn = (bg) => (contrast(bg, "#1b1c14") >= contrast(bg, "#ffffff") ? "#1b1c14" : "#ffffff");
+const readableOn = (bg) => (contrast(bg, "#242424") >= contrast(bg, "#ffffff") ? "#242424" : "#ffffff");
 
 const C = {
-  green: "#235340", forest: "#1f5d49", cream: "#f5f4eb", logoCream: "#f9f4e5", ink: "#1b1c14", dark: "#191d1a", onDark: "#f4f3e9",
-  surface: "#ffffff", muted: "#f8f5ea", sunken: "#efebdb", accentSurface: "#e8efe7", strong: "#222222", fgMuted: "#5f6055", fgSubtle: "#7e7e72", fgFaint: "#8f9084",
-  rec: "#d64545", orange: "#c26a1a",
+  // Logo-file colours (kept for logo files and logo pages)
+  logoGreen: "#235340",
+  logoCream: "#f9f4e5",
+  green: "#235340",
+  // Foundation paper-and-ink palette
+  white: "#ffffff",
+  surface: "#ffffff",
+  paper: "#f7f7f7",
+  muted: "#f7f7f7",
+  sunken: "#f0f0f0",
+  ink: "#242424",
+  dark: "#242424",
+  onDark: "#ffffff",
+  line: "#ebebeb",
+  lineStrong: "#dedede",
+  strong: "#242424",
+  fgMuted: "#6b6b6b",
+  fgSubtle: "#8f8f8f",
+  fgFaint: "#ababab",
+  // Status & accent colours
+  coral: "#e06449",
+  critical: "#c13d3d",
+  success: "#2d8a5e",
+  overdue: "#c26a1a",
+  // Aliases for compatibility
+  forest: "#242424",
+  cream: "#f7f7f7",
+  rec: "#c13d3d",
+  orange: "#c26a1a",
+  accentSurface: "#f0f0f0",
 };
+
+// Muted earthy tints for categories (no purple)
 const TINTS = [
-  ["Green", "#e7f1ea", "#1f5d49"], ["Blue", "#e6eef1", "#3f6470"], ["Amber", "#f4eedd", "#8a6d2a"],
-  ["Clay", "#f4e7e3", "#9a5a4a"], ["Violet", "#ece6f1", "#5f4a7a"], ["Sand", "#f0eadd", "#7a6a3c"],
+  ["Green", "#f0f5f0", "#2d8a5e"],
+  ["Blue", "#edf2f5", "#4a7085"],
+  ["Amber", "#f5f0e5", "#8a6d2a"],
+  ["Clay", "#f5ebe8", "#9a5a4a"],
+  ["Mint", "#edf5f2", "#3a7a6a"],
+  ["Sand", "#f0ece0", "#7a6a3c"],
 ];
 
 const L = (f) => `assets/logo/${f}`;
@@ -103,7 +135,7 @@ add(0, "Cover Page", `
     ${lockup(46)}
     <h1>Brand<br>guidelines</h1>
     <p class="cv-sub">One workspace, any AI.</p>
-    <p class="cv-meta">Version 1.0 · November 2026 · Backed by Setups Works</p>
+    <p class="cv-meta">Version 2.0 · November 2026 · Backed by Setups Works</p>
   </div>
   <div class="cv-r"><img src="${L("naazhi-mark-on-cream-3000.png")}" alt="Naazhi mark on cream"></div>
 </div>`, true);
@@ -114,7 +146,7 @@ add(0, "About the Brand", `
 ${lead("Naazhi is one workspace for the days, work and thoughts of one person.")}
 ${two(
   `<p>Notes, to-dos, journal, chat, calendar and a Reader live together, on the web and on the phone. An AI layer can help, and it can be swapped for another provider, replaced with your own key, or switched off.</p>
-   <p>The product is calm on purpose. It keeps one serif headline, one green accent and a lot of cream, and it says what happened and what to do next.</p>`,
+   <p>The product is calm on purpose. It uses clean Geist typography, high-contrast ink, crisp hairline borders and flat paper surfaces, and it says what happened and what to do next.</p>`,
   cards([
     { icon: "faNoteSticky", h: "Notes, tasks, journal", p: "The things you write and plan." },
     { icon: "faComments", h: "Chat with an optional AI", p: "Swap it, bring your own, or turn it off." },
@@ -151,7 +183,7 @@ ${list([
 
 add(0, "Brand Values", cards([
   { icon: "faLeaf", h: "Calm", p: "Quiet screens, short sentences, no hype words, no exclamation marks." },
-  { icon: "faHandHoldingHeart", h: "Personal", p: "Hand-drawn mark, warm cream, a voice that sounds like a person." },
+  { icon: "faHandHoldingHeart", h: "Personal", p: "Hand-drawn mark, calm paper-and-ink surfaces, a voice that sounds like a person." },
   { icon: "faShieldHalved", h: "Private", p: "Your data is yours, scoped in the database and exportable any time." },
   { icon: "faSliders", h: "In control", p: "AI is a layer you choose, swap or switch off." },
   { icon: "faCircleCheck", h: "Honest", p: "Plain claims that match the security docs. We never promise more." },
@@ -261,7 +293,7 @@ ${two(`<p><b>Wordmark alone</b>: when the mark already appears nearby, for examp
 
 add(2, "Logo Variations", `
 <div class="grid3">
-<div class="stage cream sm">${lockup(54)}<small>Lockup · ink on cream</small></div>
+<div class="stage cream sm">${lockup(54)}<small>Lockup · ink on paper</small></div>
 <div class="stage dark sm">${lockup(54, { cream: true })}<small>Lockup · reverse on ink</small></div>
 <div class="stage green sm">${lockup(54, { cream: true })}<small>Lockup · reverse on green</small></div>
 <div class="stage white sm">${mk(120)}<small>Mark · on white</small></div>
@@ -321,8 +353,8 @@ add(2, "Logo Color Variations", `
 <div class="grid4">
 <div class="stage cream sm">${mk(110)}<small>Naazhi green<br>#235340</small></div>
 <div class="stage dark sm">${mk(110, true)}<small>Cream reverse<br>#F9F4E5</small></div>
-<div class="stage cream sm"><img src="${L("android-icon-monochrome.png")}" style="height:110px;background:${C.green};border-radius:20px" alt=""><small>One colour<br>(themed icons)</small></div>
-<div class="stage white sm"><img src="${L("icon.png")}" style="height:110px;border-radius:24px" alt=""><small>Mark on cream<br>(app icon)</small></div>
+<div class="stage cream sm"><img src="${L("android-icon-monochrome.png")}" style="height:110px;background:${C.logoGreen};border-radius:12px" alt=""><small>One colour<br>(themed icons)</small></div>
+<div class="stage white sm"><img src="${L("icon.png")}" style="height:110px;border-radius:12px" alt=""><small>Mark on cream<br>(app icon)</small></div>
 </div>
 ${two(
   `<table class="tbl"><tbody><tr><td>Ink strokes</td><td>Naazhi green <b>#235340</b></td></tr><tr><td>Details (star, lines)</td><td>Same green at about 40 %</td></tr><tr><td>Ground</td><td>Naazhi cream <b>#F9F4E5</b></td></tr></tbody></table>`,
@@ -331,13 +363,13 @@ ${two(
 
 add(2, "Logo on Different Backgrounds", `
 <div class="grid4">
-<div class="stage cream sm">${lockup(34)}<small>Cream page · ink</small></div>
+<div class="stage cream sm">${lockup(34)}<small>Paper · ink</small></div>
 <div class="stage white sm">${lockup(34)}<small>White card · ink</small></div>
 <div class="stage dark sm">${lockup(34, { cream: true })}<small>Ink fill · cream</small></div>
 <div class="stage green sm">${lockup(34, { cream: true })}<small>Green · cream</small></div>
 </div>
 ${dos(
-  ["Put the logo on cream, white cards or the dark fill.", "Use the cream version on dark and on green.", "Keep 4.5 : 1 contrast between strokes and ground."],
+  ["Put the logo on paper, white cards or the dark fill.", "Use the cream version on dark and on green.", "Keep 4.5 : 1 contrast between strokes and ground."],
   ["Place it on a busy photo.", "Use a background with less than 4.5 : 1 contrast.", "Mix the ink mark with a cream wordmark."]
 )}`);
 
@@ -348,50 +380,61 @@ ${[
   ["Don’t stretch", "transform:scaleX(1.6)"],
   ["Don’t rotate", "transform:rotate(25deg)"],
   ["Don’t add effects", "filter:drop-shadow(8px 8px 6px rgba(0,0,0,.5))"],
-  ["Don’t outline", "filter:drop-shadow(2px 0 0 #d64545) drop-shadow(-2px 0 0 #d64545) drop-shadow(0 2px 0 #d64545) drop-shadow(0 -2px 0 #d64545)"],
+  ["Don’t outline", "filter:drop-shadow(2px 0 0 #c13d3d) drop-shadow(-2px 0 0 #c13d3d) drop-shadow(0 2px 0 #c13d3d) drop-shadow(0 -2px 0 #c13d3d)"],
   ["Don’t crop", "clip-path:inset(0 0 45% 0)"],
   ["Don’t use low contrast", "opacity:.85;background:#3c7a63"],
   ["Don’t put it on photos", "background:repeating-linear-gradient(45deg,#c9a98a 0 10px,#7d9b7a 10px 22px,#e3d0b5 22px 30px)"],
-].map(([t, st]) => `<div class="stage cream sm x"><div class="bx" style="${st.startsWith("background") || st.startsWith("opacity") ? st : ""}"><img class="mk" src="${MARK}" style="height:90px;${st.startsWith("background") || st.startsWith("opacity") ? "" : st}" alt=""></div><small>${ic("faXmark", 12, C.rec)} ${t}</small></div>`).join("")}
+].map(([t, st]) => `<div class="stage cream sm x"><div class="bx" style="${st.startsWith("background") || st.startsWith("opacity") ? st : ""}"><img class="mk" src="${MARK}" style="height:90px;${st.startsWith("background") || st.startsWith("opacity") ? "" : st}" alt=""></div><small>${ic("faXmark", 12, C.critical)} ${t}</small></div>`).join("")}
 </div>
 <p class="note">Also never: write the name in all caps or lower case at the start of a sentence, bounce or animate the strokes apart, or use the retired mascot and ghost artwork.</p>`);
 
 /* 04 Color */
 add(3, "Primary Brand Colors", `
 <div class="swrow big">
-${swatch("Naazhi green", C.green, { note: "The logo ink. Store assets, print.", h: 200 })}
-${swatch("Forest", C.forest, { note: "UI accent: focus ring, links, “quiet” words. Token --green-fg.", h: 200 })}
-${swatch("Cream", C.cream, { note: "The page canvas. Token --page.", h: 200 })}
-</div>`);
+${swatch("White", C.white, { note: "Raised surface: cards, dialogs, sheets. Token --surface / --raised.", h: 200 })}
+${swatch("Paper", C.paper, { note: "The page canvas & sidebar. Token --page / --paper.", h: 200 })}
+${swatch("Ink", C.ink, { note: "Text, headings, primary controls. Token --fg / --ink.", h: 200 })}
+${swatch("Hairline", C.line, { note: "1 px crisp card and row borders. Token --line.", h: 200 })}
+</div>
+<p class="note">The foundation is <b>paper and ink</b>: restrained, near-monochrome surfaces with 1 px hairline borders, no shadows on cards, and no gradients or pastel washes behind whole panels.</p>`);
 
 add(3, "Secondary Brand Colors", `
 <div class="swrow big">
-${swatch("Ink", C.ink, { note: "Text. Token --fg.", h: 200 })}
-${swatch("Dark fill", C.dark, { note: "Primary button, dark panels. Token --fill-dark.", h: 200 })}
-${swatch("On dark", C.onDark, { note: "Text on the dark fill. Token --on-dark.", h: 200 })}
-${swatch("Logo cream", C.logoCream, { note: "Logo files and app icon ground only.", h: 200 })}
-</div>`);
+${swatch("Coral", C.coral, { note: "Warm accent: selection dots, attention. Token --coral.", h: 200 })}
+${swatch("Critical", C.critical, { note: "Errors, destructive actions, alerts. Token --critical.", h: 200 })}
+${swatch("Success", C.success, { note: "Completed tasks, positive status. Token --success.", h: 200 })}
+${swatch("Overdue", C.overdue, { note: "Overdue items, medium priority. Token --overdue.", h: 200 })}
+</div>
+<p class="note">The logo’s own green (<code>#235340</code>) and cream (<code>#F9F4E5</code>) stay preserved strictly in the logo files and app icon. The interface uses its own semantic design tokens.</p>`);
 
 add(3, "Accent Colors", `
 <div class="tints">${TINTS.map(([n, bg, fg]) => `<div class="tint" style="background:${bg};color:${fg};box-shadow:inset 0 0 0 1px ${fg}33"><b>${n}</b><span>bg ${bg.toUpperCase()}</span><span>fg ${fg.toUpperCase()}</span></div>`).join("")}</div>
-<p>Pastel tints mark categories, calendar events and statuses. Each is a pair: a soft background and a strong foreground. In code: <code>at-&lt;tint&gt; tint</code>.</p>
-<div class="swrow">${swatch("Recording", C.rec, { detail: false, h: 70, note: "Recording indicator only" })}${swatch("Medium priority", C.orange, { detail: false, h: 70, note: "Medium-priority tasks" })}</div>`);
+<p>Muted earthy tints mark categories, calendar events and label statuses. Each is a pair: a soft background and a strong foreground. In code: <code>at-&lt;tint&gt; tint</code>. No purple or violet.</p>
+<div class="swrow">${swatch("Coral", C.coral, { detail: false, h: 70, note: "Warm accent" })}${swatch("Critical", C.critical, { detail: false, h: 70, note: "Errors & danger" })}${swatch("Success", C.success, { detail: false, h: 70, note: "Completed" })}${swatch("Overdue", C.overdue, { detail: false, h: 70, note: "Overdue dates" })}</div>`);
 
 add(3, "Neutral Colors", `
 <div class="swrow">
-${[["Surface", C.surface], ["Surface muted", C.muted], ["Surface sunken", C.sunken], ["Surface accent", C.accentSurface]].map(([n, h]) => swatch(n, h, { detail: false, h: 90 })).join("")}
+${[["Surface white", C.surface], ["Paper / Side", C.paper], ["Sunken fill", C.sunken], ["Hairline border", C.line]].map(([n, h]) => swatch(n, h, { detail: false, h: 90 })).join("")}
 </div>
 <div class="swrow">
-${[["Text strong", C.strong], ["Text muted", C.fgMuted], ["Text subtle", C.fgSubtle], ["Text faint", C.fgFaint]].map(([n, h]) => swatch(n, h, { detail: false, h: 90 })).join("")}
+${[["Ink text", C.ink], ["Text muted", C.fgMuted], ["Text subtle", C.fgSubtle], ["Text faint", C.fgFaint]].map(([n, h]) => swatch(n, h, { detail: false, h: 90 })).join("")}
 </div>
-<p class="note">Hairlines are 10 % and 20 % ink (<code>--line</code>, <code>--line-strong</code>) and used sparingly. Never use pure #000.</p>`);
+<p class="note">Hairlines are 1 px solid borders (<code>--line #ebebeb</code>, <code>--line-strong #dedede</code>). Never use pure #000 or fuzzy grey drop shadows.</p>`);
 
 add(3, "Color Codes (HEX, RGB, CMYK, HSL)", `
 <table class="tbl codes"><thead><tr><th>Colour</th><th>Token</th><th>HEX</th><th>RGB</th><th>CMYK*</th><th>HSL</th></tr></thead><tbody>
 ${[
-  ["Naazhi green", "logo files", C.green], ["Forest", "--green-fg", C.forest], ["Cream", "--page", C.cream], ["Ink", "--fg", C.ink],
-  ["Dark fill", "--fill-dark", C.dark], ["On dark", "--on-dark", C.onDark], ["Logo cream", "logo files", C.logoCream], ["Green tint", "--green-bg", "#e7f1ea"],
-  ["Clay", "--clay-fg", "#9a5a4a"], ["Recording", "--rec", C.rec],
+  ["White", "--surface / --raised", C.white],
+  ["Paper", "--page / --paper", C.paper],
+  ["Ink", "--fg / --ink", C.ink],
+  ["Hairline", "--line", C.line],
+  ["Hairline strong", "--line-strong", C.lineStrong],
+  ["Coral", "--coral", C.coral],
+  ["Critical", "--critical", C.critical],
+  ["Success", "--success", C.success],
+  ["Overdue", "--overdue", C.overdue],
+  ["Logo green", "logo files only", C.logoGreen],
+  ["Logo cream", "logo files only", C.logoCream],
 ].map(([n, tk, h]) => { const r = hex2rgb(h); return `<tr><td><i class="dot" style="background:${h}"></i>${n}</td><td><code>${tk}</code></td><td>${h.toUpperCase()}</td><td>${r.join(", ")}</td><td>${rgb2cmyk(r)}</td><td>${rgb2hsl(r)}</td></tr>`; }).join("")}
 </tbody></table>
 <p class="note">*CMYK values are straight conversions for reference. Print a proof and match by eye before a production run.</p>`);
@@ -399,29 +442,37 @@ ${[
 add(3, "Color Combinations", `
 <div class="combos">
 ${[
-  [C.cream, C.ink, C.forest, "Cream · ink · forest", "The default page"],
-  [C.dark, C.onDark, "#9fc9b6", "Dark · on-dark", "Dark panels, primary button"],
-  [C.green, C.logoCream, "#a8c5b5", "Green · logo cream", "Logo on green"],
-  ["#e7f1ea", "#1f5d49", "#1f5d49", "Green tint", "Selected, success"],
-  ["#f4e7e3", "#9a5a4a", "#9a5a4a", "Clay tint", "Errors, warnings"],
-  ["#ece6f1", "#5f4a7a", "#5f4a7a", "Violet tint", "Calendar category"],
+  [C.paper, C.ink, C.ink, "Paper · ink", "Default page canvas"],
+  [C.white, C.ink, C.ink, "White · ink", "Flat cards & dialogs"],
+  [C.dark, C.onDark, C.fgSubtle, "Dark · on-dark", "Dark panels, primary button"],
+  [C.paper, C.ink, C.coral, "Paper · coral", "Warm accent & selection"],
+  ["#f0f5f0", "#2d8a5e", "#2d8a5e", "Success tint", "Tasks done, positive status"],
+  ["#f5ebe8", "#9a5a4a", "#9a5a4a", "Clay tint", "Errors, warnings, alerts"],
 ].map(([bg, fg, ac, t, u]) => `<div class="combo" style="background:${bg};color:${fg}"><b style="color:${ac}">Aa</b><span>${t}</span><small>${u}</small></div>`).join("")}
 </div>`);
 
 add(3, "Color Usage Ratio", `
-<div class="ratio"><div style="flex:60;background:${C.cream};color:${C.ink}">Cream 60</div><div style="flex:20;background:#fff;color:${C.ink};box-shadow:inset 0 0 0 1px #1b1c141a">White 20</div><div style="flex:12;background:${C.dark};color:${C.onDark}">Ink 12</div><div style="flex:6;background:${C.forest};color:#fff">Green 6</div><div style="flex:2;background:#e7f1ea;color:${C.forest}">Tint</div></div>
+<div class="ratio"><div style="flex:60;background:#fff;color:${C.ink};box-shadow:inset 0 0 0 1px #ebebeb">White 60</div><div style="flex:20;background:${C.paper};color:${C.ink}">Paper 20</div><div style="flex:12;background:${C.dark};color:${C.onDark}">Ink 12</div><div style="flex:6;background:${C.coral};color:#fff">Coral 6</div><div style="flex:2;background:#f0f5f0;color:${C.success}">Tint</div></div>
 ${cards([
-  { h: "Mostly cream", p: "A lot of calm space. The cream canvas carries the page." },
-  { h: "One accent", p: "Forest green appears once or twice per view: a link, a focus ring, one word." },
-  { h: "One dark action", p: "A single dark pill for the primary action. Tints are for categories only." },
+  { h: "Mostly white & paper", p: "Restrained, near-monochrome paper surface with 1 px hairline borders." },
+  { h: "High-contrast ink", p: "Crisp ink headings, high-contrast readability, and rectangular dark action buttons." },
+  { h: "Restrained accents", p: "Coral for attention, status colours (success/critical) for feedback, tints for category chips." },
 ], 3)}
 <p class="note">A guideline for balance, not a measured spec.</p>`);
 
 {
   const pairs = [
-    ["Ink on cream", C.ink, C.cream], ["Ink on white", C.ink, "#ffffff"], ["Forest on cream", C.forest, C.cream], ["Forest on white", C.forest, "#ffffff"],
-    ["On-dark on dark fill", C.onDark, C.dark], ["Muted text on cream", C.fgMuted, C.cream], ["Subtle text on cream", C.fgSubtle, C.cream],
-    ["Faint text on cream", C.fgFaint, C.cream], ["Green tint text", "#1f5d49", "#e7f1ea"], ["Clay tint text", "#9a5a4a", "#f4e7e3"], ["Logo green on logo cream", C.green, C.logoCream],
+    ["Ink on white", C.ink, C.white],
+    ["Ink on paper", C.ink, C.paper],
+    ["Muted text on white", C.fgMuted, C.white],
+    ["Muted text on paper", C.fgMuted, C.paper],
+    ["Critical on white", C.critical, C.white],
+    ["Success on white", C.success, C.white],
+    ["Coral on white", C.coral, C.white],
+    ["White on dark fill", C.onDark, C.dark],
+    ["Green tint text", "#2d8a5e", "#f0f5f0"],
+    ["Clay tint text", "#9a5a4a", "#f5ebe8"],
+    ["Logo green on logo cream", C.logoGreen, C.logoCream],
   ];
   const row = ([n, f, b]) => {
     const r = contrast(f, b);
@@ -436,32 +487,32 @@ ${cards([
 /* 05 Typography */
 add(4, "Primary Typeface", `
 ${two(
-  `<div class="spec"><div class="serif" style="font-size:190px;line-height:1">Aa</div><h3 class="serif" style="font-size:44px">Instrument Serif</h3><p>Weight 400 only · tracking −0.03em · line height 1.04</p></div>`,
-  `<p class="serif" style="font-size:38px;line-height:1.1;letter-spacing:-.02em">The quick brown fox jumps over the lazy dog.</p>
-   <p class="serif" style="font-size:26px;letter-spacing:-.01em">ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>abcdefghijklmnopqrstuvwxyz<br>0123456789 ’ “ ” — &amp;</p>
-   <p>For page titles, dialog titles, big numbers and the wordmark. Free, under the SIL Open Font License (included in assets/fonts).</p>`
+  `<div class="spec"><div style="font-size:170px;line-height:1;font-weight:600">Aa</div><h3 style="font-size:40px;font-weight:600">Geist</h3><p>Weights 400, 500, 600, 700 · tracking −0.022em to −0.03em for headings</p></div>`,
+  `<p style="font-size:32px;line-height:1.2;font-weight:600;letter-spacing:-.025em">The quick brown fox jumps over the lazy dog.</p>
+   <p style="font-size:22px;letter-spacing:-.01em">ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>abcdefghijklmnopqrstuvwxyz<br>0123456789 ’ “ ” — &amp;</p>
+   <p><b>Geist</b> is the primary typeface for everything in the UI: headings, body copy, controls and buttons. Clean modernist geometry with optical balance and humanist rhythm.</p>`
 )}`);
 
 add(4, "Secondary Typeface", `
 ${two(
-  `<div class="spec"><div style="font-size:190px;line-height:1;font-weight:500">Aa</div><h3 style="font-size:44px;font-weight:600">Geist</h3><p>The default for the interface, body text and buttons</p></div>`,
-  `<p style="font-size:30px;line-height:1.2">The quick brown fox jumps over the lazy dog.</p>
-   <p style="font-size:22px">ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>abcdefghijklmnopqrstuvwxyz<br>0123456789</p>
+  `<div class="spec"><div class="wm" style="font-size:150px;line-height:1">Aa</div><h3 class="wm" style="font-size:38px">Instrument Serif</h3><p>Weight 400 only · reserved strictly for the Naazhi wordmark</p></div>`,
+  `<p class="wm" style="font-size:36px;line-height:1.2;letter-spacing:-.02em">Naazhi brand mark and wordmark only.</p>
+   <p><b>Instrument Serif</b> is used solely for the brand wordmark in headers, footers and covers. It is never used for general UI page titles, dialogs, cards, or body text.</p>
    <p><b>Geist Mono</b> is used for counters, code and keyboard hints: <code>⌘K</code> <code>12:30</code></p>
    <p><b>Noto Sans Tamil</b> loads automatically for Tamil text: <span style="font-size:26px">நாழி</span></p>`
 )}`);
 
 add(4, "Heading Typography", `
 <div class="hd">
-<div><small>Page title · serif, clamp(30px, 3.4vw, 42px), −0.03em</small><p class="serif" style="font-size:64px;line-height:1.04;letter-spacing:-.03em">Everything you keep, <span class="quiet">in one place.</span></p></div>
-<div><small>Dialog title · serif 28px</small><p class="serif" style="font-size:40px;letter-spacing:-.02em">New event</p></div>
+<div><small>Page title · Geist 600, clamp(28px, 3vw, 42px), −0.025em</small><p style="font-size:52px;line-height:1.05;letter-spacing:-.03em;font-weight:600">Everything you keep, <span class="quiet">in one place.</span></p></div>
+<div><small>Dialog title · Geist 600, 24–28px, −0.02em</small><p style="font-size:34px;letter-spacing:-.02em;font-weight:600">New event</p></div>
 <div><small>Section label · Geist 11px, semi-bold, +0.1em, uppercase</small><p class="eyebrow">Today</p></div>
 </div>
-<p>Headings are sentence case. The italic green <b>quiet</b> word in marketing headings adds a soft emphasis, once per heading.</p>`);
+<p>Headings are sentence case. The <b>quiet</b> class is the lower-contrast second half of a two-tone marketing heading (faint ink), not italic green.</p>`);
 
 add(4, "Body Typography", `
 ${two(
-  `<h4>Body · Geist 14–15 px</h4><p style="font-size:17px;line-height:1.6">Naazhi keeps your notes, tasks, journal and chat in one workspace. Write something down and it is there on your phone and your laptop. Switch the AI off and nothing changes about where your words live.</p>
+  `<h4>Body · Geist 14–16 px</h4><p style="font-size:16px;line-height:1.55">Naazhi keeps your notes, tasks, journal and chat in one workspace. Write something down and it is there on your phone and your laptop. Switch the AI off and nothing changes about where your words live.</p>
    <h4>Small labels · 12–13.5 px</h4><p style="font-size:13px;color:${C.fgMuted}">Last edited today · 3 notes · Synced</p>`,
   `${cards([
     { h: "Never below 11 px", p: "The smallest text in the product." },
@@ -471,38 +522,39 @@ ${two(
 )}`);
 
 add(4, "Display Typography", `
-<div class="display"><p class="serif">One workspace,<br><span class="quiet">any AI.</span></p></div>
-<p>Display sizes are for covers, hero sections and big numbers: Instrument Serif at 64–120 px, tight tracking, balanced lines, one quiet word.</p>`);
+<div class="display"><p style="font-family:var(--sans);font-weight:700;font-size:96px;line-height:.96;letter-spacing:-.04em">One workspace,<br><span class="quiet">any AI.</span></p></div>
+<p>Display sizes are for covers, hero sections and marketing: Geist 600–700 at 64–120 px, tight tracking, balanced lines, one quiet phrase.</p>`);
 
 add(4, "Font Weights & Styles", `
 ${two(
-  `<h4>Instrument Serif</h4><p class="serif" style="font-size:34px">Regular 400</p><p class="serif" style="font-size:34px;font-style:italic">Italic 400 (quiet words)</p>`,
-  `<h4>Geist</h4>${[400, 500, 600, 700].map((w) => `<p style="font-size:26px;font-weight:${w}">${["Regular", "Medium", "Semi-bold", "Bold"][[400, 500, 600, 700].indexOf(w)]} ${w}</p>`).join("")}`
+  `<h4>Geist</h4>${[400, 500, 600, 700].map((w) => `<p style="font-size:24px;font-weight:${w}">${["Regular", "Medium", "Semi-bold", "Bold"][[400, 500, 600, 700].indexOf(w)]} ${w}</p>`).join("")}`,
+  `<h4>Instrument Serif</h4><p class="wm" style="font-size:32px">Regular 400 (wordmark lockup only)</p>
+   <h4 class="mt">Geist Mono</h4><p style="font-family:var(--mono);font-size:20px">Regular 400 · Medium 500</p>`
 )}
-<p class="note">Use Regular for body, Medium or Semi-bold for labels and buttons. Reserve Bold for the smallest uppercase labels.</p>`);
+<p class="note">Use Regular for body, Medium or Semi-bold for labels, tabs and buttons, Semi-bold (600) for titles, and Bold (700) for display headings.</p>`);
 
 add(4, "Typography Hierarchy", `
 <div class="hier">
-<div><span>Display</span><p class="serif" style="font-size:68px;line-height:1;letter-spacing:-.03em">Calm by default</p></div>
-<div><span>Page title</span><p class="serif" style="font-size:42px;line-height:1.05;letter-spacing:-.03em">Today’s tasks</p></div>
+<div><span>Display</span><p style="font-size:56px;line-height:1;letter-spacing:-.035em;font-weight:700">Calm by default</p></div>
+<div><span>Page title</span><p style="font-size:38px;line-height:1.05;letter-spacing:-.025em;font-weight:600">Today’s tasks</p></div>
 <div><span>Section label</span><p class="eyebrow">Upcoming</p></div>
 <div><span>Body</span><p style="font-size:15px">Plan the week, then write down how it went.</p></div>
 <div><span>Small</span><p style="font-size:13px;color:${C.fgMuted}">Due tomorrow · Repeats weekly</p></div>
-<div><span>Mono</span><p style="font-family:ui-monospace,Menlo,monospace;font-size:14px">⌘K · 12:30 · UNT-49</p></div>
+<div><span>Mono</span><p style="font-family:var(--mono);font-size:13.5px">⌘K · 12:30 · UNT-49</p></div>
 </div>`);
 
 add(4, "Line Height & Letter Spacing", `
-<table class="tbl"><thead><tr><th>Use</th><th>Size</th><th>Line height</th><th>Tracking</th></tr></thead><tbody>
-<tr><td>Display</td><td>64–120 px</td><td>1.0–1.04</td><td>−0.03 em</td></tr>
-<tr><td>Page title</td><td>30–42 px</td><td>1.04</td><td>−0.03 em</td></tr>
-<tr><td>Dialog title</td><td>28 px</td><td>1.1</td><td>−0.02 em</td></tr>
-<tr><td>Wordmark</td><td>any</td><td>1</td><td>−0.02 em</td></tr>
-<tr><td>Body</td><td>14–15 px</td><td>1.5–1.6</td><td>0</td></tr>
-<tr><td>Section label</td><td>11 px</td><td>1.3</td><td>+0.1 em, uppercase</td></tr></tbody></table>`);
+<table class="tbl"><thead><tr><th>Use</th><th>Font</th><th>Size</th><th>Line height</th><th>Tracking</th></tr></thead><tbody>
+<tr><td>Display</td><td>Geist 700</td><td>64–120 px</td><td>0.96–1.02</td><td>−0.035 em</td></tr>
+<tr><td>Page title</td><td>Geist 600</td><td>28–42 px</td><td>1.05–1.1</td><td>−0.025 em</td></tr>
+<tr><td>Dialog title</td><td>Geist 600</td><td>24–28 px</td><td>1.15</td><td>−0.02 em</td></tr>
+<tr><td>Wordmark</td><td>Instrument Serif 400</td><td>any</td><td>1</td><td>−0.02 em</td></tr>
+<tr><td>Body</td><td>Geist 400</td><td>14–16 px</td><td>1.5–1.6</td><td>0</td></tr>
+<tr><td>Section label</td><td>Geist 600</td><td>11 px</td><td>1.3</td><td>+0.1 em, uppercase</td></tr></tbody></table>`);
 
 add(4, "Typography Do's & Don'ts", dos(
-  ["Use Instrument Serif for titles and Geist for everything else.", "Write in sentence case with curly apostrophes (’).", "Use negative tracking on large serif only.", "Keep line length near 60–75 characters."],
-  ["Set body text in the serif.", "Use Title Case Buttons or ALL CAPS headings.", "Go below 11 px or use faint text for body copy.", "Add bold or italic to Instrument Serif (it has one weight)."]
+  ["Use Geist for all headings, body text, buttons and controls.", "Reserve Instrument Serif strictly for the Naazhi wordmark.", "Write in sentence case with curly apostrophes (’).", "Keep line length near 60–75 characters."],
+  ["Use Instrument Serif for page titles, buttons or body text.", "Use Title Case Buttons or ALL CAPS headings.", "Go below 11 px or use faint text for body copy.", "Add bold or italic to Instrument Serif (it has one weight)."]
 ));
 
 /* 06 Visual identity */
@@ -510,41 +562,41 @@ add(5, "Brand Patterns", `
 <div class="grid3 pat">
 <div class="pt p1"></div><div class="pt p2"></div><div class="pt p3"></div></div>
 <p>Patterns are quiet backgrounds built from the brand’s own forms. They sit at low opacity behind content and never compete with it.</p>
-${list(["<b>Marks</b>: the mark repeated on a diagonal grid at 6 % opacity.", "<b>Lines</b>: the three writing lines, repeated.", "<b>Dots</b>: a dot grid on cream for planning surfaces."])}`);
+${list(["<b>Marks</b>: the mark repeated on a diagonal grid at 6 % opacity.", "<b>Lines</b>: the three writing lines, repeated.", "<b>Dots</b>: a dot grid on paper for planning surfaces."])}`);
 
 add(5, "Graphic Elements", `
 ${cards([
   { icon: "faStar", h: "The spark", p: "A four-point star for the AI layer. Small, optional, one per view." },
   { icon: "faGripLines", h: "Three lines", p: "Writing lines from the bubble, used as dividers and bullets." },
-  { icon: "faCircle", h: "Soft glow", p: "A blurred pale-green circle behind page heroes." },
+  { icon: "faCircle", h: "Soft glow", p: "A blurred neutral glow behind page heroes." },
   { icon: "faTableCells", h: "Hairline grid", p: "1 px gaps over a hairline colour for calendars and tables." },
 ], 4)}
 <div class="stage cream sm glowdemo"><span class="glow"></span>${lockup(50)}</div>`);
 
 add(5, "Shapes & Geometry", `
 <div class="shapes">
-${[["r1", 10], ["r2", 14], ["r3", 20], ["r4", 28], ["pill", 999]].map(([n, r]) => `<div><span style="border-radius:${r}px"></span><b>${n === "pill" ? "pill" : "r" + n.slice(1)}</b><small>${r === 999 ? "fully round" : r + " px"}</small></div>`).join("")}
+${[["r1", 8], ["r2", 10], ["r3", 12], ["r4", 16], ["ctl", 8]].map(([n, r]) => `<div><span style="border-radius:${r}px"></span><b>${n === "ctl" ? "ctl" : "r" + n.slice(1)}</b><small>${r + " px"}</small></div>`).join("")}
 </div>
-${two(`<p>Cards use <b>r3 · 20 px</b>, dialogs <b>r4 · 28 px</b>, buttons and toggles the <b>pill</b>. Small chips use 7 px. The mark’s round ends set the tone: no sharp corners.</p>`,
-`<p>Shadows are warm and low-contrast (<code>e1–e4</code>). Surfaces are frosted glass with a hairline inset ring, not bordered boxes. Never grey drop shadows.</p>`)}`);
+${two(`<p>Cards use <b>r3 · 12 px</b>, dialogs <b>r4 · 16 px</b>, buttons <b>8 px (rounded-ctl)</b>. Small chips use 6 px. Controls are rectangular with subtle corner rounding.</p>`,
+`<p>Surfaces are flat paper with a 1 px hairline border (<code>--line #ebebeb</code>), not translucent glass. Shadows are reserved for floating layers (<code>shadow-pop</code>).</p>`)}`);
 
 add(5, "Iconography", `
 <div class="icons">${["faNoteSticky", "faListCheck", "faBookOpen", "faComments", "faCalendarDays", "faRss", "faHeartPulse", "faMagnifyingGlass", "faShieldHalved", "faKey", "faBell", "faGear", "faUser", "faLock", "faPlus", "faCheck", "faPaperPlane", "faDownload", "faMicrophone", "faPaperclip"].map((n) => `<span>${ic(n, 30)}<small>${n.slice(2)}</small></span>`).join("")}</div>
-<p><b>Font Awesome Free, Solid</b> only, drawn in the ink or forest colour. No emoji in the product, no other icon sets. Icon-only buttons need an <code>aria-label</code>.</p>`);
+<p><b>Font Awesome Free, Solid</b> only, drawn in the ink colour. No emoji in the product, no other icon sets. Icon-only buttons need an <code>aria-label</code>.</p>`);
 
 add(5, "Illustration Style", `
 ${two(
   `${lead("No mascots. The product is the illustration.")}
    <p>Naazhi doesn’t use characters or decorative scenes. Empty states are one quiet line with the next step. When a picture is needed, use the mark, the spark and soft tinted shapes.</p>
-   ${list(["The retired mascot and ghost artwork are never used.", "Flat shapes, single weight, round ends.", "Pastel tints for backgrounds, forest for lines."])}`,
-  `<div class="stage cream tall illus"><div class="blob a"></div><div class="blob b"></div><div class="blob c"></div>${mk(130)}<span class="sparkle">${ic("faStar", 26, C.green)}</span></div>`
+   ${list(["The retired mascot and ghost artwork are never used.", "Flat shapes, single weight, round ends.", "Muted tints for categories, ink for lines."])}`,
+  `<div class="stage cream tall illus"><div class="blob a"></div><div class="blob b"></div><div class="blob c"></div>${mk(130)}<span class="sparkle">${ic("faStar", 26, C.ink)}</span></div>`
 )}`);
 
 add(5, "Photography Style", `
 ${two(
   `${lead("Real screens, not stock photos.")}
-   <p>Naazhi shows the actual app, on a phone, on a cream ground. No stock people, no staged desks.</p>
-   ${list(["Use screenshots of the real app only.", "Show them in an iPhone frame on cream or soft tint.", "Keep one phone or a calm fan of three.", "If a photo is ever needed: natural light, warm, uncluttered, no filters."])}`,
+   <p>Naazhi shows the actual app, on a phone, on a clean paper ground. No stock people, no staged desks.</p>
+   ${list(["Use screenshots of the real app only.", "Show them in an iPhone frame on paper or white ground.", "Keep one phone or a calm fan of three.", "If a photo is ever needed: natural light, warm, uncluttered, no filters."])}`,
   `<div class="phones">${phone("home", 170)}${phone("notes", 170)}${phone("todo", 170)}</div>`
 )}`);
 
@@ -552,28 +604,28 @@ add(5, "Image Treatment", `
 ${two(
   `<div class="phones one">${phone("journal", 230)}</div>`,
   `${cards([
-    { h: "Rounded corners", p: "Screens and cards use the radius scale: 20 px cards, phone-shaped screens." },
-    { h: "Hairline ring, not shadow", p: "A 1 px inset ring in ink at 10 %. Soft, warm elevation only." },
-    { h: "Cream ground", p: "Place images on cream, white or a pale tint. Never over busy backgrounds." },
+    { h: "Rounded corners", p: "Screens and cards use the radius scale: 12 px cards, phone-shaped screens." },
+    { h: "Hairline border, not shadow", p: "A 1 px hairline border in line colour (#ebebeb). Flat surfaces with no elevation shadow." },
+    { h: "Paper ground", p: "Place images on paper, white or neutral grounds. Never over busy textures." },
     { h: "No filters", p: "No duotone, blur or heavy colour grading. Show the product as it is." },
   ], 1)}`
 )}`);
 
 add(5, "Background Textures", `
 <div class="grid4 tex">
-<div class="tx t1"><small>Cream canvas</small></div><div class="tx t2"><small>Soft glow</small></div><div class="tx t3"><small>Frosted glass</small></div><div class="tx t4"><small>Ink panel</small></div>
+<div class="tx t1"><small>Paper canvas</small></div><div class="tx t2"><small>Soft glow</small></div><div class="tx t3"><small>Flat card</small></div><div class="tx t4"><small>Ink panel</small></div>
 </div>
-<p>Texture is light: a flat cream canvas, a blurred pale-green glow behind heroes, translucent glass for cards, and an ink panel for closing calls to action. No grain, no gradients across the brand colours.</p>`);
+<p>Texture is restrained: flat paper surfaces, clean white cards with hairline borders, and ink panels for dark elements. No blur, no glass, no gradients across the brand colours.</p>`);
 
 add(5, "Visual Composition", `
 ${two(
-  `<div class="comp"><div class="c-h">${lockup(18)}</div><div class="c-b"><p class="serif" style="font-size:46px;line-height:1.04;letter-spacing:-.03em;margin:0">One serif headline,<br><span class="quiet">one idea.</span></p><p style="font-size:12px;color:${C.fgMuted};margin:10px 0 14px">One plain sentence that says what it is.</p>${btn("Get started")}</div><div class="c-p">${phone("home", 120)}</div></div>`,
+  `<div class="comp"><div class="c-h">${lockup(18)}</div><div class="c-b"><p style="font-family:var(--sans);font-weight:600;font-size:40px;line-height:1.05;letter-spacing:-.03em;margin:0">One Geist headline,<br><span class="quiet">one idea.</span></p><p style="font-size:12px;color:${C.fgMuted};margin:10px 0 14px">One plain sentence that says what it is.</p>${btn("Get started")}</div><div class="c-p">${phone("home", 120)}</div></div>`,
   `${list([
-    "<b>One idea per section</b>: a short serif line, one plain sentence, the real app.",
-    "<b>Generous space</b>: let the cream breathe. Margins of at least 16 px on a phone, 32 px on desktop.",
-    "<b>One primary action</b> per view, as a dark pill.",
+    "<b>One idea per section</b>: a short headline, one plain sentence, the real app.",
+    "<b>Generous space</b>: let the paper breathe. Margins of at least 16 px on a phone, 32 px on desktop.",
+    "<b>One primary action</b> per view, as a rectangular dark button.",
     "<b>Align to a grid</b>: a 12-column web layout, a single column at 375 px.",
-    "<b>Hierarchy by size and weight</b>, not by colour or boxes.",
+    "<b>Hierarchy by size and weight</b>, not by colour or decorative boxes.",
   ])}`
 )}`);
 
@@ -613,7 +665,7 @@ add(6, "Brand Vocabulary", `
 add(6, "Tagline & Slogan", `
 <div class="tl"><p class="serif huge">One workspace, <span class="quiet">any AI.</span></p><small>Tagline</small></div>
 ${two(
-  `<div class="card"><h4>Supporting line</h4><div class="serif" style="font-size:30px;line-height:1.08;margin:6px 0">Your AI can change. Your workspace shouldn’t.</div></div>`,
+  `<div class="card"><h4>Supporting line</h4><div class="serif" style="font-size:28px;line-height:1.15;margin:6px 0">Your AI can change. Your workspace shouldn’t.</div></div>`,
   `<div class="card"><h4>One-liner</h4><p>Notes, to-dos, journal, chat, calendar and your Reader in one workspace, with an AI you can swap, bring your own, or switch off.</p></div>`
 )}
 <p class="note">Use the tagline under the logo <i>or</i> as a page-title suffix. Not both in the same place.</p>`);
@@ -647,18 +699,18 @@ add(6, "Communication Do's & Don'ts", dos(
 const bcard = (dark) => `<div class="bc ${dark ? "dk" : ""}">${dark ? `<div class="bk">${mk(70, true)}</div>` : `<div class="fr"><div>${lockup(20)}</div><div class="det"><b>Priya Raman</b><span>Product designer</span><span>priya@naazhi.app</span><span>naazhi.app</span></div></div>`}</div>`;
 add(7, "Business Cards", `
 <div class="row cen">${bcard(false)}${bcard(true)}</div>
-<table class="tbl sm"><tbody><tr><td>Size</td><td>85 × 55 mm, 3 mm bleed</td></tr><tr><td>Stock</td><td>Uncoated cream or white, 350 gsm</td></tr><tr><td>Front</td><td>Lockup top left, name in Geist 600, details in Geist 400</td></tr><tr><td>Back</td><td>Cream mark centred on the dark fill</td></tr></tbody></table>`);
+<table class="tbl sm"><tbody><tr><td>Size</td><td>85 × 55 mm, 3 mm bleed</td></tr><tr><td>Stock</td><td>Uncoated white or off-white paper, 350 gsm</td></tr><tr><td>Front</td><td>Lockup top left, name in Geist 600, details in Geist 400</td></tr><tr><td>Back</td><td>Cream mark centred on the dark fill</td></tr></tbody></table>`);
 
 add(7, "Letterhead", `
 ${two(
   `<div class="paper"><div class="ph2">${lockup(14)}<span>naazhi.app</span></div><div class="lines"><i></i><i></i><i></i><i class="s"></i><i></i><i></i><i class="s"></i></div><div class="pf">Backed by Setups Works · info@setups.works</div></div>`,
-  `${list(["A4, cream (#F5F4EB) or white stock.", "Lockup top left at 14–16 mm, web address top right.", "Body in Geist 10.5 pt, line height 1.5.", "Footer in 8 pt muted ink, with the Setups Works credit.", "Margins: 20 mm."])}`
+  `${list(["A4, white or off-white (#f7f7f7) stock.", "Lockup top left at 14–16 mm, web address top right.", "Body in Geist 10.5 pt, line height 1.5.", "Footer in 8 pt muted ink, with the Setups Works credit.", "Margins: 20 mm."])}`
 )}`);
 
 add(7, "Email Signature", `
 ${two(
   `<div class="sig"><p style="margin:0 0 14px">Thanks,</p><div class="sg">${mk(46)}<div><b>Priya Raman</b><span>Product designer · Naazhi</span><span>priya@naazhi.app · naazhi.app</span></div></div></div>`,
-  `${list(["Mark 46 px high, then name (semi-bold) and role.", "Plain text links in forest green.", "No taglines, quotes or banners.", "Email headers carry the lockup at 28 px.", "Footer: “You received this because someone used this address on Naazhi.”"])}`
+  `${list(["Mark 46 px high, then name (semi-bold) and role.", "Plain text links in ink with underline.", "No taglines, quotes or banners.", "Email headers carry the lockup at 28 px.", "Footer: “You received this because someone used this address on Naazhi.”"])}`
 )}`);
 
 add(7, "Company Profile", `
@@ -668,16 +720,16 @@ add(7, "Company Profile", `
 <div class="doc pg"><small>Product</small><div class="mini">${phone("home", 70)}${phone("todo", 70)}</div></div>
 <div class="doc dk2"><div>${mk(60, true)}</div><small>Backed by Setups Works</small></div>
 </div>
-<p class="note">Landscape A4 or 16:9, cream pages, one idea per page, real screenshots, the ink panel for the closing page.</p>`);
+<p class="note">Landscape A4 or 16:9, white or off-white pages, one idea per page, real screenshots, the ink panel for the closing page.</p>`);
 
 add(7, "Presentation Templates", `
 <div class="slides">
-<div class="sl"><div class="sl-a">${lockup(14)}<p class="serif" style="font-size:34px;margin:30px 0 0;line-height:1.02;letter-spacing:-.03em">Title slide,<br><span class="quiet">one idea.</span></p></div></div>
-<div class="sl"><span class="eyebrow" style="font-size:8px">Section</span><p class="serif" style="font-size:22px;margin:6px 0 10px">Three short points</p><div class="mini3"><i></i><i></i><i></i></div></div>
-<div class="sl"><div class="split"><div><p class="serif" style="font-size:20px;margin:0 0 6px">Screens</p><i class="s"></i><i class="s"></i></div>${phone("notes", 70)}</div></div>
-<div class="sl dkp">${mk(54, true)}<p class="serif" style="font-size:22px;margin:10px 0 0;color:${C.onDark}">Thank you</p></div>
+<div class="sl"><div class="sl-a">${lockup(14)}<p class="serif" style="font-size:30px;margin:30px 0 0;line-height:1.05;letter-spacing:-.03em">Title slide,<br><span class="quiet">one idea.</span></p></div></div>
+<div class="sl"><span class="eyebrow" style="font-size:8px">Section</span><p class="serif" style="font-size:20px;margin:6px 0 10px">Three short points</p><div class="mini3"><i></i><i></i><i></i></div></div>
+<div class="sl"><div class="split"><div><p class="serif" style="font-size:18px;margin:0 0 6px">Screens</p><i class="s"></i><i class="s"></i></div>${phone("notes", 70)}</div></div>
+<div class="sl dkp">${mk(54, true)}<p class="serif" style="font-size:20px;margin:10px 0 0;color:${C.onDark}">Thank you</p></div>
 </div>
-${list(["16:9. Cream background, ink text, one forest accent.", "Titles in Instrument Serif, everything else in Geist.", "Real screenshots only, in phone frames.", "A dark closing slide with the cream mark."], "cols")}`);
+${list(["16:9. White or off-white background, ink text. Titles and content in Geist.", "Titles and body in Geist, wordmark in Instrument Serif.", "Real screenshots only, in phone frames.", "A dark closing slide with the cream mark."], "cols")}`);
 
 add(7, "Social Media Templates", `
 <div class="row cen soc">
@@ -686,14 +738,14 @@ add(7, "Social Media Templates", `
 <div class="sq tinted"><div class="ph3">${phone("journal", 90)}</div><p class="serif">Your journal, private.</p></div>
 <div class="sq story"><p class="serif">What’s new in 4.2</p><div class="chips">${tint("Terms", 0)}${tint("Refunds", 3)}${tint("Contact", 1)}</div>${lockup(14)}</div>
 </div>
-<p class="note">Square 1080 × 1080 and story 1080 × 1920. Cream, dark and pale-tint grounds. One serif line, one lockup. Avatar: <b>naazhi-app-icon-1024.png</b>.</p>`);
+<p class="note">Square 1080 × 1080 and story 1080 × 1920. White, paper and dark grounds. Tight Geist headline, brand lockup. Avatar: <b>naazhi-app-icon-1024.png</b>.</p>`);
 
 add(7, "Marketing Materials", `
 <div class="row cen mm">
-<div class="ban"><div><p class="serif" style="font-size:30px;margin:0;line-height:1.02;letter-spacing:-.03em">Your AI can change.<br><span class="quiet">Your workspace shouldn’t.</span></p><div style="margin-top:12px">${btn("Get Naazhi")}</div></div>${phone("home", 110)}</div>
-<div class="ban dk3"><div><p class="serif" style="font-size:26px;margin:0;color:${C.onDark}">Everything you keep,<br>in one place.</p></div>${mk(80, true)}</div>
+<div class="ban"><div><p class="serif" style="font-size:28px;margin:0;line-height:1.05;letter-spacing:-.03em">Your AI can change.<br><span class="quiet">Your workspace shouldn’t.</span></p><div style="margin-top:12px">${btn("Get Naazhi")}</div></div>${phone("home", 110)}</div>
+<div class="ban dk3"><div><p class="serif" style="font-size:24px;margin:0;color:${C.onDark}">Everything you keep,<br>in one place.</p></div>${mk(80, true)}</div>
 </div>
-${list(["Web banners: 1200 × 628 (link preview) and 300 × 250.", "One headline, one button, one phone.", "Always on cream, white or the dark fill.", "Store listings: app icon 1024, screenshots in a phone frame."], "cols")}`);
+${list(["Web banners: 1200 × 628 (link preview) and 300 × 250.", "One headline, one button, one phone.", "Always on white, paper or the dark fill.", "Store listings: app icon 1024, screenshots in a phone frame."], "cols")}`);
 
 add(7, "Posters & Flyers", `
 <div class="row cen">
@@ -717,36 +769,36 @@ add(7, "Brochures", `
 
 add(7, "ID Cards", `
 <div class="row cen">
-<div class="idc"><div class="idh">${lockup(14, { cream: true })}</div><div class="idb"><div class="ph4">${ic("faUser", 54, C.green)}</div><div><b>Priya Raman</b><span>Product designer</span><span>ID · NZ-0042</span></div></div><div class="idf"></div></div>
+<div class="idc"><div class="idh">${lockup(14, { cream: true })}</div><div class="idb"><div class="ph4">${ic("faUser", 54, C.ink)}</div><div><b>Priya Raman</b><span>Product designer</span><span>ID · NZ-0042</span></div></div><div class="idf"></div></div>
 <div class="idc back"><div class="qr">${Array.from({ length: 49 }, (_, i) => `<i style="opacity:${[1, 0, 1, 1, 0, 1, 0][(i * 3 + (i % 7)) % 7]}"></i>`).join("")}</div><small>If found, please email<br>info@setups.works</small></div>
 </div>
-<table class="tbl sm"><tbody><tr><td>Size</td><td>CR80, 85.6 × 54 mm, portrait or landscape</td></tr><tr><td>Header</td><td>Dark fill with the cream lockup</td></tr><tr><td>Details</td><td>Name in Geist 600, role in 400, photo on a pale tint</td></tr></tbody></table>`);
+<table class="tbl sm"><tbody><tr><td>Size</td><td>CR80, 85.6 × 54 mm, portrait or landscape</td></tr><tr><td>Header</td><td>Dark fill with the cream lockup</td></tr><tr><td>Details</td><td>Name in Geist 600, role in 400, photo on a neutral background</td></tr></tbody></table>`);
 
 add(7, "Merchandise", `
 <div class="row cen merch">
-<div class="tote"><div class="handles"></div><div class="bag">${mk(80, false)}<span class="wm" style="font-size:20px">Naazhi</span></div><small>Cream tote</small></div>
+<div class="tote"><div class="handles"></div><div class="bag">${mk(80, false)}<span class="wm" style="font-size:20px">Naazhi</span></div><small>Paper tote</small></div>
 <div class="mug"><div class="cup">${mk(50, true)}</div><i class="hd"></i><small>Dark mug</small></div>
-<div class="tee"><div class="shirt">${mk(60, true)}</div><small>Green tee</small></div>
+<div class="tee"><div class="shirt">${mk(60, true)}</div><small>Dark tee</small></div>
 <div class="note-bk"><div class="nb">${lockup(16)}<i></i><i></i><i class="s"></i></div><small>Notebook</small></div>
 </div>
-<p class="note">Colours: cream, ink and Naazhi green. The mark alone, or the lockup. One colour print where possible. No slogans on merchandise.</p>`);
+<p class="note">Colours: paper, ink and Naazhi green. The mark alone, or the lockup. One colour print where possible. No slogans on merchandise.</p>`);
 
 /* 09 Digital */
 add(8, "Website Branding", `
 <div class="browser"><div class="bar"><i></i><i></i><i></i><span>naazhi.app</span></div>
 <div class="site"><div class="nav">${lockup(16)}<span class="links">How it works · Pricing · Download</span>${btn("Open app", "primary sm")}</div>
 <div class="hero"><span class="glow"></span><span class="eyebrow">Naazhi</span><p class="serif">Everything you keep, <span class="quiet">in one place.</span></p><p class="sub">Notes, tasks, journal and chat in one workspace, with an AI you can swap or switch off.</p><div>${btn("Get started")} ${btn("Get the Android app", "secondary")}</div></div></div></div>
-${list(["Two hosts: <b>naazhi.app</b> (website) and <b>dashboard.naazhi.app</b> (app and admin).", "White canvas, ink text, one forest accent, an ink panel for closing calls to action.", "Titles end in “— Naazhi”."], "cols")}`);
+${list(["Two hosts: <b>naazhi.app</b> (website) and <b>dashboard.naazhi.app</b> (app and admin).", "White canvas, ink text, hairline borders, an ink panel for closing calls to action.", "Titles end in “— Naazhi”."], "cols")}`);
 
 add(8, "Website UI Guidelines", `
 <div class="two">
 ${cards([
   { h: "Layout", p: "Max width 1120 px (940 px for list pages). Mobile first: every screen works at 375 px with no horizontal scroll." },
-  { h: "Surfaces", p: "Frosted glass with a hairline inset ring. Radii 10 / 14 / 20 / 28 px. Warm low shadows (e1–e4)." },
-  { h: "Motion", p: "160–300 ms, ease cubic-bezier(0.22, 1, 0.36, 1). Respect reduced motion and the in-app setting." },
+  { h: "Surfaces", p: "Flat paper with a 1 px hairline border. Radii 4 / 6 / 8 / 12 / 16 px. Minimal shadows for floating layers only." },
+  { h: "Motion", p: "140–240 ms, ease cubic-bezier(0.2, 0.7, 0.2, 1). Respect reduced motion and the in-app setting." },
 ], 1)}
 ${cards([
-  { h: "Accessibility", p: "Real buttons and links, labels, visible 2 px forest focus ring, keyboard for everything." },
+  { h: "Accessibility", p: "Real buttons and links, labels, visible 2 px focus ring, keyboard for everything." },
   { h: "Dialogs and pickers", p: "Use Modal, Menu, useConfirm(), usePrompt() and the site’s own calendar. Never native alert, confirm or date inputs." },
   { h: "Tokens only", p: "No raw hex that has a token. Enforced by <code>pnpm check:design</code> in CI." },
 ], 1)}
@@ -760,26 +812,26 @@ add(8, "Button & Component Styling", `
 <div class="cg"><small>Input</small><div class="inp">Add a task…</div></div>
 <div class="cg w2"><small>Card</small><div class="gcard"><b>Plan the week</b><span>Due tomorrow</span>${tint("Work", 0)}</div></div>
 </div>
-${list(["<b>Primary</b>: dark pill, 44 px, one per view.", "<b>Secondary</b>: glass pill.", "<b>Icon button</b>: 38 px circle with aria-label.", "Pressed state scales to 95 % with the spring easing.", "Destructive actions confirm first, with danger styling."], "cols")}`);
+${list(["<b>Primary</b>: dark rectangular button (8 px corners), 40 px, one per view.", "<b>Secondary</b>: flat white button with hairline border.", "<b>Icon button</b>: 36 px with 6 px corners and aria-label.", "Pressed state scales to 96 % with ease transition.", "Destructive actions confirm first, with danger styling."], "cols")}`);
 
 add(8, "App Icon", `
 <div class="row cen">
-<div class="ai"><img src="${L("naazhi-app-icon-1024.png")}" style="width:200px;border-radius:44px;box-shadow:0 10px 30px #1b1c141f" alt=""><small>iOS · 1024 square (OS rounds the corners)</small></div>
+<div class="ai"><img src="${L("naazhi-app-icon-1024.png")}" style="width:200px;border-radius:44px;box-shadow:0 8px 24px #00000014" alt=""><small>iOS · 1024 square (OS rounds the corners)</small></div>
 <div class="ai"><div class="ad" style="background:#f9f4e5"><img src="${L("android-icon-foreground.png")}" style="width:200px" alt=""></div><small>Android adaptive · mark inside the 66 % safe zone</small></div>
-<div class="ai"><div class="ad" style="background:${C.green};border-radius:50%"><img src="${L("android-icon-monochrome.png")}" style="width:200px;border-radius:50%" alt=""></div><small>Android themed (one colour)</small></div>
+<div class="ai"><div class="ad" style="background:${C.logoGreen};border-radius:50%"><img src="${L("android-icon-monochrome.png")}" style="width:200px;border-radius:50%" alt=""></div><small>Android themed (one colour)</small></div>
 </div>
 <p class="note">Mark fills about 66 % of the square, centred, on cream. Package / bundle id <code>com.setupsworks.naazhi</code>. Generate from the master with <code>scripts/brand/build-assets.mjs</code>.</p>`);
 
 add(8, "Mobile Application Branding", `
 <div class="phones wide">${phone("home", 180)}${phone("todo", 180)}${phone("notes", 180)}${phone("chat", 180)}</div>
-${list(["<b>Launch</b>: cream ground, the mark is drawn in about two seconds, then Naazhi appears. With Reduce motion on, the finished mark is shown still.", "<b>Top bar</b>: lockup at 28 px.", "<b>Home-screen widgets</b>: Today’s tasks, Quick write, Health, Journal."], "cols")}`);
+${list(["<b>Launch</b>: paper ground, the mark is drawn in about two seconds, then Naazhi appears. With Reduce motion on, the finished mark is shown still.", "<b>Top bar</b>: lockup at 28 px.", "<b>Home-screen widgets</b>: Today’s tasks, Quick write, Health, Journal."], "cols")}`);
 
 add(8, "Social Media Profile Branding", `
 <div class="row cen prof2">
 <div class="pf2"><div class="cv2"></div><div class="av2"><img src="${L("naazhi-app-icon-1024.png")}" alt=""></div><b>Naazhi</b><small>@naazhi.app</small><p>One workspace, any AI. Notes, tasks, journal and chat.</p></div>
 <div>${cards([
   { h: "Avatar", p: "naazhi-app-icon-1024.png (the mark on cream)." },
-  { h: "Cover", p: "Cream with the lockup left, one serif line, one phone right." },
+  { h: "Cover", p: "Paper ground with the lockup left, Geist headline, one phone right." },
   { h: "Bio", p: "“One workspace, any AI.” + one plain line + the link." },
   { h: "Handle", p: "naazhi.app (lower case is for handles and addresses)." },
 ], 2)}</div>
@@ -791,12 +843,12 @@ add(8, "Digital Advertisement Guidelines", `
 <div class="ad2">${phone("home", 80)}<div><p class="serif">One workspace,<br>any AI.</p>${btn("Download", "primary sm")}</div></div>
 <div class="ad3">${mk(60, true)}<p class="serif">Naazhi</p></div>
 </div>
-${dos(["One headline, one button, one phone or the mark.", "Cream, white or dark fill grounds.", "Claim only what is built and documented."], ["Stock photos, gradients, emoji, countdown urgency.", "Fake reviews or numbers.", "Recolour or animate the mark."])}`);
+${dos(["One headline, one button, one phone or the mark.", "White, paper or dark fill grounds.", "Claim only what is built and documented."], ["Stock photos, gradients, emoji, countdown urgency.", "Fake reviews or numbers.", "Recolour or animate the mark."])}`);
 
 add(8, "Email Newsletter Design", `
 ${two(
   `<div class="mail"><div class="mh">${lockup(16)}</div><div class="mb"><span class="eyebrow">What’s new</span><p class="serif">Terms, refunds and contact pages</p><p class="t">Version 4.2 adds the pages you’ve asked for. Everything else works as before.</p>${btn("Read the changelog")}<div class="mi">${tint("Web", 1)} ${tint("New", 0)}</div></div><div class="mf">You received this because someone used this address on Naazhi.<br>Backed by Setups Works</div></div>`,
-  `${list(["600 px wide, cream background, white content card.", "Header: lockup at 28 px.", "One serif title, one short paragraph, one dark button.", "Footer: “You received this because someone used this address on Naazhi.” and the Setups Works credit.", "Sender name: <b>Naazhi &lt;…&gt;</b>. Plain-sentence subject lines, no emoji."])}`
+  `${list(["600 px wide, off-white background, white content card with hairline border.", "Header: lockup at 28 px.", "One Geist title, one short paragraph, one dark rectangular button.", "Footer: “You received this because someone used this address on Naazhi.” and the Setups Works credit.", "Sender name: <b>Naazhi &lt;…&gt;</b>. Plain-sentence subject lines, no emoji."])}`
 )}`);
 
 /* 10 Governance */
@@ -828,7 +880,7 @@ add(9, "Co-Branding Guidelines", `
 ${list([
   "Place Naazhi and the partner side by side, separated by a thin vertical hairline.",
   "Both logos at equal optical weight; the clear space of each is respected.",
-  "Naazhi’s lockup stays in its own colours on cream, white or dark. The partner keeps theirs.",
+  "Naazhi’s lockup stays in its own colours on paper, white or dark. The partner keeps theirs.",
   "Never merge, blend, overlap or restyle the two logos.",
   "Co-branded copy follows the Naazhi voice and is approved by both sides.",
 ])}`);
@@ -860,14 +912,14 @@ ${dl("app/home.png", "Home")}${dl("app/todo.png", "To-do")}${dl("app/notes.png",
 
 /* 11 Final */
 add(10, "Brand Guidelines Summary", `
-${lead("Calm, small, honest. Cream, green, serif.")}
+${lead("Calm, small, honest. Paper, ink, Geist.")}
 <div class="sum">
 <div><span>${mk(40)}</span><b>Logo</b><p>Lockup, mark on the left, ½-mark clear space, 16 px minimum.</p></div>
-<div><span style="background:${C.green}"></span><b>Colour</b><p>Cream canvas, ink text, forest green accent, tints for categories.</p></div>
-<div><span class="serif" style="font-size:26px">Aa</span><b>Type</b><p>Instrument Serif for titles, Geist for everything else.</p></div>
-<div><span>${ic("faStar", 26, C.green)}</span><b>Visuals</b><p>Real screens, glass cards, round shapes, Font Awesome Solid.</p></div>
-<div><span>${ic("faFeatherPointed", 26, C.green)}</span><b>Voice</b><p>Short, plain, warm. Sentence case. No hype.</p></div>
-<div><span>${ic("faShieldHalved", 26, C.green)}</span><b>Promise</b><p>Your AI can change. Your workspace shouldn’t.</p></div>
+<div><span style="background:${C.ink};color:#fff;display:flex;align-items:center;justify-content:center;border-radius:8px"></span><b>Colour</b><p>Paper canvas, ink text, hairline borders, muted tints for categories.</p></div>
+<div><span style="font-size:24px;font-weight:600">Aa</span><b>Type</b><p>Geist for all typography, Instrument Serif for the wordmark only.</p></div>
+<div><span>${ic("faStar", 26, C.ink)}</span><b>Visuals</b><p>Real screens, flat hairline cards, crisp corners, Lucide/Font Awesome line icons.</p></div>
+<div><span>${ic("faFeatherPointed", 26, C.ink)}</span><b>Voice</b><p>Short, plain, warm. Sentence case. No hype.</p></div>
+<div><span>${ic("faShieldHalved", 26, C.ink)}</span><b>Promise</b><p>Your AI can change. Your workspace shouldn’t.</p></div>
 </div>`);
 
 add(10, "Contact Information", `
@@ -887,7 +939,7 @@ const pad = (n) => String(n).padStart(3, "0");
 let tocHtml = "";
 {
   const groups = SECTIONS.map((name, si) => ({ name, items: P.map((p, i) => ({ ...p, n: i + 1 })).filter((p) => p.s === si) }));
-  tocHtml = `<div class="toc"><div class="tc-h">${lockup(26)}<h2 class="serif">Contents</h2></div><div class="tc-g">${groups
+  tocHtml = `<div class="toc"><div class="tc-h">${lockup(26)}<h2>Contents</h2></div><div class="tc-g">${groups
     .map((g, i) => `<div class="tc-s"><h5><b>${String(i + 1).padStart(2, "0")}</b> ${g.name}</h5>${g.items.map((it) => `<a href="#p${it.n}"><span>${it.t}</span><i>${it.n}</i></a>`).join("")}</div>`)
     .join("")}</div></div>`;
 }

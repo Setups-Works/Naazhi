@@ -121,7 +121,7 @@ export default function UniversalSearch({ admin, className = "" }: { admin: bool
     return [
       p("p-home", "Home", faHouse, "/dashboard"),
       p("p-journal", "Journal", faBookOpen, "/dashboard/journal"),
-      p("p-chat", "Chat", faComments, "/dashboard/chat"),
+      p("p-chat", "Naazhi AI", faComments, "/dashboard/chat"),
       p("p-notes", "Notes", faPenToSquare, "/dashboard/notes"),
       p("p-todo", "To-do — Today", faListCheck, "/dashboard/todo?v=today"),
       p("p-inbox", "To-do — Inbox", faInbox, "/dashboard/todo?v=inbox"),

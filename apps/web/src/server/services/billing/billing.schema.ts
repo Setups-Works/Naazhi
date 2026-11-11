@@ -21,7 +21,7 @@ export const planPatchInput = z.object({
   name: z.string().trim().min(1, "A plan needs a name.").max(60).optional(),
   tagline: z.string().trim().max(200).optional(),
   price_cents: z.number().int().min(0).max(10_000_000).optional(),
-  currency: z.string().trim().length(3, "Use a three-letter currency code.").toLowerCase().optional(),
+  currency: z.literal("inr").optional(), // rupees only
   interval: z.enum(["month", "year", "none"]).optional(),
   included_tokens: z.number().int().min(0).max(1_000_000_000_000).optional(),
   token_price_cents_per_million: z.number().int().min(0).max(100_000_000).optional(),
@@ -30,3 +30,10 @@ export const planPatchInput = z.object({
   sort: z.number().int().min(0).max(100).optional(),
 });
 export type PlanPatchInput = z.infer<typeof planPatchInput>;
+
+/** What Razorpay's checkout window hands back after a payment. */
+export const checkoutConfirmInput = z.object({
+  paymentId: z.string().trim().min(1).max(100),
+  subscriptionId: z.string().trim().min(1).max(100),
+  signature: z.string().trim().min(1).max(200),
+});

@@ -43,7 +43,7 @@ export function proxy(request: NextRequest) {
   const clean = split && onApp && (path === APP_HOME || isDashboardSection(path));
   const route = clean ? internalPath(path) : path;
 
-  if (!signedIn && (route.startsWith("/dashboard") || route.startsWith("/admin"))) {
+  if (!signedIn && (route.startsWith("/dashboard") || route.startsWith("/admin") || route.startsWith("/onboarding"))) {
     const to = request.nextUrl.clone();
     to.pathname = "/login";
     to.search = `?next=${encodeURIComponent(path)}`;

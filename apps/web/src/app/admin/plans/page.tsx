@@ -1,5 +1,5 @@
 import { serverConfigured } from "../../../server/session";
-import { adminOverview } from "../../../server/services/billing/billing.service";
+import { adminOverview, paymentsLive } from "../../../server/services/billing/billing.service";
 import { formatTokens } from "@untitled/logic/billing";
 import SetupNotice from "../../../components/admin/SetupNotice";
 import PlansEditor from "../../../components/admin/PlansEditor";
@@ -37,7 +37,7 @@ export default async function Page() {
           </h1>
           <p className="meta">
             Edit what each plan costs and includes. The pricing page and Settings read these rows, so a change shows everywhere at once.
-            Nobody is charged automatically: no payment provider is connected yet.
+            {paymentsLive() ? "Subscriptions are charged through Razorpay autopay, in rupees." : "Nobody is charged yet: Razorpay isn’t connected."}
           </p>
         </div>
       </div>

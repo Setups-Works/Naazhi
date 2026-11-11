@@ -15,7 +15,9 @@
 | `/admin/audit`         | Admin action log: filter by action, person, period; CSV export | `admin_audit`, `components/admin/AuditExport.tsx`        |
 | `/admin/system`        | Database status, latency and row counts (never content) | `countRows`, `adminDb()`                               |
 
-Add a section: create `app/admin/<section>/page.tsx` and one line in `components/admin/AdminNav.tsx`.
+The panel runs inside the app's own shell: `layout.tsx` renders `AppNav` (same sidebar, breadcrumb "Admin / <section>") and `.ap-body`; while the path is `/admin…` AppNav swaps the workspace list for the admin sections. Pages use the `.dash` classes (big Geist title, flat hairline cards).
+
+Add a section: create `app/admin/<section>/page.tsx` and one line in `components/admin/sections.ts`.
 
 ## Rules (security-critical)
 

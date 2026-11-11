@@ -26,7 +26,6 @@ function PlanForm({ plan }: { plan: BillingPlan }) {
   const [name, setName] = useState(plan.name);
   const [tagline, setTagline] = useState(plan.tagline);
   const [price, setPrice] = useState(toMajor(plan.price_cents));
-  const [currency, setCurrency] = useState(plan.currency);
   const [interval, setInterval_] = useState(plan.interval);
   const [included, setIncluded] = useState(String(plan.included_tokens));
   const [rate, setRate] = useState(toMajor(plan.token_price_cents_per_million));
@@ -41,7 +40,7 @@ function PlanForm({ plan }: { plan: BillingPlan }) {
     price_cents: toMinor(price) || 0,
     token_price_cents_per_million: toMinor(rate) || 0,
     interval,
-    currency,
+    currency: "inr",
   });
   const numbersOk =
     [price, rate].every((v) => v !== "" && Number.isFinite(Number(v)) && Number(v) >= 0) &&
@@ -58,7 +57,7 @@ function PlanForm({ plan }: { plan: BillingPlan }) {
             name,
             tagline,
             price_cents: toMinor(price),
-            currency,
+            currency: "inr",
             interval,
             included_tokens: Number(included),
             token_price_cents_per_million: toMinor(rate),
@@ -110,7 +109,7 @@ function PlanForm({ plan }: { plan: BillingPlan }) {
           <input className={INPUT} value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" />
         </Field>
         <Field label="Currency">
-          <input className={INPUT} value={currency} onChange={(e) => setCurrency(e.target.value.toLowerCase())} maxLength={3} />
+          <input className={INPUT} value="INR (₹)" readOnly aria-readonly />
         </Field>
         <Field label="Billed">
           <select className={INPUT} value={interval} onChange={(e) => setInterval_(e.target.value as BillingPlan["interval"])}>

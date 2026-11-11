@@ -8,7 +8,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Prefs } from "../../lib/prefs";
 import PrefsSync from "./PrefsSync";
 import { settingsHref, tabFromPath, type SettingsTab } from "../../features/settings/tabs";
-import { OPEN_ONBOARDING_EVENT } from "./Onboarding";
 import UniversalSearch, { OPEN_SETTINGS_EVENT } from "./UniversalSearch";
 import TodoNav from "./todo/TodoNav";
 import { SIDEBAR_SLOT_ID } from "./SidebarPortal";
@@ -27,13 +26,13 @@ import {
   faShieldHalved,
   faRightFromBracket,
   faGear,
-  faCompass,
   faBars,
   faXmark,
   faTableColumns,
   faSun,
   faMoon,
   faBell,
+  faArrowLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { authClient } from "../../lib/auth/client";
 import { clearDrafts } from "../../lib/drafts";
@@ -46,14 +45,15 @@ import { useBilling } from "../../features/billing/queries";
 import { usePrefsSave } from "../../features/settings/usePrefsSave";
 import { applyLook, resolveScheme, saveLook } from "../../lib/look";
 import { isoDate } from "../../lib/dates";
+import { ADMIN_SECTIONS, adminSectionFor } from "../admin/sections";
 
-type NavItem = { href: string; t: string; icon: IconDefinition; also?: string[] };
+type NavItem = { href: string; t: string; icon: IconDefinition; also?: string[]; logo?: boolean };
 
 /** One row per workspace section — pages live in app/dashboard/<section>. */
 const NAV: NavItem[] = [
   { href: "/dashboard", t: "Home", icon: faHouse },
   { href: "/dashboard/journal", t: "Journal", icon: faBookOpen },
-  { href: "/dashboard/chat", t: "Chat", icon: faComments },
+  { href: "/dashboard/chat", t: "Naazhi AI", icon: faComments, logo: true },
   { href: "/dashboard/notes", t: "Notes", icon: faNoteSticky },
   { href: "/dashboard/todo", t: "To-do", icon: faListCheck },
   { href: "/dashboard/library", t: "Library", icon: faLayerGroup },
@@ -64,6 +64,8 @@ const NAV: NavItem[] = [
 
 /** The Settings page has no row in the workspace list; this stands in for it in the breadcrumb. */
 const SETTINGS_SECTION: NavItem = { href: "/dashboard/settings", t: "Settings", icon: faGear };
+/** Likewise for the admin panel: "Admin / Users" in the breadcrumb. */
+const ADMIN_ROOT: NavItem = { href: "/admin", t: "Admin", icon: faShieldHalved };
 
 /** Pages that put their own list in the sidebar. */
 const hasPageList = (p: string) => p.startsWith("/dashboard/chat") || p === "/dashboard/workspace/reader" || p === "/dashboard/journal" || p === "/dashboard/notes";
@@ -135,12 +137,15 @@ export default function AppNav({
     });
   // Settings is an ordinary page (/dashboard/settings/<section>); the sidebar turns into its menu while it is open.
   const settingsTab = tabFromPath(path);
+  // /admin pages live in this same shell: the sidebar swaps the workspace list for the admin sections.
+  const adminMode = path === "/admin" || path.startsWith("/admin/");
   const openSettings = useCallback((tab: SettingsTab = "home") => router.push(publicPath(settingsHref(tab))), [router]);
   const box = useRef<HTMLDivElement>(null);
 
   const here = path;
-  const current = settingsTab ? -1 : NAV.findIndex((t) => isHere(t, here));
-  const section = settingsTab ? SETTINGS_SECTION : (NAV[current] ?? NAV[0]);
+  const current = settingsTab || adminMode ? -1 : NAV.findIndex((t) => isHere(t, here));
+  const adminHere = adminMode ? adminSectionFor(here) : null;
+  const section = adminMode ? ADMIN_ROOT : settingsTab ? SETTINGS_SECTION : (NAV[current] ?? NAV[0]);
   const todoView = here.startsWith("/dashboard/todo") ? search.get("v") : null;
   const crumb = useCrumb();
   const unread = useInbox().data?.unread ?? 0;
@@ -158,7 +163,9 @@ export default function AppNav({
     saveLook(scheme, look.prefs.accent);
     void look.change({ scheme });
   };
-  const sub = settingsTab
+  const sub = adminMode
+    ? adminHere?.t
+    : settingsTab
     ? undefined
     : (here.startsWith("/dashboard/journal/shared") && crumb ? crumb : undefined) ??
       (SUBPAGES.find(([p]) => here.startsWith(p))?.[1] ??
@@ -171,7 +178,7 @@ export default function AppNav({
             : undefined));
 
   // On a touch screen, swipe the page sideways to go to the next or previous section.
-  useSwipeNav(settingsTab ? 0 : current, settingsTab ? 1 : NAV.length, (to) => !settingsTab && router.push(publicPath(NAV[to].href)));
+  useSwipeNav(settingsTab || adminMode ? 0 : current, settingsTab || adminMode ? 1 : NAV.length, (to) => !settingsTab && !adminMode && router.push(publicPath(NAV[to].href)));
 
   // While Settings is open the sidebar shows its sections, so it opens (and goes back to how it was when Settings closes).
   const wasExpanded = useRef<boolean | null>(null);
@@ -210,7 +217,7 @@ export default function AppNav({
   // ⌥1…⌥9 open the sections in the order they are listed (⌥5 is To-do).
   useEffect(() => {
     const go = (e: KeyboardEvent) => {
-      if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      if (adminMode || !e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
       const n = /^Digit([1-9])$/.exec(e.code)?.[1];
       const el = e.target as HTMLElement | null;
       if (!n || el?.closest("input, textarea, select, [contenteditable='true']")) return;
@@ -221,7 +228,7 @@ export default function AppNav({
     };
     window.addEventListener("keydown", go);
     return () => window.removeEventListener("keydown", go);
-  }, [router]);
+  }, [router, adminMode]);
 
   useEffect(() => {
     const close = (e: MouseEvent | KeyboardEvent) => {
@@ -273,7 +280,7 @@ export default function AppNav({
             href={publicPath(section.href)}
             className={`flex min-w-0 items-center gap-2 rounded-tab px-1.5 py-1 hover:bg-hover ${sub ? "text-fg-muted" : "text-fg"}`}
           >
-            <FA icon={section.icon} className="text-[12.5px] text-fg-subtle" />
+            {section.logo ? (<><BrandMark size={16} className="brand-on-light" /><BrandMark size={16} tone="light" className="brand-on-dark" /></>) : <FA icon={section.icon} className="text-[12.5px] text-fg-subtle" />}
             <span className="truncate">{section.t}</span>
           </Link>
           {sub && (
@@ -314,10 +321,32 @@ export default function AppNav({
         </div>
 
         <div className="sb-scroll">
-          <div style={settingsTab ? { display: "none" } : undefined}>
+          <div style={settingsTab || adminMode ? { display: "none" } : undefined}>
             <UniversalSearch admin={admin} className={`sb-search ${ROW} bg-transparent shadow-none`} />
           </div>
-          <nav aria-label="Workspace" className="mt-1 flex flex-col gap-0.5" style={settingsTab ? { display: "none" } : undefined}>
+          {adminMode && (
+            <nav aria-label="Admin" className="mt-1 flex flex-col gap-0.5">
+              <Link href={publicPath("/dashboard")} className={ROW} title="Back to app" onClick={() => setDrawer(false)}>
+                <FA icon={faArrowLeft} className="w-4 shrink-0 text-[14px]" />
+                <span className="sb-label truncate">Back to app</span>
+              </Link>
+              <p className="sb-label m-0 px-[9px] pt-3 pb-1 text-[12px] font-medium tracking-[0.04em] text-ink-4 uppercase">Admin</p>
+              {ADMIN_SECTIONS.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={adminHere?.href === item.href ? "page" : undefined}
+                  title={item.t}
+                  className={ROW}
+                  onClick={() => setDrawer(false)}
+                >
+                  <FA icon={item.icon} className="w-4 shrink-0 text-[14px]" />
+                  <span className="sb-label truncate">{item.t}</span>
+                </Link>
+              ))}
+            </nav>
+          )}
+          <nav aria-label="Workspace" className="mt-1 flex flex-col gap-0.5" style={settingsTab || adminMode ? { display: "none" } : undefined}>
             {NAV.map((item, i) => (
               <Link
                 key={item.href}
@@ -327,7 +356,14 @@ export default function AppNav({
                 className={ROW}
                 onClick={() => setDrawer(false)}
               >
-                <FA icon={item.icon} className="w-4 shrink-0 text-[14px]" />
+                {item.logo ? (
+                  <span className="flex w-4 shrink-0 justify-center">
+                    <BrandMark size={16} className="brand-on-light" />
+                    <BrandMark size={16} tone="light" className="brand-on-dark" />
+                  </span>
+                ) : (
+                  <FA icon={item.icon} className="w-4 shrink-0 text-[14px]" />
+                )}
                 <span className="sb-label truncate">{item.t}</span>
                 {item.href === "/dashboard/todo" && dueCount > 0 && (
                   <small className="sb-label ml-auto text-[12px] font-medium text-critical group-hover/row:hidden">{dueCount}</small>
@@ -389,16 +425,6 @@ export default function AppNav({
                 }}
               >
                 <FA icon={faGear} /> Settings
-              </button>
-              <button
-                role="menuitem"
-                onClick={() => {
-                  setMenu(false);
-                  setDrawer(false);
-                  window.dispatchEvent(new Event(OPEN_ONBOARDING_EVENT));
-                }}
-              >
-                <FA icon={faCompass} /> Getting started
               </button>
               {admin && (
                 <Link role="menuitem" href="/admin" onClick={() => setMenu(false)}>

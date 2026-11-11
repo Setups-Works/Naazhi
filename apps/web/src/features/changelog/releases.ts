@@ -23,6 +23,23 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-11",
+    title: "Version 5.2.0: pay with autopay, a new setup flow and a calmer admin",
+    summary: "Subscriptions can now be paid for with autopay in rupees, new accounts get a full setup flow, and the admin panel and To-do filters share the app’s paper-and-ink look.",
+    tone: "amber",
+    appVersion: "v5.2.0",
+    changes: [
+      { kind: "new", platform: "web", text: "Subscribe to the Subscription plan with autopay through Razorpay (UPI AutoPay or card), in rupees. Each month is charged on its own and cancelling stops it at the end of the month you paid for." },
+      { kind: "new", platform: "app", text: "Subscribe with autopay from the app’s Plan and billing screen and the pricing screen, using Razorpay’s own payment sheet." },
+      { kind: "new", platform: "web", text: "A first-run setup flow walks you through your name and role, preferences, a first task, note or journal entry, and choosing a plan. You can finish later." },
+      { kind: "new", platform: "web", text: "Bring an Obsidian vault in as notes, from Settings or during setup. Folders stay folders and duplicates are skipped." },
+      { kind: "new", platform: "web", text: "An optional morning brief: once a day, a browser notification says what is due today." },
+      { kind: "new", platform: "web", text: "Tell Naazhi AI what you do and how you like answers written (short, warm or formal)." },
+      { kind: "improved", platform: "web", text: "The admin panel now lives inside the app, with the same sidebar and flat paper-and-ink look as everything else." },
+      { kind: "improved", platform: "web", text: "The To-do filters page uses calm cards instead of coloured blocks." },
+    ],
+  },
+  {
+    date: "2026-11-11",
     title: "Version 5.1.2: easier to find on search engines",
     summary: "Naazhi now gives search engines and AI assistants a clearer map of the site, so the right pages can show up under the main result.",
     tone: "mint",

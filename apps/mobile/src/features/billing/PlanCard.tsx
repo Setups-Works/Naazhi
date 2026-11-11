@@ -13,12 +13,15 @@ export function PlanCard({
   current,
   busy,
   loading,
+  autopay = false,
   onChoose,
 }: {
   plan: BillingPlan;
   current: boolean;
   busy: boolean;
   loading: boolean;
+  /** Paying through Razorpay autopay: the button says so. */
+  autopay?: boolean;
   onChoose: () => void;
 }) {
   return (
@@ -38,7 +41,7 @@ export function PlanCard({
           <AppText variant="small" style={styles.flex}>{f}</AppText>
         </View>
       ))}
-      <Button title={current ? "Your plan" : "Choose this plan"} kind={current ? "secondary" : "primary"} disabled={current || busy} loading={loading} onPress={onChoose} />
+      <Button title={current ? "Your plan" : autopay ? "Subscribe with autopay" : "Choose this plan"} kind={current ? "secondary" : "primary"} disabled={current || busy} loading={loading} onPress={onChoose} />
     </View>
   );
 }

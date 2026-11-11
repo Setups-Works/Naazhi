@@ -1,6 +1,6 @@
 # Plans and billing
 
-**Read this when** you touch plans, prices, AI access, the Plan and billing tab, the admin Plans page or the pricing page. Everything below is built; the one thing that is **not** is a payment provider (see [Connecting payments](#connecting-payments)).
+**Read this when** you touch plans, prices, AI access, the Plan and billing tab, the admin Plans page or the pricing page. Everything below is built; payments run through Razorpay autopay (see [Payments](#payments-razorpay-autopay-rupees-only)).
 
 ## The three plans
 
@@ -59,15 +59,20 @@ Data flow, as everywhere: `component → queries.ts → api-client → /api/v1/b
 
 `/admin/plans`: one form per plan (name, tagline, price, currency, billing interval, tokens included, price per 1M tokens, feature lines, visible, order), counts of people per plan, tokens in the last 30 days, and a subscriber table where an admin can move a person to another plan or off all plans (support, or people who pay outside the app). Prices are typed in major units and converted to cents in `PlansEditor.tsx`, the only place that converts. Saving also revalidates `/pricing`.
 
-## Connecting payments
+## Payments: Razorpay autopay (rupees only)
 
-`FEATURES.payments` (`apps/web/src/config/features.ts`) is **false**: plan changes are recorded and nobody is charged. While it is false, Settings and the pricing page say so. To connect a provider (for India a provider such as Razorpay, or Stripe):
+A **Subscription** is a Razorpay Subscription, i.e. **autopay**: the person approves a mandate once (UPI AutoPay, card or e-mandate) and each period is charged on its own. Amounts are INR only (`billing_plans.currency` accepts only `inr`). Pay as you go is **not** charged through Razorpay yet (usage is metered and priced, but there is no invoicing job); Bring your own key never charges.
 
-1. Add the provider's secret keys to `serverEnv()` and `.env.example` (server only).
-2. Checkout and portal routes under `api/v1/billing/`, and a **signature-verified, idempotent** webhook route that calls new service functions (never write the tables from the route).
-3. Make `choosePlan` for a paid plan return a checkout URL instead of activating, and let the webhook activate, renew and cancel (`user_billing` already has the columns: `status`, `period_start`, `period_end`, `cancel_at_period_end`). Replace the lazy rollover in `settled()` for paid plans with the provider's events.
-4. Bill pay as you go from `ai_usage` (`tokenCostCents`).
-5. Set `payments: true`, update the copy that mentions it (pricing page FAQ, `BillingPanel`, the phone `BillingSection`), this file, `docs/CURRENT_STATE.md` and `docs/SECURITY.md`.
+**Switching it on:** set `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` (server only, `.env.example`) and `FEATURES.payments` (true). Payments are live only when all three secrets exist (`paymentsLive()`); otherwise plan changes are free and recorded, as before. In the Razorpay dashboard add a webhook to `https://<site>/api/webhooks/razorpay` with the same secret and the events listed in `.env.example`.
+
+**Flow**
+1. `POST /api/v1/billing/checkout {planId}` → `startCheckout`: creates (or reuses) a Razorpay plan for the current price (`razorpay_plan_key` = `amount:inr:interval`, so an admin price change makes a new one), creates the subscription with `notes.user_id`, returns what the checkout window needs.
+2. The browser opens Razorpay Checkout (`features/billing/razorpay.ts`). On success it calls `POST /api/v1/billing/confirm` → `confirmCheckout`: verifies the HMAC signature (`payment_id|subscription_id` with the key secret), fetches the subscription from Razorpay, checks `notes.user_id` is the caller, then activates. A forged call can't grant a plan.
+3. **The webhook does the rest**, and is the source of truth for renewals and endings. `/api/webhooks/razorpay` checks `X-Razorpay-Signature` over the raw body before parsing, refuses events older than 2 days, and `handleWebhook` claims `X-Razorpay-Event-Id` in `billing_events` (retries and concurrent deliveries run once; a failure releases the claim so Razorpay's retry runs). Handlers set absolute state and never move a period backwards. `subscription.activated|charged` start or renew, `pending`/`payment.failed` only note the status (Razorpay retries the charge), `halted|cancelled|completed|expired` end the plan.
+4. **Cancel** → Razorpay `cancel_at_cycle_end`, the plan runs to the end of the paid period. Razorpay can't undo it, so **Resume** is refused for a paid plan (subscribe again afterwards). Moving to another plan cancels the subscription at once. `settled()` never renews a Razorpay-managed plan from our own clock.
+5. **The phone app** uses Razorpay's native SDK (`react-native-razorpay`, `apps/mobile/src/features/billing/checkout.ts`) against the same `checkout` and `confirm` endpoints, so the rules are identical. It is a native module: the app needs a new native build (not Expo Go); in Expo Go the button explains this instead of crashing. `needsCheckout` lives in `packages/logic/src/billing.ts` and is shared.
+
+Code: `server/providers/payments/razorpay.ts` (REST + signatures, no SDK), `billing.service.ts` (`startCheckout`, `confirmCheckout`, `handleWebhook`), `app/api/webhooks/razorpay/route.ts`, migration `20261111180000_razorpay_payments.sql`. Test with `rzp_test_` keys and Razorpay's test UPI/cards; tests in `tests/unit/razorpay.test.ts`.
 
 ## Changing things
 

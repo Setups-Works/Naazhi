@@ -11,7 +11,7 @@ import { SettingsDataProvider } from "../../components/app/SettingsData";
 import QueryProvider from "../../components/providers/QueryProvider";
 import AnnouncementBanner from "../../components/app/AnnouncementBanner";
 import ChatWidget from "../../components/app/ChatWidget";
-import Onboarding from "../../components/app/Onboarding";
+import WebBrief from "../../features/notifications/WebBrief";
 import { cleanOnboarding, shouldShowOnboarding } from "../../lib/onboarding";
 
 export const metadata: Metadata = { title: "Dashboard — Naazhi", robots: { index: false } };
@@ -46,7 +46,8 @@ export default async function Layout({ children }: { children: ReactNode }) {
   ]);
   const announcements = (ann.data ?? []) as { id: string; message: string; tone: string }[];
   const prefs = cleanPrefs(profile.data?.preferences, CATEGORIES);
-  const onboarding = cleanOnboarding(profile.data?.onboarding);
+  // New accounts, and ones that never finished (and did not choose "Finish later" recently), are taken to the setup first.
+  if (shouldShowOnboarding(cleanOnboarding(profile.data?.onboarding))) redirect("/onboarding");
   const account = {
     name: user.name,
     email: user.email,
@@ -71,7 +72,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
         />
         <AnnouncementBanner items={announcements} />
         <div className="ap-body">{children}</div>
-        <Onboarding name={name} prefs={prefs} state={onboarding} show={shouldShowOnboarding(onboarding)} />
+        <WebBrief enabled={prefs.webBrief} />
         <ChatWidget />
       </div>
       </SettingsDataProvider>

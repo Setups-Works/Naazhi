@@ -1,4 +1,4 @@
-import { formatTokens, priceLine } from "@untitled/logic";
+import { formatTokens, needsCheckout, priceLine } from "@untitled/logic";
 import type { BillingPlan, MyBilling } from "@untitled/types";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -13,7 +13,8 @@ import { Icon } from "@/components/ui/Icon";
 import { Screen } from "@/components/ui/Screen";
 import { Font, Palette, Radius } from "@/constants/theme";
 import { PlanCard } from "./PlanCard";
-import { useBilling, useBillingActions } from "./queries";
+import { usePlanPicker } from "./checkout";
+import { useBilling } from "./queries";
 
 /** What each plan means for AI, worked out from the plan's own numbers. */
 const aiLine = (p: BillingPlan) =>
@@ -49,8 +50,8 @@ function Compare({ plans }: { plans: BillingPlan[] }) {
 export function PricingScreen() {
   const [err, setErr] = useState("");
   const q = useBilling();
-  const { choose } = useBillingActions(setErr);
   const b: MyBilling | undefined = q.data;
+  const picker = usePlanPicker(b, setErr);
 
   return (
     <Screen>
@@ -66,7 +67,7 @@ export function PricingScreen() {
       {err ? <Banner kind="error">{err}</Banner> : null}
       {b && !b.payments_connected ? <Banner kind="info">Payments aren’t switched on yet, so choosing a plan doesn’t charge you.</Banner> : null}
       {b?.plans.map((p) => (
-        <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={choose.isPending} loading={choose.isPending && choose.variables === p.id} onChoose={() => choose.mutate(p.id)} />
+        <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={picker.busy} loading={picker.loadingId === p.id} autopay={needsCheckout(b, p)} onChoose={() => void picker.pick(p)} />
       ))}
       {b && b.plans.length > 0 ? (
         <>

@@ -1,4 +1,4 @@
-import { BYO_PROVIDERS, byoProvider, formatMoney, formatTokens, toDate } from "@untitled/logic";
+import { BYO_PROVIDERS, byoProvider, formatMoney, formatTokens, needsCheckout, toDate } from "@untitled/logic";
 import type { MyBilling } from "@untitled/types";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -13,6 +13,7 @@ import { PickerField } from "@/components/ui/PickerField";
 import { TextField } from "@/components/ui/TextField";
 import { Palette, Radius } from "@/constants/theme";
 import { PlanCard } from "./PlanCard";
+import { usePlanPicker } from "./checkout";
 import { useBilling, useBillingActions } from "./queries";
 
 const day = (iso: string) => toDate(iso).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
@@ -81,10 +82,11 @@ function KeyForm({ billing, onError }: { billing: MyBilling; onError: (m: string
 export function BillingSection() {
   const [err, setErr] = useState("");
   const q = useBilling();
-  const { choose, cancel, resume } = useBillingActions(setErr);
+  const { cancel, resume } = useBillingActions(setErr);
   const { ask, dialog } = useConfirm();
   const b = q.data;
-  const busy = choose.isPending || cancel.isPending || resume.isPending;
+  const picker = usePlanPicker(b, setErr);
+  const busy = picker.busy || cancel.isPending || resume.isPending;
 
   return (
     <Card tone="green" style={styles.card}>
@@ -105,7 +107,7 @@ export function BillingSection() {
           {!b.payments_connected ? <Banner kind="info">Payments aren’t connected yet, so choosing or changing a plan doesn’t charge you.</Banner> : null}
 
           {b.plans.map((p) => (
-            <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={busy} loading={choose.isPending && choose.variables === p.id} onChoose={() => choose.mutate(p.id)} />
+            <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={busy} loading={picker.loadingId === p.id} autopay={needsCheckout(b, p)} onChoose={() => void picker.pick(p)} />
           ))}
           <Button title="Compare plans" kind="ghost" icon="arrow-up-right-from-square" onPress={() => router.push("/pricing")} />
 

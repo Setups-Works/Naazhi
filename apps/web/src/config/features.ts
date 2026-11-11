@@ -26,7 +26,7 @@ export const FEATURES = {
   notifications: true, // App: inbox, push (Android, through Firebase) and reminders. Web notifications are not built.
   insightsAi: false, // Phase 5: AI-written insights (today they are computed locally)
   billing: true, // Plans: subscription, pay as you go, bring your own key (Settings → Plan and billing, Admin → Plans)
-  payments: false, // A payment provider is not connected yet: plan changes are recorded and nobody is charged
+  payments: true, // Razorpay autopay: live only when RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET and RAZORPAY_WEBHOOK_SECRET are all set
 } as const;
 
 export type FeatureName = keyof typeof FEATURES;

@@ -77,6 +77,12 @@ export function serverEnv() {
       .filter(Boolean),
     groqApiKey: optional("GROQ_API_KEY"),
     composioApiKey: optional("COMPOSIO_API_KEY"),
+    /** Razorpay: the key id is public (the checkout window needs it); the secret and webhook secret never leave the server. */
+    razorpay: {
+      keyId: optional("RAZORPAY_KEY_ID"),
+      keySecret: optional("RAZORPAY_KEY_SECRET"),
+      webhookSecret: optional("RAZORPAY_WEBHOOK_SECRET"),
+    },
     sentryAuthToken: optional("SENTRY_AUTH_TOKEN"),
     cronSecret: optional("CRON_SECRET"),
     /** Firebase service-account JSON (plain or base64) used to send push notifications to Android phones. Without it messages still reach the in-app inbox. */

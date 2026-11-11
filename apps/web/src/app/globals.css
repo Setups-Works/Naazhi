@@ -4935,9 +4935,9 @@
     flex-direction: column;
     gap: 4px;
     padding: 20px;
-    border-radius: var(--r4);
-    background: var(--ab);
-    box-shadow: inset 0 0 0 1px var(--abl);
+    border-radius: var(--r3);
+    background: var(--raised);
+    box-shadow: inset 0 0 0 1px var(--line);
   }
   .dash-stat .mega-ico {
     margin-bottom: 10px;
@@ -6899,71 +6899,6 @@
   }
 
   /* ===== admin panel ===== */
-  .adm {
-    display: grid;
-    grid-template-columns: 230px 1fr;
-    gap: clamp(20px, 3vw, 40px);
-    max-width: 1320px;
-    margin: 0 auto;
-    padding: 32px clamp(16px, 3vw, 32px) var(--section-y);
-    min-height: 100dvh;
-  }
-  .adm-side {
-    position: sticky;
-    top: 24px;
-    align-self: start;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    padding: 18px;
-    border-radius: var(--r4);
-    background: var(--raised);
-    box-shadow: inset 0 0 0 1px var(--line);
-  }
-  .adm-side nav {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .adm-side nav a {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: var(--r2);
-    font-size: 14.5px;
-    color: var(--fg-muted);
-    transition:
-      background 0.16s,
-      color 0.16s;
-  }
-  .adm-side nav a:hover {
-    background: var(--surface-muted);
-    color: var(--fg);
-  }
-  .adm-side nav a[aria-current="page"] {
-    background: var(--violet-bg);
-    color: var(--violet-fg);
-    font-weight: 600;
-  }
-  .adm-foot {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding-top: 14px;
-    border-top: 1px solid var(--line);
-    font-size: 13px;
-    color: var(--fg-subtle);
-  }
-  .adm-foot small {
-    word-break: break-all;
-  }
-  .adm-foot a:hover {
-    color: var(--fg);
-  }
-  .adm-main {
-    min-width: 0;
-  }
   .adm-chart {
     display: grid;
     grid-template-columns: repeat(14, 1fr);
@@ -13195,30 +13130,28 @@
     align-items: center;
     gap: 14px;
     width: 100%;
-    height: 60px;
-    padding: 0 20px;
+    height: 56px;
+    padding: 0 16px;
     border-radius: var(--r3);
-    background: var(--ab);
-    box-shadow: inset 0 0 0 1px var(--abl);
+    background: var(--raised);
+    box-shadow: inset 0 0 0 1px var(--line);
     text-align: left;
     transition:
-      transform 0.2s var(--ease),
-      box-shadow 0.16s;
+      background 0.14s var(--ease),
+      box-shadow 0.14s var(--ease);
   }
   .tv-filters button:hover {
-    transform: translateY(-1px);
-    box-shadow:
-      inset 0 0 0 1px var(--abf),
-      var(--e2);
+    background: var(--hover);
+    box-shadow: inset 0 0 0 1px var(--line-2);
   }
   .tv-filters button > span {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
     border-radius: var(--r1);
     display: grid;
     place-items: center;
-    background: color-mix(in srgb, var(--raised) 72%, transparent);
-    color: var(--abf);
+    background: var(--hover);
+    color: var(--fg-muted);
   }
   .tv-filters b {
     flex: 1;
@@ -15253,9 +15186,6 @@
       border-radius: var(--r3);
     }
     /* popovers become bottom sheets so they never run off-screen */
-    .adm {
-      padding: 14px;
-    }
     .dash-stats {
       gap: 10px;
     }
@@ -15306,25 +15236,6 @@
       max-height: none;
     }
   }
-  @media (max-width: 900px) {
-    .adm {
-      grid-template-columns: 1fr;
-      padding-top: 16px;
-    }
-    .adm-side {
-      position: static;
-    }
-    .adm-side nav {
-      flex-direction: row;
-      flex-wrap: wrap;
-    }
-    .adm-foot {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-    }
-  }
-
   /* ===== Radix primitives (Menu, Tabs, Dialog) ===== */
   .sr-only {
     position: absolute !important;
@@ -15464,320 +15375,6 @@
       flex-direction: row;
       gap: 6px;
     }
-  }
-
-  /* Onboarding wizard */
-  .ob-back {
-    position: fixed;
-    inset: 0;
-    z-index: 110;
-    display: grid;
-    place-items: center;
-    padding: 16px;
-    overflow: auto;
-    background: radial-gradient(1200px 600px at 20% -10%, color-mix(in srgb, var(--violet-bg) 80%, transparent), transparent), color-mix(in srgb, var(--ink) 65%, transparent);
-    backdrop-filter: blur(6px);
-    animation: cdFade 0.2s ease-out;
-  }
-  .ob {
-    width: min(680px, 100%);
-    display: flex;
-    flex-direction: column;
-    max-height: calc(100dvh - 32px);
-    border-radius: var(--r4);
-    background: var(--surface);
-    box-shadow:
-      inset 0 0 0 1px var(--line),
-      var(--e4);
-    animation: cdPop 0.28s var(--ease);
-    outline: 0;
-  }
-  .ob-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 18px 22px;
-    border-bottom: 1px solid var(--line);
-  }
-  .ob-steps {
-    display: flex;
-    gap: 6px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    flex-wrap: wrap;
-  }
-  .ob-steps li {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 10px 4px 4px;
-    border-radius: var(--pill);
-    font-size: 13px;
-    color: var(--fg-subtle);
-  }
-  .ob-steps i {
-    display: grid;
-    place-items: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    font-style: normal;
-    font-size: 11px;
-    background: var(--surface-sunken);
-  }
-  .ob-steps li[data-state="now"] {
-    color: var(--fg);
-    background: var(--violet-bg);
-  }
-  .ob-steps li[data-state="now"] i {
-    background: var(--fill-dark);
-    color: var(--on-dark);
-  }
-  .ob-steps li[data-state="done"] i {
-    background: var(--green-bg);
-    color: var(--green-fg);
-  }
-  .ob-skip {
-    border: 0;
-    background: none;
-    font: inherit;
-    font-size: 13px;
-    color: var(--fg-subtle);
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    white-space: nowrap;
-  }
-  .ob-skip:hover {
-    color: var(--fg);
-  }
-  .ob-body {
-    flex: 1;
-    overflow: auto;
-    padding: 26px 26px 10px;
-    animation: obIn 0.3s var(--ease);
-  }
-  @keyframes obIn {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-  }
-  .ob-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 12px;
-    border-radius: var(--pill);
-    background: var(--violet-bg);
-    color: var(--violet-fg);
-    font-size: 13px;
-    font-weight: 600;
-  }
-  .ob-badge-ok {
-    background: var(--green-bg);
-    color: var(--green-fg);
-  }
-  .ob-title {
-    margin: 14px 0 8px;
-    font-size: clamp(24px, 4vw, 32px);
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-  }
-  .ob-lead {
-    margin: 0 0 20px;
-    color: var(--fg-muted);
-    line-height: 1.55;
-  }
-  .ob-note {
-    margin: 18px 0 0;
-    font-size: 13px;
-    color: var(--fg-subtle);
-  }
-  .ob-field {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    font-size: 14px;
-  }
-  .ob-field > span {
-    font-weight: 600;
-  }
-  .ob-field input:not([type]),
-  .ob-field select {
-    height: 46px;
-    padding: 0 14px;
-    border-radius: var(--r2);
-    border: 1px solid var(--line-strong);
-    background: var(--surface);
-    font: inherit;
-    color: var(--fg);
-  }
-  .ob-field input:focus-visible,
-  .ob-field select:focus-visible {
-    outline: 2px solid var(--violet-fg);
-    outline-offset: 1px;
-  }
-  .ob-prefs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-  }
-  .ob-seg {
-    display: flex;
-    padding: 3px;
-    gap: 3px;
-    border-radius: var(--r2);
-    background: var(--surface-sunken);
-  }
-  .ob-seg button {
-    flex: 1;
-    height: 38px;
-    border: 0;
-    border-radius: calc(var(--r2) - 3px);
-    background: transparent;
-    font: inherit;
-    font-size: 13.5px;
-    color: var(--fg-muted);
-    cursor: pointer;
-  }
-  .ob-seg button[data-on="true"] {
-    background: var(--surface);
-    color: var(--fg);
-    font-weight: 600;
-    box-shadow: var(--e1);
-  }
-  .ob-seg button:focus-visible {
-    outline: 2px solid var(--violet-fg);
-  }
-  .ob-check {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    align-self: end;
-    min-height: 46px;
-    font-size: 14px;
-    cursor: pointer;
-  }
-  .ob-try,
-  .ob-tips {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  .ob-try li {
-    padding: 14px;
-    border-radius: var(--r3);
-    background: var(--ab, var(--surface-muted));
-    box-shadow: inset 0 0 0 1px var(--abl, var(--line));
-    transition: opacity 0.2s;
-  }
-  .ob-try li[data-done="true"] {
-    opacity: 0.75;
-  }
-  .ob-try-h {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .ob-try-h i {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--raised) 70%, transparent);
-    color: var(--abf, var(--fg));
-    font-style: normal;
-  }
-  .ob-try-h b {
-    display: block;
-    font-size: 15px;
-  }
-  .ob-try-h small {
-    color: var(--fg-muted);
-    font-size: 13px;
-  }
-  .ob-try-f {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-  }
-  .ob-try-f input {
-    flex: 1;
-    min-width: 0;
-    height: 42px;
-    padding: 0 14px;
-    border-radius: var(--r2);
-    border: 1px solid var(--line-strong);
-    background: color-mix(in srgb, var(--raised) 80%, transparent);
-    font: inherit;
-    color: var(--fg);
-  }
-  .ob-tips li {
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-    line-height: 1.5;
-    color: var(--fg-muted);
-  }
-  .ob-tips i {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: var(--blue-bg);
-    color: var(--blue-fg);
-    font-style: normal;
-  }
-  .ob-tips kbd {
-    padding: 1px 6px;
-    border-radius: 6px;
-    background: var(--surface-sunken);
-    font: inherit;
-    font-size: 12.5px;
-    box-shadow: inset 0 0 0 1px var(--line);
-  }
-  .ob-tips a {
-    color: var(--fg);
-    font-weight: 600;
-  }
-  .ob-foot {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 16px 22px 20px;
-    border-top: 1px solid var(--line);
-  }
-  @media (max-width: 560px) {
-    .ob-steps li span {
-      display: none;
-    }
-    .ob-steps li[data-state="now"] span {
-      display: inline;
-    }
-    .ob-prefs {
-      grid-template-columns: 1fr;
-    }
-    .ob-body {
-      padding: 20px 18px 8px;
-    }
-    .ob-try-f {
-      flex-direction: column;
-    }
-  }
-  [data-motion="reduce"] .ob,
-  [data-motion="reduce"] .ob-body,
-  [data-motion="reduce"] .ob-back {
-    animation: none;
   }
 
   /* Tinted cards (home, journal, to-do, notes, chat sidebar…) are plain paper too: hairline border, no tint, no lift. */
@@ -16337,16 +15934,15 @@
 } /* end @layer legacy */
 
   /* ===== admin panel: paper/ink reference look (flat cards, hairlines, no tints) ===== */
-  .adm .dash-stat,
-  .adm .dash-card,
-  .adm .dash-table,
-  .adm-side {
+  .dash .dash-stat,
+  .dash .dash-card,
+  .dash .dash-table {
     background: var(--paper);
     box-shadow: none;
     border: 1px solid var(--line);
     border-radius: var(--r-card);
   }
-  .adm .dash-stat b {
+  .dash .dash-stat b {
     font-family: var(--sans);
     font-weight: 600;
     font-size: 30px;
@@ -16362,19 +15958,11 @@
     color: var(--ink-2);
     box-shadow: inset 0 0 0 1px var(--line);
   }
-  .adm-side nav a {
-    border-radius: var(--r-ctl);
-    font-size: 14px;
-  }
-  .adm-side nav a[aria-current="page"] {
-    background: var(--hover);
-    color: var(--ink);
-  }
   .adm-chart i {
     background: var(--ink);
     border-radius: 4px 4px 1px 1px;
   }
-  .adm .dash-tools input {
+  .dash .dash-tools input {
     height: 36px;
     border-radius: var(--r-ctl);
     background: var(--paper);
@@ -16382,14 +15970,54 @@
     border: 1px solid var(--line-2);
     font-size: 14px;
   }
-  .adm .dash-table th {
+  .dash .dash-table th {
     letter-spacing: 0.04em;
     text-transform: none;
     font-size: 12px;
   }
-  .adm .dash-head h1 {
-    font-size: 22px;
+  /* The page header, as on To-do and Notes: a big Geist title with a muted line under it. The section name is already in the breadcrumb. */
+  .dash {
+    max-width: 1120px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .dash-head {
+    margin-bottom: 22px;
+  }
+  .dash-head .eyebrow {
+    display: none;
+  }
+  .dash-head h1 {
+    margin: 0;
+    font-family: var(--sans);
+    font-size: clamp(28px, 3vw, 36px);
     font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+  }
+  .dash-head .meta {
+    margin: 8px 0 0;
+    font-size: 15px;
+    color: var(--ink-3);
+  }
+  .dash .dash-stat small,
+  .dash .dash-card .meta {
+    color: var(--ink-3);
+  }
+  .dash .dash-card h4 {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .dash .dash-table tbody tr:hover td {
+    background: var(--hover);
+  }
+  .adm-pill {
+    border-radius: var(--r-xs);
+    background: var(--hover);
+    color: var(--ink-2);
+    box-shadow: none;
   }
 
   /* ===== share dialog (notes, journal, chat): flat reference look ===== */

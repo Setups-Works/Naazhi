@@ -33,9 +33,18 @@ export type Prefs = {
   excludedLabels: { name: string; account: string }[];
   /** Health: the chat assistant may read your synced health data. */
   healthAssistant: boolean;
+  /** What the person does (optional). Naazhi's assistant uses it to tell what matters to them. */
+  role: string;
+  /** How the assistant should write for the person (optional). */
+  writeTone: WriteTone;
+  /** A browser notification with today's to-dos, once a day, while Naazhi is open (needs the browser's permission). */
+  webBrief: boolean;
   /** The last few imports, newest first. */
   recentImports: { at: string; source: string; notes: number; folders: number }[];
 };
+
+export const WRITE_TONES = ["direct", "warm", "formal"] as const;
+export type WriteTone = (typeof WRITE_TONES)[number] | "";
 
 export const SCHEMES = ["system", "light", "cream", "dark"] as const;
 export type Scheme = (typeof SCHEMES)[number];
@@ -63,6 +72,9 @@ export const DEFAULT_PREFS: Prefs = {
   excludedLabels: [],
   recentImports: [],
   healthAssistant: true,
+  role: "",
+  writeTone: "",
+  webBrief: false,
 };
 const KEY = "up_prefs";
 
@@ -95,6 +107,9 @@ export function cleanPrefs(v: unknown, categories: readonly string[]): Prefs {
           .map((l) => ({ name: l.name.slice(0, 80), account: l.account.slice(0, 30) }))
       : [],
     healthAssistant: o.healthAssistant !== false,
+    role: typeof o.role === "string" ? o.role.replace(/\s+/g, " ").trim().slice(0, 80) : "",
+    writeTone: WRITE_TONES.includes(o.writeTone as never) ? (o.writeTone as WriteTone) : "",
+    webBrief: o.webBrief === true,
     recentImports: Array.isArray(o.recentImports)
       ? o.recentImports
           .filter((r) => !!r && typeof r.at === "string" && typeof r.source === "string")

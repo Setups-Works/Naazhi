@@ -1,7 +1,7 @@
 "use client";
 import { SHARED_JOURNAL as LIMIT } from "@untitled/logic";
 import { useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { usePrompt } from "../../../components/ui/Confirm";
 import { useCollaborationActions, useCollaborationRealtime, useMyInvites, useSharedJournals } from "../hooks/useSharedJournals";
@@ -14,7 +14,7 @@ const SECTION = "ap-sec mb-2.5";
 
 function JournalList({ items, onManage }: { items: SharedJournal[]; onManage: (id: string) => void }) {
   return (
-    <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2">
       {items.map((j) => (
         <JournalCard key={j.id} journal={j} onManage={() => onManage(j.id)} />
       ))}
@@ -65,17 +65,15 @@ export default function CollaborationApp() {
 
   const loading = journalsQ.isPending || invitesQ.isPending;
   return (
-    <div className="mx-auto w-full max-w-[1120px]">
+    <div className="mx-auto w-full max-w-[760px]">
       {dialog}
       {managing && <ManageDialog id={managing} onClose={() => setManaging(null)} />}
 
       <header className="mb-[18px] flex flex-col gap-3.5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="font-serif text-[clamp(30px,3.4vw,42px)] leading-[1.04] font-normal tracking-[-0.03em] text-balance">
-              Collaboration
-            </h1>
-            <p className="mt-1.5 text-[14px] text-fg-subtle">
+            <h1 className="jr-title">Collaboration</h1>
+            <p className="m-0 mt-2 text-[15px] text-ink-3">
               Write a journal together. Invite people by username; they join when they accept.
             </p>
           </div>
@@ -109,7 +107,10 @@ export default function CollaborationApp() {
       )}
 
       {!loading && journals.length === 0 && (
-        <p className="ap-none">No shared journals yet. Start one and invite someone by their username.</p>
+        <div className="jr-empty">
+          <b>No shared journals yet</b>
+          <span>Start one and invite someone by their username.</span>
+        </div>
       )}
       {mine.length > 0 && (
         <section className="mb-6" aria-label="Journals you own">

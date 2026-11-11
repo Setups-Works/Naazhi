@@ -1,7 +1,7 @@
 "use client";
 import { personName } from "@untitled/logic";
 import { useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faPaperclip, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import Markdown from "../../../components/app/Markdown";
 import AttachmentImage from "../../../components/ui/AttachmentImage";
@@ -34,34 +34,15 @@ export default function EntryCard({
   }
 
   return (
-    <article className="jr-entry">
-      <div className="jr-meta">
-        <span className="flex min-w-0 items-center gap-2.5">
-          <PersonAvatar person={entry.author} size="sm" />
-          <b className="truncate text-[13.5px] font-medium">{personName(entry.author)}</b>
-          <time dateTime={entry.created_at}>{fmtTime(entry.created_at)}</time>
-        </span>
-        <span className="jr-acts">
-          {canEdit && (
-            <button
-              type="button"
-              className="icon-btn"
-              aria-label="Edit entry"
-              onClick={() => {
-                setDraft(entry.body);
-                setEditing(true);
-              }}
-            >
-              <FA icon={faPen} />
-            </button>
-          )}
-          {canDelete && (
-            <button type="button" className="icon-btn" aria-label="Delete entry" onClick={onDelete}>
-              <FA icon={faTrash} />
-            </button>
-          )}
-        </span>
+    <article className="jr-row">
+      <div className="jr-row-t">
+        <time dateTime={entry.created_at}>{fmtTime(entry.created_at)}</time>
       </div>
+      <div className="jr-row-b">
+      <span className="mb-1 flex min-w-0 items-center gap-2">
+        <PersonAvatar person={entry.author} size="sm" />
+        <b className="truncate text-[13.5px] font-medium text-ink-2">{personName(entry.author)}</b>
+      </span>
 
       {editing ? (
         <div className="jr-edit">
@@ -85,7 +66,11 @@ export default function EntryCard({
           </div>
         </div>
       ) : (
-        entry.body && <Markdown text={entry.body} />
+        entry.body && (
+          <div className="jr-row-text">
+            <Markdown text={entry.body} />
+          </div>
+        )
       )}
 
       {entry.attachments.length > 0 && (
@@ -112,6 +97,27 @@ export default function EntryCard({
           })}
         </ul>
       )}
+      </div>
+      <div className="jr-row-a">
+        {canEdit && (
+          <button
+            type="button"
+            className="ne-btn"
+            aria-label="Edit entry"
+            onClick={() => {
+              setDraft(entry.body);
+              setEditing(true);
+            }}
+          >
+            <FA icon={faPen} />
+          </button>
+        )}
+        {canDelete && (
+          <button type="button" className="ne-btn" aria-label="Delete entry" onClick={onDelete}>
+            <FA icon={faTrash} />
+          </button>
+        )}
+      </div>
     </article>
   );
 }

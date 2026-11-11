@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faBan, faCheck, faCoins, faKey, faWallet } from "@fortawesome/free-solid-svg-icons";
 import type { BillingPlan } from "@untitled/types";
 import { formatTokens, priceLine } from "@untitled/logic/billing";
@@ -28,7 +28,7 @@ function Plan({ plan, emphasis = false }: { plan: BillingPlan; emphasis?: boolea
         <span className="text-[11px] font-semibold tracking-[0.1em] text-fg-faint uppercase">{plan.name}</span>
         {emphasis && <span className="rounded-pill bg-green-bg px-3 py-1 text-[12px] font-medium text-green-fg">Popular</span>}
       </div>
-      <h3 className="font-serif text-[30px] leading-tight tracking-[-0.022em]">{priceLine(plan)}</h3>
+      <h3 className="font-serif font-semibold text-[30px] leading-tight tracking-[-0.022em]">{priceLine(plan)}</h3>
       <p className="m-0 border-y border-line py-4 text-[15px] text-fg-muted">{plan.tagline}</p>
       <ul className="flex flex-1 flex-col gap-3">
         {plan.features.map((x) => (

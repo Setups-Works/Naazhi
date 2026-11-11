@@ -27,7 +27,7 @@ export default function LegalPage({
           <div className="flex flex-col gap-9">
             {sections.map((s, i) => (
               <section key={s.id} id={s.id} className="scroll-mt-24">
-                <h2 className="font-serif text-[24px] tracking-[-0.01em] text-fg">
+                <h2 className="font-serif font-semibold text-[24px] tracking-[-0.01em] text-fg">
                   {i + 1}. {s.title}
                 </h2>
                 <div className="mt-3 flex flex-col gap-3 text-[15.5px] leading-relaxed text-fg-muted">{s.body}</div>

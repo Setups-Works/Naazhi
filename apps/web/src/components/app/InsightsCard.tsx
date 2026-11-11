@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   faCalendarDay,
@@ -46,7 +46,7 @@ export default function InsightsCard({ handle }: { handle?: ReactNode }) {
       const [t, j, n] = await Promise.all([
         sb.from("tasks").select("due_date,done,done_at,created_at,priority,list_id,cancelled,archived,recurrence").limit(5000),
         sb.from("journal_entries").select("entry_date,body,created_at").gte("entry_date", since).limit(2000),
-        sb.from("notes").select("title,body,category,created_at,updated_at").limit(2000),
+        sb.from("notes").select("title,body,category,created_at,updated_at").is("deleted_at", null).limit(2000),
       ]);
       if (!live) return;
       if (t.error || j.error || n.error) return setErr(true);

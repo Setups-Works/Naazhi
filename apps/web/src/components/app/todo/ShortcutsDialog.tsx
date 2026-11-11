@@ -1,5 +1,5 @@
 "use client";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../../ui/Modal";
 

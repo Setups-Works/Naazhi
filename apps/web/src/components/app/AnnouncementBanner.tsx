@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
+import { readPrefs } from "../../lib/prefs";
 import { faBullhorn, faCircleCheck, faTriangleExclamation, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 type Item = { id: string; message: string; tone: string };
@@ -22,7 +23,7 @@ export default function AnnouncementBanner({ items }: { items: Item[] }) {
       setGone([]);
     }
   }, []);
-  if (gone === null) return null;
+  if (gone === null || !readPrefs().homeAnnouncements) return null;
   const shown = items.filter((i) => !gone.includes(i.id));
   if (!shown.length) return null;
 
@@ -46,7 +47,7 @@ export default function AnnouncementBanner({ items }: { items: Item[] }) {
           <FA icon={ICON[a.tone as keyof typeof ICON] ?? faBullhorn} />
           <p className="min-w-0 flex-1 [overflow-wrap:anywhere]">{a.message}</p>
           <button
-            className="grid size-[30px] flex-none place-items-center rounded-full text-[12px] hover:bg-white/50"
+            className="grid size-[30px] flex-none place-items-center rounded-full text-[12px] hover:bg-surface/50"
             aria-label="Dismiss announcement"
             onClick={() => dismiss(a.id)}
           >

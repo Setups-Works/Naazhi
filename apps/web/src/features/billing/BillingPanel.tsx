@@ -1,10 +1,11 @@
 "use client";
 import { useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faCheck, faKey } from "@fortawesome/free-solid-svg-icons";
 import type { BillingPlan, MyBilling } from "@untitled/types";
 import { BYO_PROVIDERS, byoProvider, formatMoney, formatTokens, priceLine } from "@untitled/logic/billing";
 import { useConfirm } from "../../components/ui/Confirm";
+import { SettingsRow, SettingsSection } from "../settings/ui";
 import { useBilling, useBillingActions } from "./queries";
 
 const day = (iso: string) => new Date(iso).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
@@ -123,7 +124,7 @@ function PlanCard({ plan, current, busy, onChoose }: { plan: BillingPlan; curren
           </span>
         )}
       </div>
-      <div className="font-serif text-[26px] leading-none tracking-[-0.02em]">{priceLine(plan)}</div>
+      <div className="font-serif font-semibold text-[26px] leading-none tracking-[-0.02em]">{priceLine(plan)}</div>
       <p className="m-0 text-[13.5px] text-fg-muted">{plan.tagline}</p>
       {plan.id === "subscription" && plan.included_tokens > 0 && (
         <p className="m-0 text-[13px] text-fg-subtle">{formatTokens(plan.included_tokens)} AI tokens included each month</p>
@@ -166,40 +167,56 @@ export default function BillingPanel() {
   const used = allowance > 0 ? Math.min(100, Math.round((b.tokens_used / allowance) * 100)) : 0;
 
   return (
-    <div className="st-body">
+    <div className="flex flex-col gap-6">
       {dialog}
       {err && (
         <p className="form-err" role="alert">
           {err}
         </p>
       )}
-      <div>
-        <b className="text-[15px]">{b.plan ? b.plan.name : "No plan chosen"}</b>
-        <p className="m-0 mt-1 text-[13.5px] text-fg-muted">{standing(b)}</p>
+      {/* The plan you are on, and what it includes: the reference's hero. */}
+      <section className="grid grid-cols-2 gap-x-10 border-b pb-8 max-[700px]:grid-cols-1 max-[700px]:gap-y-6" aria-label="Current plan">
+        <div>
+          <span className="inline-block rounded-xs bg-hover px-2 py-0.5 text-[12.5px] text-ink-2">Current plan</span>
+          <h2 className="m-0 mt-3 text-[44px] leading-none font-bold tracking-[-0.03em]">{b.plan ? b.plan.name : "Free"}</h2>
+          <p className="m-0 mt-3 text-[15px] text-ink-2">
+            <b className="text-[17px] text-ink">{b.plan ? priceLine(b.plan) : "Free"}</b> · {standing(b)}
+          </p>
+        </div>
+        <div className="border-l pl-8 max-[700px]:border-l-0 max-[700px]:pl-0">
+          <h3 className="m-0 mb-2 text-[14px] font-medium text-ink-2">Includes</h3>
+          <ul className="m-0 flex list-none flex-col divide-y divide-line p-0">
+            {(b.plan?.features.length ? b.plan.features : ["AI works as it always has until you choose a plan"]).map((f) => (
+              <li key={f} className="flex items-start gap-2 py-2 text-[14px]">
+                <FA icon={faCheck} className="mt-1 text-[11px] text-green-fg" />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <SettingsSection title="Usage">
+        <SettingsRow
+          title="AI use this period"
+          description={`${formatTokens(b.tokens_used)} tokens${b.cost_cents > 0 && b.plan ? `, about ${formatMoney(b.cost_cents, b.plan.currency)}` : ""}${allowance > 0 ? ` of ${formatTokens(allowance)} included` : ""}`}
+        />
         {allowance > 0 && (
-          <div className="mt-3">
-            <div
-              className="h-1.5 overflow-hidden rounded-pill bg-line"
-              role="progressbar"
-              aria-label="AI allowance used"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={used}
-            >
-              <i className="block h-full rounded-pill bg-green-fg" style={{ width: `${used}%` }} />
+          <div className="px-4 pb-4">
+            <div className="h-1.5 overflow-hidden rounded-pill bg-line" role="progressbar" aria-label="AI allowance used" aria-valuemin={0} aria-valuemax={100} aria-valuenow={used}>
+              <i className="block h-full rounded-pill bg-ink" style={{ width: `${used}%` }} />
             </div>
-            <small className="mt-1 block text-[12.5px] text-fg-subtle">
-              {formatTokens(b.tokens_used)} of {formatTokens(allowance)} tokens used this period
-            </small>
           </div>
         )}
-      </div>
+      </SettingsSection>
+
       {!b.payments_connected && (
         <p className="m-0 rounded-r2 bg-surface-muted px-3.5 py-2.5 text-[13px] text-fg-muted">
           Payments aren’t connected yet, so choosing or changing a plan doesn’t charge you.
         </p>
       )}
 
+      <h2 className="m-0 mt-2 text-[15px] font-semibold">Plans</h2>
       <div className="grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(210px,1fr))]">
         {b.plans.map((p) => (
           <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={busy} onChoose={() => choose.mutate(p.id)} />

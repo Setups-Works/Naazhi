@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import Phone, { PhoneHalf } from "../Phone";
 import { R, Reveal } from "../Reveal";
@@ -106,7 +106,7 @@ export default function Story() {
               className={`flex min-h-[88vh] flex-col justify-center gap-4 transition-[opacity,transform] duration-700 ease-site ${i === active ? "translate-x-0 opacity-100" : "translate-x-3 opacity-30"}`}
             >
               <p className="text-[13px] font-semibold tracking-[0.08em] text-green-fg uppercase">{c.kicker}</p>
-              <h3 className="max-w-[460px] font-serif text-[clamp(34px,4vw,54px)] leading-[1.04] tracking-[-0.03em]">{c.title}</h3>
+              <h3 className="max-w-[460px] font-serif font-semibold text-[clamp(34px,4vw,54px)] leading-[1.04] tracking-[-0.03em]">{c.title}</h3>
               <p className="max-w-[440px] text-[18px] leading-relaxed text-fg-muted">{c.lead}</p>
               <ul className="mt-2 flex flex-col gap-2.5">
                 {c.points.map((p) => (
@@ -158,7 +158,7 @@ export default function Story() {
           <R key={c.key}>
             <div className={`${toneClass(c.tone)} tint relative flex h-full min-h-[480px] flex-col items-center overflow-hidden rounded-r5 px-6 pt-9 text-center`}>
               <p className="text-[12.5px] font-semibold tracking-[0.08em] text-green-fg uppercase">{c.kicker}</p>
-              <h3 className="mt-2 max-w-[340px] font-serif text-[30px] leading-[1.08] tracking-[-0.025em]">{c.title}</h3>
+              <h3 className="mt-2 max-w-[340px] font-serif font-semibold text-[30px] leading-[1.08] tracking-[-0.025em]">{c.title}</h3>
               <p className="mt-3 max-w-[340px] text-[15.5px] leading-relaxed text-fg-muted">{c.lead}</p>
               <PhoneHalf src={c.src} alt={c.alt} className="bottom-0 left-1/2 w-[min(64%,260px)] -translate-x-1/2" />
             </div>

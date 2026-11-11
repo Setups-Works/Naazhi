@@ -1,6 +1,6 @@
 "use client";
 import type { ComponentProps } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faGripVertical } from "@fortawesome/free-solid-svg-icons";
 
 /** The grip on a Home card. `touch-none` keeps a finger drag from scrolling the page; arrow keys move the card too. */

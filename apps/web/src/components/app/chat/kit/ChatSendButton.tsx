@@ -1,4 +1,4 @@
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
 
 /** The round send arrow. Submits the composer's form. */

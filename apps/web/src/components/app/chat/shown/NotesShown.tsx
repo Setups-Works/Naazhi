@@ -19,6 +19,7 @@ export default function NotesShown({ query }: { query?: string }) {
       const { data, error } = await sb
         .from("notes")
         .select("id,title,body,updated_at")
+        .is("deleted_at", null)
         .order("updated_at", { ascending: false })
         .limit(SEARCH_POOL);
       if (error) throw error;

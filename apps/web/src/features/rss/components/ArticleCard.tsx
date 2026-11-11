@@ -1,5 +1,5 @@
 "use client";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { rssAge } from "@untitled/logic/rss";
 import type { RssItem } from "@untitled/types";

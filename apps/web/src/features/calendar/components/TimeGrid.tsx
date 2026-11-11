@@ -60,7 +60,7 @@ export default function TimeGrid({
       <div className="overflow-x-auto">
         <div className="min-w-[640px] max-sm:min-w-[560px]" style={style}>
           {/* Day headings */}
-          <div className={`grid ${GUTTER} border-b border-line bg-white/70`}>
+          <div className={`grid ${GUTTER} border-b border-line bg-surface/70`}>
             <span />
             {days.map((d) => {
               const iso = isoDate(d);
@@ -95,7 +95,7 @@ export default function TimeGrid({
           </div>
 
           {/* All-day events and tasks */}
-          <div className={`grid ${GUTTER} border-b border-line bg-white/50`}>
+          <div className={`grid ${GUTTER} border-b border-line bg-surface/50`}>
             <span className="self-center pr-2 text-right text-[11px] text-fg-faint">all day</span>
             {days.map((d) => {
               const iso = isoDate(d);
@@ -130,7 +130,7 @@ export default function TimeGrid({
                   <div
                     key={iso}
                     onClick={slotClick(iso)}
-                    className={`relative cursor-pointer border-l border-line bg-[repeating-linear-gradient(to_bottom,transparent,transparent_calc(var(--h)_-_1px),var(--line)_calc(var(--h)_-_1px),var(--line)_var(--h))] ${iso === today ? "bg-white/60" : ""}`}
+                    className={`relative cursor-pointer border-l border-line bg-[repeating-linear-gradient(to_bottom,transparent,transparent_calc(var(--h)_-_1px),var(--line)_calc(var(--h)_-_1px),var(--line)_var(--h))] ${iso === today ? "bg-surface/60" : ""}`}
                     style={{ "--h": `${HOUR_PX}px` } as React.CSSProperties}
                   >
                     {placed.get(iso)?.map(({ ev, top, height, col, cols }) => (

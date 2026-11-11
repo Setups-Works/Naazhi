@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   faBookOpen,
@@ -163,6 +163,7 @@ export default function UniversalSearch({ admin, className = "" }: { admin: bool
         sb
           .from("notes")
           .select<{ id: string; title: string; body: string }>("id,title,body")
+          .is("deleted_at", null)
           .or(`title.ilike."${p}",body.ilike."${p}"`)
           .order("updated_at", { ascending: false })
           .limit(8),
@@ -310,7 +311,7 @@ export default function UniversalSearch({ admin, className = "" }: { admin: bool
                           aria-selected={idx === i}
                           data-on={idx === i}
                           // The highlighted result is a small glass lens: lighter, raised, and it eases between rows.
-                          className="rounded-r2 transition-[background-color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.34,1.45,0.5,1)] data-[on=true]:scale-[1.012] data-[on=true]:bg-white/85 data-[on=true]:shadow-lens motion-reduce:transition-none"
+                          className="rounded-r2 transition-[background-color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.34,1.45,0.5,1)] data-[on=true]:scale-[1.012] data-[on=true]:bg-surface/85 data-[on=true]:shadow-lens motion-reduce:transition-none"
                           onMouseMove={() => setI(idx)}
                           onClick={h.run}
                         >

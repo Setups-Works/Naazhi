@@ -1,4 +1,4 @@
-import { ago } from "@untitled/logic";
+import { NOTIFICATION_KINDS, ago, notificationTarget } from "@untitled/logic";
 import { router } from "expo-router";
 import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
@@ -13,10 +13,11 @@ import { ErrorState, LoadingState } from "@/components/ui/States";
 import { Palette, Space, Tints } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 
+/** The labels are shared with the web (packages/logic); the icon and tint are this app's. */
 const KIND: Record<AppNotification["kind"], { icon: IconName; tone: "blue" | "violet" | "sand"; label: string }> = {
-  admin: { icon: "bullhorn", tone: "blue", label: "Message from the team" },
-  invite: { icon: "user-group", tone: "violet", label: "Shared journal" },
-  reader: { icon: "newspaper", tone: "sand", label: "Reader" },
+  admin: { icon: "bullhorn", tone: "blue", label: NOTIFICATION_KINDS.admin.label },
+  invite: { icon: "user-group", tone: "violet", label: NOTIFICATION_KINDS.invite.label },
+  reader: { icon: "newspaper", tone: "sand", label: NOTIFICATION_KINDS.reader.label },
 };
 
 /** The notification inbox. What this phone notifies you about is in Settings → Notifications. */
@@ -51,7 +52,7 @@ export function NotificationsScreen() {
           const k = KIND[n.kind];
           const t = Tints[k.tone];
           return (
-            <Card key={n.id} tone={k.tone} liquidTint onPress={n.url && n.url !== "/notifications" ? () => router.push(n.url as never) : undefined} accessibilityLabel={`${k.label}: ${n.title}`}>
+            <Card key={n.id} tone={k.tone} liquidTint onPress={notificationTarget(n) ? () => router.push(notificationTarget(n) as never) : undefined} accessibilityLabel={`${k.label}: ${n.title}`}>
               <View style={styles.head}>
                 <Icon name={k.icon} size={14} color={t.fg} />
                 <AppText variant="label" color={t.fg} style={styles.kind}>

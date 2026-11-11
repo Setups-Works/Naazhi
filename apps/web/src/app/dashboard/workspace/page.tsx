@@ -1,6 +1,6 @@
 import { faBriefcase } from "@fortawesome/free-solid-svg-icons";
 import WorkspaceSwitch from "../../../components/app/WorkspaceSwitch";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 
 export const metadata = {
   title: "Workspace — Naazhi",
@@ -12,11 +12,11 @@ export default function WorkspacePage() {
     <>
       <WorkspaceSwitch />
       <div className="mx-auto flex w-full max-w-[1120px] flex-col items-center gap-3 py-20 text-center">
-      <span className="at-green tint grid size-14 place-items-center rounded-full text-[20px]" aria-hidden>
+      <span className="grid size-14 place-items-center rounded-r2 bg-hover text-[20px] text-fg-muted" aria-hidden>
         <FA icon={faBriefcase} />
       </span>
-      <h1 className="font-serif text-[clamp(30px,3.4vw,42px)] leading-[1.04] font-normal tracking-[-0.03em] text-balance">Workspace</h1>
-      <p className="at-green tint rounded-pill px-3 py-1 text-[12px] font-semibold tracking-[0.1em] uppercase">Coming soon</p>
+      <h1 className="font-serif text-[clamp(30px,3.4vw,42px)] leading-[1.04] font-semibold tracking-[-0.03em] text-balance">Workspace</h1>
+      <p className="rounded-xs bg-hover px-1.5 py-[2px] text-[12px] font-medium text-fg-muted">Coming soon</p>
       <p className="max-w-[420px] text-[14px] text-fg-muted">Shared spaces where your team keeps notes, tasks and chat together. We’re building it now.</p>
       </div>
     </>

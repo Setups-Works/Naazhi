@@ -33,7 +33,7 @@ export default function MonthView({
     <section aria-label="Month view" className="glass overflow-hidden rounded-r3">
       <div className="mx-3 mt-3 mb-3.5 grid grid-cols-7 gap-px overflow-hidden rounded-r2 bg-line max-sm:mx-2 max-sm:mb-2.5">
         {weekdayLabels("short", weekStart).map((d) => (
-          <span key={d} className="bg-white/70 p-2 text-center text-[12px] text-fg-subtle">
+          <span key={d} className="bg-surface/70 p-2 text-center text-[12px] text-fg-subtle">
             {d}
           </span>
         ))}
@@ -48,7 +48,7 @@ export default function MonthView({
           return (
             <div
               key={iso}
-              className={`flex min-h-[104px] min-w-0 flex-col gap-[3px] p-1.5 max-[900px]:min-h-[70px] max-[900px]:p-1 ${isToday ? "bg-white" : out ? "bg-white/30" : "bg-white/60"}`}
+              className={`flex min-h-[104px] min-w-0 flex-col gap-[3px] p-1.5 max-[900px]:min-h-[70px] max-[900px]:p-1 ${isToday ? "bg-surface" : out ? "bg-surface/30" : "bg-surface/60"}`}
             >
               <button
                 type="button"

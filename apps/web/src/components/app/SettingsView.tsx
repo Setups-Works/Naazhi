@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   faBroom,
@@ -13,6 +13,7 @@ import {
   faEyeSlash,
   faFileLines,
   faImage,
+  faLock,
   faPalette,
   faWallet,
   faRightFromBracket,
@@ -33,10 +34,15 @@ import { CATEGORIES } from "../../lib/notes";
 import { writePrefs, type Prefs } from "../../lib/prefs";
 import { deleteMyAccount } from "../../app/dashboard/settings/actions";
 import { useConfirm } from "../ui/Confirm";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { SettingsRow, SettingsSection, Tag } from "../../features/settings/ui";
 import GiftCard, { saveGiftCard, shareGiftCard } from "./GiftCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/Tabs";
-import type { SettingsTab } from "../../features/settings/tabs";
+import type { SettingsSection as SettingsTab } from "../../features/settings/tabs";
 import BillingPanel from "../../features/billing/BillingPanel";
+import AppearancePicker from "../../features/settings/AppearancePicker";
+import { applyLook, saveLook } from "../../lib/look";
 
 type Tab = SettingsTab;
 const NAV: { k: Tab; label: string; icon: IconDefinition }[] = [
@@ -213,6 +219,7 @@ export default function SettingsView({
       const { data, error } = await sb
         .from("notes")
         .select("title,body,category,updated_at")
+        .is("deleted_at", null)
         .order("updated_at", { ascending: false })
         .limit(20000);
       if (error) return setDataMsg({ ok: false, text: "Couldn’t export your notes." });
@@ -312,6 +319,8 @@ export default function SettingsView({
     const next = { ...prefs, ...patch };
     setPrefs(next);
     writePrefs(next);
+    applyLook(next.scheme, next.accent); // show a new scheme or accent at once, before the save round-trip
+    saveLook(next.scheme, next.accent);
     const { error } = await sb.from("profiles").upsert({ preferences: next }, { onConflict: "user_id" });
     setPrefMsg(error ? { ok: false, text: "Couldn’t save that preference." } : { ok: true, text: "Saved." });
     if (!error) router.refresh();
@@ -454,120 +463,106 @@ export default function SettingsView({
         </div>
       </nav>
       <div className="st-main" ref={main}>
-        <TabsContent value="profile" forceMount asChild>
-          <section className="ap-card at-violet" aria-labelledby="st-profile">
-            <div className="ap-card-h">
-              <span id="st-profile">Profile</span>
-            </div>
-            <div className="st-body">
-              <div className="st-avatar">
-                <span className="st-avatar-pic" aria-hidden>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  {avatar ? <img src={avatar} alt="" /> : (account.name || account.email)[0]?.toUpperCase()}
-                </span>
-                <div>
-                  <b>Profile picture</b>
-                  <small>PNG, JPG, WebP or GIF, up to 2 MB.</small>
-                  <div className="st-actions">
-                    <button
-                      type="button"
-                      className="btn btn-secondary btn-sm"
-                      disabled={busy === "avatar"}
-                      onClick={() => fileInput.current?.click()}
-                    >
-                      {busy === "avatar" ? (
-                        <>
-                          <FA icon={faSpinner} spin /> Uploading…
-                        </>
-                      ) : (
-                        <>
-                          <FA icon={faImage} /> {avatar ? "Change" : "Upload"}
-                        </>
-                      )}
-                    </button>
-                    {avatar && (
-                      <button type="button" className="btn btn-secondary btn-sm" disabled={busy === "avatar"} onClick={removeAvatar}>
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                </div>
-                <input
-                  ref={fileInput}
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp,image/gif"
-                  hidden
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) uploadAvatar(f);
-                    e.target.value = "";
-                  }}
-                />
-              </div>
-              <Status m={avatarMsg} />
-              <hr className="st-hr" />
-              <form className="st-row" onSubmit={saveName}>
-                <label>
-                  <span>Full name</span>
-                  <input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} autoComplete="name" />
-                </label>
-                <button className="btn btn-primary btn-sm" disabled={busy === "name" || name.trim() === account.name}>
-                  {spin("name", "Save name")}
-                </button>
-              </form>
-              <Status m={nameMsg} />
-              <form className="st-row" onSubmit={saveUsername}>
-                <label>
-                  <span>Username</span>
-                  <input
-                    value={username}
-                    onChange={(event) => setUsername(event.target.value)}
-                    minLength={3}
-                    maxLength={30}
-                    pattern="[A-Za-z0-9_.]{3,30}"
-                    autoComplete="username"
-                    placeholder="ada.lovelace"
-                  />
-                  <small className="meta">Use 3–30 letters, numbers, dots or underscores. You can log in with this or your email.</small>
-                </label>
-                <button
-                  className="btn btn-primary btn-sm"
-                  disabled={busy === "username" || (username === (account.displayUsername || account.username || "") && !!account.username)}
-                >
-                  {spin("username", "Save username")}
-                </button>
-              </form>
-              <Status m={usernameMsg} />
-              <form className="st-row" onSubmit={saveEmail}>
-                <label>
-                  <span>Email</span>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={254} autoComplete="email" />
-                </label>
-                <button
-                  className="btn btn-primary btn-sm"
-                  disabled={busy === "email" || email.trim().toLowerCase() === account.email.toLowerCase()}
-                >
-                  {spin("email", "Change email")}
-                </button>
-              </form>
-              <Status m={emailMsg} />
-              <p className="meta">
-                Sign-in method:{" "}
-                {account.providers.map((p) => (p === "email" ? "Email & password" : p[0].toUpperCase() + p.slice(1))).join(", ")}
-              </p>
-              <div className="st-gift" style={{ display: "grid", justifyItems: "start", gap: 12, paddingTop: 18, borderTop: "1px solid var(--line)" }}>
-                <b id="st-gift">Welcome gift card</b>
-                <p className="meta">Your card, with your name engraved on it. Download it any time.</p>
-                <GiftCard name={account.name || account.email} />
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => void saveGiftCard(account.name || account.email)}>
-                  <FA icon={faDownload} /> Download card
-                </button>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => void shareGiftCard(account.name || account.email)}>
-                  <FA icon={faShareNodes} /> Share card
-                </button>
+        <TabsContent value="profile" forceMount>
+          {/* Header card, then the editable fields as rows: the reference's "My account" page. */}
+          <section aria-label="Your account" className="flex items-center gap-5 rounded-r3 border bg-raised p-5 max-[600px]:flex-col max-[600px]:items-start">
+            <button
+              type="button"
+              className="group relative size-[92px] shrink-0 overflow-hidden rounded-full bg-hover text-[32px] font-semibold text-ink-2"
+              aria-label={avatar ? "Change profile picture" : "Upload a profile picture"}
+              disabled={busy === "avatar"}
+              onClick={() => fileInput.current?.click()}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {avatar ? <img src={avatar} alt="" className="size-full object-cover" /> : (account.name || account.email)[0]?.toUpperCase()}
+              <span className="absolute inset-0 grid place-items-center bg-ink/55 text-[13px] font-medium text-paper opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                {busy === "avatar" ? "Uploading…" : "Change"}
+              </span>
+            </button>
+            <div className="min-w-0">
+              <h2 className="m-0 truncate text-[22px] font-semibold tracking-[-0.015em]">{account.name || account.email}</h2>
+              <p className="m-0 text-[14px] text-ink-3">{account.email}</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <Tag>
+                  <FA icon={faLock} className="mr-1 text-[10px]" />
+                  Signed in with {account.providers.map((p) => (p === "email" ? "email" : p[0].toUpperCase() + p.slice(1))).join(", ")}
+                </Tag>
+                <Tag>Member since {new Date(account.createdAt).toLocaleDateString(undefined, { month: "short", year: "numeric" })}</Tag>
+                {avatar && (
+                  <button type="button" className="text-[13px] text-ink-3 underline underline-offset-2 hover:text-ink" disabled={busy === "avatar"} onClick={removeAvatar}>
+                    Remove photo
+                  </button>
+                )}
               </div>
             </div>
+            <input
+              ref={fileInput}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              hidden
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) uploadAvatar(f);
+                e.target.value = "";
+              }}
+            />
           </section>
+          <Status m={avatarMsg} />
+
+          <SettingsSection title="Profile">
+            <form onSubmit={saveName}>
+              <SettingsRow title="Name" description="How you appear to people in shared journals.">
+                <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} autoComplete="name" aria-label="Full name" className="h-9 w-[220px] max-[600px]:w-full" />
+                <Button type="submit" disabled={busy === "name" || name.trim() === account.name}>
+                  {spin("name", "Save")}
+                </Button>
+              </SettingsRow>
+              <Status m={nameMsg} />
+            </form>
+            <form onSubmit={saveUsername}>
+              <SettingsRow title="Username" description="3–30 letters, numbers, dots or underscores. You can log in with this or your email.">
+                <Input
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  minLength={3}
+                  maxLength={30}
+                  pattern="[A-Za-z0-9_.]{3,30}"
+                  autoComplete="username"
+                  placeholder="ada.lovelace"
+                  aria-label="Username"
+                  className="h-9 w-[220px] max-[600px]:w-full"
+                />
+                <Button type="submit" disabled={busy === "username" || (username === (account.displayUsername || account.username || "") && !!account.username)}>
+                  {spin("username", "Save")}
+                </Button>
+              </SettingsRow>
+              <Status m={usernameMsg} />
+            </form>
+            <form onSubmit={saveEmail}>
+              <SettingsRow title="Email" description="The address you sign in with.">
+                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={254} autoComplete="email" aria-label="Email" className="h-9 w-[260px] max-[600px]:w-full" />
+                <Button type="submit" disabled={busy === "email" || email.trim().toLowerCase() === account.email.toLowerCase()}>
+                  {spin("email", "Change")}
+                </Button>
+              </SettingsRow>
+              <Status m={emailMsg} />
+            </form>
+          </SettingsSection>
+
+          <SettingsSection title="Welcome gift card">
+            <div className="grid justify-items-start gap-3 p-4">
+              <p className="m-0 text-[14px] text-ink-2">Your card, with your name engraved on it. Download it any time.</p>
+              <GiftCard name={account.name || account.email} />
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" onClick={() => void saveGiftCard(account.name || account.email)}>
+                  <FA icon={faDownload} /> Download card
+                </Button>
+                <Button variant="outline" onClick={() => void shareGiftCard(account.name || account.email)}>
+                  <FA icon={faShareNodes} /> Share card
+                </Button>
+              </div>
+            </div>
+          </SettingsSection>
         </TabsContent>
 
         <TabsContent value="prefs" forceMount asChild>
@@ -617,6 +612,7 @@ export default function SettingsView({
               <span id="st-look">Appearance</span>
             </div>
             <div className="st-body">
+              <AppearancePicker scheme={prefs.scheme} accent={prefs.accent} onChange={(patch) => changePref(patch)} />
               <div className="st-field">
                 <span id="st-density">Density</span>
                 <div className="st-seg" role="radiogroup" aria-labelledby="st-density">
@@ -660,13 +656,8 @@ export default function SettingsView({
           </section>
         </TabsContent>
 
-        <TabsContent value="billing" asChild>
-          <section className="ap-card at-green" aria-labelledby="st-billing">
-            <div className="ap-card-h">
-              <span id="st-billing">Plan and billing</span>
-            </div>
-            <BillingPanel />
-          </section>
+        <TabsContent value="billing">
+          <BillingPanel />
         </TabsContent>
 
         <TabsContent value="security" forceMount asChild>

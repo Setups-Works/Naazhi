@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { faBookOpen, faListCheck, faPenToSquare, faRss } from "@fortawesome/free-solid-svg-icons";
 import { stripRefs, type ChatAction, type ChatProposal } from "../../../lib/chat-actions";
@@ -68,12 +68,11 @@ export default function ChatActionProposal({
         return (
           <section
             key={p.index}
-            // Each kind has its own colour, the same tints the rest of the app uses (journal violet, to-do amber, notes blue).
-            className={`at-${TONE[a.kind]} rounded-r2 bg-(--ab) p-3.5 text-fg shadow-[inset_0_0_0_1px_var(--abl)] transition-shadow duration-300 hover:shadow-[inset_0_0_0_1px_var(--abf),0_10px_24px_-14px_rgba(27,28,20,0.35)]`}
+            className="rounded-r3 border bg-raised p-4 text-ink"
             aria-label={`${LABEL[a.kind]} draft`}
           >
-            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-(--abf)">
-              <span className="grid size-7 place-items-center rounded-full bg-white/70 text-[12px] shadow-[inset_0_0_0_1px_var(--abl)]">
+            <p className="m-0 flex items-center gap-2 text-[13px] font-medium text-ink-2">
+              <span className="grid size-7 place-items-center rounded-ctl bg-hover text-[12px] text-ink-2">
                 <FA icon={ICON[a.kind]} />
               </span>
               {p.created ? `Saved to ${WHERE[a.kind]}` : `${WHERE[a.kind]} · draft`}
@@ -82,21 +81,21 @@ export default function ChatActionProposal({
             {preview && <p className="mt-1 line-clamp-6 whitespace-pre-wrap break-words text-sm text-fg-muted">{preview}</p>}
             {a.kind === "task" && (
               <>
-                <p className="mt-2 block w-fit rounded-full bg-white/65 px-2.5 py-0.5 text-xs text-(--abf)">
+                <p className="mt-2 block w-fit rounded-pill bg-hover px-2.5 py-0.5 text-[12.5px] text-ink-2">
                   {(() => {
                     const due = draftDue(a.due_date, a.recurrence ?? null);
                     return due ? `${a.recurrence ? "Starts" : "Due"} ${dateLabel(due)}` : "No due date";
                   })()}
                 </p>
                 {a.recurrence && (
-                  <p className="mt-1.5 block w-fit rounded-full bg-white/65 px-2.5 py-0.5 text-xs text-(--abf)">
+                  <p className="mt-1.5 block w-fit rounded-pill bg-hover px-2.5 py-0.5 text-[12.5px] text-ink-2">
                     ↻ {recurrenceLabel(a.recurrence)}
                   </p>
                 )}
               </>
             )}
             {a.kind === "journal" && (
-              <p className="mt-2 block w-fit rounded-full bg-white/65 px-2.5 py-0.5 text-xs text-(--abf)">For {dateLabel(a.entry_date)}</p>
+              <p className="mt-2 block w-fit rounded-pill bg-hover px-2.5 py-0.5 text-[12.5px] text-ink-2">For {dateLabel(a.entry_date)}</p>
             )}
             {p.created ? (
               <a className="btn btn-secondary btn-sm mt-3 inline-flex h-9 px-4 text-[13px]" href={p.created.path}>
@@ -116,7 +115,7 @@ export default function ChatActionProposal({
         </button>
       )}
       {error && (
-        <p className="text-sm text-clay-fg" role="alert">
+        <p className="text-sm text-critical" role="alert">
           {error}
         </p>
       )}

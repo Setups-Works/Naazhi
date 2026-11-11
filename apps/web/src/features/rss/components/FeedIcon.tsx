@@ -9,7 +9,7 @@ export default function FeedIcon({ src, name, className = "size-7" }: { src: str
     return <img src={src} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setFailed(true)} className={`${className} shrink-0 rounded-r1 bg-surface-muted object-cover`} />;
   }
   return (
-    <i aria-hidden className={`${className} at-green tint grid shrink-0 place-items-center rounded-r1 text-[12px] font-semibold not-italic uppercase`}>
+    <i aria-hidden className={`${className} bg-hover text-fg-muted grid shrink-0 place-items-center rounded-r1 text-[12px] font-semibold not-italic uppercase`}>
       {(name.trim()[0] ?? "?").toUpperCase()}
     </i>
   );

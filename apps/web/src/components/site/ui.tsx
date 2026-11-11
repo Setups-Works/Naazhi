@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ElementType, ReactNode } from "react";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { Heading } from "./Heading";
 import { Reveal } from "./Reveal";

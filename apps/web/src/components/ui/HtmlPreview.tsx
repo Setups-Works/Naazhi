@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faCheck, faCopy } from "@fortawesome/free-solid-svg-icons";
 
 /** True for a code block that is a web page or a fragment of one, so it can be previewed. */
@@ -36,7 +36,7 @@ export default function HtmlPreview({ code }: { code: string }) {
         <div
           role="tablist"
           aria-label="Code or preview"
-          className="flex gap-1 rounded-pill bg-white/70 p-0.5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.9)]"
+          className="flex gap-1 rounded-pill bg-surface/70 p-0.5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.9)]"
         >
           {tabs.map(([k, label]) => (
             <button
@@ -53,7 +53,7 @@ export default function HtmlPreview({ code }: { code: string }) {
         </div>
         <button
           type="button"
-          className="ml-auto inline-flex items-center gap-1.5 rounded-pill px-2.5 py-1 text-xs text-fg-muted hover:bg-white/70 hover:text-fg"
+          className="ml-auto inline-flex items-center gap-1.5 rounded-pill px-2.5 py-1 text-xs text-fg-muted hover:bg-surface/70 hover:text-fg"
           onClick={copy}
         >
           <FA icon={copied ? faCheck : faCopy} /> {copied ? "Copied" : "Copy"}
@@ -64,7 +64,7 @@ export default function HtmlPreview({ code }: { code: string }) {
           <code>{code}</code>
         </pre>
       ) : (
-        <iframe title="HTML preview" sandbox="allow-scripts" srcDoc={code} className="block h-96 w-full resize-y border-0 bg-white" />
+        <iframe title="HTML preview" sandbox="allow-scripts" srcDoc={code} className="block h-96 w-full resize-y border-0 bg-surface" />
       )}
     </div>
   );

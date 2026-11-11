@@ -1,9 +1,10 @@
 import "server-only";
+import type { AppNotification } from "@untitled/logic";
 import { withOwner, withUser } from "../db/pool";
 
 /** Data access for push devices and the notification inbox. People's own calls run as them (RLS); sending runs as the owner. */
 
-export type NotificationRow = { id: string; kind: "admin" | "invite" | "reader"; title: string; body: string; url: string | null; read_at: string | null; created_at: string };
+export type NotificationRow = AppNotification;
 export type NewNotification = { kind: NotificationRow["kind"]; title: string; body: string; url?: string | null };
 
 export const saveDevice = (userId: string, token: string, platform: "android" | "ios") =>

@@ -1,8 +1,9 @@
 "use client";
 import { MAX_UPLOAD_BYTES, SHARED_JOURNAL as LIMIT } from "@untitled/logic";
 import { useRef, useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faArrowUp, faPaperclip } from "@fortawesome/free-solid-svg-icons";
+import { fmtTime } from "../../../lib/prefs";
 import FilePreviewList from "../../../components/ui/FilePreviewList";
 
 /** Where a person writes a new entry: text and files. Resolves to true when the entry was saved, so the box can clear itself. */
@@ -41,6 +42,9 @@ export default function EntryComposer({ onSend }: { onSend: (body: string, files
         void send();
       }}
     >
+      <span className="jr-now" aria-hidden>
+        {fmtTime(new Date().toISOString())}
+      </span>
       <FilePreviewList label="Attachments to add" files={files} onRemove={(i) => setFiles((cur) => cur.filter((_, j) => j !== i))} />
       <textarea
         ref={ta}
@@ -55,7 +59,8 @@ export default function EntryComposer({ onSend }: { onSend: (body: string, files
           e.target.style.height = `${Math.min(e.target.scrollHeight, 220)}px`;
         }}
         onKeyDown={(e) => {
-          if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+          // Enter saves, Shift+Enter starts a new line (⌘/Ctrl+Enter still saves), like the personal journal.
+          if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
             e.preventDefault();
             void send();
           }
@@ -80,7 +85,8 @@ export default function EntryComposer({ onSend }: { onSend: (body: string, files
             e.target.value = "";
           }}
         />
-        <button className="jr-send" disabled={!canSend} aria-label="Add entry" title="Add entry (⌘ Enter)">
+        <small className="jr-hint">Enter to save · Shift+Enter for a new line</small>
+        <button className="jr-send" disabled={!canSend} aria-label="Add entry" title="Add entry (Enter)">
           <FA icon={faArrowUp} />
         </button>
       </div>

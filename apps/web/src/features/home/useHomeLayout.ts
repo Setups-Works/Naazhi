@@ -4,14 +4,15 @@ import { cleanOrder, moveItem } from "@untitled/logic/homeLayout";
 
 /** The Home cards by column, in their default order. A person's own order is saved in this browser. */
 export const HOME_COLUMNS = {
-  main: ["invites", "today", "journal", "notes", "chats", "insights"],
-  side: ["schedule", "reader", "health"],
+  main: ["invites", "today", "journal", "chats", "notes"],
+  side: ["schedule", "insights", "reader", "health"],
 } as const;
 
 export type HomeColumn = keyof typeof HOME_COLUMNS;
 type Layout = Record<HomeColumn, string[]>;
 
-const KEY = "up_home_layout";
+/** v2: the default arrangement changed (journal and chats side by side, insights on the right), so older saved orders are dropped. */
+const KEY = "up_home_layout_v2";
 const COLUMNS = Object.keys(HOME_COLUMNS) as HomeColumn[];
 
 function read(): Layout {

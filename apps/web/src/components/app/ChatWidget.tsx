@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import {
   faArrowUpRightFromSquare,
   faClockRotateLeft,
@@ -372,7 +372,7 @@ export default function ChatWidget() {
               <FA icon={faCommentDots} />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate font-serif text-[22px] leading-tight text-fg-strong">{active ? prettyTitle(active.title) : "Assistant"}</p>
+              <p className="truncate font-serif font-semibold text-[22px] leading-tight text-fg-strong">{active ? prettyTitle(active.title) : "Assistant"}</p>
               <p className="truncate text-xs text-fg-muted">
                 {noAi ? "AI is off · messages are saved" : active ? `${list.length} ${list.length === 1 ? "message" : "messages"}` : "Ask anything or organise your day"}
               </p>
@@ -478,7 +478,7 @@ export default function ChatWidget() {
             )}
             {list.length === 0 && typing === null ? (
               <div className="my-auto px-4 text-center">
-                <p className="font-serif text-[28px] leading-tight text-fg-strong">Hi, how can I help?</p>
+                <p className="font-serif font-semibold text-[28px] leading-tight text-fg-strong">Hi, how can I help?</p>
                 <p className="mt-1 text-sm text-fg-muted">
                   I can answer questions and turn what you tell me into journal entries, to-dos and notes.
                 </p>
@@ -552,7 +552,7 @@ export default function ChatWidget() {
         type="button"
         aria-label={open ? "Close chat" : "Open chat"}
         aria-expanded={open}
-        className="grid size-14 place-items-center rounded-full bg-fill-dark text-xl text-on-dark shadow-e3 transition-transform duration-300 hover:scale-105 active:scale-95"
+        className="grid size-10 place-items-center rounded-r2 bg-raised text-[15px] text-fg-muted shadow-[inset_0_0_0_1px_var(--line-2),var(--shadow-hair)] transition-colors duration-150 hover:bg-hover hover:text-fg max-[600px]:size-12"
         onClick={() => setOpen((o) => !o)}
       >
         <FA icon={open ? faXmark : faCommentDots} />

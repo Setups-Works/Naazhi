@@ -1,14 +1,19 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import {
+  faAlignLeft,
   faArrowUp,
+  faCalendarDays,
+  faListUl,
   faChevronLeft,
   faChevronRight,
   faEllipsis,
   faPaperclip,
   faTableColumns,
+  faCopy,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api/client";
@@ -28,6 +33,8 @@ import AudioWave from "../ui/AudioWave";
 import RecordButton from "../ui/RecordButton";
 import { useDraftFiles, useDraftText } from "../../hooks/useDraft";
 import { useRecorder } from "./useRecorder";
+import SidebarPortal from "./SidebarPortal";
+import { setCrumb } from "../../lib/crumb";
 import { ctxProps, useCtxActions } from "../../lib/context-actions";
 import { ShareEntryDialog } from "../../features/journal";
 
@@ -46,6 +53,7 @@ function shortAge(iso: string) {
 }
 const EMPTY_ENTRIES: Entry[] = []; // stable references while a query loads
 const EMPTY_COUNTS: Record<string, number> = {};
+const EMPTY_PREVIEWS: Record<string, { body: string; img?: string }> = {};
 const MAX_BYTES = 10 * 1024 * 1024;
 const parse = (iso: string) => {
   const [y, m, d] = iso.split("-").map(Number);
@@ -57,6 +65,11 @@ export default function JournalView() {
   const today = useMemo(() => isoDate(), []);
   const { ask, dialog } = useConfirm();
   const [date, setDate] = useState(today);
+  // Day (write), Calendar (month grid) or All entries (every day that has writing), as tabs under the title.
+  const [view, setView] = useState<"day" | "calendar" | "all">("day");
+  const [month, setMonth] = useState(() => today.slice(0, 7));
+  // The sidebar's own month, so it can be paged without moving the Calendar view; it follows the open day.
+  const [sideMonth, setSideMonth] = useState(() => today.slice(0, 7));
   // ?d=YYYY-MM-DD jumps to a day (used by universal search).
   const dParam = useSearchParams().get("d");
   useEffect(() => {
@@ -64,11 +77,11 @@ export default function JournalView() {
   }, [dParam, today]);
   const qc = useQueryClient();
   const [err, setErr] = useState("");
-  // Desktop: the day list can close to a rail of day numbers (remembered in this browser).
-  const [side, setSide] = useState(true);
+  // The day list is closed by default (the page reads as one centred column); it opens beside the entries when asked for.
+  const [side, setSide] = useState(false);
   useEffect(() => {
     try {
-      setSide(window.localStorage.getItem("up_journal_sidebar") !== "false");
+      setSide(window.localStorage.getItem("up_journal_sidebar") === "true");
     } catch {
       /* storage unavailable: stay open */
     }
@@ -116,6 +129,27 @@ export default function JournalView() {
       return data as Entry[];
     },
   });
+  // First entry of each day (its text, and a photo if it has one), for the Calendar cells and the All entries rows.
+  const previewsQ = useQuery({
+    queryKey: [...qk.journal.all, "previews"],
+    queryFn: async () => {
+      const { data, error } = await sb.from("journal_entries").select("entry_date,body,attachments,created_at").order("created_at").limit(5000);
+      if (error) throw error;
+      const by: Record<string, { body: string; img?: string }> = {};
+      (data ?? []).forEach((r) => {
+        const iso = r.entry_date as string;
+        const img = (Array.isArray(r.attachments) ? (r.attachments as Attachment[]) : []).find((a) => a.type.startsWith("image/"))?.path;
+        const cur = by[iso];
+        if (!cur) by[iso] = { body: ((r.body as string) ?? "").trim(), img };
+        else {
+          if (!cur.body && r.body) cur.body = (r.body as string).trim();
+          if (!cur.img && img) cur.img = img;
+        }
+      });
+      return by;
+    },
+  });
+  const previews = previewsQ.data ?? EMPTY_PREVIEWS;
   const counts = countsQ.data ?? EMPTY_COUNTS;
   const entries = dayQ.data ?? EMPTY_ENTRIES;
   const ready = !dayQ.isPending;
@@ -153,6 +187,36 @@ export default function JournalView() {
       live = false;
     };
   }, [sb, paths]);
+
+  // Small photos on the All entries rows (the newest 40 days that have one).
+  const [thumbs, setThumbs] = useState<Record<string, string>>({});
+  const thumbPaths = Object.keys(previews)
+    .sort()
+    .reverse()
+    .map((iso) => previews[iso].img)
+    .filter((p): p is string => !!p)
+    .slice(0, 40)
+    .join("|");
+  useEffect(() => {
+    if (view !== "all" || !thumbPaths) return;
+    let live = true;
+    sb.storage
+      .from("note-files")
+      .createSignedUrls(thumbPaths.split("|"), 3600)
+      .then(({ data }) => {
+        if (live && data) setThumbs(Object.fromEntries(data.filter((d) => d.path && d.signedUrl).map((d) => [d.path as string, d.signedUrl as string])));
+      });
+    return () => {
+      live = false;
+    };
+  }, [sb, view, thumbPaths]);
+  // "Saved" for a moment after writing an entry, otherwise "Synced".
+  const [justSaved, setJustSaved] = useState(false);
+  useEffect(() => {
+    if (!justSaved) return;
+    const t = setTimeout(() => setJustSaved(false), 3000);
+    return () => clearTimeout(t);
+  }, [justSaved]);
 
   const rec = useRecorder((blob, type, secs) => {
     const ext = type.includes("mp4") ? "m4a" : "webm";
@@ -195,6 +259,8 @@ export default function JournalView() {
     if (ta.current) ta.current.style.height = "";
     setBusy(false);
     await Promise.all([loadDay(), loadCounts()]);
+    qc.invalidateQueries({ queryKey: [...qk.journal.all, "previews"] });
+    setJustSaved(true);
   }
 
   async function saveEdit(e: Entry) {
@@ -243,155 +309,368 @@ export default function JournalView() {
     ...(d.getFullYear() !== new Date().getFullYear() ? { year: "numeric" } : {}),
   });
   const n = entries.length;
+  const last14 = Array.from({ length: 14 }, (_, i) => addDays(today, i - 13));
+  // Consecutive days with writing, counted back from today (yesterday still counts while today is empty).
+  let streak = 0;
+  for (let iso = counts[today] > 0 ? today : addDays(today, -1); counts[iso] > 0; iso = addDays(iso, -1)) streak++;
+  // Month grid for the Calendar view, Monday first: whole weeks, with the neighbouring months' days at the edges.
+  const monthGrid: string[] = (() => {
+    const first = `${month}-01`;
+    const lead = (parse(first).getDay() + 6) % 7;
+    const length = new Date(parse(first).getFullYear(), parse(first).getMonth() + 1, 0).getDate();
+    const rows = Math.ceil((lead + length) / 7);
+    return Array.from({ length: rows * 7 }, (_, i) => addDays(first, i - lead));
+  })();
+  const shiftMonth = (m: string, by: number) => {
+    const [y, mo] = m.split("-").map(Number);
+    const dt = new Date(y, mo - 1 + by, 1);
+    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}`;
+  };
+  useEffect(() => {
+    setSideMonth(date.slice(0, 7));
+  }, [date]);
+  const sideGrid = (() => {
+    const first = `${sideMonth}-01`;
+    const lead = (parse(first).getDay() + 6) % 7;
+    const length = new Date(parse(first).getFullYear(), parse(first).getMonth() + 1, 0).getDate();
+    return Array.from({ length: Math.ceil((lead + length) / 7) * 7 }, (_, i) => addDays(first, i - lead));
+  })();
+  const monthDays = Object.keys(counts).filter((iso) => iso.startsWith(month) && counts[iso] > 0);
+  const monthEntries = monthDays.reduce((a, iso) => a + counts[iso], 0);
+  const monthName = parse(`${month}-01`).toLocaleDateString(undefined, { month: "long" });
+  const heading = view === "calendar" ? monthName : view === "all" ? "All entries" : title;
+  const subline =
+    view === "calendar"
+      ? `${monthDays.length} ${monthDays.length === 1 ? "day" : "days"} written · ${monthEntries} ${monthEntries === 1 ? "entry" : "entries"}`
+      : view === "all"
+        ? "Newest first"
+        : ready
+          ? `${date === today ? "Today · " : ""}${n} ${n === 1 ? "entry" : "entries"}`
+          : " ";
+  const crumbLabel =
+    view === "calendar"
+      ? parse(`${month}-01`).toLocaleDateString(undefined, { month: "long", year: "numeric" })
+      : view === "all"
+        ? "All entries"
+        : parse(date).toLocaleDateString(undefined, { month: "long", day: "numeric" });
+  useEffect(() => {
+    setCrumb(crumbLabel);
+    return () => setCrumb(undefined);
+  }, [crumbLabel]);
   const canSend = (text.trim() || files.length) && !busy;
 
   return (
-    <div className="jr" data-side={side}>
+    <div className="jr" data-side="false">
       {dialog}
+      <span className="jr-status" role="status">
+        {justSaved ? "Saved" : "Synced"}
+      </span>
       {sharing && <ShareEntryDialog key={sharing.id} entry={sharing} onClose={() => setSharing(null)} />}
-      <aside className="jr-side ap-card at-sand" aria-label="Journal days">
-        <button
-          className="ne-btn jr-toggle"
-          aria-label={side ? "Hide sidebar" : "Show sidebar"}
-          title={side ? "Hide sidebar" : "Show sidebar"}
-          onClick={toggleSide}
-        >
-          <FA icon={faTableColumns} />
-        </button>
-        <div className="jr-nav">
-          <button className="jc-btn" aria-label="Previous day" onClick={() => setDate(addDays(date, -1))}>
-            <FA icon={faChevronLeft} />
-          </button>
-          <JournalCalendar value={date} today={today} counts={counts} onPick={setDate} />
-          <button className="jc-btn" aria-label="Next day" disabled={date >= today} onClick={() => setDate(addDays(date, 1))}>
-            <FA icon={faChevronRight} />
-          </button>
-        </div>
-        <ul className="jr-days">
-          {days.map((iso) => {
-            const dd = parse(iso);
-            return (
-              <li key={iso}>
-                <button
-                  data-on={iso === date}
-                  aria-current={iso === date ? "date" : undefined}
-                  aria-label={dd.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}
-                  title={dd.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}
-                  onClick={() => setDate(iso)}
-                  // Each date has its own colour (same tints as the notes cards); the chosen day gets a stronger ring.
-                  className={`at-${dayTone(iso)} bg-(--ab) shadow-[inset_0_0_0_1px_var(--abl)] hover:brightness-[0.97] data-[on=true]:shadow-[inset_0_0_0_2px_var(--abf)] [&_small]:text-(--abf)`}
-                >
-                  <i className="jr-num" aria-hidden>
-                    {dd.getDate()}
-                  </i>
-                  <span>
-                    <small>{dd.toLocaleDateString(undefined, { weekday: "short" })}</small>
-                    <b>{dd.toLocaleDateString(undefined, { day: "numeric", month: "long" })}</b>
-                  </span>
-                  {counts[iso] > 0 && <em>{counts[iso]}</em>}
+      <SidebarPortal>
+        <aside className="sbt" aria-label="Journal days">
+          {/* A month at a glance: pick a day to open it. */}
+          <section aria-label="Month">
+            <div className="mb-2 flex items-center justify-between px-2.5 text-[14.5px]">
+              <b className="font-normal">{parse(`${sideMonth}-01`).toLocaleDateString(undefined, { month: "long", year: "numeric" })}</b>
+              <span className="flex">
+                <button type="button" className="ne-btn" aria-label="Previous month" onClick={() => setSideMonth(shiftMonth(sideMonth, -1))}>
+                  <FA icon={faChevronLeft} />
                 </button>
-              </li>
-            );
-          })}
-        </ul>
-      </aside>
+                <button type="button" className="ne-btn" aria-label="Next month" onClick={() => setSideMonth(shiftMonth(sideMonth, 1))}>
+                  <FA icon={faChevronRight} />
+                </button>
+              </span>
+            </div>
+            <div className="grid grid-cols-7 px-1 text-center text-[12px] text-ink-3" aria-hidden>
+              {["M", "T", "W", "T", "F", "S", "S"].map((w, i) => (
+                <span key={i} className="py-1">
+                  {w}
+                </span>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 gap-y-0.5 px-1 text-center text-[13px]">
+              {sideGrid.map((iso) => (
+                <button
+                  key={iso}
+                  type="button"
+                  disabled={iso > today}
+                  aria-label={`${parse(iso).toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}${counts[iso] ? `, ${counts[iso]} ${counts[iso] === 1 ? "entry" : "entries"}` : ""}`}
+                  aria-current={iso === date ? "date" : undefined}
+                  className={`relative mx-auto grid size-8 place-items-center rounded-ctl hover:bg-hover disabled:cursor-default disabled:hover:bg-transparent aria-[current=date]:bg-ink aria-[current=date]:text-paper aria-[current=date]:hover:bg-ink ${iso.startsWith(sideMonth) ? (iso > today ? "text-ink-3" : "text-ink") : "text-ink-4"}`}
+                  onClick={() => {
+                    setDate(iso);
+                    setView("day");
+                  }}
+                >
+                  {parse(iso).getDate()}
+                  {counts[iso] > 0 && iso !== date && <i className="absolute bottom-0.5 size-1 rounded-full bg-ink-3" aria-hidden />}
+                </button>
+              ))}
+            </div>
+          </section>
+          <h3 className="m-0 mt-5 mb-1 px-2.5 text-[12px] font-medium text-ink-4">Recent</h3>
+          <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
+            {days.map((iso) => {
+              const dd = parse(iso);
+              return (
+                <li key={iso}>
+                  <button
+                    type="button"
+                    className="sbt-item"
+                    data-on={iso === date}
+                    aria-current={iso === date ? "date" : undefined}
+                    onClick={() => {
+                      setDate(iso);
+                      setView("day");
+                    }}
+                  >
+                    <span>{iso === today ? "Today" : dd.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}</span>
+                    {counts[iso] > 0 && <em>{counts[iso]}</em>}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </aside>
+      </SidebarPortal>
 
       <section className="jr-main ap-card at-violet" aria-label={title}>
         <header className="jr-head">
-          <div>
-            <h1 className="h3">
-              {title} {date === today && <span className="jr-today">Today</span>}
-            </h1>
-            <small>{ready ? `${n} ${n === 1 ? "entry" : "entries"}` : " "}</small>
+          <div className="jr-head-nav">
+            {view !== "all" && (
+              <>
+                <button
+                  className="jc-btn"
+                  aria-label={view === "calendar" ? "Previous month" : "Previous day"}
+                  onClick={() => (view === "calendar" ? setMonth(shiftMonth(month, -1)) : setDate(addDays(date, -1)))}
+                >
+                  <FA icon={faChevronLeft} />
+                </button>
+                <button
+                  className="jc-btn"
+                  aria-label={view === "calendar" ? "Next month" : "Next day"}
+                  disabled={view === "calendar" ? false : date >= today}
+                  onClick={() => (view === "calendar" ? setMonth(shiftMonth(month, 1)) : setDate(addDays(date, 1)))}
+                >
+                  <FA icon={faChevronRight} />
+                </button>
+                {view === "day" && date !== today && (
+                  <button type="button" className="tv-today" onClick={() => setDate(today)}>
+                    Today
+                  </button>
+                )}
+              </>
+            )}
+            <span className="ml-auto flex items-center gap-1">
+              <JournalCalendar value={date} today={today} counts={counts} onPick={setDate} />
+            </span>
           </div>
+          <h1 className="jr-title">{heading}</h1>
+          <small>{subline}</small>
         </header>
 
+        <div className="tdo-bar">
+          <div className="tdo-tabs" role="group" aria-label="Journal view">
+            {(
+              [
+                ["day", "Day", faAlignLeft],
+                ["calendar", "Calendar", faCalendarDays],
+                ["all", "All entries", faListUl],
+              ] as const
+            ).map(([k, label, icon]) => (
+              <button key={k} type="button" aria-pressed={view === k} onClick={() => setView(k)}>
+                <FA icon={icon} /> {label}
+              </button>
+            ))}
+          </div>
+          <div className="tdo-tools" aria-label={`${streak} day streak`}>
+            <span className="flex gap-[3px]" aria-hidden>
+              {last14.map((iso) => (
+                <i key={iso} className={`size-2.5 rounded-[2px] ${counts[iso] > 0 ? "bg-ink" : "bg-hover"}`} />
+              ))}
+            </span>
+            <span className="text-[13px] text-fg-subtle">{streak > 0 ? `${streak} day streak` : "No streak yet"}</span>
+          </div>
+        </div>
+
+        {view === "calendar" && (
+          <div className="jr-cal" role="grid" aria-label="Calendar">
+            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((w) => (
+              <span key={w} role="columnheader" className="jr-cal-h">
+                {w}
+              </span>
+            ))}
+            {monthGrid.map((iso) => {
+              const inMonth = iso.startsWith(month);
+              const peek = previews[iso]?.body;
+              return (
+                <button
+                  key={iso}
+                  type="button"
+                  role="gridcell"
+                  className="jr-cal-d"
+                  data-out={!inMonth}
+                  data-today={iso === today}
+                  disabled={iso > today}
+                  aria-label={`${parse(iso).toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}${counts[iso] ? `, ${counts[iso]} ${counts[iso] === 1 ? "entry" : "entries"}` : ""}`}
+                  onClick={() => {
+                    setDate(iso);
+                    setView("day");
+                  }}
+                >
+                  <span className="jr-cal-n">
+                    <b>{parse(iso).getDate()}</b>
+                    {counts[iso] > 0 && <small>{counts[iso]}</small>}
+                  </span>
+                  {peek && <span className="jr-cal-p">{peek}</span>}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {view === "all" && (
+          <ul className="jr-all" aria-label="All entries">
+            {Object.keys(counts)
+              .filter((iso) => counts[iso] > 0)
+              .sort()
+              .reverse()
+              .map((iso) => {
+                const pv = previews[iso];
+                const thumb = pv?.img ? thumbs[pv.img] : undefined;
+                return (
+                  <li key={iso}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDate(iso);
+                        setView("day");
+                      }}
+                    >
+                      <span className="jr-all-d">
+                        <b>{iso === today ? "Today" : parse(iso).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}</b>
+                        <small>
+                          {counts[iso]} {counts[iso] === 1 ? "entry" : "entries"}
+                        </small>
+                      </span>
+                      <span className="jr-all-p">{pv?.body || (pv?.img ? "Photo" : "")}</span>
+                      {thumb && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={thumb} alt="" className="jr-all-t" />
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+            {Object.values(counts).every((c) => !c) && <li className="jr-all-none">No entries yet.</li>}
+          </ul>
+        )}
+
+        {view === "day" && (
+          <>
         <div className="jr-list flex flex-col" aria-live="polite">
           {ready && n === 0 && (
-            <p className="ap-none jr-empty">
-              {date === today ? "Nothing written yet today. What’s on your mind?" : "No entries on this day."}
-            </p>
+            <div className="jr-empty">
+              {/* Line drawing of a notebook and a plant, in the ink colour. */}
+              <svg viewBox="0 0 170 80" width="170" height="80" aria-hidden fill="none" stroke="var(--ink)" strokeWidth="1.3" strokeLinecap="round">
+                <path d="M4 76h162" />
+                <rect x="40" y="2" width="32" height="74" rx="2" transform="translate(28 0)" />
+                <path d="M76 18h18M76 26h18M76 34h12" />
+                <circle cx="26" cy="68" r="8" />
+                <path d="M26 60c0-10 6-16 14-16" />
+                <path d="M124 76V40a8 8 0 0 1 16 0v36" />
+                <path d="M132 32c0-10 4-18 12-24-1 9-4 16-12 24Z" />
+              </svg>
+              <b>{date === today ? "No entries yet today" : "No entries this day"}</b>
+              <span>Start writing below.</span>
+            </div>
           )}
-          {entries.map((e) => (
-            <article
-              key={e.id}
-              className={`liquid-flat mt-3 first:mt-auto rounded-r3 px-5 pt-4 pb-[18px] [backdrop-filter:var(--glass-blur)] max-[700px]:px-4`}
-              {...ctxProps("entry", e.id)}
-            >
-              <div className="flex items-center gap-3">
-                <time dateTime={e.created_at} className="font-serif text-[26px] leading-none tracking-[-0.02em] text-fg">
-                  {fmtTime(e.created_at)}
-                </time>
-                <i className="h-px min-w-4 flex-1 bg-line-strong" aria-hidden />
-                <span className="font-mono text-[11px] tracking-[0.1em] text-fg-subtle uppercase">{shortAge(e.created_at)}</span>
-                <Menu label="Entry options" trigger={<FA icon={faEllipsis} />}>
-                  <MenuItem
-                    onSelect={() => {
-                      setEditing(e.id);
-                      setDraft(e.body);
-                    }}
-                  >
-                    Edit
-                  </MenuItem>
-                  <MenuItem onSelect={() => setSharing(e)}>Share</MenuItem>
-                  <MenuItem danger onSelect={() => remove(e)}>
-                    Delete
-                  </MenuItem>
-                </Menu>
-              </div>
-              {editing === e.id ? (
-                <div className="jr-edit">
-                  <textarea
-                    autoFocus
-                    value={draft}
-                    onChange={(x) => setDraft(x.target.value)}
-                    maxLength={50000}
-                    aria-label="Edit entry"
-                    onKeyDown={(x) => {
-                      if ((x.metaKey || x.ctrlKey) && x.key === "Enter") saveEdit(e);
-                      if (x.key === "Escape") setEditing(null);
-                    }}
-                  />
-                  <div>
-                    <button className="btn btn-secondary btn-sm" onClick={() => setEditing(null)}>
-                      Cancel
-                    </button>{" "}
-                    <button className="btn btn-primary btn-sm" onClick={() => saveEdit(e)}>
-                      Save
-                    </button>
-                  </div>
+          {entries.map((e) => {
+            const hasPhoto = e.attachments.some((a) => a.type.startsWith("image/"));
+            const hasVoice = !hasPhoto && e.attachments.some((a) => a.type.startsWith("audio/"));
+            return (
+              <article key={e.id} className="jr-row" {...ctxProps("entry", e.id)}>
+                <div className="jr-row-t">
+                  <time dateTime={e.created_at}>{fmtTime(e.created_at)}</time>
+                  {(hasPhoto || hasVoice) && <small>{hasPhoto ? "Photo" : "Voice"}</small>}
                 </div>
-              ) : (
-                e.body && (
-                  <div className="mt-3 [&_.md]:text-[15.5px] [&_.md]:leading-[1.65] [&_.md]:text-fg">
-                    <Markdown text={e.body} />
-                  </div>
-                )
-              )}
-              {e.attachments.length > 0 && (
-                <ul className="jr-files">
-                  {e.attachments.map((a) => {
-                    const u = urls[a.path];
-                    return (
-                      <li key={a.path}>
-                        {u && a.type.startsWith("image/") && <AttachmentImage src={u} name={a.name} />}
-                        {u && a.type.startsWith("audio/") && <AudioWave src={u} label={a.name} />}
-                        {!a.type.startsWith("image/") &&
-                          !a.type.startsWith("audio/") &&
-                          (u ? (
-                            <a href={u} target="_blank" rel="noopener noreferrer">
-                              <FA icon={faPaperclip} /> {a.name}
-                            </a>
-                          ) : (
-                            <span>{a.name}</span>
-                          ))}
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </article>
-          ))}
+                <div className="jr-row-b">
+                  {editing === e.id ? (
+                    <div className="jr-edit">
+                      <textarea
+                        autoFocus
+                        value={draft}
+                        onChange={(x) => setDraft(x.target.value)}
+                        maxLength={50000}
+                        aria-label="Edit entry"
+                        onKeyDown={(x) => {
+                          if ((x.metaKey || x.ctrlKey) && x.key === "Enter") saveEdit(e);
+                          if (x.key === "Escape") setEditing(null);
+                        }}
+                      />
+                      <div>
+                        <button className="btn btn-secondary btn-sm" onClick={() => setEditing(null)}>
+                          Cancel
+                        </button>{" "}
+                        <button className="btn btn-primary btn-sm" onClick={() => saveEdit(e)}>
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    e.body && (
+                      <div className="jr-row-text">
+                        <Markdown text={e.body} />
+                      </div>
+                    )
+                  )}
+                  {e.attachments.length > 0 && (
+                    <ul className="jr-files">
+                      {e.attachments.map((a) => {
+                        const u = urls[a.path];
+                        return (
+                          <li key={a.path}>
+                            {u && a.type.startsWith("image/") && <AttachmentImage src={u} name={a.name} />}
+                            {u && a.type.startsWith("audio/") && <AudioWave src={u} label={a.name} />}
+                            {!a.type.startsWith("image/") &&
+                              !a.type.startsWith("audio/") &&
+                              (u ? (
+                                <a href={u} target="_blank" rel="noopener noreferrer">
+                                  <FA icon={faPaperclip} /> {a.name}
+                                </a>
+                              ) : (
+                                <span>{a.name}</span>
+                              ))}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+                <div className="jr-row-a">
+                  {e.body && (
+                    <button type="button" className="ne-btn" aria-label="Copy entry" title="Copy" onClick={() => void navigator.clipboard.writeText(e.body).catch(() => setErr("Couldn’t copy that entry."))}>
+                      <FA icon={faCopy} />
+                    </button>
+                  )}
+                  <button type="button" className="ne-btn" aria-label="Delete entry" title="Delete" onClick={() => remove(e)}>
+                    <FA icon={faTrash} />
+                  </button>
+                  <Menu label="Entry options" trigger={<FA icon={faEllipsis} />}>
+                    <MenuItem
+                      onSelect={() => {
+                        setEditing(e.id);
+                        setDraft(e.body);
+                      }}
+                    >
+                      Edit
+                    </MenuItem>
+                    <MenuItem onSelect={() => setSharing(e)}>Share</MenuItem>
+                  </Menu>
+                </div>
+              </article>
+            );
+          })}
           <div ref={end} />
         </div>
 
@@ -408,6 +687,9 @@ export default function JournalView() {
             send();
           }}
         >
+          <span className="jr-now" aria-hidden>
+            {date === today ? fmtTime(new Date().toISOString()) : ""}
+          </span>
           <FilePreviewList label="Attachments to add" files={files} onRemove={(i) => setFiles((x) => x.filter((_, j) => j !== i))} />
           <textarea
             ref={ta}
@@ -422,7 +704,8 @@ export default function JournalView() {
               e.target.style.height = `${Math.min(e.target.scrollHeight, 220)}px`;
             }}
             onKeyDown={(e) => {
-              if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+              // Enter saves, Shift+Enter starts a new line (⌘/Ctrl+Enter still saves). Never while an IME is composing.
+              if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
                 e.preventDefault();
                 send();
               }
@@ -443,11 +726,14 @@ export default function JournalView() {
                 e.target.value = "";
               }}
             />
-            <button className="jr-send" disabled={!canSend} aria-label="Add entry" title="Add entry (⌘ Enter)">
+            <small className="jr-hint">Enter to save · Shift+Enter for a new line</small>
+            <button className="jr-send" disabled={!canSend} aria-label="Add entry" title="Add entry (Enter)">
               <FA icon={faArrowUp} />
             </button>
           </div>
         </form>
+          </>
+        )}
       </section>
     </div>
   );

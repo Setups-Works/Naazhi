@@ -12,7 +12,7 @@ export const toneOf = (n: Pick<Note, "id" | "color">) => {
   return TONES[h % (TONES.length - 1)]; // skip plain sand for the automatic pick
 };
 
-export const NOTE_COLS = "id,title,body,updated_at,created_at,category,pinned,kind,sort_order,attachments,color";
+export const NOTE_COLS = "id,title,body,updated_at,created_at,category,pinned,kind,sort_order,attachments,color,folder_id,labels,deleted_at,share_token";
 
 export const wordCount = (s: string) => (s.trim() ? s.trim().split(/\s+/).length : 0);
 /** Every line in the text, blank ones included — what you see in the editor. An empty note has 0. */

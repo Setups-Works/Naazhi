@@ -1,6 +1,6 @@
 "use client";
 
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import { Surface } from "../../components/site/ui";
@@ -69,7 +69,7 @@ export default function Changelog() {
             </div>
             <Surface radius="r3" className="flex flex-col gap-4 p-6 sm:p-7">
               <div>
-                <h2 className="font-serif text-[28px] leading-[1.1] font-normal tracking-[-0.022em] text-balance">{r.title}</h2>
+                <h2 className="font-serif text-[28px] leading-[1.1] font-semibold tracking-[-0.022em] text-balance">{r.title}</h2>
                 <p className="mt-2 text-[15px] leading-relaxed text-fg-muted">{r.summary}</p>
               </div>
               <ul className="flex flex-col gap-3">

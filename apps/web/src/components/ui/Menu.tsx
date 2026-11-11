@@ -1,7 +1,7 @@
 "use client";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useState, type ReactNode } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 
 /**
@@ -25,6 +25,7 @@ export default function Menu({
   align = "end",
   side = "bottom",
   compact = false,
+  disabled = false,
 }: {
   label: string;
   trigger: ReactNode;
@@ -34,6 +35,7 @@ export default function Menu({
   side?: "top" | "bottom" | "left" | "right";
   /** Smaller rows, for menus that float over dense lists (chat rows, folders). */
   compact?: boolean;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -41,7 +43,7 @@ export default function Menu({
     <div className={`ap-pop ${className}`} data-open={open}>
       <DropdownMenu.Root open={open} onOpenChange={setOpen}>
         <DropdownMenu.Trigger asChild>
-          <button type="button" className="ap-pop-btn" aria-label={label}>
+          <button type="button" className="ap-pop-btn" aria-label={label} disabled={disabled}>
             {trigger}
           </button>
         </DropdownMenu.Trigger>

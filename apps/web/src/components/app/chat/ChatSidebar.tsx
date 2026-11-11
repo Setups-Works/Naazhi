@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import {
   faChevronDown,
   faChevronRight,
@@ -16,7 +16,6 @@ import {
   faMagnifyingGlass,
   faPen,
   faPlus,
-  faTableColumns,
   faThumbtack,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
@@ -38,7 +37,6 @@ export type SidebarProps = {
   onOpen: (id: string) => void;
   onNew: () => void;
   onSearch: () => void;
-  onCollapse: () => void;
   onAddFolder: () => void;
   onRenameFolder: (f: ChatFolder) => void;
   onDeleteFolder: (f: ChatFolder) => void;
@@ -147,13 +145,7 @@ export default function ChatSidebar(p: SidebarProps) {
     });
 
   return (
-    <aside className="cx-side at-sand" aria-label="Chats">
-      <div className="cx-side-h">
-        <h2>Chats</h2>
-        <button className="ne-btn" aria-label="Hide sidebar" title="Hide sidebar" onClick={p.onCollapse}>
-          <FA icon={faTableColumns} />
-        </button>
-      </div>
+    <aside className="cx-side" aria-label="Chats">
       <div className="cx-side-new">
         <button className="cx-new" onClick={p.onNew}>
           <FA icon={faPlus} /> New chat

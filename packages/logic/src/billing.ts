@@ -2,12 +2,12 @@ import type { BillingPlan } from "@untitled/types";
 
 /** AI providers a person can bring their own key for. Fixed on purpose: the server only ever calls these addresses. */
 export const BYO_PROVIDERS = [
-  { id: "openai", label: "OpenAI", baseUrl: "https://api.openai.com/v1", model: "gpt-4o-mini" },
-  { id: "groq", label: "Groq", baseUrl: "https://api.groq.com/openai/v1", model: "llama-3.3-70b-versatile" },
-  { id: "openrouter", label: "OpenRouter", baseUrl: "https://openrouter.ai/api/v1", model: "openai/gpt-4o-mini" },
-  { id: "together", label: "Together AI", baseUrl: "https://api.together.xyz/v1", model: "meta-llama/Llama-3.3-70B-Instruct-Turbo" },
-  { id: "mistral", label: "Mistral", baseUrl: "https://api.mistral.ai/v1", model: "mistral-small-latest" },
-  { id: "deepseek", label: "DeepSeek", baseUrl: "https://api.deepseek.com/v1", model: "deepseek-chat" },
+  { id: "openai", keyUrl: "https://platform.openai.com/api-keys", label: "OpenAI", baseUrl: "https://api.openai.com/v1", model: "gpt-4o-mini" },
+  { id: "groq", keyUrl: "https://console.groq.com/keys", label: "Groq", baseUrl: "https://api.groq.com/openai/v1", model: "llama-3.3-70b-versatile" },
+  { id: "openrouter", keyUrl: "https://openrouter.ai/keys", label: "OpenRouter", baseUrl: "https://openrouter.ai/api/v1", model: "openai/gpt-4o-mini" },
+  { id: "together", keyUrl: "https://api.together.ai/settings/api-keys", label: "Together AI", baseUrl: "https://api.together.xyz/v1", model: "meta-llama/Llama-3.3-70B-Instruct-Turbo" },
+  { id: "mistral", keyUrl: "https://console.mistral.ai/api-keys", label: "Mistral", baseUrl: "https://api.mistral.ai/v1", model: "mistral-small-latest" },
+  { id: "deepseek", keyUrl: "https://platform.deepseek.com/api_keys", label: "DeepSeek", baseUrl: "https://api.deepseek.com/v1", model: "deepseek-chat" },
 ] as const;
 
 export type ByoProviderId = (typeof BYO_PROVIDERS)[number]["id"];

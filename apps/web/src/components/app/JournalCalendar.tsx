@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faCalendarDays, faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import { isoDate } from "../../lib/dates";
 import { weekdayIndex, weekdayLabels } from "../../lib/prefs";

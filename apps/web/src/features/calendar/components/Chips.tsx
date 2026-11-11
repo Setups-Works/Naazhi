@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import type { Task } from "../../../lib/workspace";
 import type { CalendarEventItem } from "../types";

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faPause, faPlay } from "@fortawesome/free-solid-svg-icons";
 import { AUDIO_BARS, audioClock, fallbackPeaks } from "@untitled/logic/audio";
 import { AudioScrubber } from "./waveform";
@@ -76,7 +76,7 @@ export default function AudioWave({ src, label, bare = false }: { src: string; l
 
   return (
     <div
-      className={`flex w-full max-w-[420px] items-center gap-3 rounded-pill py-1.5 pr-4 pl-1.5 ${bare ? "bg-surface-muted" : "bg-white shadow-[inset_0_0_0_1px_var(--line)]"}`}
+      className={`flex w-full max-w-[420px] items-center gap-3 rounded-pill py-1.5 pr-4 pl-1.5 ${bare ? "bg-surface-muted" : "bg-surface shadow-[inset_0_0_0_1px_var(--line)]"}`}
     >
       <audio
         ref={el}

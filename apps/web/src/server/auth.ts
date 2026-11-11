@@ -116,8 +116,9 @@ function create() {
     // Username availability is not exposed publicly, to avoid making account discovery easier.
     disabledPaths: ["/is-username-available"],
     emailVerification: {
-      sendOnSignUp: true,
-      sendOnSignIn: true,
+      // When confirmation is switched off (local development), no confirmation email is sent either.
+      sendOnSignUp: verificationRequired,
+      sendOnSignIn: verificationRequired,
       autoSignInAfterVerification: true,
       sendVerificationEmail: async ({ user, url }) => {
         await sendMail(user.email, "Confirm your email", `Hi ${user.name || "there"}, confirm your email to activate your account.`, {

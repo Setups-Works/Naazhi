@@ -1,16 +1,16 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import {
   faBars,
+  faRotate,
   faCheck,
-  faCircleCheck,
   faEllipsis,
   faKeyboard,
   faMicrophone,
   faPen,
-  faSliders,
+  faChevronDown,
   faTrash,
   faBoxArchive,
   faXmark,
@@ -19,22 +19,33 @@ import { qk } from "../../../lib/query/keys";
 import { useRealtimeInvalidate } from "../../../hooks/useRealtimeInvalidate";
 import { useTaskActions, useTaskLists, useTasks } from "../../../features/tasks/queries";
 import type { Task, TaskList } from "../../../lib/workspace";
-import { DEFAULT_OPTS, VIEW_TITLES, emptyDraft, inView, isOpen, isView, type Draft, type ViewKey, type ViewOpts } from "../../../lib/tasks";
+import {
+  LIST_TONES,
+  DEFAULT_OPTS,
+  VIEW_TITLES,
+  emptyDraft,
+  inView,
+  isOpen,
+  isView,
+  type Draft,
+  type ViewKey,
+  type ViewOpts,
+} from "../../../lib/tasks";
 import { addDays, isoDate } from "../../../lib/dates";
 import { useCtxActions } from "../../../lib/context-actions";
 import { readPrefs } from "../../../lib/prefs";
-import Menu, { MenuItem, MenuSeparator } from "../../ui/Menu";
+import Menu, { MenuItem, MenuLabel, MenuRadioGroup, MenuRadioItem, MenuSeparator } from "../../ui/Menu";
+import QuickAdd from "./QuickAdd";
 import Modal from "../../ui/Modal";
 import { useConfirm } from "../../ui/Confirm";
-import Sidebar from "./Sidebar";
-import ViewOptions from "./ViewOptions";
+import { LAYOUTS } from "./ViewOptions";
 import TaskDialog from "./TaskDialog";
+import TaskPanel from "./TaskPanel";
 import { openSearch } from "../UniversalSearch";
 import ShortcutsDialog from "./ShortcutsDialog";
 import { BoardLayout, CalendarLayout, CompletedView, FiltersIndex, ListLayout, UpcomingView, type VCtx } from "./Views";
 
 const OPTS_KEY = "up_todo_opts";
-const SIDE_KEY = "up_todo_sidebar";
 const LAYOUT_VIEWS = ["inbox", "today", "overdue", "recurring"];
 
 type Dialog = { mode: "add"; defaults: Partial<Draft> } | { mode: "edit"; task: Task } | null;
@@ -74,11 +85,16 @@ export default function TodoApp() {
 
   const [err, setErr] = useState("");
   const [optsMap, setOptsMap] = useState<Record<string, ViewOpts>>(() => read(OPTS_KEY, {}));
-  const [side, setSide] = useState<boolean>(() => read(SIDE_KEY, true));
-  const [drawer, setDrawer] = useState(false);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [shortcuts, setShortcuts] = useState(false);
-  const [viewOpen, setViewOpen] = useState(false);
+  const quickRef = useRef<HTMLInputElement>(null);
+  // "Task added to Inbox · Open · Undo", shown for a few seconds after the composer adds a task.
+  const [toast, setToast] = useState<{ id: string; where: string } | null>(null);
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 6000);
+    return () => clearTimeout(t);
+  }, [toast]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [renaming, setRenaming] = useState<TaskList | null>(null);
   const [listening, setListening] = useState(false);
@@ -110,7 +126,6 @@ export default function TodoApp() {
 
   const go = useCallback(
     (v: ViewKey) => {
-      setDrawer(false);
       setSelected(new Set());
       router.push(`/dashboard/todo?v=${encodeURIComponent(v)}`, { scroll: false });
     },
@@ -128,13 +143,6 @@ export default function TodoApp() {
     setOptsMap(next);
     write(OPTS_KEY, next);
   };
-  const toggleSide = useCallback(() => {
-    if (window.matchMedia("(max-width: 900px)").matches) return setDrawer((d) => !d);
-    setSide((s) => {
-      write(SIDE_KEY, !s);
-      return !s;
-    });
-  }, []);
 
   /* ---------- actions (the optimistic update / rollback / refetch logic lives in features/tasks/queries.ts) ---------- */
   const patch = actions.patch;
@@ -214,7 +222,7 @@ export default function TodoApp() {
 
   /* ---------- derived ---------- */
   const counts = useMemo(() => {
-    const open = tasks.filter(isOpen);
+    const open = tasks.filter((t) => isOpen(t) && !t.parent_id);
     const byList: Record<string, number> = {};
     open.forEach((t) => {
       if (t.list_id) byList[t.list_id] = (byList[t.list_id] || 0) + 1;
@@ -233,9 +241,26 @@ export default function TodoApp() {
   const defaults: Partial<Draft> = view === "today" ? { due_date: today } : list ? { list_id: list.id } : {};
   const title = list?.name ?? VIEW_TITLES[view] ?? "Tasks";
   const openCount = viewTasks.filter(isOpen).length;
+  const left = `${openCount} ${openCount === 1 ? "task" : "tasks"} left`;
+  const subtitle =
+    view === "today"
+      ? `${new Date(`${today}T12:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} · ${left}`
+      : view === "upcoming"
+        ? "The next 30 days"
+        : view === "completed"
+          ? "Finished tasks, newest first."
+          : view === "filters"
+            ? "Saved views of your tasks."
+            : left;
   const layout = LAYOUT_VIEWS.includes(view) || list ? opts.layout : "list";
   const tone = list?.color ?? (view === "overdue" ? "clay" : view === "recurring" ? "violet" : view === "today" ? "amber" : "sand");
 
+  // Sub-tasks by parent, so a row can show "↳ 1/3" and the task panel can list them.
+  const subs = useMemo(() => {
+    const by: Record<string, Task[]> = {};
+    for (const t of tasks) if (t.parent_id) (by[t.parent_id] ??= []).push(t);
+    return by;
+  }, [tasks]);
   const ctx: VCtx = {
     today,
     lists,
@@ -243,6 +268,7 @@ export default function TodoApp() {
     onToggle: toggle,
     onOpen: (t) => setDialog({ mode: "edit", task: t }),
     onDelete: removeTask,
+    subs,
     onSelect: (t) =>
       setSelected((s) => {
         const n = new Set(s);
@@ -251,6 +277,8 @@ export default function TodoApp() {
         return n;
       }),
     onAdd: add,
+    onNew: (d) => setDialog({ mode: "add", defaults: d }),
+    onPatch: patch,
     onReschedule: reschedule,
     onGo: go,
   };
@@ -282,8 +310,8 @@ export default function TodoApp() {
   };
 
   /* ---------- keyboard shortcuts ---------- */
-  const latest = useRef({ view, defaults, tasks, go, toggleSide, patch });
-  latest.current = { view, defaults, tasks, go, toggleSide, patch };
+  const latest = useRef({ view, defaults, tasks, go, patch });
+  latest.current = { view, defaults, tasks, go, patch };
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement;
@@ -291,7 +319,6 @@ export default function TodoApp() {
       const modal = !!document.querySelector(".tm-back, .cd-back, .sm-back");
       const L = latest.current;
       if (e.key === "Escape") {
-        setViewOpen(false);
         if (!modal) setSelected(new Set());
         return;
       }
@@ -314,12 +341,11 @@ export default function TodoApp() {
       }
       if (k === "q" || k === "a") {
         e.preventDefault();
+        if (quickRef.current) {
+          quickRef.current.focus();
+          return;
+        }
         setDialog({ mode: "add", defaults: L.defaults });
-        return;
-      }
-      if (k === "m") {
-        e.preventDefault();
-        L.toggleSide();
         return;
       }
       if (k === "/") {
@@ -374,51 +400,88 @@ export default function TodoApp() {
     return <ListLayout view={view} tasks={viewTasks} opts={opts} lists={lists} ctx={ctx} today={today} defaults={defaults} tone={tone} />;
   };
 
-  const toDraft = (t: Task): Draft => ({
-    title: t.title,
-    description: t.description,
-    due_date: t.due_date,
-    priority: t.priority,
-    list_id: t.list_id,
-    recurrence: t.recurrence,
-  });
-  const showSide = side;
-
   return (
-    <div className="tdo" data-side={showSide} data-drawer={drawer}>
+    <div className="tdo" data-side="false" data-view={view}>
       {confirmDialog}
-      {drawer && <div className="tdo-scrim" onClick={() => setDrawer(false)} />}
-      <div className="tdo-sidewrap">
-        <Sidebar
-          view={view}
-          lists={lists}
-          counts={counts}
-          onGo={go}
-          onAdd={() => setDialog({ mode: "add", defaults })}
-          onSearch={openSearch}
-          onAddList={addList}
-          onCollapse={toggleSide}
-          collapsed={!showSide}
-        />
-      </div>
-
       <main className="tdo-main">
-        <header className="tdo-head">
-          <button className="ne-btn tdo-menu" aria-label="Show sidebar" title="Show sidebar (M)" data-show={!showSide} onClick={toggleSide}>
-            <FA icon={faBars} />
-          </button>
-          <div className="tdo-title">
-            <h1 className="h2">
-              {list && <i className={`at-${list.color}`} aria-hidden />}
-              {title}
-            </h1>
-            {ready && !["filters", "upcoming", "completed"].includes(view) && layout === "list" && (
-              <small>
-                <FA icon={faCircleCheck} /> {openCount} {openCount === 1 ? "task" : "tasks"}
-              </small>
-            )}
-          </div>
+        {view !== "upcoming" && (
+          <header className="tdo-head">
+            <div className="tdo-title">
+              <h1 className="h2">
+                {list && <i className={`at-${list.color}`} aria-hidden />}
+                {title}
+              </h1>
+              {ready && <small>{subtitle}</small>}
+            </div>
+          </header>
+        )}
+        <div className="tdo-bar">
+          {view !== "upcoming" && (
+            <div className="tdo-tabs" role="group" aria-label="Layout">
+              {(LAYOUT_VIEWS.includes(view) || list ? LAYOUTS : LAYOUTS.slice(0, 1)).map(([k, label, icon]) => (
+                <button key={k} type="button" aria-pressed={layout === k} onClick={() => setOpts({ layout: k })}>
+                  <FA icon={icon} /> {label}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="tdo-tools">
+            <Menu
+              label="Group by"
+              trigger={
+                <>
+                  Group <FA icon={faChevronDown} />
+                </>
+              }
+              className="tdo-drop"
+            >
+              <MenuRadioGroup value={opts.groupBy} onValueChange={(v) => setOpts({ groupBy: v as typeof opts.groupBy })}>
+                <MenuRadioItem value="none">None</MenuRadioItem>
+                <MenuRadioItem value="date">Date</MenuRadioItem>
+                <MenuRadioItem value="priority">Priority</MenuRadioItem>
+                <MenuRadioItem value="list">List</MenuRadioItem>
+              </MenuRadioGroup>
+            </Menu>
+            <Menu
+              label="Sort by"
+              trigger={
+                <>
+                  Sort <FA icon={faChevronDown} />
+                </>
+              }
+              className="tdo-drop"
+            >
+              <MenuRadioGroup value={opts.sortBy} onValueChange={(v) => setOpts({ sortBy: v as typeof opts.sortBy })}>
+                <MenuRadioItem value="date">Date</MenuRadioItem>
+                <MenuRadioItem value="priority">Priority</MenuRadioItem>
+                <MenuRadioItem value="name">Name</MenuRadioItem>
+                <MenuRadioItem value="created">Date added</MenuRadioItem>
+              </MenuRadioGroup>
+              <MenuSeparator />
+              <MenuRadioGroup value={opts.dir} onValueChange={(v) => setOpts({ dir: v as typeof opts.dir })}>
+                <MenuRadioItem value="asc">Ascending</MenuRadioItem>
+                <MenuRadioItem value="desc">Descending</MenuRadioItem>
+              </MenuRadioGroup>
+            </Menu>
+            <Menu
+              label="Filter"
+              trigger={
+                <>
+                  Filter <FA icon={faChevronDown} />
+                </>
+              }
+              className="tdo-drop"
+            >
+              <MenuLabel>Priority</MenuLabel>
+              <MenuRadioGroup value={String(opts.priority)} onValueChange={(v) => setOpts({ priority: Number(v) as typeof opts.priority })}>
+                <MenuRadioItem value="0">All priorities</MenuRadioItem>
+                <MenuRadioItem value="1">Urgent</MenuRadioItem>
+                <MenuRadioItem value="2">High</MenuRadioItem>
+                <MenuRadioItem value="3">Medium</MenuRadioItem>
+                <MenuRadioItem value="4">Low</MenuRadioItem>
+                <MenuRadioItem value="5">No priority</MenuRadioItem>
+              </MenuRadioGroup>
+            </Menu>
             <button
               className="ne-btn"
               aria-label={listening ? "Stop listening" : "Add a task by voice"}
@@ -429,60 +492,75 @@ export default function TodoApp() {
             >
               <FA icon={faMicrophone} />
             </button>
-            <div className="tdo-view">
+            {/* Shortcuts and page options sit at the top right of the page, in the bar beside the breadcrumb. */}
+            <span className="tdo-topacts">
               <button
-                className="tdo-viewbtn"
-                aria-haspopup="dialog"
-                aria-expanded={viewOpen}
-                data-on={viewOpen}
-                onClick={() => setViewOpen(!viewOpen)}
+                type="button"
+                className="ne-btn"
+                aria-label="Keyboard shortcuts"
+                title="Keyboard shortcuts (?)"
+                onClick={() => setShortcuts(true)}
               >
-                <FA icon={faSliders} /> <span>View</span>
+                ?
               </button>
-              {viewOpen && (
-                <ViewOptions
-                  opts={opts}
-                  onChange={setOpts}
-                  onReset={resetOpts}
-                  onClose={() => setViewOpen(false)}
-                  layouts={LAYOUT_VIEWS.includes(view) || !!list}
-                />
-              )}
-            </div>
-            <Menu label="More options" trigger={<FA icon={faEllipsis} />} className="tdo-more">
-              <MenuItem onSelect={() => setShortcuts(true)}>
-                <span>
-                  <FA icon={faKeyboard} /> Keyboard shortcuts
-                </span>
-              </MenuItem>
-              <MenuItem onSelect={archiveCompleted}>
-                <span>
-                  <FA icon={faBoxArchive} /> Archive completed tasks
-                </span>
-              </MenuItem>
-              {list && (
-                <>
-                  <MenuSeparator />
-                  <MenuItem onSelect={() => setRenaming(list)}>
-                    <span>
-                      <FA icon={faPen} /> Rename list
-                    </span>
-                  </MenuItem>
-                  <MenuItem danger onSelect={() => deleteList(list)}>
-                    <span>
-                      <FA icon={faTrash} /> Delete list
-                    </span>
-                  </MenuItem>
-                </>
-              )}
-            </Menu>
+              <Menu label="More options" trigger={<FA icon={faEllipsis} />} className="tdo-more">
+                <MenuItem onSelect={() => setShortcuts(true)}>
+                  <span>
+                    <FA icon={faKeyboard} /> Keyboard shortcuts
+                  </span>
+                </MenuItem>
+                <MenuItem onSelect={() => setOpts({ showCompleted: !opts.showCompleted })}>
+                  <span>
+                    <FA icon={faCheck} /> {opts.showCompleted ? "Hide completed" : "Show completed"}
+                  </span>
+                </MenuItem>
+                <MenuItem onSelect={resetOpts}>
+                  <span>
+                    <FA icon={faRotate} /> Reset view
+                  </span>
+                </MenuItem>
+                <MenuItem onSelect={archiveCompleted}>
+                  <span>
+                    <FA icon={faBoxArchive} /> Archive completed tasks
+                  </span>
+                </MenuItem>
+                {list && (
+                  <>
+                    <MenuSeparator />
+                    <MenuItem onSelect={() => setRenaming(list)}>
+                      <span>
+                        <FA icon={faPen} /> Rename list
+                      </span>
+                    </MenuItem>
+                    <MenuItem danger onSelect={() => deleteList(list)}>
+                      <span>
+                        <FA icon={faTrash} /> Delete list
+                      </span>
+                    </MenuItem>
+                  </>
+                )}
+              </Menu>
+            </span>
           </div>
-        </header>
+        </div>
 
         {(err || tasksError || listsError) && (
           <p className="form-err" role="alert">
             {err || "Couldn’t load your tasks. Make sure the database migration has been applied."}
           </p>
+        )}
+        {layout === "list" && (LAYOUT_VIEWS.includes(view) || !!list) && (
+          <QuickAdd
+            lists={lists}
+            defaults={defaults}
+            today={today}
+            inputRef={quickRef}
+            onAdd={async (d) => {
+              const made = await add(d);
+              if (made?.id) setToast({ id: made.id, where: lists.find((l) => l.id === d.list_id)?.name ?? "Inbox" });
+            }}
+            onCreateList={async (name) => (await actions.addList(name, LIST_TONES[lists.length % LIST_TONES.length]))?.id}
+          />
         )}
         <div className="tdo-body">{body()}</div>
       </main>
@@ -502,32 +580,76 @@ export default function TodoApp() {
         </div>
       )}
 
-      {dialog && (
-        <TaskDialog
-          key={dialog.mode === "edit" ? dialog.task.id : "new"}
-          task={dialog.mode === "edit" ? dialog.task : null}
-          initial={dialog.mode === "edit" ? toDraft(dialog.task) : emptyDraft(dialog.defaults)}
+      {dialog?.mode === "edit" && (
+        <TaskPanel
+          key={dialog.task.id}
+          // The live row, so the panel shows each change as soon as it is made.
+          task={tasks.find((x) => x.id === dialog.task.id) ?? dialog.task}
           lists={lists}
-          onClose={() => setDialog(null)}
-          onSave={async (d) => {
-            if (dialog.mode === "edit")
-              await patch(dialog.task.id, {
-                title: d.title,
-                description: d.description,
-                due_date: d.due_date,
-                priority: d.priority,
-                list_id: d.list_id,
-                recurrence: d.recurrence,
-              });
-            else await add(d);
+          subtasks={subs[dialog.task.id] ?? []}
+          today={today}
+          onPatch={(id, changes) => {
+            const t = tasks.find((x) => x.id === id);
+            const archive = changes.cancelled === true && !t?.cancelled && readPrefs().archiveCancelled;
+            void patch(id, archive ? { ...changes, archived: true } : changes);
           }}
           onToggle={toggle}
-          onCancelTask={(t) => patch(t.id, { cancelled: !t.cancelled, ...(t.cancelled ? {} : { done: false, done_at: null }) })}
-          onArchive={(t) => patch(t.id, { archived: !t.archived })}
+          onNew={(d) => setDialog({ mode: "add", defaults: d })}
+          onDuplicate={(t) =>
+            void add({
+              title: t.title,
+              description: t.description,
+              due_date: t.due_date,
+              priority: t.priority,
+              list_id: t.list_id,
+              recurrence: t.recurrence,
+            })
+          }
+          onAddSub={(title) =>
+            add(emptyDraft({ title, parent_id: dialog.task.id, list_id: dialog.task.list_id, due_date: dialog.task.due_date }))
+          }
+          onDeleteSub={(t) => void actions.remove([t.id])}
           onDelete={async (t) => {
             if (await removeTask(t)) setDialog(null);
           }}
+          onClose={() => setDialog(null)}
         />
+      )}
+      {dialog?.mode === "add" && (
+        <TaskDialog
+          key="new"
+          task={null}
+          initial={emptyDraft(dialog.defaults)}
+          lists={lists}
+          onClose={() => setDialog(null)}
+          onSave={async (d) => {
+            await add(d);
+          }}
+        />
+      )}
+      {toast && (
+        <div className="tdo-toast" role="status">
+          <span>Task added to {toast.where}</span>
+          <button
+            type="button"
+            onClick={() => {
+              const t = tasks.find((x) => x.id === toast.id);
+              if (t) setDialog({ mode: "edit", task: t });
+              setToast(null);
+            }}
+          >
+            Open
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              void actions.remove([toast.id]);
+              setToast(null);
+            }}
+          >
+            Undo
+          </button>
+        </div>
       )}
       {shortcuts && <ShortcutsDialog onClose={() => setShortcuts(false)} />}
       {renaming && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faBookOpen, faPenToSquare, faWandMagicSparkles } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { HEALTH_ACTIONS, healthPrompt, type HealthAction, type HealthRange } from "../format";

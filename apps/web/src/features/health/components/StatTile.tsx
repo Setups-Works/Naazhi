@@ -1,5 +1,5 @@
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 
@@ -36,7 +36,7 @@ export default function StatTile({
       </span>
       <div className="relative min-w-0">
         <p className="text-[13px] leading-tight opacity-80">{label}</p>
-        <p className="font-serif text-[28px] leading-[1.1] tracking-[-0.02em]">{value ?? "No data"}</p>
+        <p className="font-serif font-semibold text-[28px] leading-[1.1] tracking-[-0.02em]">{value ?? "No data"}</p>
         {note && <p className="text-[12.5px] leading-tight opacity-80">{note}</p>}
       </div>
       {href && <FA icon={faChevronRight} aria-hidden className="relative ml-auto text-[12px] opacity-60" />}

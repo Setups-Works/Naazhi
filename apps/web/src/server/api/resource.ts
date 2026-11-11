@@ -28,6 +28,8 @@ export function collectionHandlers(def: ResourceDef) {
       const limit = Math.min(Math.max(Number(q.get("limit") ?? 100) || 100, 1), 500);
       const offset = Math.max(Number(q.get("offset") ?? 0) || 0, 0);
       let query = userDb(user.id).from<Row>(def.table).select(def.columns);
+      // Notes in the Trash are not part of the list.
+      if (def.key === "notes") query = query.is("deleted_at", null);
       for (const [col, kind] of Object.entries(def.filters)) {
         const raw = q.get(col);
         if (raw === null) continue;
@@ -68,7 +70,9 @@ export function itemHandlers(def: ResourceDef) {
       if (!user) return unauthorized();
       const id = uuid.safeParse((await params).id);
       if (!id.success) return fail("Not found.", 404);
-      const { data } = await userDb(user.id).from<Row>(def.table).select(def.columns).eq("id", id.data).maybeSingle();
+      let one = userDb(user.id).from<Row>(def.table).select(def.columns).eq("id", id.data);
+      if (def.key === "notes") one = one.is("deleted_at", null);
+      const { data } = await one.maybeSingle();
       return data ? json({ data }) : fail("Not found.", 404);
     },
 
@@ -113,7 +117,9 @@ export function itemHandlers(def: ResourceDef) {
         : undefined;
       if (hasStamp) values.updated_at = new Date().toISOString();
       if (def.key === "tasks" && "done" in values && !("done_at" in values)) values.done_at = values.done ? new Date().toISOString() : null;
-      const { data, error } = await userDb(user.id).from<Row>(def.table).update(values).eq("id", id.data).select(def.columns).maybeSingle();
+      let change = userDb(user.id).from<Row>(def.table).update(values).eq("id", id.data);
+      if (def.key === "notes") change = change.is("deleted_at", null);
+      const { data, error } = await change.select(def.columns).maybeSingle();
       if (error) return fail(`Couldn’t change that ${def.singular}.`, 400);
       if (data && nextFiles && Array.isArray(before)) {
         const keep = new Set(nextFiles.map((f) => f.path));
@@ -130,6 +136,11 @@ export function itemHandlers(def: ResourceDef) {
       const id = uuid.safeParse((await params).id);
       if (!id.success) return fail("Not found.", 404);
       const db = userDb(user.id);
+      // A note is moved to the Trash (it can be restored there); its files stay until it is deleted for good.
+      if (def.key === "notes") {
+        const { data: trashed } = await db.from<Row>("notes").update({ deleted_at: new Date().toISOString() }).eq("id", id.data).is("deleted_at", null).select("id").maybeSingle();
+        return trashed ? json({ ok: true }) : fail("Not found.", 404);
+      }
       const { data: row } = await db.from<Row>(def.table).select(def.columns).eq("id", id.data).maybeSingle();
       if (!row) return fail("Not found.", 404);
       const { error } = await db.from(def.table).delete().eq("id", id.data);

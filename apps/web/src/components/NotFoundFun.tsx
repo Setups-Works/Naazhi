@@ -2,7 +2,7 @@
 import Link from "next/link";
 import AuthLink from "./auth/AuthLink";
 import { useEffect, useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import {
   faBookOpen,
   faCalendarDays,

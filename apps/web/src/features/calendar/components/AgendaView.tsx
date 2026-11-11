@@ -1,6 +1,6 @@
 "use client";
 
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faLocationDot, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { addDays, dayLabel, isoDate } from "../../../lib/dates";
 import type { Task } from "../../../lib/workspace";

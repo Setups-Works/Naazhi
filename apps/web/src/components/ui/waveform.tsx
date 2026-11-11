@@ -190,10 +190,10 @@ export function AudioScrubber({
         className="pointer-events-none absolute inset-y-0 left-0 rounded-r1"
         style={{ width: `${local * 100}%`, background: accent, opacity: 0.14 }}
       />
-      <div className="pointer-events-none absolute inset-y-0 w-0.5 rounded-full" style={{ left: `${local * 100}%`, background: accent }} />
+      <div className="pointer-events-none absolute inset-y-0 w-0.5 rounded-pill" style={{ left: `${local * 100}%`, background: accent }} />
       {showHandle && (
         <div
-          className="pointer-events-none absolute top-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-surface shadow-e2"
+          className="pointer-events-none absolute top-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-pill border-2 border-surface shadow-e2"
           style={{ left: `${local * 100}%`, background: accent }}
         />
       )}

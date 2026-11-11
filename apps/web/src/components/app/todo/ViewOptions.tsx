@@ -1,10 +1,10 @@
 "use client";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faCalendarDays, faListUl, faTableColumns, faXmark } from "@fortawesome/free-solid-svg-icons";
 import type { ViewOpts } from "../../../lib/tasks";
 import { PRIORITIES } from "../../../lib/tasks";
 
-const LAYOUTS: [ViewOpts["layout"], string, typeof faListUl][] = [
+export const LAYOUTS: [ViewOpts["layout"], string, typeof faListUl][] = [
   ["list", "List", faListUl],
   ["board", "Board", faTableColumns],
   ["calendar", "Calendar", faCalendarDays],

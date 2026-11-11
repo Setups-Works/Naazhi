@@ -33,3 +33,9 @@ export async function upsertHealthDays(db: Db, rows: Record<string, unknown>[]) 
   const { error } = await db.from("health_daily").upsert(rows, { onConflict: "user_id,day" });
   if (error) throw new Error("Could not save health data");
 }
+
+/** Whether the person lets the chat assistant read their health data (Settings → Health). On unless they turned it off. */
+export async function healthAssistantAllowed(db: Db): Promise<boolean> {
+  const { data } = await db.from<{ preferences: { healthAssistant?: boolean } | null }>("profiles").select("preferences").limit(1);
+  return data?.[0]?.preferences?.healthAssistant !== false;
+}

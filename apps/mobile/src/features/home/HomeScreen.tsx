@@ -237,7 +237,7 @@ export function HomeScreen() {
     if (!title) return;
     setTaskTitle("");
     addTask.mutate(
-      { title, description: "", due_date: today, priority: 4, list_id: null, recurrence: null },
+      { title, description: "", due_date: today, priority: 5, list_id: null, recurrence: null },
       { onError: () => setTaskTitle(title) },
     );
   }

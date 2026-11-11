@@ -1,7 +1,7 @@
 import "server-only";
 import { addDays } from "@untitled/logic/dates";
 import { userDb } from "../../db/builders";
-import { listHealthDays, upsertHealthDays } from "../../repositories/health.repository";
+import { healthAssistantAllowed, listHealthDays, upsertHealthDays } from "../../repositories/health.repository";
 import type { HealthSyncInput } from "./health.schema";
 
 /** Newest first. `days` is how far back to look (1–90). */
@@ -17,6 +17,8 @@ export async function getHealth(userId: string, days: number) {
  * "how was yesterday?" maps to a line. Only validated integers go in, so nothing here can carry an instruction.
  */
 export async function healthContextFor(userId: string, localDate: string): Promise<string> {
+  // Off in Settings → Health: the assistant gets nothing, as if no data had been synced.
+  if (!(await healthAssistantAllowed(userDb(userId)).catch(() => true))) return "";
   const days = await getHealth(userId, 30).catch(() => []);
   if (!days.length) return "";
   const yesterday = addDays(localDate, -1);

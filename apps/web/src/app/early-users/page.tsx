@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import {
   faComments,
   faHandshake,
@@ -88,7 +88,7 @@ export default function Page() {
                   Placeholder
                 </span>
                 <FA icon={faQuoteLeft} className="text-[26px] text-green-fg/40" />
-                <blockquote className="font-serif text-[22px] leading-snug tracking-[-0.015em] text-fg">
+                <blockquote className="font-serif font-semibold text-[22px] leading-snug tracking-[-0.015em] text-fg">
                   Your feedback could be the first quote on this page.
                 </blockquote>
                 <figcaption className="mt-auto flex items-center gap-3">

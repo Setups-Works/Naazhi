@@ -18,5 +18,5 @@ export default function JournalSwitch() {
     { href: PERSONAL, t: "Personal", match: (p) => p === PERSONAL },
     { href: COLLAB, t: "Collaboration", match: (p) => p.startsWith(COLLAB) || p.startsWith("/dashboard/journal/shared"), badge: waiting },
   ];
-  return <PillSwitch label="Journal" pages={pages} />;
+  return <PillSwitch label="Journal" pages={pages} className="max-w-[760px]" />;
 }

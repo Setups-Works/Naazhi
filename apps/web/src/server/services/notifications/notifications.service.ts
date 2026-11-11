@@ -1,4 +1,5 @@
 import "server-only";
+import { INBOX_PATH } from "@untitled/logic";
 import * as repo from "../../repositories/notifications.repository";
 import { NotFoundError } from "../../errors";
 import { pushConfigured, sendPush } from "./fcm";
@@ -43,7 +44,7 @@ export async function sendAdminMessage(input: { title: string; body: string; to?
     if (!id) throw new NotFoundError("No one has that email address.");
     ids = [id];
   } else ids = await repo.allUserIds();
-  return notifyUsers(ids, { kind: "admin", title: input.title, body: input.body, url: "/notifications" });
+  return notifyUsers(ids, { kind: "admin", title: input.title, body: input.body, url: INBOX_PATH });
 }
 
 export const listFor = async (userId: string) => ({ items: await repo.list(userId, 50), unread: await repo.unreadCount(userId) });

@@ -1,6 +1,6 @@
 "use client";
 import * as Dialog from "@radix-ui/react-dialog";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faRss } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 
@@ -35,7 +35,7 @@ export default function AddFeedDialog({ onAdd, onClose }: { onAdd: (url: string)
         <Dialog.Overlay className="cd-back">
           <Dialog.Content className="cd">
             <form onSubmit={submit} className="cd-form">
-              <span className="at-green tint mb-1 grid size-12 place-items-center rounded-r3 text-[18px]" aria-hidden>
+              <span className="mb-1 grid size-12 place-items-center rounded-r2 bg-hover text-[18px] text-fg-muted" aria-hidden>
                 <FA icon={faRss} />
               </span>
               <Dialog.Title className="h3">Add a feed</Dialog.Title>

@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import PlanSwitch from "../../../components/app/PlanSwitch";
 import ClientOnly from "../../../components/app/ClientOnly";
 import HealthApp from "../../../features/health/components/HealthApp";
 
@@ -11,7 +10,6 @@ export const metadata = {
 export default function HealthPage() {
   return (
     <>
-      <PlanSwitch />
       <ClientOnly>
         <Suspense fallback={<div className="p-6 text-xs text-fg-muted">Loading health...</div>}>
           <HealthApp />

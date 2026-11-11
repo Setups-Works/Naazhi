@@ -1,4 +1,4 @@
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import { INVITE_ROLES, ROLE_HELP, ROLE_LABEL } from "@untitled/logic";
 import type { SharedJournalInviteRole } from "../types";

@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { CAPABILITIES } from "../content";
 import { Reveal } from "../Reveal";
@@ -62,7 +62,7 @@ export default function Capabilities() {
                   <IconBadge icon={c.icon} />
                   <StatusChip status={c.status} />
                 </div>
-                <h3 className="mt-1 font-serif text-[26px] leading-tight tracking-[-0.022em]">{c.t}</h3>
+                <h3 className="mt-1 font-serif font-semibold text-[26px] leading-tight tracking-[-0.022em]">{c.t}</h3>
                 <p className="text-[15px] leading-relaxed text-fg-muted">{c.d}</p>
               </Surface>
             </li>

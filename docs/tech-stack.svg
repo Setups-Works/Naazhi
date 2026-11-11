@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 1150" width="2400" height="1150">
+<rect width="2400" height="1150" fill="#fff"/>
+<text x="90" y="80" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="46" font-weight="700" fill="#16231d" text-anchor="start">Naazhi — tech stack</text>
+<text x="90" y="118" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="23" font-weight="400" fill="#5b6b63" text-anchor="start">TypeScript end to end · one monorepo · web, Android app and shared packages</text>
+<rect x="90" y="160" width="720" height="440" rx="26" fill="#f6f9f7" stroke="#c9d6cf" stroke-width="2"/>
+<rect x="90" y="160" width="720" height="10" rx="5" fill="#1f6b4a"/>
+<text x="122" y="230" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="700" fill="#16231d" text-anchor="start">Web app</text>
+<text x="122" y="264" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#5b6b63" text-anchor="start">Next.js · React · TypeScript</text>
+<rect x="122" y="300" width="169" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="142" y="335" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Next.js</text>
+<text x="245.8" y="335" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">16</text>
+<rect x="305" y="300" width="142" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="325" y="335" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">React</text>
+<text x="402.0" y="335" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">19</text>
+<rect x="461" y="300" width="198" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="481" y="335" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">TypeScript</text>
+<text x="625.0" y="335" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">6</text>
+<rect x="122" y="370" width="236" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="142" y="405" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Tailwind CSS</text>
+<text x="312.8" y="405" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">v4</text>
+<rect x="372" y="370" width="252" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="392" y="405" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">TanStack Query</text>
+<text x="589.6" y="405" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">5</text>
+<rect x="122" y="440" width="147" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="142" y="475" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Radix UI</text>
+<rect x="283" y="440" width="118" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="303" y="475" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">GSAP</text>
+<text x="366.6" y="475" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">3</text>
+<rect x="415" y="440" width="257" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="435" y="475" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Font Awesome</text>
+<text x="605.8" y="475" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">Free</text>
+<rect x="840" y="160" width="720" height="440" rx="26" fill="#f6f9f7" stroke="#c9d6cf" stroke-width="2"/>
+<rect x="840" y="160" width="720" height="10" rx="5" fill="#1f6b4a"/>
+<text x="872" y="230" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="700" fill="#16231d" text-anchor="start">Mobile app</text>
+<text x="872" y="264" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#5b6b63" text-anchor="start">Expo · React Native</text>
+<rect x="872" y="300" width="128" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="892" y="335" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Expo</text>
+<text x="955.6" y="335" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">57</text>
+<rect x="1014" y="300" width="257" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1034" y="335" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">React Native</text>
+<text x="1204.8" y="335" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">0.86</text>
+<rect x="1285" y="300" width="187" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1305" y="335" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Expo Router</text>
+<rect x="872" y="370" width="275" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="892" y="405" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">SecureStore</text>
+<text x="1049.4" y="405" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">session</text>
+<rect x="1161" y="370" width="318" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1181" y="405" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Better Auth</text>
+<text x="1338.4" y="405" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">Expo client</text>
+<rect x="872" y="440" width="352" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="892" y="475" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Home widgets</text>
+<text x="1062.8" y="475" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">iOS + Android</text>
+<rect x="1238" y="440" width="192" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1258" y="475" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Push</text>
+<text x="1321.6" y="475" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">Firebase</text>
+<rect x="1590" y="160" width="720" height="440" rx="26" fill="#f6f9f7" stroke="#c9d6cf" stroke-width="2"/>
+<rect x="1590" y="160" width="720" height="10" rx="5" fill="#1f6b4a"/>
+<text x="1622" y="230" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="700" fill="#16231d" text-anchor="start">Server &amp; API</text>
+<text x="1622" y="264" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#5b6b63" text-anchor="start">inside the Next.js app</text>
+<rect x="1622" y="300" width="315" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1642" y="335" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Route handlers</text>
+<text x="1839.6" y="335" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">/api/v1</text>
+<rect x="1951" y="300" width="104" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1971" y="335" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Zod</text>
+<text x="2021.2" y="335" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">4</text>
+<rect x="1622" y="370" width="233" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1642" y="405" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Better Auth</text>
+<text x="1799.4" y="405" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">1.7</text>
+<rect x="1869" y="370" width="238" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1889" y="405" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">node-postgres</text>
+<text x="2073.2" y="405" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">8</text>
+<rect x="1622" y="440" width="158" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1642" y="475" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">ioredis</text>
+<text x="1745.8" y="475" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">6</text>
+<rect x="1794" y="440" width="179" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1814" y="475" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">SSE</text>
+<text x="1864.2" y="475" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">realtime</text>
+<rect x="1987" y="440" width="222" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="2007" y="475" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">OpenAPI</text>
+<text x="2110.8" y="475" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">docs UI</text>
+<rect x="1622" y="510" width="227" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1642" y="545" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Proxy</text>
+<text x="1719.0" y="545" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">host split</text>
+<rect x="90" y="630" width="720" height="440" rx="26" fill="#f6f9f7" stroke="#c9d6cf" stroke-width="2"/>
+<rect x="90" y="630" width="720" height="10" rx="5" fill="#1f6b4a"/>
+<text x="122" y="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="700" fill="#16231d" text-anchor="start">Data &amp; storage</text>
+<text x="122" y="734" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#5b6b63" text-anchor="start">self-hosted, all private</text>
+<rect x="122" y="770" width="272" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="142" y="805" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">PostgreSQL</text>
+<text x="286.0" y="805" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">16 · RLS</text>
+<rect x="408" y="770" width="269" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="428" y="805" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Redis</text>
+<text x="505.0" y="805" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">limits · cache</text>
+<rect x="122" y="840" width="296" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="142" y="875" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">S3 / R2</text>
+<text x="245.8" y="875" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">object storage</text>
+<rect x="432" y="840" width="272" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="452" y="875" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Azure Blob</text>
+<text x="596.0" y="875" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">optional</text>
+<rect x="122" y="910" width="243" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="142" y="945" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Mailpit</text>
+<text x="245.8" y="945" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">dev email</text>
+<rect x="379" y="910" width="358" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="399" y="945" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">SQL migrations</text>
+<text x="596.6" y="945" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">append-only</text>
+<rect x="840" y="630" width="720" height="440" rx="26" fill="#f6f9f7" stroke="#c9d6cf" stroke-width="2"/>
+<rect x="840" y="630" width="720" height="10" rx="5" fill="#1f6b4a"/>
+<text x="872" y="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="700" fill="#16231d" text-anchor="start">AI &amp; integrations</text>
+<text x="872" y="734" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#5b6b63" text-anchor="start">swappable, or off</text>
+<rect x="872" y="770" width="171" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="892" y="805" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Groq</text>
+<text x="955.6" y="805" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">server</text>
+<rect x="1057" y="770" width="235" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1077" y="805" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Puter.js</text>
+<text x="1194.2" y="805" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">browser</text>
+<rect x="872" y="840" width="328" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="892" y="875" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Own API key</text>
+<text x="1049.4" y="875" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">OpenAI-style</text>
+<rect x="1214" y="840" width="296" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1234" y="875" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">AES-256-GCM</text>
+<text x="1391.4" y="875" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">key vault</text>
+<rect x="872" y="910" width="235" height="54" rx="27" fill="#fff" stroke="#c9d6cf" stroke-width="2" stroke-dasharray="8 6"/>
+<text x="892" y="945" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Composio</text>
+<text x="1009.2" y="945" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">planned</text>
+<rect x="1121" y="910" width="235" height="54" rx="27" fill="#fff" stroke="#c9d6cf" stroke-width="2" stroke-dasharray="8 6"/>
+<text x="1141" y="945" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Razorpay</text>
+<text x="1258.2" y="945" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">planned</text>
+<rect x="1590" y="630" width="720" height="440" rx="26" fill="#f6f9f7" stroke="#c9d6cf" stroke-width="2"/>
+<rect x="1590" y="630" width="720" height="10" rx="5" fill="#1f6b4a"/>
+<text x="1622" y="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" font-weight="700" fill="#16231d" text-anchor="start">Build, test &amp; deploy</text>
+<text x="1622" y="734" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#5b6b63" text-anchor="start">one monorepo</text>
+<rect x="1622" y="770" width="128" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1642" y="805" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">pnpm</text>
+<text x="1705.6" y="805" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">12</text>
+<rect x="1764" y="770" width="185" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1784" y="805" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Turborepo</text>
+<text x="1914.6" y="805" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">2</text>
+<rect x="1963" y="770" width="187" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1983" y="805" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Docker</text>
+<text x="2073.4" y="805" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">image</text>
+<rect x="1622" y="840" width="358" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1642" y="875" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">GitHub Actions</text>
+<text x="1839.6" y="875" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">CI · deploy</text>
+<rect x="1622" y="910" width="366" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1642" y="945" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Azure App Service</text>
+<text x="1879.8" y="945" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">web host</text>
+<rect x="2002" y="910" width="145" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="2022" y="945" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Vitest</text>
+<text x="2112.4" y="945" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">5</text>
+<rect x="1622" y="980" width="219" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1642" y="1015" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Playwright</text>
+<text x="1786.0" y="1015" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">e2e</text>
+<rect x="1855" y="980" width="145" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1875" y="1015" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">ESLint</text>
+<text x="1965.4" y="1015" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">9</text>
+<rect x="2014" y="980" width="171" height="54" rx="27" fill="#fff" stroke="#1f6b4a" stroke-width="2"/>
+<text x="2034" y="1015" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="start">Prettier</text>
+<text x="2151.2" y="1015" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">3</text>
+<text x="90" y="1122" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="start">Dashed = planned, not connected yet.</text>
+</svg>

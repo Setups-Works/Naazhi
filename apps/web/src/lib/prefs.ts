@@ -7,7 +7,40 @@ export type Prefs = {
   density: "comfortable" | "compact";
   reduceMotion: boolean;
   todoView: "today" | "inbox" | "upcoming";
+  /** Colour scheme of the app: paper white, warm cream, charcoal, or follow the device. */
+  scheme: Scheme;
+  /** Accent colour for links, focus and active states ("default" is ink). */
+  accent: Accent;
+  /** New notes open in the full width of the page instead of beside the list. */
+  notesFullScreen: boolean;
+  /** Finished tasks move to the archive straight away. */
+  archiveCompleted: boolean;
+  /** Cancelled tasks move to the archive straight away. */
+  archiveCancelled: boolean;
+  /** Upcoming lists every coming repeat of a repeating task, not just the next one. */
+  showEveryRepeat: boolean;
+  /** One short tip a day on Home. */
+  homeTips: boolean;
+  /** Product announcements on Home. */
+  homeAnnouncements: boolean;
+  /** Email: seconds to take a sent message back (2-60). */
+  undoSendSecs: number;
+  /** Email: a chat message when someone replies or a message bounces. */
+  replyAlerts: boolean;
+  /** Email: one signature added to every message. */
+  emailSignature: string;
+  /** Mail labels Naazhi never reads, per mail service. */
+  excludedLabels: { name: string; account: string }[];
+  /** Health: the chat assistant may read your synced health data. */
+  healthAssistant: boolean;
+  /** The last few imports, newest first. */
+  recentImports: { at: string; source: string; notes: number; folders: number }[];
 };
+
+export const SCHEMES = ["system", "light", "cream", "dark"] as const;
+export type Scheme = (typeof SCHEMES)[number];
+export const ACCENTS = ["default", "ocean", "grove", "iris", "rose", "teal", "slate"] as const;
+export type Accent = (typeof ACCENTS)[number];
 
 export const DEFAULT_PREFS: Prefs = {
   timeFormat: "12h",
@@ -16,6 +49,20 @@ export const DEFAULT_PREFS: Prefs = {
   density: "comfortable",
   reduceMotion: false,
   todoView: "today",
+  scheme: "light",
+  accent: "default",
+  notesFullScreen: true,
+  archiveCompleted: false,
+  archiveCancelled: false,
+  showEveryRepeat: false,
+  homeTips: true,
+  homeAnnouncements: true,
+  undoSendSecs: 15,
+  replyAlerts: true,
+  emailSignature: "",
+  excludedLabels: [],
+  recentImports: [],
+  healthAssistant: true,
 };
 const KEY = "up_prefs";
 
@@ -30,6 +77,30 @@ export function cleanPrefs(v: unknown, categories: readonly string[]): Prefs {
     density: o.density === "compact" ? "compact" : "comfortable",
     reduceMotion: o.reduceMotion === true,
     todoView: o.todoView === "inbox" || o.todoView === "upcoming" ? o.todoView : "today",
+    scheme: SCHEMES.includes(o.scheme as Scheme) ? (o.scheme as Scheme) : DEFAULT_PREFS.scheme,
+    accent: ACCENTS.includes(o.accent as Accent) ? (o.accent as Accent) : DEFAULT_PREFS.accent,
+    notesFullScreen: o.notesFullScreen !== false,
+    archiveCompleted: o.archiveCompleted === true,
+    archiveCancelled: o.archiveCancelled === true,
+    showEveryRepeat: o.showEveryRepeat === true,
+    homeTips: o.homeTips !== false,
+    homeAnnouncements: o.homeAnnouncements !== false,
+    undoSendSecs: Number.isInteger(o.undoSendSecs) && (o.undoSendSecs as number) >= 2 && (o.undoSendSecs as number) <= 60 ? (o.undoSendSecs as number) : 15,
+    replyAlerts: o.replyAlerts !== false,
+    emailSignature: typeof o.emailSignature === "string" ? o.emailSignature.slice(0, 2000) : "",
+    excludedLabels: Array.isArray(o.excludedLabels)
+      ? o.excludedLabels
+          .filter((l): l is { name: string; account: string } => !!l && typeof l.name === "string" && typeof l.account === "string")
+          .slice(0, 100)
+          .map((l) => ({ name: l.name.slice(0, 80), account: l.account.slice(0, 30) }))
+      : [],
+    healthAssistant: o.healthAssistant !== false,
+    recentImports: Array.isArray(o.recentImports)
+      ? o.recentImports
+          .filter((r) => !!r && typeof r.at === "string" && typeof r.source === "string")
+          .slice(0, 10)
+          .map((r) => ({ at: r.at, source: r.source.slice(0, 30), notes: Number(r.notes) || 0, folders: Number(r.folders) || 0 }))
+      : [],
   };
 }
 

@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState, type ReactNode } from "react";
 import { ctxProps } from "../../../lib/context-actions";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import {
   faBan,
   faBoxArchive,
@@ -28,15 +28,16 @@ import {
   type ViewOpts,
 } from "../../../lib/tasks";
 import { addDays, isoDate } from "../../../lib/dates";
-import { weekdayIndex, weekdayLabels } from "../../../lib/prefs";
-import Menu, { MenuItem } from "../../ui/Menu";
+import { readPrefs, weekdayIndex, weekdayLabels } from "../../../lib/prefs";
 import { Tabs, TabsList, TabsTrigger } from "../../ui/Tabs";
 import JournalCalendar from "../JournalCalendar";
 import TaskForm from "./TaskForm";
 import TaskItem, { type RowCtx } from "./TaskItem";
 
 export type VCtx = RowCtx & {
-  onAdd: (d: Draft) => Promise<void>;
+  /** The overdue tasks, for the Overdue header's "Select". */
+  overdue?: Task[];
+  onAdd: (d: Draft) => Promise<unknown>;
   onReschedule: (ids: string[], date: string) => void;
   onGo: (v: ViewKey) => void;
 };
@@ -53,12 +54,25 @@ export function dayHead(iso: string, today: string) {
     .join(" · ");
 }
 
-export function Empty({ icon, title, text }: { icon: typeof faCircleCheck; title: string; text: string }) {
+/** Upcoming day heading in the reference's style: "Tomorrow · Thu Nov 12" for today and tomorrow, "Fri Nov 13" after that. */
+export function upcomingHead(iso: string, today: string) {
+  const [y, m, d] = iso.split("-").map(Number);
+  const dt = new Date(y, m - 1, d);
+  const short = `${dt.toLocaleDateString(undefined, { weekday: "short" })} ${dt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
+  const rel = iso === today ? "Today" : iso === addDays(today, 1) ? "Tomorrow" : "";
+  return rel ? `${rel} · ${short}` : short;
+}
+
+export function Empty({ title, text }: { icon?: typeof faCircleCheck; title: string; text: string }) {
   return (
     <div className="tv-empty">
-      <span>
-        <FA icon={icon} />
-      </span>
+      {/* A sun over the horizon with a tick, as a thin ink line drawing (the reference's empty-state style). */}
+      <svg viewBox="0 0 170 80" width="170" height="80" aria-hidden fill="none" stroke="var(--ink)" strokeWidth="1.3" strokeLinecap="round">
+        <path d="M4 76h162" />
+        <path d="M45 76a40 40 0 0 1 80 0" />
+        <path d="M85 20V8M55 32l-8-8M115 32l8-8M37 56H25M133 56h12" />
+        <path d="M72 58l9 9 18-20" />
+      </svg>
       <b>{title}</b>
       <p>{text}</p>
     </div>
@@ -144,26 +158,29 @@ function Section({
   );
 }
 
+/** The Overdue header's actions: move every overdue task to today, or select them all for the bulk bar. */
 function Reschedule({ ids, ctx, today }: { ids: string[]; ctx: VCtx; today: string }) {
-  const opts: [string, string][] = [
-    ["Today", today],
-    ["Tomorrow", addDays(today, 1)],
-    ["Next week", addDays(today, 7)],
-  ];
   return (
-    <Menu label="Reschedule overdue tasks" trigger={<span className="tv-resched">Reschedule</span>}>
-      {opts.map(([l, d]) => (
-        <MenuItem key={l} onSelect={() => ctx.onReschedule(ids, d)}>
-          {l}
-        </MenuItem>
-      ))}
-    </Menu>
+    <>
+      <button type="button" className="tv-resched" onClick={() => ctx.onReschedule(ids, today)}>
+        Reschedule to today
+      </button>
+      <button
+        type="button"
+        className="tv-resched"
+        onClick={() => {
+          for (const t of ctx.overdue ?? []) if (!ctx.selected.has(t.id)) ctx.onSelect(t);
+        }}
+      >
+        Select
+      </button>
+    </>
   );
 }
 
 function groupDefaults(g: Group): Partial<Draft> {
   if (g.date) return { due_date: g.date };
-  if (/^p[1-4]$/.test(g.key)) return { priority: Number(g.key[1]) as Draft["priority"] };
+  if (/^p[1-5]$/.test(g.key)) return { priority: Number(g.key[1]) as Draft["priority"] };
   if (/^[0-9a-f-]{36}$/i.test(g.key)) return { list_id: g.key };
   return {};
 }
@@ -221,10 +238,10 @@ export function ListLayout({
             tone="clay"
             tasks={late}
             ctx={ctx}
-            action={<Reschedule ids={late.map((t) => t.id)} ctx={ctx} today={today} />}
+            action={<Reschedule ids={late.map((t) => t.id)} ctx={{ ...ctx, overdue: late }} today={today} />}
           />
         )}
-        <Section title={dayHead(today, today)} tone="amber" tasks={now} ctx={ctx} defaults={defaults} collapsible={false} />
+        <Section title="Today" count={now.length} tone="amber" tasks={now} ctx={ctx} defaults={defaults} collapsible={false} />
       </>
     );
   }
@@ -327,11 +344,16 @@ export function CalendarLayout({
     const d = new Date();
     return { y: d.getFullYear(), m: d.getMonth() };
   });
+  // Month (a grid of weeks) or Week (seven day columns with an All day row and the hours), as in the reference.
+  const [mode, setMode] = useState<"month" | "week">("month");
+  const thisWeek = () => addDays(today, -weekdayIndex(new Date(`${today}T12:00:00`)));
+  const [ws, setWs] = useState(thisWeek);
   const sorted = useMemo(() => applyOpts(tasks, opts), [tasks, opts]);
   const first = new Date(view.y, view.m, 1);
   const offset = weekdayIndex(first);
   const cells = Array.from({ length: 42 }, (_, i) => new Date(view.y, view.m, 1 - offset + i));
-  const lastDay = isoDate(cells[cells.length - 1]);
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(ws, i));
+  const lastDay = mode === "week" ? weekDays[6] : isoDate(cells[cells.length - 1]);
   // Open repeating tasks also appear on every later day they come back on (shown softer, and they open the real task).
   const { by, original } = useMemo(() => {
     const m = new Map<string, Task[]>();
@@ -340,6 +362,14 @@ export function CalendarLayout({
     sorted.forEach((t) => {
       if (!t.due_date) return;
       add(t.due_date, t);
+      // A task that spans days also shows on each earlier day of its span (as a copy that opens the real task).
+      if (t.start_date && t.start_date < t.due_date) {
+        for (let iso = t.start_date; iso < t.due_date; iso = addDays(iso, 1)) {
+          const copy = { ...t };
+          original.set(copy, t);
+          add(iso, copy);
+        }
+      }
       if (t.recurrence && !t.done && !t.cancelled && !t.archived) {
         for (const iso of upcomingDates(t.due_date, t.recurrence, lastDay)) {
           const copy = { ...t, due_date: iso };
@@ -351,68 +381,121 @@ export function CalendarLayout({
     return { by: m, original };
   }, [sorted, lastDay]);
   const shift = (n: number) =>
-    setView(({ y, m }) => {
-      const d = new Date(y, m + n, 1);
-      return { y: d.getFullYear(), m: d.getMonth() };
-    });
+    mode === "week"
+      ? setWs((w) => addDays(w, n * 7))
+      : setView(({ y, m }) => {
+          const d = new Date(y, m + n, 1);
+          return { y: d.getFullYear(), m: d.getMonth() };
+        });
+  const goToday = () => {
+    const d = new Date();
+    setView({ y: d.getFullYear(), m: d.getMonth() });
+    setWs(thisWeek());
+  };
+  const chip = (t: Task) => {
+    const real = original.get(t); // set when this chip is a repeat of a task whose own date is earlier
+    return (
+      <button
+        key={t.id}
+        className="tv-cal-chip"
+        {...(real ? {} : ctxProps("task", t.id, { done: t.done }))}
+        data-p={t.priority}
+        data-done={t.done}
+        data-repeat={!!real}
+        onClick={() => ctx.onOpen(real ?? t)}
+        title={real ? `${t.title} (repeats)` : t.title}
+      >
+        {t.title}
+      </button>
+    );
+  };
+  const wsDate = new Date(`${ws}T12:00:00`);
+  const title = (mode === "week" ? wsDate : first).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  const now = new Date();
+  const nowPct = ((now.getHours() * 60 + now.getMinutes()) / 1440) * 100;
   return (
     <section className="ap-card at-violet tv-cal">
       <header className="tv-sec-h">
-        <h3>{first.toLocaleDateString(undefined, { month: "long", year: "numeric" })}</h3>
+        <button className="btn btn-secondary btn-sm" onClick={goToday}>
+          Today
+        </button>
+        <button className="ne-btn" aria-label={mode === "week" ? "Previous week" : "Previous month"} onClick={() => shift(-1)}>
+          <FA icon={faChevronLeft} />
+        </button>
+        <button className="ne-btn" aria-label={mode === "week" ? "Next week" : "Next month"} onClick={() => shift(1)}>
+          <FA icon={faChevronRight} />
+        </button>
+        <h3>{title}</h3>
         <span className="tv-sec-a">
-          <button className="ne-btn" aria-label="Previous month" onClick={() => shift(-1)}>
-            <FA icon={faChevronLeft} />
-          </button>
-          <button className="ne-btn" aria-label="Next month" onClick={() => shift(1)}>
-            <FA icon={faChevronRight} />
-          </button>
-          <button
-            className="btn btn-secondary btn-sm"
-            onClick={() => {
-              const d = new Date();
-              setView({ y: d.getFullYear(), m: d.getMonth() });
-            }}
-          >
-            Today
-          </button>
+          <span className="tv-seg" role="group" aria-label="Calendar range">
+            {(["week", "month"] as const).map((k) => (
+              <button key={k} type="button" aria-pressed={mode === k} onClick={() => setMode(k)}>
+                {k === "week" ? "Week" : "Month"}
+              </button>
+            ))}
+          </span>
         </span>
       </header>
-      <div className="tv-cal-grid">
-        {weekdayLabels("short").map((d) => (
-          <span key={d} className="tv-cal-dow">
-            {d}
-          </span>
-        ))}
-        {cells.map((d) => {
-          const iso = isoDate(d);
-          const list = by.get(iso) ?? [];
-          return (
-            <div key={iso} className="tv-cal-day" data-out={d.getMonth() !== view.m} data-today={iso === today}>
-              <button className="tv-cal-num" aria-label={`Add task on ${iso}`} onClick={() => onAddOn(iso)}>
-                {d.getDate()}
-              </button>
-              {list.slice(0, 3).map((t) => {
-                const real = original.get(t); // set when this chip is a repeat of a task whose own date is earlier
-                return (
-                  <button
-                    key={t.id}
-                    className="tv-cal-chip"
-                    {...(real ? {} : ctxProps("task", t.id, { done: t.done }))}
-                    data-p={t.priority}
-                    data-done={t.done}
-                    data-repeat={!!real}
-                    onClick={() => ctx.onOpen(real ?? t)}
-                    title={real ? `${t.title} (repeats)` : t.title}
-                  >
-                    {t.title}
-                  </button>
-                );
-              })}
-              {list.length > 3 && <small>+{list.length - 3} more</small>}
+      {mode === "month" ? (
+        <div className="tv-cal-grid">
+          {weekdayLabels("short").map((d) => (
+            <span key={d} className="tv-cal-dow">
+              {d}
+            </span>
+          ))}
+          {cells.map((d) => {
+            const iso = isoDate(d);
+            const list = by.get(iso) ?? [];
+            return (
+              <div key={iso} className="tv-cal-day" data-out={d.getMonth() !== view.m} data-today={iso === today}>
+                <button className="tv-cal-num" aria-label={`Add task on ${iso}`} onClick={() => onAddOn(iso)}>
+                  {d.getDate()}
+                </button>
+                {list.slice(0, 3).map(chip)}
+                {list.length > 3 && <small>+{list.length - 3} more</small>}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="tv-wk" role="grid" aria-label="Week">
+          <div className="tv-wk-row tv-wk-head" role="row">
+            <span />
+            {weekDays.map((iso) => {
+              const d = new Date(`${iso}T12:00:00`);
+              return (
+                <span key={iso} role="columnheader" data-today={iso === today}>
+                  <small>{d.toLocaleDateString(undefined, { weekday: "short" })}</small>
+                  <b>{d.getDate()}</b>
+                </span>
+              );
+            })}
+          </div>
+          <div className="tv-wk-row tv-wk-allday" role="row">
+            <span>All day</span>
+            {weekDays.map((iso) => (
+              <div key={iso} role="gridcell">
+                {(by.get(iso) ?? []).map(chip)}
+                <button type="button" className="tv-wk-add" aria-label={`Add task on ${iso}`} onClick={() => onAddOn(iso)}>
+                  +
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="tv-wk-row tv-wk-hours">
+            <div className="tv-wk-gutter" aria-hidden>
+              {Array.from({ length: 24 }, (_, h) => (
+                <span key={h}>{h === 0 ? "" : new Date(2000, 0, 1, h).toLocaleTimeString(undefined, { hour: "numeric" })}</span>
+              ))}
             </div>
-          );
-        })}
-      </div>
+            {weekDays.map((iso) => (
+              <div key={iso} className="tv-wk-col" data-today={iso === today} aria-hidden>
+                {iso === today && <i className="tv-wk-now" style={{ top: `${nowPct}%` }} />}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
@@ -440,7 +523,8 @@ export function UpcomingView({ tasks, ctx, today }: { tasks: Task[]; ctx: VCtx; 
       if (!t.due_date) return;
       add(t.due_date, t);
       if (!t.recurrence) return;
-      for (const iso of upcomingDates(t.due_date, t.recurrence, lastShown)) {
+      const every = readPrefs().showEveryRepeat;
+      for (const iso of upcomingDates(t.due_date, t.recurrence, lastShown).slice(0, every ? undefined : 1)) {
         const copy = { ...t, due_date: iso };
         realOf.set(copy, t);
         add(iso, copy);
@@ -450,6 +534,17 @@ export function UpcomingView({ tasks, ctx, today }: { tasks: Task[]; ctx: VCtx; 
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `open` is derived from `tasks`
   }, [tasks, lastShown]);
   const counts = useMemo(() => Object.fromEntries([...byDay].map(([iso, list]) => [iso, list.length])), [byDay]);
+  // Most urgent priority scheduled on each day (1 urgent … 4 low), drawn as a small coloured bar under the date.
+  const topPriority = useMemo(
+    () =>
+      Object.fromEntries(
+        [...byDay].map(([iso, list]) => {
+          const ps = list.map((t) => t.priority).filter((p) => p > 0);
+          return [iso, ps.length ? Math.min(...ps) : 0];
+        }),
+      ),
+    [byDay],
+  );
   const real = (t: Task) => realOf.get(t) ?? t;
   const rowCtx: VCtx = {
     ...ctx,
@@ -483,7 +578,7 @@ export function UpcomingView({ tasks, ctx, today }: { tasks: Task[]; ctx: VCtx; 
               <TabsTrigger key={iso} value={iso} data-today={iso === today}>
                 <small>{dt.toLocaleDateString(undefined, { weekday: "short" })}</small>
                 <b>{dt.getDate()}</b>
-                {counts[iso] > 0 && <i aria-hidden />}
+                {counts[iso] > 0 && <i aria-hidden data-p={topPriority[iso]} />}
               </TabsTrigger>
             );
           })}
@@ -502,7 +597,8 @@ export function UpcomingView({ tasks, ctx, today }: { tasks: Task[]; ctx: VCtx; 
       {list.map((iso, i) => (
         <Section
           key={iso}
-          title={dayHead(iso, today)}
+          title={upcomingHead(iso, today)}
+          count={(byDay.get(iso) ?? []).length}
           tone={TONES[(i + 3) % TONES.length]}
           tasks={byDay.get(iso) ?? []}
           ctx={rowCtx}

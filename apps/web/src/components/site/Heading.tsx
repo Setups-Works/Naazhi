@@ -56,7 +56,7 @@ export function Heading({
     };
   });
   return (
-    <Tag ref={ref} data-reveal className={`font-serif font-normal text-balance opacity-0 ${SIZES[size]} ${className}`}>
+    <Tag ref={ref} data-reveal className={`font-serif font-semibold text-balance opacity-0 ${SIZES[size]} ${className}`}>
       {children}
       {quiet && (
         <>

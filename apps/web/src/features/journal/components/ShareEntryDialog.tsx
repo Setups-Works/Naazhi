@@ -1,7 +1,7 @@
 "use client";
 import { journalShareUrl } from "@untitled/api-client";
 import { useEffect, useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faCheck, faCopy, faDownload, faLink, faLinkSlash, faShareNodes, faXmark } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../../../components/ui/Modal";
 import { fmtTime } from "../../../lib/prefs";

@@ -1,16 +1,17 @@
 import { NOTIFICATION_KINDS, ago, notificationTarget } from "@untitled/logic";
 import { router } from "expo-router";
 import { useEffect } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
 import { useInbox, useInboxActions, type AppNotification } from "./queries";
 import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { Screen } from "@/components/ui/Screen";
 import { ErrorState, LoadingState } from "@/components/ui/States";
-import { Palette, Space, Tints } from "@/constants/theme";
+import { Palette, Space, themedStyles, Neutral } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 
 /** The labels are shared with the web (packages/logic); the icon and tint are this app's. */
@@ -34,9 +35,7 @@ export function NotificationsScreen() {
 
   return (
     <Screen onRefresh={() => void inbox.refetch()} refreshing={inbox.isRefetching}>
-      <AppText variant="title" accessibilityRole="header">
-        Notifications
-      </AppText>
+      <PageHeader title="Notifications" subtitle="Team messages, invitations and new articles" />
       <Button title="Notification settings" icon="sliders" kind="secondary" onPress={() => router.push({ pathname: "/profile", params: { section: "notifications" } })} />
 
       {inbox.isPending ? (
@@ -50,9 +49,9 @@ export function NotificationsScreen() {
       ) : (
         inbox.data.items.map((n) => {
           const k = KIND[n.kind];
-          const t = Tints[k.tone];
+          const t = Neutral;
           return (
-            <Card key={n.id} tone={k.tone} liquidTint onPress={notificationTarget(n) ? () => router.push(notificationTarget(n) as never) : undefined} accessibilityLabel={`${k.label}: ${n.title}`}>
+            <Card key={n.id} onPress={notificationTarget(n) ? () => router.push(notificationTarget(n) as never) : undefined} accessibilityLabel={`${k.label}: ${n.title}`}>
               <View style={styles.head}>
                 <Icon name={k.icon} size={14} color={t.fg} />
                 <AppText variant="label" color={t.fg} style={styles.kind}>
@@ -73,8 +72,8 @@ export function NotificationsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   head: { flexDirection: "row", alignItems: "center", gap: Space.sm },
   kind: { flex: 1 },
   dismiss: { alignSelf: "flex-start", minHeight: 36 },
-});
+}));

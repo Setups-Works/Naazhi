@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 import { useRef } from "react";
-import { Pressable, StyleSheet } from "react-native";
+import { Pressable } from "react-native";
 import ReanimatedSwipeable, { type SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
 
 import { AppText } from "./AppText";
 import { useConfirm } from "./Confirm";
 import { Icon } from "./Icon";
-import { Palette, Radius } from "@/constants/theme";
+import { Palette, Radius, themedStyles } from "@/constants/theme";
 
 type Props = {
   children: ReactNode;
@@ -63,7 +63,7 @@ export function SwipeToDelete({ children, onDelete, title, message, what }: Prop
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   action: {
     width: 84,
     marginLeft: 8,
@@ -73,4 +73,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 4,
   },
-});
+}));

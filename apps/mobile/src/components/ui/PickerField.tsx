@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { AppText } from "./AppText";
 import { Icon } from "./Icon";
 import { Sheet } from "./Sheet";
-import { Palette, Radius } from "@/constants/theme";
+import { Palette, Radius, themedStyles } from "@/constants/theme";
 
 export type Option<T extends string | number> = { value: T; label: string };
 
@@ -59,7 +59,7 @@ export function PickerField<T extends string | number>({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   wrap: { gap: 6 },
   label: { marginLeft: 4 },
   box: {
@@ -75,4 +75,4 @@ const styles = StyleSheet.create({
   },
   value: { flex: 1 },
   row: { flexDirection: "row", alignItems: "center", minHeight: 50, paddingHorizontal: 14, borderRadius: Radius.r2 },
-});
+}));

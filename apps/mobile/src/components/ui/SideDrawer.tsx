@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Animated, Easing, Modal, Pressable, StyleSheet, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Palette, Radius, Shadow, Tints } from "@/constants/theme";
+import { Palette, Radius, Shadow, themedStyles } from "@/constants/theme";
 import { useRuntimePrefs } from "@/lib/preferences";
 
 const MAX_WIDTH = 310;
@@ -38,7 +38,7 @@ export function SideDrawer({ visible, onClose, children, label }: { visible: boo
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   scrim: { ...StyleSheet.absoluteFill, backgroundColor: Palette.scrim },
   panel: {
     position: "absolute",
@@ -46,9 +46,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     margin: 0,
-    backgroundColor: Tints.sand.bg,
-    borderTopRightRadius: Radius.r4,
-    borderBottomRightRadius: Radius.r4,
+    backgroundColor: Palette.surfaceMuted,
+    borderTopRightRadius: Radius.r3,
+    borderBottomRightRadius: Radius.r3,
     ...Shadow.e2,
   },
-});
+}));

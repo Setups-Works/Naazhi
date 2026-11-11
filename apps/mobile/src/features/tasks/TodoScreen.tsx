@@ -1,22 +1,22 @@
 import { applyOpts, DEFAULT_OPTS, emptyDraft, inView, isOverdue, VIEW_TITLES, type ViewKey, type ViewOpts } from "@untitled/logic";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Pressable, StyleSheet, View } from "react-native";
+import { Alert, Pressable, View } from "react-native";
 
 import { ListSheet } from "./ListSheet";
 import { BoardLayout, CalendarLayout, ListLayout } from "./layouts";
 import { useListActions, useTaskActions, useTaskLists, useTasks } from "./queries";
 import { useToggleTask } from "./useToggleTask";
 import { ViewOptionsSheet } from "./ViewOptionsSheet";
-import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
 import { useConfirm } from "@/components/ui/Confirm";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Screen } from "@/components/ui/Screen";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { Segmented } from "@/components/ui/Segmented";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/States";
 import { TextField } from "@/components/ui/TextField";
-import { Palette, Radius } from "@/constants/theme";
+import { Palette, Radius, themedStyles } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { isoDate } from "@untitled/logic";
 import type { Task } from "@untitled/types";
@@ -127,30 +127,20 @@ export function TodoScreen({ edges }: { edges?: ("top" | "bottom" | "left" | "ri
 
   return (
     <Screen onRefresh={refresh} refreshing={refreshing} edges={edges}>
-      <View style={styles.head}>
-        <AppText variant="title" accessibilityRole="header" style={styles.flex} numberOfLines={1}>
-          {activeList ? activeList.name : (VIEW_TITLES[view] ?? "To-do")}
-        </AppText>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Layout: ${opts.layout}. Open view options`}
-          hitSlop={8}
-          onPress={() => setSheet("view")}
-          style={styles.iconBtn}
-        >
-          <Icon name={LAYOUT_ICON[opts.layout]} size={16} color={Palette.fg} />
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="View options"
-          hitSlop={8}
-          onPress={() => setSheet("view")}
-          style={styles.iconBtn}
-        >
-          <Icon name="sliders" size={16} color={Palette.fg} />
-        </Pressable>
-        <Button title="New" icon="plus" onPress={() => openNew()} style={styles.newBtn} />
-      </View>
+      <PageHeader
+        title={activeList ? activeList.name : (VIEW_TITLES[view] ?? "To-do")}
+        right={
+          <>
+            <Pressable accessibilityRole="button" accessibilityLabel={`Layout: ${opts.layout}. Open view options`} hitSlop={8} onPress={() => setSheet("view")} style={styles.iconBtn}>
+              <Icon name={LAYOUT_ICON[opts.layout]} size={15} color={Palette.fgMuted} />
+            </Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel="View options" hitSlop={8} onPress={() => setSheet("view")} style={styles.iconBtn}>
+              <Icon name="sliders" size={15} color={Palette.fgMuted} />
+            </Pressable>
+            <Button title="New" icon="plus" onPress={() => openNew()} style={styles.newBtn} />
+          </>
+        }
+      />
 
       <Segmented
         options={options}
@@ -258,12 +248,12 @@ export function TodoScreen({ edges }: { edges?: ("top" | "bottom" | "left" | "ri
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   head: { flexDirection: "row", alignItems: "center", gap: 6 },
   flex: { flex: 1 },
-  iconBtn: { width: 38, height: 38, borderRadius: Radius.pill, alignItems: "center", justifyContent: "center" },
+  iconBtn: { width: 38, height: 38, borderRadius: Radius.r1, borderWidth: 1, borderColor: Palette.line, alignItems: "center", justifyContent: "center" },
   newBtn: { minHeight: 40, paddingHorizontal: 16 },
   add: { flexDirection: "row", alignItems: "flex-end", gap: 10 },
   addBtn: { paddingHorizontal: 18 },
   edit: { alignSelf: "flex-start", minHeight: 36 },
-});
+}));

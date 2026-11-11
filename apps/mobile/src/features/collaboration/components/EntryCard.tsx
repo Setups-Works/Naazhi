@@ -1,16 +1,14 @@
-import { personName } from "@untitled/logic";
 import type { SharedJournalEntry } from "@untitled/types";
-import { Pressable, StyleSheet, View } from "react-native";
+import { useState } from "react";
+import { Pressable } from "react-native";
 
-import { PersonBadge } from "./PersonBadge";
 import { AppText } from "@/components/ui/AppText";
-import { AttachmentGallery } from "@/components/ui/AttachmentGallery";
-import { Card } from "@/components/ui/Card";
-import { Markdown } from "@/components/ui/Markdown";
-import { Palette } from "@/constants/theme";
-import { timeOf } from "@/lib/dates";
+import { Icon } from "@/components/ui/Icon";
+import { Sheet } from "@/components/ui/Sheet";
+import { Palette, themedStyles } from "@/constants/theme";
+import { FeedEntry } from "@/features/journal/FeedEntry";
 
-/** One entry in a shared journal: who wrote it and when, its text and files, and edit / delete for the people allowed to. */
+/** One entry in a shared journal, drawn exactly like an entry in your own Journal, with who wrote it. Edit and Delete are in the ⋯ menu. */
 export function EntryCard({
   entry,
   canEdit,
@@ -24,39 +22,34 @@ export function EntryCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const [open, setOpen] = useState(false);
+  const choose = (run: () => void) => () => {
+    setOpen(false);
+    run();
+  };
   return (
-    <Card style={styles.card}>
-      <View style={styles.head}>
-        <PersonBadge person={entry.author} size="sm" />
-        <View style={styles.who}>
-          <AppText variant="bodyStrong" numberOfLines={1}>
-            {personName(entry.author)}
-          </AppText>
-          <AppText variant="small">{timeOf(entry.created_at)}</AppText>
-        </View>
+    <>
+      <FeedEntry entry={entry} author={entry.author} onMenu={canEdit || canDelete ? () => setOpen(true) : undefined} />
+      <Sheet visible={open} onClose={() => setOpen(false)} title="Entry">
         {canEdit ? (
-          <Pressable accessibilityRole="button" accessibilityLabel="Edit entry" hitSlop={10} onPress={onEdit}>
-            <AppText variant="bodyStrong" color={Palette.greenFg}>
-              Edit
-            </AppText>
+          <Pressable accessibilityRole="button" style={styles.row} onPress={choose(onEdit)}>
+            <AppText variant="body">Edit</AppText>
+            <Icon name="pen" size={15} color={Palette.fgMuted} />
           </Pressable>
         ) : null}
         {canDelete ? (
-          <Pressable accessibilityRole="button" accessibilityLabel="Delete entry" hitSlop={10} onPress={onDelete}>
-            <AppText variant="bodyStrong" color={Palette.clayFg}>
+          <Pressable accessibilityRole="button" style={styles.row} onPress={choose(onDelete)}>
+            <AppText variant="body" color={Palette.clayFg}>
               Delete
             </AppText>
+            <Icon name="trash-can" size={15} color={Palette.clayFg} />
           </Pressable>
         ) : null}
-      </View>
-      {entry.body ? <Markdown text={entry.body} /> : null}
-      <AttachmentGallery attachments={entry.attachments} />
-    </Card>
+      </Sheet>
+    </>
   );
 }
 
-const styles = StyleSheet.create({
-  card: { gap: 10 },
-  head: { flexDirection: "row", alignItems: "center", gap: 10 },
-  who: { flex: 1 },
-});
+const styles = themedStyles(() => ({
+  row: { minHeight: 48, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 },
+}));

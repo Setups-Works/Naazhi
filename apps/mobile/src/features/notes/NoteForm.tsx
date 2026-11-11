@@ -2,9 +2,9 @@ import { safeName, toDate } from "@untitled/logic";
 import type { Note, Tone } from "@untitled/types";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Pressable, Share, StyleSheet, View } from "react-native";
+import { Pressable, Share, View } from "react-native";
 
-import { useNoteActions } from "./queries";
+import { useNoteActions, useTrashActions } from "./queries";
 import { AppText } from "@/components/ui/AppText";
 import { AttachmentGallery } from "@/components/ui/AttachmentGallery";
 import { Button } from "@/components/ui/Button";
@@ -13,7 +13,7 @@ import { EntryEditor } from "@/components/ui/EntryEditor";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Sheet } from "@/components/ui/Sheet";
 import { LoadingState } from "@/components/ui/States";
-import { Palette, Radius, Space, Tints } from "@/constants/theme";
+import { Palette, Radius, Space, Tints, themedStyles } from "@/constants/theme";
 import { dbQuery } from "@/features/chat/db";
 import { pickFiles, type PendingFile } from "@/features/chat/files";
 import { putFile } from "@/features/journal/files";
@@ -35,7 +35,8 @@ type Version = { id: string; title: string; body: string; created_at: string };
 export function NoteForm({ id, note, onSaved, onCancel }: { id: string; note?: Note; onSaved?: () => void; onCancel?: () => void }) {
   const { preferences, user } = useAppState();
   const isNew = id === "new";
-  const { create, update, remove } = useNoteActions();
+  const { create, update } = useNoteActions();
+  const { trash } = useTrashActions();
   const { ask, dialog } = useConfirm();
   const [title, setTitle] = useState(note?.title ?? "");
   const [body, setBody] = useState(note?.body ?? "");
@@ -135,12 +136,12 @@ export function NoteForm({ id, note, onSaved, onCancel }: { id: string; note?: N
   async function deleteNote() {
     setMoreOpen(false);
     const yes = await ask({
-      title: "Delete this note?",
-      body: "The note and its attachments will be permanently deleted.",
-      confirmLabel: "Delete note",
+      title: "Move this note to the Trash?",
+      body: "You can restore it from the Trash for 30 days.",
+      confirmLabel: "Move to Trash",
       danger: true,
     });
-    if (yes) remove.mutate(id, { onSuccess: () => router.back(), onError: (e) => setError(errorMessage(e)) });
+    if (yes) trash.mutate([id], { onSuccess: () => router.back(), onError: (e) => setError(errorMessage(e)) });
   }
 
   const options = (
@@ -237,7 +238,7 @@ export function NoteForm({ id, note, onSaved, onCancel }: { id: string; note?: N
             </Pressable>
             <Pressable accessibilityRole="button" style={styles.row} onPress={() => void deleteNote()}>
               <AppText variant="body" color={Palette.clayFg}>
-                Delete note
+                Move to Trash
               </AppText>
               <Icon name="trash" size={15} color={Palette.clayFg} />
             </Pressable>
@@ -320,7 +321,7 @@ function ColorDot({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   flex: { flex: 1 },
   // Plain wrapping rows (pin and category, then the colours): no scroll view to size, so nothing can collapse onto the label above.
   chips: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: Space.sm },
@@ -340,4 +341,4 @@ const styles = StyleSheet.create({
   dot: { width: 28, height: 28, borderRadius: Radius.pill },
   row: { minHeight: 48, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 },
   version: { minHeight: 58, flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 6 },
-});
+}));

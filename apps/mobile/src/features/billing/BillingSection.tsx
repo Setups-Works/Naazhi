@@ -1,7 +1,7 @@
+import { openWeb } from "@/lib/webSheet";
 import { BYO_PROVIDERS, byoProvider, formatBalance, formatMoney, formatTokens, needsCheckout, toDate } from "@untitled/logic";
 import type { MyBilling } from "@untitled/types";
 import { router } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
@@ -12,7 +12,7 @@ import { Card } from "@/components/ui/Card";
 import { useConfirm } from "@/components/ui/Confirm";
 import { PickerField } from "@/components/ui/PickerField";
 import { TextField } from "@/components/ui/TextField";
-import { Palette, Radius } from "@/constants/theme";
+import { Palette, Radius, themedStyles } from "@/constants/theme";
 import { PlanCard } from "./PlanCard";
 import { usePlanPicker, useTopUp } from "./checkout";
 import { invoiceLink, useBilling, useBillingActions, useInvoices } from "./queries";
@@ -35,7 +35,7 @@ function BillingHistory({ onError }: { onError: (m: string) => void }) {
   const open = async (id: string) => {
     setOpening(id);
     try {
-      await WebBrowser.openBrowserAsync((await invoiceLink(id)).url);
+      openWeb((await invoiceLink(id)).url, { title: "Invoice" });
     } catch {
       onError("Couldn’t open that invoice. Try again in a moment.");
     } finally {
@@ -133,7 +133,7 @@ export function BillingSection() {
   const busy = picker.busy || cancel.isPending || resume.isPending;
 
   return (
-    <Card tone="green" style={styles.card}>
+    <Card style={styles.card}>
       {dialog}
       <AppText variant="heading" accessibilityRole="header">Plan and billing</AppText>
       {q.isError ? <Banner kind="error">Couldn’t load your plan. Try again in a moment.</Banner> : null}
@@ -190,11 +190,11 @@ export function BillingSection() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   card: { gap: 12 },
   flex: { flex: 1 },
   key: { gap: 12, padding: 14, borderRadius: Radius.r3, backgroundColor: Palette.surfaceMuted },
   history: { gap: 10 },
   invoice: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: Palette.line },
   invoiceRight: { alignItems: "flex-end", gap: 2 },
-});
+}));

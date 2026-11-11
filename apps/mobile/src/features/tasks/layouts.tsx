@@ -1,23 +1,20 @@
 import { addDays, applyOpts, groupTasks, isOpen, upcomingDates, type Group, type ViewOpts } from "@untitled/logic";
 import type { Task, TaskList } from "@untitled/types";
 import { useMemo, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, View } from "react-native";
 
 import { TaskRow } from "./TaskRow";
 import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { CalendarGrid } from "@/components/ui/DatePicker";
-import { Palette } from "@/constants/theme";
+import { Palette, themedStyles } from "@/constants/theme";
 
 type Ctx = { today: string; lists: TaskList[]; onToggle: (t: Task) => void; onOpen: (t: Task) => void; onDelete: (t: Task) => void };
 
-const toneOf = (g: Group) =>
-  g.tone && ["violet", "blue", "green", "amber", "clay", "sand", "mint", "gold"].includes(g.tone) ? (g.tone as "violet") : "sand";
-
 function GroupCard({ group, ctx, showList }: { group: Group; ctx: Ctx; showList: boolean }) {
   return (
-    <Card tone={group.title ? toneOf(group) : "blue"} style={styles.group}>
+    <Card style={styles.group}>
       {group.title ? (
         <View style={styles.head}>
           <AppText variant="label" color={Palette.fgMuted}>
@@ -107,10 +104,10 @@ export function CalendarLayout({
   const dayTasks = by.get(day) ?? [];
   return (
     <View style={styles.stack}>
-      <Card tone="violet">
+      <Card>
         <CalendarGrid value={day} onPick={setDay} marks={marks} />
       </Card>
-      <Card tone="mint" style={styles.group}>
+      <Card style={styles.group}>
         <View style={styles.head}>
           <AppText variant="label">{day === ctx.today ? "Today" : day}</AppText>
           <AppText variant="small">{dayTasks.length}</AppText>
@@ -136,11 +133,11 @@ export function CalendarLayout({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   stack: { gap: 12 },
   group: { gap: 2 },
   head: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 2 },
   board: { gap: 12, paddingRight: 8 },
   col: { width: 290 },
   add: { marginTop: 8 },
-});
+}));

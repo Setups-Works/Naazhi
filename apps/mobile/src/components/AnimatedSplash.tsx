@@ -15,7 +15,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { SPLASH_STAR_CENTER } from "./splashMark";
-import { Font, Palette } from "@/constants/theme";
+import { Font, Palette, themedStyles } from "@/constants/theme";
 
 const NAME = "Naazhi";
 /** The mark is square. The layers are the same square (see scripts/brand/build-assets.mjs), so they overlay exactly. */
@@ -127,7 +127,7 @@ export function AnimatedSplash({ ready }: { ready: boolean }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   root: { ...StyleSheet.absoluteFill, backgroundColor: Palette.page, alignItems: "center", justifyContent: "center", zIndex: 100 },
   center: { alignItems: "center", justifyContent: "center" },
   mark: { width: MARK, height: MARK },
@@ -136,5 +136,5 @@ const styles = StyleSheet.create({
   layer: { position: "absolute", left: 0, top: 0, width: MARK, height: MARK },
   starLayer: { transformOrigin: STAR_ORIGIN },
   name: { position: "absolute", top: MARK + 4, flexDirection: "row" },
-  letter: { ...Font.serif, fontSize: 32, lineHeight: 36, letterSpacing: -0.9, color: Palette.fg },
-});
+  letter: { ...Font.brand, fontSize: 32, lineHeight: 36, letterSpacing: -0.9, color: Palette.fg },
+}));

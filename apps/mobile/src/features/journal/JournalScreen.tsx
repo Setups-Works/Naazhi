@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Attachment, JournalEntry } from "@untitled/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { router, useLocalSearchParams } from "expo-router";
 
@@ -15,6 +15,7 @@ import { pickFiles, type PendingFile } from "@/features/chat/files";
 import { useRecorder } from "@/features/chat/useRecorder";
 import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { CalendarGrid } from "@/components/ui/DatePicker";
 import { useConfirm } from "@/components/ui/Confirm";
 import { Card } from "@/components/ui/Card";
@@ -23,7 +24,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Sheet } from "@/components/ui/Sheet";
 import { Screen, type ScreenEdges } from "@/components/ui/Screen";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/States";
-import { Font, Palette, Radius, Space, toneAt } from "@/constants/theme";
+import { Font, Palette, Radius, Space, themedStyles } from "@/constants/theme";
 import { useAppState } from "@/providers/AppState";
 import { errorMessage } from "@/lib/api";
 import { addDays, dayLabel, isoDate, timeOf } from "@/lib/dates";
@@ -224,22 +225,11 @@ export function JournalScreen({ edges }: { edges?: ScreenEdges } = {}) {
 
   return (
     <Screen edges={edges} onRefresh={() => void refresh()} refreshing={refreshing}>
-      <View style={styles.header}>
-        <View style={styles.headTitle}>
-          <AppText variant="title" numberOfLines={1} accessibilityRole="header">
-            {dayName}
-          </AppText>
-          <AppText variant="small" color={Palette.fgSubtle}>
-            {dayQ.isPending ? " " : `${entries.length} ${entries.length === 1 ? "entry" : "entries"}`}
-          </AppText>
-        </View>
-        <Pressable accessibilityRole="button" accessibilityLabel="New entry" onPress={() => setNewEntryOpen(true)} style={styles.add}>
-          <Icon name="plus" size={14} color={Palette.onDark} />
-          <AppText variant="bodyStrong" color={Palette.onDark}>
-            Add
-          </AppText>
-        </Pressable>
-      </View>
+      <PageHeader
+        title={dayName}
+        subtitle={dayQ.isPending ? " " : `${entries.length} ${entries.length === 1 ? "entry" : "entries"}`}
+        right={<Button title="Add" icon="plus" onPress={() => setNewEntryOpen(true)} style={styles.newBtn} />}
+      />
 
       <DayNav
         label={title}
@@ -266,14 +256,13 @@ export function JournalScreen({ edges }: { edges?: ScreenEdges } = {}) {
             <FeedEntry
               key={entry.id}
               entry={entry}
-              tone={toneAt(index)}
               onOpen={() => router.push({ pathname: "/journal/[id]", params: { id: entry.id } })}
               onMenu={() => setActionEntry(entry)}
             />
           ))}
         </View>
       ) : (
-        <Card tone="sand" onPress={() => setNewEntryOpen(true)} accessibilityLabel="Write an entry" style={styles.empty}>
+        <Card onPress={() => setNewEntryOpen(true)} accessibilityLabel="Write an entry" style={styles.empty}>
           <AppText style={styles.emptyText}>{date === today ? "Nothing written yet today. What’s on your mind?" : "No entries on this day."}</AppText>
         </Card>
       )}
@@ -375,13 +364,14 @@ export function JournalScreen({ edges }: { edges?: ScreenEdges } = {}) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: Space.md },
   headTitle: { flex: 1, minWidth: 0 },
+  newBtn: { minHeight: 38, paddingHorizontal: 14 },
   add: { flexDirection: "row", alignItems: "center", gap: 6, height: 44, paddingHorizontal: Space.lg, borderRadius: Radius.pill, backgroundColor: Palette.fillDark },
   feed: { gap: Space.md },
   empty: { padding: Space.xl, borderRadius: Radius.r3 },
   emptyText: { ...Font.serif, fontSize: 24, lineHeight: 32, color: Palette.fgSubtle },
   actionRow: { minHeight: 48, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 },
   todayButton: { marginTop: 12 },
-});
+}));

@@ -1,3 +1,4 @@
+import type { ScrollViewHandle } from "@/types/native";
 import { useEffect, useRef, useState } from "react";
 import { ScrollView, View, useWindowDimensions, type LayoutChangeEvent } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -20,7 +21,7 @@ export function JournalTabs() {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const prefs = useRuntimePrefs();
-  const pager = useRef<ScrollView>(null);
+  const pager = useRef<ScrollViewHandle>(null);
   const [page, setPage] = useState<Page>("personal");
   const [height, setHeight] = useState(0);
   const waiting = useMyInvites().data?.length ?? 0;

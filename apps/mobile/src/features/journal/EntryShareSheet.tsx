@@ -1,8 +1,9 @@
+import type { ViewHandle } from "@/types/native";
 import { journalShareUrl, setJournalEntryShared } from "@untitled/api-client";
 import type { JournalEntry } from "@untitled/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
-import { Share, StyleSheet, View } from "react-native";
+import { Share, View } from "react-native";
 import { captureRef } from "react-native-view-shot";
 
 import { EntryImageCard } from "./EntryImageCard";
@@ -14,6 +15,7 @@ import { mobileEnv } from "@/config/env";
 import { api, errorMessage } from "@/lib/api";
 import { qk } from "@/lib/queryKeys";
 import { shareImageWithText } from "@/lib/shareImage";
+import { themedStyles } from "@/constants/theme";
 
 /**
  * Share one journal entry: a secret link anyone can open (read-only, no name, switched off any time) or a picture of the entry. The
@@ -21,7 +23,7 @@ import { shareImageWithText } from "@/lib/shareImage";
  */
 export function EntryShareSheet({ entry, onClose }: { entry: JournalEntry; onClose: () => void }) {
   const qc = useQueryClient();
-  const card = useRef<View>(null);
+  const card = useRef<ViewHandle>(null);
   const [token, setToken] = useState(entry.share_token);
   const [busy, setBusy] = useState<"link" | "stop" | "image" | "">("");
   const [error, setError] = useState("");
@@ -78,7 +80,7 @@ export function EntryShareSheet({ entry, onClose }: { entry: JournalEntry; onClo
   return (
     <Sheet visible onClose={onClose} title="Share entry">
       <View style={styles.stack}>
-        <AppText variant="label">LINK</AppText>
+        <AppText variant="label">Link</AppText>
         <AppText variant="small">
           {token
             ? "Anyone with the link can read this entry. It shows no name, and you can stop sharing at any time."
@@ -108,7 +110,7 @@ export function EntryShareSheet({ entry, onClose }: { entry: JournalEntry; onClo
         ) : null}
         {note ? <Banner kind="success">{note}</Banner> : null}
 
-        <AppText variant="label">IMAGE</AppText>
+        <AppText variant="label">Image</AppText>
         <EntryImageCard ref={card} entry={entry} />
         <Button
           title="Share as image"
@@ -124,4 +126,4 @@ export function EntryShareSheet({ entry, onClose }: { entry: JournalEntry; onClo
   );
 }
 
-const styles = StyleSheet.create({ stack: { gap: 12 } });
+const styles = themedStyles(() => ({ stack: { gap: 12 } }));

@@ -1,23 +1,22 @@
-import { toneFor } from "@untitled/logic";
 import type { SharedJournal } from "@untitled/types";
 import { router } from "expo-router";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
 import { RolePill } from "./RolePill";
 import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
-import { Palette } from "@/constants/theme";
+import { Palette, themedStyles } from "@/constants/theme";
 
 /** One shared journal in the list: its role, how many people and entries, and the two things you can do with it. */
 export function JournalCard({ journal, onManage }: { journal: SharedJournal; onManage: () => void }) {
   const people = `${journal.member_count} ${journal.member_count === 1 ? "person" : "people"}`;
   const entries = `${journal.entry_count} ${journal.entry_count === 1 ? "entry" : "entries"}`;
   return (
-    <Card tone={toneFor(journal.id)} style={styles.card}>
+    <Card style={styles.card}>
       <View style={styles.head}>
-        <AppText variant="heading" style={styles.name}>
+        <AppText variant="heading" numberOfLines={1} style={styles.name}>
           {journal.name}
         </AppText>
         <RolePill role={journal.role} />
@@ -40,11 +39,11 @@ export function JournalCard({ journal, onManage }: { journal: SharedJournal; onM
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   card: { gap: 10 },
   head: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 10 },
   name: { flex: 1 },
   meta: { flexDirection: "row", alignItems: "center", gap: 6 },
   actions: { flexDirection: "row", gap: 10 },
   action: { flex: 1 },
-});
+}));

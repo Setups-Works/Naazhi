@@ -1,15 +1,19 @@
 import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ShareLinkSheet } from "@/components/ui/ShareLinkSheet";
+import { mobileEnv } from "@/config/env";
+import { api } from "@/lib/api";
+import { dbQuery } from "./db";
 import { Conversation } from "./ConversationScreen";
 import { RecentChatsDrawer } from "./RecentChatsDrawer";
 import { useChats } from "./queries";
 import { prettyTitle } from "./text";
 import { AppText } from "@/components/ui/AppText";
 import { Icon } from "@/components/ui/Icon";
-import { Palette } from "@/constants/theme";
+import { Palette, themedStyles } from "@/constants/theme";
 
 /**
  * The Chat tab: the conversation is right here (no separate screen), with a hamburger for recent chats and a button
@@ -20,6 +24,7 @@ export function ChatScreen() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [run, setRun] = useState(0);
   const [drawer, setDrawer] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   // A message handed over from another screen (the Health actions, see askChat): it starts a new chat once. `consumed` remembers which
   // hand-off was already used, so picking another chat or tapping "new chat" afterwards never sends it again.
@@ -51,6 +56,11 @@ export function ChatScreen() {
         <AppText variant="bodyStrong" numberOfLines={1} style={styles.title}>
           {title}
         </AppText>
+        {activeId ? (
+          <Pressable accessibilityRole="button" accessibilityLabel="Share chat" hitSlop={10} onPress={() => setSharing(true)} style={styles.iconBtn}>
+            <Icon name="link" size={16} color={Palette.fg} />
+          </Pressable>
+        ) : null}
         <Pressable accessibilityRole="button" accessibilityLabel="New chat" hitSlop={10} onPress={() => open(null)} style={styles.iconBtn}>
           <Icon name="pen-to-square" size={17} color={Palette.fg} />
         </Pressable>
@@ -63,6 +73,18 @@ export function ChatScreen() {
         onSeeded={() => setConsumed(handoff)}
         onCreated={setActiveId}
       />
+
+      {sharing && activeId ? (
+        <ShareLinkSheet
+          title="Share chat"
+          noun="this chat"
+          detail="They can read every message and attachment, including ones you add later, but not change it. Your name and email aren’t shown."
+          load={async () => (await dbQuery<{ share_token: string | null }[]>({ table: "chats", op: "select", columns: "share_token", filters: [{ column: "id", op: "eq", value: activeId }] }))?.[0]?.share_token ?? null}
+          toggle={async (on) => (await api.post<{ data: { share_token: string | null } }>(`/api/v1/chats/${activeId}/share`, { shared: on })).data.share_token}
+          urlFor={(t) => `${(mobileEnv.apiBaseUrl ?? "").replace(/\/+$/, "")}/share/${t}`}
+          onClose={() => setSharing(false)}
+        />
+      ) : null}
 
       <RecentChatsDrawer
         visible={drawer}
@@ -78,9 +100,9 @@ export function ChatScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   safe: { flex: 1, backgroundColor: Palette.page },
   bar: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12, minHeight: 52 },
   iconBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
   title: { flex: 1, textAlign: "center" },
-});
+}));

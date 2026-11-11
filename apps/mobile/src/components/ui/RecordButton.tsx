@@ -15,7 +15,7 @@ import Animated, {
 
 import { AppText } from "./AppText";
 import { Icon } from "./Icon";
-import { Palette, Radius } from "@/constants/theme";
+import { Palette, Radius, themedStyles } from "@/constants/theme";
 
 /** Relative heights of the little level meter, the same seven bars as the web's RecordButton. */
 const BARS = [0.5, 0.9, 0.6, 1, 0.45, 0.8, 0.55];
@@ -112,7 +112,7 @@ export function RecordButton({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   idleIcon: { width: 38, height: 38, borderRadius: Radius.pill, alignItems: "center", justifyContent: "center" },
   idlePill: { minHeight: 40, paddingHorizontal: 14, borderRadius: Radius.pill, flexDirection: "row", alignItems: "center", gap: 7 },
   // 40 high; 14 in from the left and 4 from the right (the stop button is 32), as on the web.
@@ -125,4 +125,4 @@ const styles = StyleSheet.create({
   bar: { width: 3, borderRadius: Radius.pill, backgroundColor: Palette.clayFg, opacity: 0.7 },
   time: { fontVariant: ["tabular-nums"], fontSize: 13, minWidth: 28 },
   stop: { width: 32, height: 32, borderRadius: Radius.pill, backgroundColor: Palette.clayFg, alignItems: "center", justifyContent: "center" },
-});
+}));

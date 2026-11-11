@@ -1,6 +1,5 @@
 import { dayRange, fromIso, HEALTH_RANGES, rangeMeta, stepRange, type HealthPreset, type HealthRange } from "@untitled/logic";
 import { useMemo, useState } from "react";
-import { StyleSheet } from "react-native";
 
 import { Button } from "@/components/ui/Button";
 import { CalendarGrid } from "@/components/ui/DatePicker";
@@ -8,6 +7,7 @@ import { DayNav } from "@/components/ui/DayNav";
 import { Segmented } from "@/components/ui/Segmented";
 import { Sheet } from "@/components/ui/Sheet";
 import { isoDate } from "@/lib/dates";
+import { themedStyles } from "@/constants/theme";
 
 const shortDate = (iso: string) => fromIso(iso).toLocaleDateString(undefined, { day: "numeric", month: "short" });
 
@@ -91,4 +91,4 @@ export function RangeFilter({
   );
 }
 
-const styles = StyleSheet.create({ todayButton: { marginTop: 12 } });
+const styles = themedStyles(() => ({ todayButton: { marginTop: 12 } }));

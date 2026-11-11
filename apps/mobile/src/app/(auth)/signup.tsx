@@ -1,16 +1,18 @@
+import { openWeb } from "@/lib/webSheet";
+import type { TextInputHandle } from "@/types/native";
 import { useRef, useState } from "react";
-import * as ExpoLinking from "expo-linking";
-import { Linking, StyleSheet, TextInput, View } from "react-native";
+import { View } from "react-native";
 
 import { AuthLink, AuthShell } from "@/features/auth/AuthShell";
 import { ConfirmEmail } from "@/features/auth/ConfirmEmail";
 import { GoogleButton, OrDivider } from "@/features/auth/GoogleButton";
+import { useGoogleLogin } from "@/features/auth/useGoogleLogin";
 import { useAuthConfig } from "@/features/auth/useAuthConfig";
 import { AppText } from "@/components/ui/AppText";
 import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/Button";
 import { TextField } from "@/components/ui/TextField";
-import { Palette, Radius } from "@/constants/theme";
+import { Palette, Radius, themedStyles } from "@/constants/theme";
 import { mobileEnv } from "@/config/env";
 import { useAuth } from "@/providers/AppState";
 import { firstError, friendlyAuthError, PASSWORD_STRENGTH_LABELS, passwordStrength, signupSchema } from "@untitled/validation";
@@ -18,16 +20,17 @@ import { firstError, friendlyAuthError, PASSWORD_STRENGTH_LABELS, passwordStreng
 export default function SignupScreen() {
   const auth = useAuth();
   const config = useAuthConfig();
-  const usernameRef = useRef<TextInput>(null);
-  const emailRef = useRef<TextInput>(null);
-  const passwordRef = useRef<TextInput>(null);
+  const usernameRef = useRef<TextInputHandle>(null);
+  const emailRef = useRef<TextInputHandle>(null);
+  const passwordRef = useRef<TextInputHandle>(null);
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [googleBusy, setGoogleBusy] = useState(false);
   const [error, setError] = useState("");
+  const googleLogin = useGoogleLogin(auth, config.data, setError);
+  const googleBusy = googleLogin.busy;
   const [confirmFor, setConfirmFor] = useState<string | null>(null);
   const score = passwordStrength(password);
 
@@ -51,18 +54,6 @@ export default function SignupScreen() {
     }
   }
 
-  async function google() {
-    setError("");
-    setGoogleBusy(true);
-    try {
-      const res = await auth.signIn.social({ provider: "google", callbackURL: ExpoLinking.createURL("/") });
-      if (res?.error) setError(friendlyAuthError(res.error.message ?? "Couldn’t start Google sign-in."));
-    } catch {
-      setError("Google sign-in was cancelled or couldn’t finish. Please try again.");
-    } finally {
-      setGoogleBusy(false);
-    }
-  }
 
   if (confirmFor) return <ConfirmEmail email={confirmFor} />;
 
@@ -70,7 +61,7 @@ export default function SignupScreen() {
     <AuthShell eyebrow="Create your account" title="Start your" quiet="workspace." sub="One place for notes, tasks and your journal.">
       {config.data?.google ? (
         <>
-          <GoogleButton onPress={() => void google()} busy={googleBusy} disabled={busy} />
+          <GoogleButton onPress={() => void googleLogin.run()} busy={googleBusy} disabled={busy} />
           <OrDivider />
         </>
       ) : null}
@@ -145,7 +136,7 @@ export default function SignupScreen() {
             color={Palette.greenFg}
             style={{ fontWeight: "600" }}
             accessibilityRole="link"
-            onPress={() => void Linking.openURL(mobileEnv.privacyUrl ?? "")}
+            onPress={() => openWeb(mobileEnv.privacyUrl ?? "", { title: "Privacy & security" })}
           >
             Privacy & security
           </AppText>
@@ -157,8 +148,8 @@ export default function SignupScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   meter: { flexDirection: "row", alignItems: "center", gap: 10, marginLeft: 4 },
   bars: { flexDirection: "row", gap: 4, flex: 1 },
   bar: { flex: 1, height: 4, borderRadius: Radius.pill, backgroundColor: Palette.line },
-});
+}));

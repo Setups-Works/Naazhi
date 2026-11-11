@@ -1,3 +1,4 @@
+import type { ViewHandle } from "@/types/native";
 import { toDate } from "@untitled/logic";
 import { Modal, Pressable, ScrollView, Share, StyleSheet, View, useWindowDimensions } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -12,7 +13,7 @@ import { Icon } from "@/components/ui/Icon";
 import { DeleteSheet } from "@/components/ui/DeleteSheet";
 import { PromptSheet } from "@/components/ui/PromptSheet";
 import { Banner } from "@/components/ui/Banner";
-import { Palette, Radius, Shadow } from "@/constants/theme";
+import { Palette, Radius, Shadow, themedStyles } from "@/constants/theme";
 import { api, errorMessage } from "@/lib/api";
 import { mobileEnv } from "@/config/env";
 import { dbQuery } from "./db";
@@ -38,7 +39,7 @@ export function RecentChatsDrawer({ visible, activeId, onClose, onSelect, onNew,
   const { removeChat, patchChat, duplicateChat, refreshMessages } = useChatActions();
   const [selected, setSelected] = useState<Chat | null>(null);
   const [menuCenterY, setMenuCenterY] = useState<number | null>(null);
-  const menuAnchors = useRef(new Map<string, View>());
+  const menuAnchors = useRef(new Map<string, ViewHandle>());
   const [rename, setRename] = useState<Chat | null>(null);
   const [confirm, setConfirm] = useState<"clear" | "delete" | null>(null);
   const [confirmChat, setConfirmChat] = useState<Chat | null>(null);
@@ -270,7 +271,7 @@ function Action({ icon, title, onPress, danger = false }: { icon: "thumbtack" | 
   </Pressable>;
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   gesture: { flex: 1 },
   root: { flex: 1, flexDirection: "row" },
   panel: { width: "82%", maxWidth: 360, backgroundColor: Palette.page },
@@ -311,4 +312,4 @@ const styles = StyleSheet.create({
     borderColor: Palette.line,
     ...Shadow.e2,
   },
-});
+}));

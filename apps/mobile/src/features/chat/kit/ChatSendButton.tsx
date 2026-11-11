@@ -1,7 +1,7 @@
-import { Pressable, StyleSheet } from "react-native";
+import { Pressable } from "react-native";
 
 import { Icon } from "@/components/ui/Icon";
-import { Palette, Radius } from "@/constants/theme";
+import { Palette, Radius, themedStyles } from "@/constants/theme";
 
 /** The round send arrow: dark when there is something to send. */
 export function ChatSendButton({ enabled, onPress }: { enabled: boolean; onPress: () => void }) {
@@ -19,7 +19,7 @@ export function ChatSendButton({ enabled, onPress }: { enabled: boolean; onPress
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   send: { width: 46, height: 46, borderRadius: Radius.pill, backgroundColor: Palette.glassHi, alignItems: "center", justifyContent: "center" },
   on: { backgroundColor: Palette.fillDark },
-});
+}));

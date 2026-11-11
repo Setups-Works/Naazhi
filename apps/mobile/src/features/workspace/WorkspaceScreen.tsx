@@ -1,77 +1,31 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
-import { ScrollView, StyleSheet, View, useWindowDimensions } from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ReaderScreen } from "@/features/rss/ReaderScreen";
 import { EmptyState } from "@/components/ui/States";
-import { Segmented } from "@/components/ui/Segmented";
-import { Palette, Space } from "@/constants/theme";
-
-type View_ = "workspace" | "reader";
-const VIEWS: { key: View_; label: string }[] = [
-  { key: "workspace", label: "Workspace" },
-  { key: "reader", label: "Reader" },
-];
+import { Palette, themedStyles } from "@/constants/theme";
 
 /**
- * The Workspace tab: a pill switcher between the Workspace overview (coming soon) and the RSS Reader, and the two pages can be dragged
- * sideways, the same as the Plan tab. The web has the same two pages.
+ * The Workspace tab. The Menu opens it on one page with ?view=workspace (the overview, coming soon) or ?view=reader (the RSS Reader);
+ * there is no switch here, because both have their own tile in the Menu.
  */
 export function WorkspaceScreen() {
-  const { width } = useWindowDimensions();
-  const pager = useRef<ScrollView>(null);
-  const [view, setView] = useState<View_>("workspace");
-  const current = useRef(view);
-
-  // Rotating the device changes the width of a page: keep the page that was showing in view.
-  useEffect(() => {
-    pager.current?.scrollTo({ x: VIEWS.findIndex((v) => v.key === current.current) * width, animated: false });
-  }, [width]);
-
-  const go = useCallback(
-    (next: View_) => {
-      current.current = next;
-      setView(next);
-      pager.current?.scrollTo({ x: VIEWS.findIndex((v) => v.key === next) * width, animated: true });
-    },
-    [width],
-  );
-
-  const settle = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const index = Math.round(e.nativeEvent.contentOffset.x / width);
-    const next = VIEWS[Math.min(Math.max(index, 0), VIEWS.length - 1)]!.key;
-    current.current = next;
-    setView(next);
-  };
-
+  const { view } = useLocalSearchParams<{ view?: string }>();
   return (
     <SafeAreaView style={styles.root} edges={["top", "left", "right"]}>
-      <View style={styles.pills}>
-        <Segmented options={VIEWS} value={view} onChange={go} />
-      </View>
-      <ScrollView
-        ref={pager}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={settle}
-        style={styles.pager}
-        accessibilityLabel="Workspace and Reader"
-      >
-        <View style={{ width }}>
-          <EmptyState icon="briefcase" title="Workspace: coming soon" hint="Shared spaces where your team keeps notes, tasks and chat together." />
-        </View>
-        <View style={{ width }}>
+      <View style={styles.page}>
+        {view === "reader" ? (
           <ReaderScreen />
-        </View>
-      </ScrollView>
+        ) : (
+          <EmptyState icon="briefcase" title="Workspace: coming soon" hint="Shared spaces where your team keeps notes, tasks and chat together." />
+        )}
+      </View>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   root: { flex: 1, backgroundColor: Palette.page },
-  pills: { paddingHorizontal: Space.lg, paddingTop: Space.sm, paddingBottom: Space.md },
-  pager: { flex: 1 },
-});
+  page: { flex: 1 },
+}));

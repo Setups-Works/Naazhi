@@ -1,6 +1,6 @@
 import { api } from "@/lib/api";
 
-type Filter = { column: string; op: "eq"; value: unknown };
+type Filter = { column: string; op: "eq" | "neq" | "in" | "is"; value: unknown; not?: boolean };
 type Spec = {
   table: string;
   op: "select" | "insert" | "update" | "delete";

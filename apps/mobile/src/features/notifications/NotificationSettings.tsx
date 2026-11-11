@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Linking, StyleSheet, Switch, View } from "react-native";
+import { Alert, Linking, Switch, View } from "react-native";
 
 import { readPrefs, writePrefs, writeDeviceChoice, type NotificationPrefs } from "./prefs";
 import { registerPush, unregisterPush } from "./push";
@@ -7,7 +7,7 @@ import { replanReminders } from "./reminders";
 import { askPermission } from "./setup";
 import { AppText } from "@/components/ui/AppText";
 import { Card } from "@/components/ui/Card";
-import { Palette, Space } from "@/constants/theme";
+import { Palette, Space, themedStyles } from "@/constants/theme";
 import { useAppState } from "@/providers/AppState";
 
 const SWITCHES: { key: "tasks" | "journal" | "events"; title: string; hint: string }[] = [
@@ -58,7 +58,7 @@ export function NotificationSettings() {
   }
 
   return (
-    <Card tone="green" liquidTint style={styles.card}>
+    <Card style={styles.card}>
       <Row title="Notifications on this phone" hint="Reminders and messages from the team" value={prefs?.enabled ?? false} onChange={(v) => void toggleMaster(v)} disabled={!prefs} />
       {prefs?.enabled
         ? SWITCHES.map((s) => <Row key={s.key} title={s.title} hint={s.hint} value={prefs[s.key]} onChange={(v) => void save({ ...prefs, [s.key]: v })} />)
@@ -86,8 +86,8 @@ function Row({ title, hint, value, onChange, disabled }: { title: string; hint: 
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   card: { gap: Space.md },
   row: { flexDirection: "row", alignItems: "center", gap: Space.md },
   rowText: { flex: 1, gap: 2 },
-});
+}));

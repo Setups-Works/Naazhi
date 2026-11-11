@@ -1,8 +1,12 @@
+import { noteShareUrl, setNoteShared } from "@untitled/api-client";
+import { ShareLinkSheet } from "@/components/ui/ShareLinkSheet";
+import { mobileEnv } from "@/config/env";
+import { dbQuery } from "@/features/chat/db";
 import { toDate } from "@untitled/logic";
 import type { Note } from "@untitled/types";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
 import { NoteForm } from "./NoteForm";
 import { useNote } from "./queries";
@@ -13,8 +17,8 @@ import { Icon } from "@/components/ui/Icon";
 import { Markdown } from "@/components/ui/Markdown";
 import { Screen } from "@/components/ui/Screen";
 import { ErrorState, LoadingState } from "@/components/ui/States";
-import { Palette, Radius, Tints } from "@/constants/theme";
-import { errorMessage } from "@/lib/api";
+import { Palette, Radius, Tints, themedStyles } from "@/constants/theme";
+import { api, errorMessage } from "@/lib/api";
 
 export function NoteEditorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -45,9 +49,16 @@ function NoteScreen({ note }: { note: Note }) {
 
 function NoteView({ note, onEdit }: { note: Note; onEdit: () => void }) {
   const tint = note.color ? Tints[note.color] : null;
+  const [sharing, setSharing] = useState(false);
   return (
     <Screen edges={["top", "left", "right", "bottom"]}>
-      <DetailBar label="Note" onClose={() => router.back()} action={<BarButton title="Edit" onPress={onEdit} />} />
+      <DetailBar label="Note" onClose={() => router.back()} action={
+          <View style={styles.actions}>
+            <BarButton title="Share" onPress={() => setSharing(true)} />
+            <BarButton title="Edit" onPress={onEdit} />
+          </View>
+        }
+      />
       <View style={[styles.page, tint ? { backgroundColor: tint.bg, borderColor: tint.line } : null]}>
         <View style={styles.titleRow}>
           <AppText variant="title" style={styles.flex}>
@@ -61,12 +72,24 @@ function NoteView({ note, onEdit }: { note: Note; onEdit: () => void }) {
         {note.body ? <Markdown text={note.body} /> : null}
         <AttachmentGallery attachments={note.attachments} />
       </View>
+      {sharing ? (
+        <ShareLinkSheet
+          title="Share note"
+          noun="this note"
+          detail={`It shows “${note.title.trim() || "Untitled"}” without your name, and you can switch it off at any time.`}
+          load={async () => (await dbQuery<{ share_token: string | null }[]>({ table: "notes", op: "select", columns: "share_token", filters: [{ column: "id", op: "eq", value: note.id }] }))?.[0]?.share_token ?? null}
+          toggle={(on) => setNoteShared(api, note.id, on)}
+          urlFor={(t) => noteShareUrl(mobileEnv.apiBaseUrl ?? "", t)}
+          onClose={() => setSharing(false)}
+        />
+      ) : null}
     </Screen>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   page: { gap: 12, padding: 4, borderRadius: Radius.r3 },
   titleRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   flex: { flex: 1 },
-});
+  actions: { flexDirection: "row", alignItems: "center", gap: 14 },
+}));

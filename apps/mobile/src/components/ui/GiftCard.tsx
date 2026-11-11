@@ -1,4 +1,5 @@
 // design-ok-file: the welcome card's iridescent foil is art-directed; its colours come from @untitled/logic (the same spec the web draws), not from UI tokens.
+import type { ViewHandle } from "@/types/native";
 import {
   GIFT_FACE,
   GIFT_H,
@@ -47,7 +48,7 @@ function Linear({ id, angle, stops }: { id: string; angle: number; stops: GiftSt
  * The welcome gift card: the same layers, wording and numbers as the web card (packages/logic/src/giftCard.ts), drawn as one
  * SVG in the card's own 1712 × 1080 space. The ref is the Svg, so the share action can turn exactly what is on screen into a PNG.
  */
-export const GiftCard = forwardRef<View, { name: string }>(function GiftCard({ name }, ref) {
+export const GiftCard = forwardRef<ViewHandle, { name: string }>(function GiftCard({ name }, ref) {
   const L = GIFT_LAYERS;
   const F = GIFT_FACE;
   const label = name.trim().toUpperCase() || "WELCOME";
@@ -151,6 +152,6 @@ export const GiftCard = forwardRef<View, { name: string }>(function GiftCard({ n
  * screen, so it looks exactly like the card and needs no file-system calls of our own; `collapsable={false}` keeps Android from
  * flattening the view away before it can be captured.
  */
-export function captureGiftCard(view: View): Promise<string> {
+export function captureGiftCard(view: ViewHandle): Promise<string> {
   return captureRef(view, { format: "png", quality: 1, result: "tmpfile", width: GIFT_W, height: GIFT_H });
 }

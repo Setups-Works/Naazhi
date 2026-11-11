@@ -1,13 +1,13 @@
 import type { ViewOpts } from "@untitled/logic";
 import { DEFAULT_OPTS, PRIORITIES } from "@untitled/logic";
-import { StyleSheet, Switch, View } from "react-native";
+import { Switch, View } from "react-native";
 
 import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
 import { PickerField } from "@/components/ui/PickerField";
 import { Segmented } from "@/components/ui/Segmented";
 import { Sheet } from "@/components/ui/Sheet";
-import { Palette } from "@/constants/theme";
+import { Palette, themedStyles } from "@/constants/theme";
 
 const LAYOUTS = [
   { key: "list", label: "List" },
@@ -93,7 +93,7 @@ export function ViewOptionsSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   gap: { gap: 12, paddingBottom: 8 },
   switch: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", minHeight: 44 },
-});
+}));

@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { AppText } from "@/components/ui/AppText";
 import { Icon } from "@/components/ui/Icon";
-import { Palette, Radius } from "@/constants/theme";
+import { Palette, Radius, themedStyles } from "@/constants/theme";
 
 /** A small chip in the composer (a restored draft). With `onRemove` it has a button to dismiss it. */
 export function ChatComposerTokenElement({ children, onRemove, removeLabel }: { children: ReactNode; onRemove?: () => void; removeLabel?: string }) {
@@ -21,8 +21,8 @@ export function ChatComposerTokenElement({ children, onRemove, removeLabel }: { 
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   chip: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 6, paddingLeft: 12, paddingRight: 4, minHeight: 28, borderRadius: Radius.pill, backgroundColor: Palette.surfaceMuted },
   text: { flexShrink: 1 },
   x: { width: 22, height: 22, borderRadius: Radius.pill, alignItems: "center", justifyContent: "center" },
-});
+}));

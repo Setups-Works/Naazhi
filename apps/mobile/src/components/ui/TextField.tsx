@@ -1,9 +1,10 @@
+import type { TextInputHandle } from "@/types/native";
 import { forwardRef, useState } from "react";
-import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from "react-native";
+import { Pressable, TextInput, View, type TextInputProps } from "react-native";
 
 import { AppText } from "./AppText";
 import { Icon } from "./Icon";
-import { Font, Palette, Radius } from "@/constants/theme";
+import { Font, Palette, Radius, themedStyles } from "@/constants/theme";
 
 type Props = Omit<TextInputProps, "style"> & {
   label: string;
@@ -14,7 +15,7 @@ type Props = Omit<TextInputProps, "style"> & {
   minHeight?: number;
 };
 
-export const TextField = forwardRef<TextInput, Props>(function TextField({ label, error, password, multiline, minHeight, ...rest }, ref) {
+export const TextField = forwardRef<TextInputHandle, Props>(function TextField({ label, error, password, multiline, minHeight, ...rest }, ref) {
   const [shown, setShown] = useState(false);
   const [focused, setFocused] = useState(false);
   return (
@@ -71,7 +72,7 @@ export const TextField = forwardRef<TextInput, Props>(function TextField({ label
   );
 });
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   wrap: { gap: 6 },
   label: { marginLeft: 4 },
   box: {
@@ -86,4 +87,4 @@ const styles = StyleSheet.create({
   input: { flex: 1, ...Font.sans, fontSize: 16, color: Palette.fg, paddingVertical: 12 },
   inputMulti: { paddingTop: 14 },
   eye: { paddingLeft: 10 },
-});
+}));

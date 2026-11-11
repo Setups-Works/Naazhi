@@ -1,7 +1,7 @@
 import type { JournalEntry } from "@untitled/types";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
 import { EntryEditSheet } from "./EntryEditSheet";
 import { EntryShareSheet } from "./EntryShareSheet";
@@ -12,7 +12,7 @@ import { BarButton, DetailBar } from "@/components/ui/DetailBar";
 import { Markdown } from "@/components/ui/Markdown";
 import { Screen } from "@/components/ui/Screen";
 import { ErrorState, LoadingState } from "@/components/ui/States";
-import { Palette, Radius, Tints } from "@/constants/theme";
+import { Palette, Radius, Tints, themedStyles } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { dayLabel, timeOf } from "@/lib/dates";
 
@@ -76,7 +76,7 @@ function EntryScreen({ entry }: { entry: JournalEntry }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   actions: { flexDirection: "row", alignItems: "center", gap: 16 },
   page: { gap: 12, padding: 16, borderRadius: Radius.r3, borderWidth: 1 },
-});
+}));

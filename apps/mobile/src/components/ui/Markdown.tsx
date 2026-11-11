@@ -1,9 +1,10 @@
+import { openWeb } from "@/lib/webSheet";
 import { itemTarget, parseInline, parseMarkdown, type Align, type Block, type Inline } from "@untitled/logic";
 import { router } from "expo-router";
-import { Linking, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AppText } from "./AppText";
-import { Font, Palette, Radius } from "@/constants/theme";
+import { Font, Palette, Radius, themedStyles } from "@/constants/theme";
 
 /** Opens a web link in the browser, and an in-app item link (to-do, note, journal day, Health) on the matching mobile screen. */
 function openItem(href: string) {
@@ -43,7 +44,7 @@ function InlineText({ text, color }: { text: string; color: string }) {
               key={i}
               accessibilityRole="link"
               style={styles.link}
-              onPress={() => (p.type === "link" ? void Linking.openURL(p.href) : openItem(p.href))}
+              onPress={() => (p.type === "link" ? openWeb(p.href) : openItem(p.href))}
             >
               {p.text}
             </Text>
@@ -163,7 +164,7 @@ export function Markdown({ text, color = Palette.fg, serif = false }: { text: st
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   wrap: { gap: 8 },
   strong: { ...Font.sansSemi },
   em: { fontStyle: "italic" },
@@ -185,4 +186,4 @@ const styles = StyleSheet.create({
   headRow: { backgroundColor: Palette.surfaceMuted, borderTopWidth: 0 },
   cell: { width: 150, padding: 8 },
   headText: { ...Font.sansSemi },
-});
+}));

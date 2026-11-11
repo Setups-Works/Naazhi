@@ -1,7 +1,8 @@
 import { useRef, useState, type ComponentProps } from "react";
-import { FlatList, StyleSheet, View, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native";
+import { FlatList, View, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native";
 
 import { ChatLayoutScrollButton } from "./ChatLayoutScrollButton";
+import { themedStyles } from "@/constants/theme";
 
 /** How far from the bottom (pt) the reader can be before the "jump to latest" button appears. */
 const FAR = 240;
@@ -34,4 +35,4 @@ export function ChatMessageList<T>(props: Props<T>) {
   );
 }
 
-const styles = StyleSheet.create({ fill: { flex: 1 } });
+const styles = themedStyles(() => ({ fill: { flex: 1 } }));

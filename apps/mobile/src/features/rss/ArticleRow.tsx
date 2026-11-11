@@ -1,12 +1,12 @@
 import { rssAge } from "@untitled/logic";
 import type { RssItem } from "@untitled/types";
 import { useState } from "react";
-import { Image, Pressable, StyleSheet, View } from "react-native";
+import { Image, Pressable, View } from "react-native";
 
 import { AppText } from "@/components/ui/AppText";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
-import { Palette, Radius } from "@/constants/theme";
+import { Palette, Radius, themedStyles } from "@/constants/theme";
 
 const THUMB = 92;
 
@@ -50,7 +50,7 @@ export function ArticleRow({ item, onOpen, onStar }: { item: RssItem; onOpen: ()
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   row: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
   thumb: { width: THUMB, height: THUMB, borderRadius: Radius.r2, backgroundColor: Palette.surfaceMuted },
   body: { flex: 1, gap: 4, minHeight: THUMB / 2 },
@@ -58,4 +58,4 @@ const styles = StyleSheet.create({
   source: { flexShrink: 1 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: Palette.greenFg },
   star: { padding: 2 },
-});
+}));

@@ -1,12 +1,12 @@
 import { LIST_TONES } from "@untitled/logic";
 import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { TextField } from "@/components/ui/TextField";
-import { Palette, Radius, Tints } from "@/constants/theme";
+import { Palette, Radius, Tints, themedStyles } from "@/constants/theme";
 
 type Props = {
   visible: boolean;
@@ -56,8 +56,8 @@ function Form({ initialName = "", initialColor = LIST_TONES[0], onSubmit, onDele
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   gap: { gap: 14, paddingBottom: 8 },
   colors: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   dot: { width: 34, height: 34, borderRadius: Radius.pill },
-});
+}));

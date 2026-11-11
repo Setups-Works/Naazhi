@@ -3,11 +3,11 @@ import type { Attachment } from "@untitled/types";
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { Image } from "expo-image";
 import { useCallback, useMemo, useState } from "react";
-import { ActivityIndicator, Linking, PanResponder, Pressable, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Linking, PanResponder, Pressable, View } from "react-native";
 
 import { AppText } from "./AppText";
 import { Icon } from "./Icon";
-import { Palette, Radius, Shadow } from "@/constants/theme";
+import { Palette, Radius, Shadow, themedStyles } from "@/constants/theme";
 import { useSignedUrls } from "@/features/attachments/useSignedUrls";
 import { useRuntimePrefs } from "@/lib/preferences";
 
@@ -158,7 +158,7 @@ export function AudioAttachment({ uri, name, failed, bare = false }: { uri: stri
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   wrap: { gap: 8, marginTop: 8 },
   imageBox: { borderRadius: Radius.r2, overflow: "hidden", backgroundColor: Palette.surfaceSunken, minHeight: 120 },
   image: { width: "100%", aspectRatio: 1.6 },
@@ -188,4 +188,4 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.82 },
   disabled: { opacity: 0.55 },
   audioTime: { fontVariant: ["tabular-nums"], fontSize: 12, minWidth: 34, textAlign: "right" },
-});
+}));

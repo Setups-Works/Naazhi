@@ -2,7 +2,7 @@ import { dayLabel, emptyDraft, firstDue, PRIORITIES, recurrenceChoices, recurren
 import type { Task, TaskList } from "@untitled/types";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { useTaskActions, useTaskLists, useTasks } from "./queries";
 import { useToggleTask } from "./useToggleTask";
@@ -18,7 +18,7 @@ import { PickerField } from "@/components/ui/PickerField";
 import { Screen } from "@/components/ui/Screen";
 import { ErrorState, LoadingState } from "@/components/ui/States";
 import { TextField } from "@/components/ui/TextField";
-import { Palette } from "@/constants/theme";
+import { Palette, themedStyles } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { isoDate } from "@untitled/logic";
 
@@ -91,7 +91,7 @@ function TaskScreen({ task, lists }: { task: Task; lists: TaskList[] }) {
           {status}
         </AppText>
       ) : null}
-      <Card tone="violet" style={{ gap: 12 }}>
+      <Card style={{ gap: 12 }}>
         <Detail
           label="Due"
           value={task.due_date ? dayLabel(task.due_date, today) : "No date"}
@@ -248,9 +248,9 @@ function Form({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   bar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", minHeight: 36 },
   spacer: { width: 40 },
   more: { flexDirection: "row", gap: 10 },
   flex: { flex: 1, paddingHorizontal: 10 },
-});
+}));

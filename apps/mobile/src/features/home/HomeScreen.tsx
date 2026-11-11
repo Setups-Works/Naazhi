@@ -12,7 +12,7 @@ import { GlassPill } from "@/components/ui/GlassPill";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { ErrorState, LoadingState } from "@/components/ui/States";
 import { Screen } from "@/components/ui/Screen";
-import { Font, Palette, Radius, Space, Tints } from "@/constants/theme";
+import { Font, Palette, Radius, Space, Tints, themedStyles } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { addDays, greeting, isoDate, longDate, timeOf } from "@/lib/dates";
 import { useCalendarEvents } from "@/features/calendar/queries";
@@ -28,6 +28,7 @@ import { useToggleTask } from "@/features/tasks/useToggleTask";
 import { useAppState, useAuth } from "@/providers/AppState";
 import { ReorderableList, type ReorderNode } from "@/components/ui/ReorderableList";
 import { HomePanel, PanelEmpty } from "./HomePanel";
+import { HomeNotices } from "./HomeNotices";
 import { PersonalityInsightsCard } from "./PersonalityInsightsCard";
 import { useBilling } from "@/features/billing/queries";
 import { HOME_COLUMNS, useHomeOrder } from "./useHomeOrder";
@@ -114,7 +115,7 @@ export function HomeScreen() {
           </AppText>
           {plan ? (
             <View style={styles.planBadge}>
-              <AppText variant="label" color={Tints.green.fg} style={styles.planText}>
+              <AppText variant="label" color={Palette.fgMuted} style={styles.planText}>
                 {plan}
               </AppText>
             </View>
@@ -251,8 +252,6 @@ export function HomeScreen() {
   const sections: Record<string, ReorderNode | null> = {
     streak: (handle: ReactNode) => (
       <Card
-        tone="green"
-        liquidTint
         accessibilityLabel={`Journal streak: ${streak} days. ${todayLogged ? "Logged today" : "Not logged today"}`}
         style={styles.streakCard}
       >
@@ -301,7 +300,7 @@ export function HomeScreen() {
     // Only until a plan is chosen; after that the card disappears and the section is skipped.
     plans:
       billingQ.data && !billingQ.data.plan ? (
-        <Card tone="gold" liquidTint onPress={() => router.push("/pricing")} accessibilityLabel="Choose a plan">
+        <Card onPress={() => router.push("/pricing")} accessibilityLabel="Choose a plan">
           <AppText variant="bodyStrong">Choose how you pay for AI</AppText>
           <AppText variant="small" color={Palette.fgMuted}>A subscription, pay as you go, or your own key. See the plans and prices.</AppText>
         </Card>
@@ -519,6 +518,7 @@ export function HomeScreen() {
   return (
     <Screen onRefresh={refresh} refreshing={refreshing} wide>
       {header}
+      <HomeNotices />
       {quick}
 
       {layout.columns === 2 ? (
@@ -549,15 +549,15 @@ function noteTitle(note: Note) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   header: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: Space.md, paddingTop: Space.xs },
   // minWidth 0 lets this column shrink beside the bell and avatar; the wrapping row drops the plan badge below the date instead of under the bell.
   headerText: { flex: 1, minWidth: 0, gap: Space.xs },
   dateRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", columnGap: Space.sm, rowGap: Space.xs },
-  planBadge: { backgroundColor: Tints.green.bg, borderColor: Tints.green.line, borderWidth: 1, borderRadius: Radius.pill, paddingHorizontal: 8, paddingVertical: 2 },
+  planBadge: { backgroundColor: Palette.surfaceMuted, borderColor: Palette.line, borderWidth: 1, borderRadius: Radius.pill, paddingHorizontal: 8, paddingVertical: 2 },
   planText: { fontSize: 10, lineHeight: 13 },
   greeting: { fontSize: 34, lineHeight: 38, letterSpacing: -1 },
-  name: { ...Font.serifItalic, color: Palette.greenFg, fontSize: 34, lineHeight: 38, letterSpacing: -1 },
+  name: { ...Font.serif, color: Palette.fgSubtle, fontSize: 34, lineHeight: 38, letterSpacing: -1 },
   quickScroll: { flexGrow: 0 },
   quick: { gap: Space.sm },
   pill: {
@@ -633,7 +633,7 @@ const styles = StyleSheet.create({
   },
   weekDayActive: { backgroundColor: Palette.greenFg },
   weekDayToday: { borderWidth: 1, borderColor: Palette.greenFg },
-  weekLabel: { textTransform: "uppercase" },
+  weekLabel: {},
   section: { gap: Space.lg },
   sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: Space.md },
   sectionTitle: { fontSize: 18, lineHeight: 24 },
@@ -646,4 +646,4 @@ const styles = StyleSheet.create({
   noteTitle: { flex: 1 },
   noteAge: { flexShrink: 0 },
   separator: { height: StyleSheet.hairlineWidth, backgroundColor: Palette.line, marginLeft: 20 },
-});
+}));

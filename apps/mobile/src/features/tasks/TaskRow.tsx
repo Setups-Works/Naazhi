@@ -1,11 +1,11 @@
 import { dayLabel, recurrenceLabel } from "@untitled/logic";
 import type { Task, TaskList } from "@untitled/types";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { AppText } from "@/components/ui/AppText";
 import { Icon } from "@/components/ui/Icon";
 import { SwipeToDelete } from "@/components/ui/SwipeToDelete";
-import { Palette, PriorityColor, Radius, Tints } from "@/constants/theme";
+import { Palette, PriorityColor, Radius, Tints, themedStyles } from "@/constants/theme";
 
 type Props = {
   task: Task;
@@ -80,7 +80,7 @@ function Row({ task, today, list, onToggle, onOpen }: Omit<Props, "onDelete">) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   row: { flexDirection: "row", alignItems: "flex-start", gap: 14, paddingVertical: 10, minHeight: 52 },
   box: { width: 24, height: 24, borderRadius: Radius.pill, borderWidth: 2, alignItems: "center", justifyContent: "center", marginTop: 1 },
   boxOn: { backgroundColor: Palette.greenFg, borderColor: Palette.greenFg },
@@ -89,4 +89,4 @@ const styles = StyleSheet.create({
   meta: { flexDirection: "row", gap: 10, alignItems: "center", flexWrap: "wrap" },
   inline: { flexDirection: "row", gap: 4, alignItems: "center" },
   chip: { paddingHorizontal: 8, paddingVertical: 1, borderRadius: Radius.pill },
-});
+}));

@@ -1,6 +1,7 @@
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
 import { Banner } from "@/components/ui/Banner";
+import { themedStyles } from "@/constants/theme";
 
 /** A notice from the app rather than from either side of the conversation (no AI selected, a failed send). */
 export function ChatSystemMessage({ kind = "info", children }: { kind?: "info" | "error"; children: string }) {
@@ -11,4 +12,4 @@ export function ChatSystemMessage({ kind = "info", children }: { kind?: "info" |
   );
 }
 
-const styles = StyleSheet.create({ pad: { paddingHorizontal: 14, paddingTop: 8 } });
+const styles = themedStyles(() => ({ pad: { paddingHorizontal: 14, paddingTop: 8 } }));

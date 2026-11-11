@@ -22,6 +22,25 @@ export type Release = {
  */
 export const RELEASES: Release[] = [
   {
+    date: "2026-11-12",
+    title: "Version 6.0.0: the app, redrawn to match the website",
+    summary: "The Android app now looks and works like the website, with a floating navbar, light, cream and charcoal looks, a full Settings, Notes Trash and Atlas, share links, and sign-in with Google or a passkey.",
+    tone: "mint",
+    appVersion: "v6.0.0",
+    changes: [
+      { kind: "new", platform: "app", text: "A new look that matches the website: the same colours, buttons, page headers and settings, with a new welcome flow and the Naazhi logo on sign-in." },
+      { kind: "new", platform: "app", text: "Choose Light, Cream or Charcoal, or follow your phone, and pick an accent colour. The change shows straight away." },
+      { kind: "new", platform: "app", text: "A floating navbar with Home, Journal, Plan and Naazhi AI, and a Menu for Notes, Library, Calendar, Health, Workspace and Reader. Drag a finger along the bar to switch." },
+      { kind: "new", platform: "app", text: "Settings has the same sections as the website, including Skills, API keys, Zoho, Imports, and preferences for Notes, To-do and Email." },
+      { kind: "new", platform: "app", text: "Notes now have a Trash with Restore and Delete forever, and an Atlas that maps how your notes connect. You can share a note or a chat by link." },
+      { kind: "new", platform: "app", text: "A Library of every file you attached, a tip a day and announcements on Home, and shared journals that look like your own Journal." },
+      { kind: "new", platform: "app", text: "Sign in with the phone’s own Google sheet, or with a passkey, and add or remove passkeys in Settings. Links now open in a sheet inside the app." },
+      { kind: "improved", platform: "app", text: "Sign-in and sign-up fit on one screen with no scrolling. App logos appear next to Google, Microsoft, Zoho and your AI providers in Settings." },
+      { kind: "fixed", platform: "app", text: "Saving a preference on the phone no longer wipes the ones that only the website knew about, such as your accent colour." },
+      { kind: "fixed", platform: "app", text: "Dragging the Inbox and Today tabs on the Plan page no longer jumps you to Notes." },
+    ],
+  },
+  {
     date: "2026-11-11",
     title: "Version 5.4.0: connect Zoho and use it from chat",
     summary: "Sign in to Zoho once, pick the services you use, and ask chat to show your leads, mail, invoices or tickets, or to add a record, send an email or post a message after you confirm.",

@@ -2,7 +2,7 @@ import { FontAwesome6 } from "@expo/vector-icons";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import { AppText } from "@/components/ui/AppText";
-import { Palette, Radius, Shadow } from "@/constants/theme";
+import { Palette, Radius, Shadow, themedStyles } from "@/constants/theme";
 import { GlassPill } from "@/components/ui/GlassPill";
 
 /**
@@ -37,7 +37,7 @@ export function OrDivider() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   btn: {
     minHeight: 50,
     borderRadius: Radius.pill,
@@ -51,4 +51,4 @@ const styles = StyleSheet.create({
   },
   or: { flexDirection: "row", alignItems: "center", gap: 12 },
   rule: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: Palette.lineStrong },
-});
+}));

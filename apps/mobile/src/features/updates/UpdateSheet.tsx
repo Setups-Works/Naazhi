@@ -1,4 +1,5 @@
-import { Linking, StyleSheet, View } from "react-native";
+import { openWeb } from "@/lib/webSheet";
+import { View } from "react-native";
 
 import type { UpdateState } from "./UpdateProvider";
 import { AppText } from "@/components/ui/AppText";
@@ -6,7 +7,7 @@ import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { mobileEnv } from "@/config/env";
-import { Palette, Radius, Space } from "@/constants/theme";
+import { Palette, Radius, Space, themedStyles } from "@/constants/theme";
 
 /** The update sheet: what is new, a progress bar while the file downloads, and the way out when something goes wrong. */
 export function UpdateSheet({
@@ -43,7 +44,7 @@ export function UpdateSheet({
         {state.phase === "available" ? (
           <>
             {mobileEnv.changelogUrl ? (
-              <Button title="What’s new" kind="ghost" icon="list-ul" onPress={() => void Linking.openURL(mobileEnv.changelogUrl!)} />
+              <Button title="What’s new" kind="ghost" icon="list-ul" onPress={() => openWeb(mobileEnv.changelogUrl!, { title: "What’s new" })} />
             ) : null}
             <Button title="Update now" icon="download" onPress={onUpdate} />
             <Button title="Later" kind="secondary" onPress={onClose} />
@@ -86,8 +87,8 @@ export function UpdateSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   stack: { gap: Space.md },
   track: { height: 10, borderRadius: Radius.pill, backgroundColor: Palette.surfaceSunken, overflow: "hidden" },
   fill: { height: "100%", borderRadius: Radius.pill, backgroundColor: Palette.greenFg },
-});
+}));

@@ -1,5 +1,6 @@
+import type { TextInputHandle } from "@/types/native";
 import { useRef, useState } from "react";
-import { TextInput, View } from "react-native";
+import { View } from "react-native";
 
 import { AuthLink, AuthShell } from "@/features/auth/AuthShell";
 import { AppText } from "@/components/ui/AppText";
@@ -15,9 +16,9 @@ type Step = "request" | "reset" | "done";
 
 export default function ForgotPasswordScreen() {
   const auth = useAuth();
-  const codeRef = useRef<TextInput>(null);
-  const passwordRef = useRef<TextInput>(null);
-  const confirmRef = useRef<TextInput>(null);
+  const codeRef = useRef<TextInputHandle>(null);
+  const passwordRef = useRef<TextInputHandle>(null);
+  const confirmRef = useRef<TextInputHandle>(null);
   const [step, setStep] = useState<Step>("request");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");

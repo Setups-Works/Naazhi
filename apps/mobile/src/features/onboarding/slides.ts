@@ -1,47 +1,21 @@
-import type { Tone } from "@untitled/types";
-
 import type { IconName } from "@/components/ui/Icon";
 
-/** Content comes from what the product actually does today (README "What's built" and docs/SECURITY.md). */
-export const SLIDES: { key: string; icon: IconName; tone: Tone; eyebrow: string; title: string; body: string }[] = [
-  {
-    key: "workspace",
-    icon: "layer-group",
-    tone: "green",
-    eyebrow: "Welcome",
-    title: "One workspace for everything you keep",
-    body: "Notes, to-dos and your journal live side by side, so nothing gets lost between apps.",
-  },
-  {
-    key: "plan",
-    icon: "list-check",
-    tone: "violet",
-    eyebrow: "To-do",
-    title: "Plan your day, then do it",
-    body: "Set priorities and due dates, see what’s overdue, and tick things off from Today.",
-  },
-  {
-    key: "capture",
-    icon: "pen-to-square",
-    tone: "amber",
-    eyebrow: "Notes & journal",
-    title: "Capture it now, reflect later",
-    body: "Colour-code notes, and add as many timestamped journal entries a day as you like.",
-  },
-  {
-    key: "private",
-    icon: "lock",
-    tone: "blue",
-    eyebrow: "Private by design",
-    title: "Your data stays yours",
-    body: "Journal entries are visible only to you, and everything runs on your own self-hosted stack.",
-  },
-  {
-    key: "notifications",
-    icon: "bell",
-    tone: "gold",
-    eyebrow: "Stay in the loop",
-    title: "Gentle reminders, only when they matter",
-    body: "Get a nudge for what is due, your journal streak, events, and messages from the team. You can change this any time in Settings.",
-  },
+export type Feature = { key: string; icon: IconName; title: string; body: string };
+
+/** What the app does, as the web sidebar lists it. Shown as one grid on the second onboarding step. */
+export const FEATURES: Feature[] = [
+  { key: "journal", icon: "book-open", title: "Journal", body: "Timestamped entries, private to you, shareable when you choose." },
+  { key: "ai", icon: "comments", title: "Naazhi AI", body: "Ask about your notes, tasks and day. Confirm before it changes anything." },
+  { key: "notes", icon: "note-sticky", title: "Notes", body: "Colour-coded notes with files and voice." },
+  { key: "todo", icon: "list-check", title: "To-do", body: "Priorities, due dates and lists." },
+  { key: "calendar", icon: "calendar-days", title: "Calendar", body: "Your days and events in one view." },
+  { key: "health", icon: "heart-pulse", title: "Health", body: "Steps, sleep and more from your phone." },
+  { key: "library", icon: "layer-group", title: "Library", body: "Every file you attached, together." },
+  { key: "workspace", icon: "briefcase", title: "Workspace", body: "Feeds and shared spaces." },
+];
+
+export const PRIVACY_POINTS: { icon: IconName; text: string }[] = [
+  { icon: "lock", text: "Journal entries are visible only to you." },
+  { icon: "server", text: "Runs on your own self-hosted stack." },
+  { icon: "robot", text: "AI is optional, swappable, and never acts without asking." },
 ];

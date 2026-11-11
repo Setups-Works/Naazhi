@@ -1,7 +1,7 @@
 import { SHARED_JOURNAL as LIMIT, personName } from "@untitled/logic";
 import type { SharedJournalInviteRole, SharedJournalMember } from "@untitled/types";
 import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { useCollaborationActions, useSharedJournal } from "../queries";
 import { PersonBadge } from "./PersonBadge";
@@ -15,7 +15,7 @@ import { PromptSheet } from "@/components/ui/PromptSheet";
 import { Sheet } from "@/components/ui/Sheet";
 import { LoadingState } from "@/components/ui/States";
 import { TextField } from "@/components/ui/TextField";
-import { Palette } from "@/constants/theme";
+import { Palette, themedStyles } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 
 const handle = (p: { username: string | null }) => (p.username ? `@${p.username}` : "No username");
@@ -100,7 +100,7 @@ export function ManageSheet({ id, onClose }: { id: string | null; onClose: () =>
         {!journal && !q.isError ? <LoadingState /> : null}
         {journal ? (
           <View style={styles.stack}>
-            <AppText variant="label">PEOPLE · {journal.members.length}</AppText>
+            <AppText variant="label">People · {journal.members.length}</AppText>
             {journal.members.map((m) => (
               <View key={m.person.id} style={styles.person}>
                 <View style={styles.row}>
@@ -137,7 +137,7 @@ export function ManageSheet({ id, onClose }: { id: string | null; onClose: () =>
 
             {owner ? (
               <>
-                <AppText variant="label">INVITE SOMEONE</AppText>
+                <AppText variant="label">Invite someone</AppText>
                 <TextField
                   label="Username"
                   value={username}
@@ -208,10 +208,10 @@ export function ManageSheet({ id, onClose }: { id: string | null; onClose: () =>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   stack: { gap: 12 },
   person: { gap: 8 },
   row: { flexDirection: "row", alignItems: "center", gap: 12 },
   text: { flex: 1 },
   manage: { gap: 6, paddingLeft: 50 },
-});
+}));

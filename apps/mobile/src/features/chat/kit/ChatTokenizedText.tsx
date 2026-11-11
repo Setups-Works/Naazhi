@@ -1,4 +1,4 @@
-import { Linking } from "react-native";
+import { openWeb } from "@/lib/webSheet";
 
 import { AppText } from "@/components/ui/AppText";
 import { Palette } from "@/constants/theme";
@@ -21,7 +21,7 @@ export function ChatTokenizedText({ text, color = Palette.onDark }: { text: stri
               color={color}
               accessibilityRole="link"
               style={{ textDecorationLine: "underline" }}
-              onPress={() => void Linking.openURL(url).catch(() => undefined)}
+              onPress={() => openWeb(url)}
             >
               {url}
             </AppText>

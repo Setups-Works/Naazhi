@@ -1,12 +1,12 @@
 import type { Tone } from "@untitled/types";
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Icon, type IconName } from "@/components/ui/Icon";
-import { Palette, Radius, Space, Tints } from "@/constants/theme";
+import { Palette, Radius, Space, themedStyles, Neutral } from "@/constants/theme";
 
 /**
  * One group of cards a chat reply asked the app to show: a tinted glass card with a title, the items, and an Open button that goes to
@@ -30,15 +30,15 @@ export function ShownGroup({
   note?: string;
   children: ReactNode;
 }) {
-  const t = Tints[tone];
+  const t = Neutral;
   return (
-    <Card tone={tone} style={styles.card}>
+    <Card style={styles.card}>
       <View style={styles.head}>
         <View style={[styles.badge, { borderColor: t.line }]}>
           <Icon name={icon} size={13} color={t.fg} />
         </View>
         <AppText variant="label" color={t.fg}>
-          {title.toUpperCase()}
+          {title}
         </AppText>
       </View>
       <View style={styles.rows}>{children}</View>
@@ -68,7 +68,7 @@ export const ShownEmpty = ({ children }: { children: string }) => (
   </View>
 );
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   card: { gap: Space.sm, padding: Space.md, borderRadius: Radius.r3 },
   head: { flexDirection: "row", alignItems: "center", gap: Space.sm },
   badge: {
@@ -83,4 +83,4 @@ const styles = StyleSheet.create({
   rows: { gap: Space.sm },
   row: { gap: 2, paddingHorizontal: Space.md, paddingVertical: Space.sm, borderRadius: Radius.r2, backgroundColor: Palette.glassHi },
   pressed: { opacity: 0.8 },
-});
+}));

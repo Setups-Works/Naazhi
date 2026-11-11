@@ -1,9 +1,10 @@
+import { openWeb } from "@/lib/webSheet";
 import { useQueryClient } from "@tanstack/react-query";
 import { RSS, rssFeedName } from "@untitled/logic";
 import type { RssFilter } from "@untitled/types";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AppState, FlatList, Linking, RefreshControl, StyleSheet, TextInput, View, useWindowDimensions } from "react-native";
+import { AppState, FlatList, RefreshControl, TextInput, View, useWindowDimensions } from "react-native";
 
 import { AddFeedSheet } from "./AddFeedSheet";
 import { ArticleRow } from "./ArticleRow";
@@ -18,7 +19,7 @@ import { useConfirm } from "@/components/ui/Confirm";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { SideDrawer } from "@/components/ui/SideDrawer";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/States";
-import { Font, Palette, Radius, Space, Tints } from "@/constants/theme";
+import { Font, Palette, Radius, Space, themedStyles } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { qk } from "@/lib/queryKeys";
 import { GlassPill } from "@/components/ui/GlassPill";
@@ -158,7 +159,7 @@ export function ReaderScreen() {
             </AppText>
           ) : null}
           <View style={styles.feedActions}>
-            {feed.site_url ? <Button title="Website" kind="secondary" icon="arrow-up-right-from-square" onPress={() => void Linking.openURL(feed.site_url!)} style={styles.flex} /> : null}
+            {feed.site_url ? <Button title="Website" kind="secondary" icon="arrow-up-right-from-square" onPress={() => openWeb(feed.site_url!)} style={styles.flex} /> : null}
             <Button title="Unfollow" kind="danger" onPress={() => void unfollow()} style={styles.flex} />
           </View>
         </Card>
@@ -195,7 +196,7 @@ export function ReaderScreen() {
           </AppText>
         )
       }
-      ListFooterComponent={articlesQ.isFetchingNextPage ? <LoadingState label="Loading more…" /> : null}
+      ListFooterComponent={articlesQ.isFetchingNextPage ? <LoadingState label="Loading more…" /> : undefined}
     />
   );
 
@@ -224,10 +225,10 @@ function RoundButton({ icon, label, onPress, disabled }: { icon: IconName; label
 
 const Gap = () => <View style={styles.gap} />;
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   flex: { flex: 1 },
   wideRow: { flexDirection: "row" },
-  sidebar: { width: SIDEBAR, margin: Space.md, marginTop: 0, borderRadius: Radius.r4, backgroundColor: Tints.sand.bg, borderWidth: 1, borderColor: Tints.sand.line },
+  sidebar: { width: SIDEBAR, margin: Space.md, marginTop: 0, borderRadius: Radius.r4, backgroundColor: Palette.surfaceMuted, borderWidth: 1, borderColor: Palette.line },
   listContent: { paddingHorizontal: Space.lg, paddingBottom: Space.xxl * 2 },
   controls: { gap: Space.md, paddingBottom: Space.md },
   titleRow: { flexDirection: "row", alignItems: "center", gap: Space.sm },
@@ -248,4 +249,4 @@ const styles = StyleSheet.create({
   feedActions: { flexDirection: "row", gap: Space.sm, marginTop: Space.sm },
   gap: { height: Space.md },
   emptyText: { paddingVertical: Space.xl },
-});
+}));

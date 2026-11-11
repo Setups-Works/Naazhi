@@ -13,7 +13,7 @@ import {
 } from "@untitled/logic";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
 import { askChat } from "../chat/handoff";
 import { useHealthDays } from "./queries";
@@ -24,7 +24,7 @@ import { Card } from "@/components/ui/Card";
 import { DetailBar } from "@/components/ui/DetailBar";
 import { Screen } from "@/components/ui/Screen";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/States";
-import { Palette, Radius, Space, Tints } from "@/constants/theme";
+import { Palette, Radius, Space, themedStyles, Neutral } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { isoDate } from "@/lib/dates";
 
@@ -48,7 +48,7 @@ function NotFound() {
 
 function Detail({ metric, initialRange }: { metric: HealthMetric; initialRange: HealthRange }) {
   const def = HEALTH_METRICS[metric];
-  const tone = Tints[def.tone];
+  const tone = Neutral;
   const [range, setRange] = useState<HealthRange>(initialRange);
   const daysQ = useHealthDays();
   const today = isoDate();
@@ -96,7 +96,7 @@ function Detail({ metric, initialRange }: { metric: HealthMetric; initialRange: 
         <View style={styles.stack}>
           <RangeFilter value={range} onChange={setRange} daysWithData={daysWithData} count={series.recorded} />
 
-          <Card tone={def.tone}>
+          <Card>
             <AppText variant="small" color={tone.fg}>
               {def.kind === "total" ? "Total" : "Average"}
             </AppText>
@@ -189,7 +189,7 @@ function Detail({ metric, initialRange }: { metric: HealthMetric; initialRange: 
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   head: { gap: Space.xs, marginTop: Space.md, marginBottom: Space.lg },
   stack: { gap: Space.md },
   bars: { flexDirection: "row", alignItems: "flex-end", gap: 3, height: 120, marginVertical: Space.lg },
@@ -205,4 +205,4 @@ const styles = StyleSheet.create({
   track: { flex: 1, height: 8, borderRadius: Radius.pill, overflow: "hidden" },
   fill: { height: "100%", borderRadius: Radius.pill },
   rowValue: { width: 96, textAlign: "right" },
-});
+}));

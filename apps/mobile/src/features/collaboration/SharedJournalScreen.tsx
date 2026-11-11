@@ -2,7 +2,7 @@ import { canWrite, groupByDay, MAX_UPLOAD_BYTES, SHARED_JOURNAL as LIMIT } from 
 import type { SharedJournalEntry } from "@untitled/types";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
 import { useCollaborationActions, useJournalEntries, useSharedJournal } from "./queries";
 import { EntryCard } from "./components/EntryCard";
@@ -15,12 +15,14 @@ import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/Button";
 import { EntryEditor } from "@/components/ui/EntryEditor";
 import { useConfirm } from "@/components/ui/Confirm";
-import { BarButton, DetailBar } from "@/components/ui/DetailBar";
+import { DetailBar } from "@/components/ui/DetailBar";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { Screen } from "@/components/ui/Screen";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/States";
 import { pickFiles, type PendingFile } from "@/features/chat/files";
 import { errorMessage } from "@/lib/api";
 import { dayLabel, isoDate, timeOf } from "@/lib/dates";
+import { themedStyles } from "@/constants/theme";
 
 /** A shared journal: the feed everyone in it can read, and a box to write in it for owners and editors. */
 export function SharedJournalScreen() {
@@ -100,31 +102,24 @@ export function SharedJournalScreen() {
 
   return (
     <Screen edges={["top", "left", "right", "bottom"]} onRefresh={() => void refresh()} refreshing={refreshing}>
-      <DetailBar
-        label="Shared journal"
-        closeLabel="Back"
-        onClose={() => router.back()}
-        action={journal ? <BarButton title={owner ? "Manage" : "People"} onPress={() => setPeople(true)} /> : undefined}
+      <PageHeader
+        title={journal?.name ?? "Shared journal"}
+        subtitle={journal ? `${journal.member_count} ${journal.member_count === 1 ? "person" : "people"} · ${journal.entry_count} ${journal.entry_count === 1 ? "entry" : "entries"}` : undefined}
+        onBack={() => router.back()}
+        backLabel="Journal"
+        right={
+          journal ? (
+            <>
+              <RolePill role={journal.role} />
+              <Button title={owner ? "Manage" : "People"} kind="secondary" onPress={() => setPeople(true)} style={styles.small} />
+              {writer ? <Button title="Add" icon="plus" onPress={() => setComposing(true)} style={styles.small} /> : null}
+            </>
+          ) : undefined
+        }
       />
-      {journal ? (
-        <View style={styles.title}>
-          <AppText variant="title" style={styles.name}>
-            {journal.name}
-          </AppText>
-          <RolePill role={journal.role} />
-        </View>
-      ) : null}
-      {journal ? (
-        <AppText variant="small">
-          {journal.member_count} {journal.member_count === 1 ? "person" : "people"} · {journal.entry_count}{" "}
-          {journal.entry_count === 1 ? "entry" : "entries"}
-        </AppText>
-      ) : null}
       {err ? <Banner kind="error">{err}</Banner> : null}
 
-      {writer ? (
-        <Button title="New entry" icon="pen" onPress={() => setComposing(true)} />
-      ) : journal ? (
+      {!writer && journal ? (
         <Banner kind="info">You can read this journal. Only editors and the owner can write in it.</Banner>
       ) : null}
 
@@ -139,7 +134,7 @@ export function SharedJournalScreen() {
       ) : (
         days.map((day) => (
           <View key={day.date} style={styles.day}>
-            <AppText variant="label">{dayLabel(day.date).toUpperCase()}</AppText>
+            <AppText variant="heading">{dayLabel(day.date)}</AppText>
             {day.entries.map((e) => {
               const mine = e.author.id === journal?.me;
               return (
@@ -185,8 +180,7 @@ export function SharedJournalScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  title: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
-  name: { flex: 1 },
-  day: { gap: 10 },
-});
+const styles = themedStyles(() => ({
+  small: { minHeight: 38, paddingHorizontal: 14 },
+  day: { gap: 12 },
+}));

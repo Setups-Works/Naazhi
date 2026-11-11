@@ -1,5 +1,5 @@
+import { openWeb } from "@/lib/webSheet";
 import { useQuery } from "@tanstack/react-query";
-import { Linking } from "react-native";
 
 import { ShownEmpty, ShownGroup, ShownRow } from "./ShownGroup";
 import { AppText } from "@/components/ui/AppText";
@@ -37,7 +37,7 @@ export function ZohoShown({ service, view = "", query = "" }: { service: string;
     staleTime: 60_000,
     retry: false,
   });
-  const open = (url: string) => void Linking.openURL(url);
+  const open = (url: string) => openWeb(url);
   return (
     <ShownGroup
       tone="clay"

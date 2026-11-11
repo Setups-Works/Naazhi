@@ -1,28 +1,40 @@
+import { openWeb } from "@/lib/webSheet";
+import type { ViewHandle } from "@/types/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { giftShareText, toDate } from "@untitled/logic";
-import { BackHandler, Pressable, Share, StyleSheet, Switch, View } from "react-native";
+import { BackHandler, Pressable, Share, View } from "react-native";
 
 import { AppText } from "@/components/ui/AppText";
+import { AppLogo } from "@/components/ui/AppLogo";
 import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { DeleteSheet } from "@/components/ui/DeleteSheet";
 import { GiftCard, captureGiftCard } from "@/components/ui/GiftCard";
 import { Icon } from "@/components/ui/Icon";
+import { Field, Group, Panel, Row, ValueButton } from "./pages/ui";
+import { PageHeader, SectionLabel } from "@/components/ui/PageHeader";
 import { Screen } from "@/components/ui/Screen";
 import { Sheet } from "@/components/ui/Sheet";
 import { TextField } from "@/components/ui/TextField";
-import { Palette, Radius, Tints } from "@/constants/theme";
+import { Palette, Radius, Space, Tints, themedStyles } from "@/constants/theme";
 import { mobileEnv } from "@/config/env";
 import { dbQuery } from "@/features/chat/db";
 import { BillingSection } from "@/features/billing/BillingSection";
 import { NotificationSettings } from "@/features/notifications/NotificationSettings";
+import { AppearancePrefs, EmailPrefs, HealthPrefs, HomeAssistantPrefs, LabelsPrefs, NotesPrefs, TodoPrefs } from "./pages/PrefPages";
+import { PasskeysSection } from "./pages/PasskeysSection";
+import { GetAppsPage } from "./pages/GetAppsPage";
+import { ImportsPage } from "./pages/ImportsPage";
+import { KeysPage } from "./pages/KeysPage";
+import { SkillsPage } from "./pages/SkillsPage";
+import { GooglePage, InvitesPage, MicrosoftPage, OtherAppsPage, YouDoPage } from "./pages/SoonPages";
+import { ZohoPage } from "./pages/ZohoPage";
 import { useAccountSettings } from "./queries";
-import { SETTINGS_SECTIONS, type SettingsPrefs, type SettingsSection } from "./types";
+import { SETTINGS_GROUPS, SETTINGS_SECTIONS, type SettingsPrefs, type SettingsSection } from "./types";
 import { useUpdate } from "@/features/updates/UpdateProvider";
 import { useAppState, useAuth } from "@/providers/AppState";
 import { shareImageWithText } from "@/lib/shareImage";
@@ -63,7 +75,7 @@ export function SettingsScreen() {
     return () => sub.remove();
   }, [section]);
   const [busy, setBusy] = useState("");
-  const giftRef = useRef<View>(null);
+  const giftRef = useRef<ViewHandle>(null);
   const [notice, setNotice] = useState<Notice>(null);
 
   const account = settingsQ.data;
@@ -347,48 +359,54 @@ export function SettingsScreen() {
 
   const current = SETTINGS_SECTIONS.find((s) => s.key === section) ?? null;
 
-  // The list: one row per section. Tapping a row opens that section on its own screen.
+  // The home: sections in the web's groups, each a hairline row with an icon tile, a label and a one-line description.
   const list = (
-    <Card style={styles.list}>
-      {SETTINGS_SECTIONS.map((item, index) => {
-        const danger = item.key === "danger";
-        return (
-          <Pressable
-            key={item.key}
-            accessibilityRole="button"
-            accessibilityLabel={item.title}
-            onPress={() => openSection(item.key)}
-            style={({ pressed }) => [styles.row, index > 0 ? styles.rowDivider : null, pressed ? styles.rowPressed : null]}
-          >
-            <View style={[styles.rowIcon, danger ? styles.rowIconDanger : null]}>
-              <Icon name={item.icon} size={15} color={danger ? Palette.clayFg : Palette.fgMuted} />
-            </View>
-            <AppText variant="body" color={danger ? Palette.clayFg : Palette.fg} style={styles.flex}>{item.title}</AppText>
-            <Icon name="chevron-right" size={14} color={Palette.fgFaint} />
-          </Pressable>
-        );
-      })}
-    </Card>
+    <View style={styles.groups}>
+      {SETTINGS_GROUPS.map((group) => (
+        <View key={group.label} style={styles.group}>
+          <SectionLabel>{group.label}</SectionLabel>
+          <View style={styles.rows}>
+            {group.sections.map((item, index) => {
+              const danger = item.key === "danger";
+              return (
+                <Pressable
+                  key={item.key}
+                  accessibilityRole="button"
+                  accessibilityLabel={item.title}
+                  onPress={() => openSection(item.key)}
+                  style={({ pressed }) => [styles.row, index > 0 ? styles.rowDivider : null, pressed ? styles.rowPressed : null]}
+                >
+                  {item.logo ? (
+                    <AppLogo name={item.logo} size={36} />
+                  ) : (
+                    <View style={styles.rowIcon}>
+                      <Icon name={item.icon} size={15} color={danger ? Palette.clayFg : Palette.fgMuted} />
+                    </View>
+                  )}
+                  <View style={styles.flex}>
+                    <AppText variant="bodyStrong" color={danger ? Palette.clayFg : Palette.fg}>{item.title}{item.soon ? "  · Soon" : ""}</AppText>
+                    <AppText variant="small" color={Palette.fgSubtle} numberOfLines={1}>{item.desc}</AppText>
+                  </View>
+                  <Icon name="chevron-right" size={13} color={Palette.fgFaint} />
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      ))}
+    </View>
   );
 
   return (
-    <Screen>
+    <Screen contentStyle={styles.page}>
       {current ? (
-        <View style={styles.header}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Back to settings" hitSlop={12} onPress={() => openSection(null)} style={styles.back}>
-            <Icon name="chevron-left" size={16} color={Palette.fgMuted} />
-            <AppText variant="bodyStrong" color={Palette.fgMuted}>Settings</AppText>
-          </Pressable>
-          <AppText variant="heading" accessibilityRole="header" numberOfLines={1} style={styles.sectionTitle}>{current.title}</AppText>
-          <View style={styles.headerSpacer} />
-        </View>
+        <PageHeader title={current.title} subtitle={current.desc} onBack={() => openSection(null)} backLabel="Settings" />
       ) : (
-        <View style={styles.header}>
-          <AppText variant="title" accessibilityRole="header">Settings</AppText>
-          <Pressable accessibilityRole="button" accessibilityLabel="Close settings" hitSlop={12} onPress={() => router.back()}>
-            <AppText variant="bodyStrong" color={Palette.fgMuted}>Close</AppText>
-          </Pressable>
-        </View>
+        <PageHeader
+          title="Settings"
+          subtitle={account?.email ?? user?.email}
+          right={<Button title="Close" kind="ghost" onPress={() => router.back()} style={styles.close} />}
+        />
       )}
       {section === null ? list : null}
       {section !== null && settingsQ.isPending ? <AppText variant="small">Loading account settings…</AppText> : null}
@@ -396,138 +414,185 @@ export function SettingsScreen() {
       {section !== null && notice ? <Banner kind={notice.kind}>{notice.text}</Banner> : null}
 
       {section === "profile" ? (
-        <Card tone="violet" style={styles.card}>
-          <SectionHeading title="Profile" />
-          <View style={styles.avatarRow}>
-            {avatar ? <Image source={{ uri: avatar, ...(avatarCookie ? { headers: { Cookie: avatarCookie } } : {}) }} contentFit="cover" style={styles.avatar} /> : <View style={styles.avatarFallback}><AppText variant="heading" color={Palette.onDark}>{(name || email || "?")[0]?.toUpperCase()}</AppText></View>}
-            <View style={styles.flex}>
-              <AppText variant="bodyStrong">Profile picture</AppText>
-              <AppText variant="small" color={Palette.fgSubtle}>PNG, JPG, WebP or GIF · up to 2 MB</AppText>
-              <View style={styles.buttonRow}>
-                <Button title={busy === "avatar" ? "Uploading…" : avatar ? "Change" : "Upload"} kind="secondary" icon="image" disabled={busy === "avatar"} onPress={() => void pickAvatar()} />
-                {avatar ? <Button title="Remove" kind="secondary" disabled={busy === "avatar"} onPress={() => void removeAvatar()} /> : null}
+        <>
+          <Panel title="Photo">
+            <View style={styles.avatarRow}>
+              {avatar ? <Image source={{ uri: avatar, ...(avatarCookie ? { headers: { Cookie: avatarCookie } } : {}) }} contentFit="cover" style={styles.avatar} /> : <View style={styles.avatarFallback}><AppText variant="heading" color={Palette.onDark}>{(name || email || "?")[0]?.toUpperCase()}</AppText></View>}
+              <View style={styles.avatarText}>
+                <AppText variant="bodyStrong">Profile picture</AppText>
+                <AppText variant="small" color={Palette.fgSubtle}>PNG, JPG, WebP or GIF · up to 2 MB</AppText>
               </View>
             </View>
-          </View>
-          <TextField label="Full name" value={name} onChangeText={setNameDraft} maxLength={80} autoComplete="name" />
-          <Button title="Save name" loading={busy === "name"} disabled={!name.trim() || name.trim() === (account?.name ?? user?.name)} onPress={() => void saveName()} />
-          <TextField label="Username" value={username} onChangeText={setUsernameDraft} maxLength={30} autoCapitalize="none" autoCorrect={false} placeholder="ada.lovelace" />
-          <AppText variant="small" color={Palette.fgSubtle}>Use 3–30 letters, numbers, dots or underscores.</AppText>
-          <Button title="Save username" kind="secondary" loading={busy === "username"} onPress={() => void saveUsername()} />
-          <TextField label="Email" value={email} onChangeText={setEmailDraft} maxLength={254} autoCapitalize="none" keyboardType="email-address" autoComplete="email" />
-          <Button title="Change email" kind="secondary" loading={busy === "email"} onPress={() => void saveEmail()} />
-          <AppText variant="small" color={Palette.fgSubtle}>Sign-in method: {(account?.providers ?? []).map(providerName).join(", ") || "—"}</AppText>
-          <View style={styles.divider} />
-          <AppText variant="bodyStrong">Welcome gift card</AppText>
-          <AppText variant="small" color={Palette.fgSubtle}>Your account has been part of your workspace since {createdLabel}.</AppText>
-          <GiftCard ref={giftRef} name={name || email || "Your name"} />
-          <Button title="Share card" kind="secondary" icon="gift" loading={busy === "gift"} onPress={() => void shareGift()} />
-        </Card>
+            <View style={styles.buttonRow}>
+              <Button title={busy === "avatar" ? "Uploading…" : avatar ? "Change photo" : "Upload photo"} kind="secondary" icon="image" disabled={busy === "avatar"} onPress={() => void pickAvatar()} style={styles.flex} />
+              {avatar ? <Button title="Remove" kind="secondary" disabled={busy === "avatar"} onPress={() => void removeAvatar()} style={styles.flex} /> : null}
+            </View>
+          </Panel>
+          <Panel title="Details">
+            <Field>
+              <TextField label="Full name" value={name} onChangeText={setNameDraft} maxLength={80} autoComplete="name" />
+              <Button title="Save name" loading={busy === "name"} disabled={!name.trim() || name.trim() === (account?.name ?? user?.name)} onPress={() => void saveName()} />
+            </Field>
+            <Field>
+              <TextField label="Username" value={username} onChangeText={setUsernameDraft} maxLength={30} autoCapitalize="none" autoCorrect={false} placeholder="ada.lovelace" />
+              <AppText variant="small" color={Palette.fgSubtle} style={styles.hint}>Use 3–30 letters, numbers, dots or underscores.</AppText>
+              <Button title="Save username" kind="secondary" loading={busy === "username"} onPress={() => void saveUsername()} />
+            </Field>
+            <Field>
+              <TextField label="Email" value={email} onChangeText={setEmailDraft} maxLength={254} autoCapitalize="none" keyboardType="email-address" autoComplete="email" />
+              <Button title="Change email" kind="secondary" loading={busy === "email"} onPress={() => void saveEmail()} />
+              <AppText variant="small" color={Palette.fgSubtle} style={styles.hint}>Sign-in method: {(account?.providers ?? []).map(providerName).join(", ") || "—"}</AppText>
+            </Field>
+          </Panel>
+          <Panel title="Welcome gift card">
+            <AppText variant="small" color={Palette.fgSubtle}>Your account has been part of your workspace since {createdLabel}.</AppText>
+            <GiftCard ref={giftRef} name={name || email || "Your name"} />
+            <Button title="Share card" kind="secondary" icon="gift" loading={busy === "gift"} onPress={() => void shareGift()} />
+          </Panel>
+        </>
       ) : null}
 
       {section === "prefs" ? (
-        <Card tone="blue" style={styles.card}>
-          <SectionHeading title="Preferences" />
-          <ChoiceField label="Time format" value={prefs.timeFormat === "12h" ? "12-hour (9:46 pm)" : "24-hour (21:46)"} onPress={() => setChoice("timeFormat")} />
-          <ChoiceField label="Default category for new notes" value={prefs.defaultCategory} onPress={() => setChoice("defaultCategory")} />
-          <ChoiceField label="Week starts on" value={prefs.weekStart === "mon" ? "Monday" : "Sunday"} onPress={() => setChoice("weekStart")} />
-          <ChoiceField label="Open the To-do page on" value={prefs.todoView[0]!.toUpperCase() + prefs.todoView.slice(1)} onPress={() => setChoice("todoView")} />
-          {prefSaving ? <AppText variant="small" color={Palette.fgSubtle}>Saving…</AppText> : null}
-        </Card>
+        <Group title="Preferences">
+          <Row title="Time format" description="How times are shown across the app.">
+            <ValueButton label="Time format" value={prefs.timeFormat === "12h" ? "12-hour" : "24-hour"} onPress={() => setChoice("timeFormat")} />
+          </Row>
+          <Row title="Week starts on" description="Used by calendars and week views.">
+            <ValueButton label="Week starts on" value={prefs.weekStart === "mon" ? "Monday" : "Sunday"} onPress={() => setChoice("weekStart")} />
+          </Row>
+          <Row title="Default note category" description="Where a new note goes until you pick another.">
+            <ValueButton label="Default note category" value={prefs.defaultCategory} onPress={() => setChoice("defaultCategory")} />
+          </Row>
+          <Row title="Open To-do on" description="The view you land on when you open To-do." last>
+            <ValueButton label="Open To-do on" value={prefs.todoView[0]!.toUpperCase() + prefs.todoView.slice(1)} onPress={() => setChoice("todoView")} />
+          </Row>
+        </Group>
       ) : null}
+      {section === "prefs" && prefSaving ? <AppText variant="small" color={Palette.fgSubtle}>Saving…</AppText> : null}
+      {section === "prefs" ? <HomeAssistantPrefs /> : null}
 
-      {section === "appearance" ? (
-        <Card tone="violet" style={styles.card}>
-          <SectionHeading title="Appearance" />
-          <AppText variant="bodyStrong">Density</AppText>
-          <AppText variant="small" color={Palette.fgSubtle}>Compact fits more tasks, notes and entries on screen.</AppText>
-          <View style={styles.segment}>
-            {(["comfortable", "compact"] as const).map((density) => (
-              <Pressable key={density} accessibilityRole="radio" accessibilityState={{ selected: prefs.density === density }} onPress={() => void savePreferences({ density })} style={[styles.segmentItem, prefs.density === density ? styles.segmentItemActive : null]}>
-                <AppText variant="small" color={prefs.density === density ? Palette.fg : Palette.fgMuted}>{density === "comfortable" ? "Comfortable" : "Compact"}</AppText>
-              </Pressable>
-            ))}
-          </View>
-          <View style={styles.switchRow}>
-            <View style={styles.flex}>
-              <AppText variant="bodyStrong">Reduce motion</AppText>
-              <AppText variant="small" color={Palette.fgSubtle}>Turns off animations and transitions where supported.</AppText>
-            </View>
-            <Switch value={prefs.reduceMotion} onValueChange={(reduceMotion) => void savePreferences({ reduceMotion })} trackColor={{ false: Palette.lineStrong, true: Tints.green.fg }} thumbColor={Palette.surface} />
-          </View>
-        </Card>
-      ) : null}
-
+      {section === "appearance" ? <AppearancePrefs /> : null}
+      {section === "notes" ? <NotesPrefs /> : null}
+      {section === "todo" ? <TodoPrefs /> : null}
+      {section === "email" ? <EmailPrefs /> : null}
+      {section === "labels" ? <LabelsPrefs /> : null}
+      {section === "health" ? <HealthPrefs /> : null}
+      {section === "skills" ? <SkillsPage /> : null}
+      {section === "keys" ? <KeysPage /> : null}
+      {section === "zoho" ? <ZohoPage /> : null}
+      {section === "imports" ? <ImportsPage /> : null}
+      {section === "invites" ? <InvitesPage /> : null}
+      {section === "google" ? <GooglePage /> : null}
+      {section === "microsoft" ? <MicrosoftPage /> : null}
+      {section === "integrations" ? <OtherAppsPage /> : null}
+      {section === "youdo" ? <YouDoPage /> : null}
+      {section === "apps" ? <GetAppsPage /> : null}
       {section === "notifications" ? <NotificationSettings /> : null}
 
       {section === "billing" ? <BillingSection /> : null}
 
       {section === "security" ? (
-        <Card tone="mint" style={styles.card}>
-          <SectionHeading title="Security" />
+        <>
           {account?.hasPassword ? (
-            <>
+            <Panel title="Password">
               <TextField label="Current password" value={oldPassword} onChangeText={setOldPassword} password autoComplete="current-password" />
               <TextField label="New password" value={newPassword} onChangeText={setNewPassword} password autoComplete="new-password" placeholder="At least 8 characters" />
               <TextField label="Confirm password" value={confirmPassword} onChangeText={setConfirmPassword} password autoComplete="new-password" />
               <Button title="Update password" loading={busy === "password"} disabled={!newPassword} onPress={() => void updatePassword()} />
-            </>
-          ) : <AppText variant="body" color={Palette.fgMuted}>You sign in with {(account?.providers ?? []).map(providerName).join(", ")}; there’s no password to manage here.</AppText>}
-          <View style={styles.divider} />
-          <Fact label="Last sign-in" value={account?.lastSignIn ? toDate(account.lastSignIn).toLocaleString() : "—"} />
-          <Fact label="Account created" value={createdLabel} />
-          <Fact label="Sign-in methods" value={(account?.providers ?? []).map(providerName).join(", ") || "—"} />
-          <Button title="Sign out other devices" kind="secondary" loading={busy === "others"} onPress={() => void signOutOthers()} />
-          <Button title="Sign out everywhere" kind="secondary" icon="right-from-bracket" loading={busy === "global"} onPress={() => setGlobalSignOutReview(true)} />
-        </Card>
+            </Panel>
+          ) : (
+            <Panel title="Password">
+              <AppText variant="small" color={Palette.fgMuted}>You sign in with {(account?.providers ?? []).map(providerName).join(", ")}; there’s no password to manage here.</AppText>
+            </Panel>
+          )}
+          <Group title="Account activity">
+            <Row title="Last sign-in" last={false}>
+              <AppText variant="small" color={Palette.fgMuted}>{account?.lastSignIn ? toDate(account.lastSignIn).toLocaleString() : "—"}</AppText>
+            </Row>
+            <Row title="Account created">
+              <AppText variant="small" color={Palette.fgMuted}>{createdLabel}</AppText>
+            </Row>
+            <Row title="Sign-in methods" last>
+              <AppText variant="small" color={Palette.fgMuted}>{(account?.providers ?? []).map(providerName).join(", ") || "—"}</AppText>
+            </Row>
+          </Group>
+          <Panel title="Devices">
+            <Button title="Sign out other devices" kind="secondary" loading={busy === "others"} onPress={() => void signOutOthers()} />
+            <Button title="Sign out everywhere" kind="secondary" icon="right-from-bracket" loading={busy === "global"} onPress={() => setGlobalSignOutReview(true)} />
+          </Panel>
+        </>
       ) : null}
+      {section === "security" ? <PasskeysSection /> : null}
 
       {section === "data" ? (
-        <Card tone="amber" style={styles.card}>
-          <SectionHeading title="Your data" />
-          <AppText variant="body" color={Palette.fgMuted}>Share everything you’ve saved — tasks, journal, notes and chats — as JSON.</AppText>
+        <Panel title="Download a copy">
+          <AppText variant="small" color={Palette.fgSubtle}>Share everything you’ve saved — tasks, journal, notes and chats — as JSON, or pick one kind.</AppText>
           <Button title="Everything (JSON)" kind="secondary" icon="download" loading={busy === "export"} onPress={() => void exportEverything()} />
           <Button title="Tasks (CSV)" kind="secondary" icon="table" loading={busy === "csv"} onPress={() => void exportTasksCsv()} />
           <Button title="Notes (Markdown)" kind="secondary" icon="file-lines" loading={busy === "markdown"} onPress={() => void exportNotesMarkdown()} />
-        </Card>
+        </Panel>
+      ) : null}
+
+      {section === "legal" ? (
+        <View style={styles.rows}>
+          {[
+            ["Terms of service", "/terms"],
+            ["Privacy & security", "/privacy-security"],
+            ["Refund policy", "/refund-policy"],
+          ].map(([label, path], index) => (
+            <Pressable
+              key={path}
+              accessibilityRole="link"
+              accessibilityLabel={label}
+              onPress={() => openWeb(`${mobileEnv.apiBaseUrl}${path}`, { title: label })}
+              style={({ pressed }) => [styles.row, index > 0 ? styles.rowDivider : null, pressed ? styles.rowPressed : null]}
+            >
+              <AppText variant="body" style={styles.flex}>{label}</AppText>
+              <Icon name="arrow-up-right-from-square" size={13} color={Palette.fgFaint} />
+            </Pressable>
+          ))}
+        </View>
       ) : null}
 
       {section === "about" ? (
-        <Card tone="blue" style={styles.card}>
-          <SectionHeading title="About and updates" />
-          <Fact label="Version" value={update.version} />
-          {update.supported ? (
-            <>
-              <Button
-                title={update.state.phase === "checking" ? "Checking…" : "Check for updates"}
-                kind="secondary"
-                icon="rotate"
-                loading={update.state.phase === "checking"}
-                onPress={() => void update.check()}
-              />
-              {update.state.phase === "upToDate" ? <Banner kind="success">You’re on the latest version.</Banner> : null}
-              {update.state.phase === "error" && !update.state.release ? <Banner kind="error">{update.state.message}</Banner> : null}
-            </>
-          ) : (
-            <AppText variant="small" color={Palette.fgSubtle}>Updates for this app come from the store on your phone.</AppText>
-          )}
-        </Card>
+        <>
+          <Group title="Version">
+            <Row title="Naazhi" last>
+              <AppText variant="small" color={Palette.fgMuted}>{update.version}</AppText>
+            </Row>
+          </Group>
+          <Panel title="Updates">
+            {update.supported ? (
+              <>
+                <Button
+                  title={update.state.phase === "checking" ? "Checking…" : "Check for updates"}
+                  kind="secondary"
+                  icon="rotate"
+                  loading={update.state.phase === "checking"}
+                  onPress={() => void update.check()}
+                />
+                {update.state.phase === "upToDate" ? <Banner kind="success">You’re on the latest version.</Banner> : null}
+                {update.state.phase === "error" && !update.state.release ? <Banner kind="error">{update.state.message}</Banner> : null}
+              </>
+            ) : (
+              <AppText variant="small" color={Palette.fgSubtle}>Updates for this app come from the store on your phone.</AppText>
+            )}
+          </Panel>
+        </>
       ) : null}
 
       {section === "danger" ? (
         <>
-          <Card tone="gold" style={styles.card}>
-            <SectionHeading title="Reset workspace" />
-            <AppText variant="body" color={Palette.fgMuted}>Permanently delete your notes, tasks, lists, journal entries, chats and attached files. Your account stays.</AppText>
+          <Panel title="Reset workspace">
+            <AppText variant="small" color={Palette.fgSubtle}>Permanently delete your notes, tasks, lists, journal entries, chats and attached files. Your account stays.</AppText>
             <TextField label="Type reset to confirm" value={resetConfirmation} onChangeText={setResetConfirmation} autoCapitalize="none" autoCorrect={false} />
             <Button title="Delete all my content" kind="danger" icon="broom" loading={busy === "reset-workspace"} disabled={resetConfirmation.trim().toLowerCase() !== "reset"} onPress={() => setDangerReview({ action: "reset-workspace", confirmation: resetConfirmation })} />
-          </Card>
-          <Card tone="clay" style={styles.card}>
-            <SectionHeading title="Delete account" />
-            <AppText variant="body" color={Palette.fgMuted}>Permanently delete your account and everything in it. Export your data first if you want a copy.</AppText>
+          </Panel>
+          <Panel title="Delete account">
+            <AppText variant="small" color={Palette.fgSubtle}>Permanently delete your account and everything in it. Export your data first if you want a copy.</AppText>
             <TextField label={`Type ${account?.email ?? user?.email ?? "your email"} to confirm`} value={deleteConfirmation} onChangeText={setDeleteConfirmation} autoCapitalize="none" autoCorrect={false} />
             <Button title="Delete my account" kind="danger" icon="trash" loading={busy === "delete-account"} disabled={deleteConfirmation.trim().toLowerCase() !== (account?.email ?? user?.email ?? "").toLowerCase()} onPress={() => setDangerReview({ action: "delete-account", confirmation: deleteConfirmation })} />
-          </Card>
+          </Panel>
         </>
       ) : null}
 
@@ -573,25 +638,6 @@ function providerName(provider: string) {
   return provider === "email" ? "Email & password" : provider ? provider[0]!.toUpperCase() + provider.slice(1) : "";
 }
 
-function SectionHeading({ title }: { title: string }) {
-  return <AppText variant="heading" accessibilityRole="header">{title}</AppText>;
-}
-
-function Fact({ label, value }: { label: string; value: string }) {
-  return <View style={styles.fact}><AppText variant="small" color={Palette.fgSubtle}>{label}</AppText><AppText variant="small" color={Palette.fg} style={styles.factValue}>{value}</AppText></View>;
-}
-
-function ChoiceField({ label, value, onPress }: { label: string; value: string; onPress: () => void }) {
-  return (
-    <View style={styles.choiceWrap}>
-      <AppText variant="small" color={Palette.fgMuted}>{label}</AppText>
-      <Pressable accessibilityRole="button" accessibilityLabel={`${label}: ${value}`} onPress={onPress} style={styles.choiceButton}>
-        <AppText variant="body" style={styles.flex}>{value}</AppText><Icon name="chevron-down" size={14} color={Palette.fgMuted} />
-      </Pressable>
-    </View>
-  );
-}
-
 function ChoiceSheet({ type, onClose, onChoose }: { type: "timeFormat" | "defaultCategory" | "weekStart" | "todoView" | null; onClose: () => void; onChoose: (value: string) => void }) {
   const values = type === "timeFormat" ? [["12h", "12-hour (9:46 pm)"], ["24h", "24-hour (21:46)"]] :
     type === "defaultCategory" ? NOTE_CATEGORIES.map((value) => [value, value]) :
@@ -608,31 +654,27 @@ function ChoiceSheet({ type, onClose, onChoose }: { type: "timeFormat" | "defaul
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  list: { padding: 0, overflow: "hidden" },
-  row: { minHeight: 56, flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 16 },
+  page: { gap: Space.xl },
+  hint: { marginTop: -2 },
+  groups: { gap: 24 },
+  group: { gap: 10 },
+  rows: { borderWidth: 1, borderColor: Palette.line, borderRadius: Radius.r3, overflow: "hidden", backgroundColor: Palette.surface },
+  close: { minHeight: 36, paddingHorizontal: 8 },
+  row: { minHeight: 60, flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 14, paddingVertical: 10 },
   rowDivider: { borderTopWidth: 1, borderTopColor: Palette.line },
-  rowPressed: { backgroundColor: Palette.surfaceSunken },
-  rowIcon: { width: 32, height: 32, borderRadius: Radius.pill, alignItems: "center", justifyContent: "center", backgroundColor: Palette.surfaceSunken },
+  rowPressed: { backgroundColor: Palette.surfaceMuted },
+  rowIcon: { width: 34, height: 34, borderRadius: Radius.r1, alignItems: "center", justifyContent: "center", backgroundColor: Palette.surfaceMuted },
   rowIconDanger: { backgroundColor: Tints.clay.bg },
   back: { minWidth: 80, flexDirection: "row", alignItems: "center", gap: 6 },
   sectionTitle: { flex: 1, textAlign: "center" },
   headerSpacer: { minWidth: 80 },
-  card: { gap: 12 },
   avatarRow: { flexDirection: "row", alignItems: "center", gap: 14 },
+  avatarText: { flex: 1, gap: 2 },
   avatar: { width: 64, height: 64, borderRadius: Radius.pill, backgroundColor: Palette.surfaceSunken },
   avatarFallback: { width: 64, height: 64, borderRadius: Radius.pill, backgroundColor: Palette.fillDark, alignItems: "center", justifyContent: "center" },
   flex: { flex: 1 },
-  buttonRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
-  divider: { height: 1, backgroundColor: Palette.line, marginVertical: 4 },
-  segment: { flexDirection: "row", gap: 6, padding: 4, borderRadius: Radius.pill, backgroundColor: Palette.surfaceSunken },
-  segmentItem: { flex: 1, alignItems: "center", justifyContent: "center", minHeight: 40, borderRadius: Radius.pill },
-  segmentItemActive: { backgroundColor: Palette.surface },
-  switchRow: { flexDirection: "row", alignItems: "center", gap: 14, marginTop: 8 },
-  fact: { flexDirection: "row", justifyContent: "space-between", gap: 16 },
-  factValue: { flexShrink: 1, textAlign: "right" },
-  choiceWrap: { gap: 6 },
-  choiceButton: { minHeight: 50, flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14, borderRadius: Radius.r2, borderWidth: 1, borderColor: Palette.line, backgroundColor: Palette.glassHi },
+  buttonRow: { flexDirection: "row", gap: 8 },
   option: { minHeight: 50, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 },
-});
+}));

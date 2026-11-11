@@ -1,11 +1,12 @@
 import { ROLE_HELP, ROLE_LABEL, personName } from "@untitled/logic";
 import type { SharedJournalInvite } from "@untitled/types";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
 import { PersonBadge } from "./PersonBadge";
 import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { themedStyles } from "@/constants/theme";
 
 /** An invitation to join someone's journal, with the two answers. */
 export function InviteCard({
@@ -18,7 +19,7 @@ export function InviteCard({
   onAnswer: (action: "accept" | "decline") => void;
 }) {
   return (
-    <Card tone="amber" style={styles.card}>
+    <Card style={styles.card}>
       <View style={styles.head}>
         <PersonBadge person={invite.inviter} />
         <View style={styles.text}>
@@ -39,10 +40,10 @@ export function InviteCard({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   card: { gap: 12 },
   head: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
   text: { flex: 1, gap: 2 },
   actions: { flexDirection: "row", gap: 10 },
   action: { flex: 1 },
-});
+}));

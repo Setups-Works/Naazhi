@@ -2,7 +2,7 @@ import { formatTokens, needsCheckout, priceLine } from "@untitled/logic";
 import type { BillingPlan, MyBilling } from "@untitled/types";
 import { router } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
 import { AppText } from "@/components/ui/AppText";
 import { Banner } from "@/components/ui/Banner";
@@ -11,7 +11,7 @@ import { Card } from "@/components/ui/Card";
 import { DetailBar } from "@/components/ui/DetailBar";
 import { Icon } from "@/components/ui/Icon";
 import { Screen } from "@/components/ui/Screen";
-import { Font, Palette, Radius } from "@/constants/theme";
+import { Font, Palette, Radius, themedStyles } from "@/constants/theme";
 import { PlanCard } from "./PlanCard";
 import { usePlanPicker } from "./checkout";
 import { useBilling } from "./queries";
@@ -84,7 +84,7 @@ export function PricingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   flex: { flex: 1 },
   hero: { gap: 8 },
   compare: { gap: 14 },
@@ -93,4 +93,4 @@ const styles = StyleSheet.create({
   planName: { flexShrink: 0 },
   value: { flexShrink: 1, textAlign: "right", ...Font.sansMedium },
   note: { flexDirection: "row", gap: 8, alignItems: "flex-start", paddingHorizontal: 4, borderRadius: Radius.r1 },
-});
+}));

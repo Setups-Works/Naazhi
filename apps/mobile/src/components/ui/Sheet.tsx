@@ -14,7 +14,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-cont
 import { useEffect, useState } from "react";
 
 import { AppText } from "./AppText";
-import { DialogWidth, Palette, Radius, Shadow } from "@/constants/theme";
+import { DialogWidth, Palette, Radius, Shadow, themedStyles } from "@/constants/theme";
 import { useRuntimePrefs } from "@/lib/preferences";
 
 type Props = { visible: boolean; onClose: () => void; title?: string; children: ReactNode; scroll?: boolean };
@@ -105,7 +105,7 @@ function Body({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   root: { flex: 1, justifyContent: "flex-end" },
 
   scrimBase: { backgroundColor: Palette.scrimLight },
@@ -140,4 +140,4 @@ const styles = StyleSheet.create({
   title: { marginBottom: 12 },
   content: { flexGrow: 0 },
   contentChildren: { gap: 12 },
-});
+}));

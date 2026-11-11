@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { pickFiles, type PendingFile } from "./files";
 import type { AiProvider } from "./types";
@@ -16,7 +16,7 @@ import {
   ChatDictationButton,
   ChatSendButton,
 } from "./kit";
-import { Palette, Radius } from "@/constants/theme";
+import { Palette, Radius, themedStyles } from "@/constants/theme";
 
 type Props = {
   busy: boolean;
@@ -129,10 +129,10 @@ export function Composer({ busy, providers, provider, onProvider, onSend, onErro
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   iconBtn: { width: 38, height: 38, borderRadius: Radius.pill, alignItems: "center", justifyContent: "center" },
   model: { flexDirection: "row", alignItems: "center", gap: 6, minHeight: 38, paddingHorizontal: 10 },
   spacer: { flex: 1 },
   option: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 56, paddingHorizontal: 14, borderRadius: Radius.r2 },
   optionText: { flex: 1, gap: 2 },
-});
+}));

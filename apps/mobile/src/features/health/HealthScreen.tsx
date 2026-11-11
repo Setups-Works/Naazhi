@@ -19,7 +19,7 @@ import {
 import type { Tone } from "@untitled/types";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
-import { StyleSheet, Switch, View, useWindowDimensions } from "react-native";
+import { Switch, View, useWindowDimensions } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 
 import { askChat } from "../chat/handoff";
@@ -32,9 +32,10 @@ import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { Screen, type ScreenEdges } from "@/components/ui/Screen";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/States";
-import { Palette, Radius, Space, Tints } from "@/constants/theme";
+import { Palette, Radius, Space, Tints, themedStyles, Neutral } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { addDays, isoDate } from "@/lib/dates";
 
@@ -91,12 +92,7 @@ export function HealthScreen({ edges }: { edges?: ScreenEdges }) {
 
   return (
     <Screen edges={edges} onRefresh={refresh} refreshing={conn.syncing} contentStyle={wide ? styles.wide : undefined}>
-      <View style={styles.head}>
-        <AppText variant="display">Health</AppText>
-        <AppText variant="small">
-          {latest ? `Synced from ${SOURCE_LABEL[latest.source]}` : "Activity, sleep and heart rate from your phone"}
-        </AppText>
-      </View>
+      <PageHeader title="Health" subtitle={latest ? `Synced from ${SOURCE_LABEL[latest.source]}` : "Activity, sleep and heart rate from your phone"} />
 
       {conn.status === "checking" || (daysQ.isPending && !hasData) ? (
         <LoadingState />
@@ -145,7 +141,7 @@ export function HealthScreen({ edges }: { edges?: ScreenEdges }) {
           ) : (
             <>
               <View style={wide ? styles.row : styles.stack}>
-                <Card tone="blue" style={wide ? styles.ringWide : undefined}>
+                <Card style={wide ? styles.ringWide : undefined}>
                   <Ring
                     fraction={healthRatio(sum.steps ?? 0, goal)}
                     title={multi ? `Steps, ${meta.label}` : "Steps"}
@@ -171,7 +167,7 @@ export function HealthScreen({ edges }: { edges?: ScreenEdges }) {
                 </Card>
                 {sum.recorded === 0 ? (
                   // Full width on its own: inside the wrapping tile row it shrank to its text and sat off to the left.
-                  <Card tone="mint" style={wide ? styles.tiles : styles.full}>
+                  <Card style={wide ? styles.tiles : styles.full}>
                     <EmptyState
                       icon="calendar-day"
                       title={`Nothing recorded ${multi ? "in this period" : meta.label === "Today" || meta.label === "Yesterday" ? meta.label.toLowerCase() : `on ${meta.label}`}`}
@@ -328,20 +324,20 @@ function Tile({
 }) {
   return (
     <View style={styles.tileCell}>
-      <Card tone={tone} onPress={onPress} accessibilityLabel={`${label}, ${value ?? "no data"}. Open details`}>
+      <Card onPress={onPress} accessibilityLabel={`${label}, ${value ?? "no data"}. Open details`}>
         <View style={styles.tile}>
           <View style={styles.badge}>
-            <Icon name={icon} size={17} color={Tints[tone].fg} />
+            <Icon name={icon} size={17} color={Neutral.fg} />
           </View>
           <View style={styles.flex}>
-            <AppText variant="small" color={Tints[tone].fg}>
+            <AppText variant="small" color={Neutral.fg}>
               {label}
             </AppText>
-            <AppText variant="title" color={Tints[tone].fg} numberOfLines={1} adjustsFontSizeToFit>
+            <AppText variant="title" color={Neutral.fg} numberOfLines={1} adjustsFontSizeToFit>
               {value ?? "No data"}
             </AppText>
             {note ? (
-              <AppText variant="small" color={Tints[tone].fg}>
+              <AppText variant="small" color={Neutral.fg}>
                 {note}
               </AppText>
             ) : null}
@@ -381,7 +377,7 @@ function Ring({ fraction, title, detail }: { fraction: number; title: string; de
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   flex: { flex: 1 },
   head: { gap: Space.xs, marginBottom: Space.lg },
   wide: { maxWidth: WIDE_COLUMN, width: "100%", alignSelf: "center" },
@@ -411,4 +407,4 @@ const styles = StyleSheet.create({
   actions: { gap: Space.sm, marginTop: Space.sm },
   actionRow: { flexDirection: "row", flexWrap: "wrap", gap: Space.sm },
   actionBtn: { flexGrow: 1 },
-});
+}));

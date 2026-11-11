@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { AppText } from "./AppText";
-import { Palette } from "@/constants/theme";
+import { Palette, themedStyles } from "@/constants/theme";
 
 /** Top row of a detail page: Close on the left, a small label in the middle, and an action (usually Edit) on the right. */
 export function DetailBar({
@@ -40,8 +40,8 @@ export function BarButton({ title, onPress }: { title: string; onPress: () => vo
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   bar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", minHeight: 36 },
   side: { minWidth: 64 },
   right: { alignItems: "flex-end" },
-});
+}));

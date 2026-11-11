@@ -1,5 +1,6 @@
+import { BrandMark } from "@/components/ui/BrandMark";
 import { useEffect, useRef, useState } from "react";
-import { Keyboard, Platform, Pressable, StyleSheet, View } from "react-native";
+import { Keyboard, Platform, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { parseChatActions, type ChatProposal, type ShowItem } from "@untitled/validation";
 
@@ -16,7 +17,7 @@ import { AttachmentGallery } from "@/components/ui/AttachmentGallery";
 import { Markdown } from "@/components/ui/Markdown";
 import { Icon } from "@/components/ui/Icon";
 import { ErrorState, LoadingState } from "@/components/ui/States";
-import { Palette, Radius } from "@/constants/theme";
+import { Palette, Radius, themedStyles } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { greeting } from "@/lib/dates";
 import { useAppState } from "@/providers/AppState";
@@ -60,7 +61,7 @@ export function Conversation({
     };
   }, []);
   // The floating tab bar covers the bottom of the screen when keyboard is not visible.
-  const lift = !keyboard ? insets.bottom + (Platform.OS === "android" ? 78 : 10) : 8;
+  const lift = !keyboard ? insets.bottom + 78 : 8;
 
   // Leaving the screen stops any reply still streaming.
   useEffect(() => () => abort.current?.abort(), []);
@@ -169,6 +170,7 @@ export function Conversation({
           ListEmptyComponent={
             streaming === null ? (
               <View style={styles.hello}>
+                <BrandMark size={44} on="page" />
                 <AppText variant="title" align="center">
                   {greeting()}
                   {user ? `, ${user.name.split(" ")[0]}` : ""}
@@ -177,12 +179,12 @@ export function Conversation({
                   What’s on your mind?
                 </AppText>
               </View>
-            ) : null
+            ) : undefined
           }
           renderItem={({ item }) => (
             <Bubble role={item.role} text={item.body} messageId={item.id} chatId={chatId} attachments={item.attachments} at={item.created_at} />
           )}
-          ListFooterComponent={streaming !== null ? <Bubble role="assistant" text={streaming || "…"} /> : null}
+          ListFooterComponent={streaming !== null ? <Bubble role="assistant" text={streaming || "…"} /> : undefined}
         />
       )}
     </ChatLayout>
@@ -219,7 +221,7 @@ function Bubble({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   stopRow: { alignItems: "center", paddingBottom: 4 },
   stop: {
     flexDirection: "row",
@@ -232,4 +234,4 @@ const styles = StyleSheet.create({
   },
   messages: { padding: 20, gap: 10, flexGrow: 1 },
   hello: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 80 },
-});
+}));

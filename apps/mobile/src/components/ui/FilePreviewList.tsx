@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { AppText } from "./AppText";
 import { AudioAttachment } from "./AttachmentGallery";
@@ -8,7 +8,7 @@ import { Button } from "./Button";
 import { Icon, type IconName } from "./Icon";
 import { Sheet } from "./Sheet";
 import type { PendingFile } from "@/features/chat/files";
-import { Font, Palette, Radius, Space } from "@/constants/theme";
+import { Font, Palette, Radius, Space, themedStyles } from "@/constants/theme";
 
 const size = (n: number) => (n < 1024 ? `${n} B` : n < 1024 * 1024 ? `${Math.round(n / 1024)} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`);
 const kindOf = (f: PendingFile) =>
@@ -87,7 +87,7 @@ export function FilePreviewList({ files, onRemove, label = "Attachments to send"
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   list: { gap: Space.sm },
   // The same card as the web: white, hairline ring, 8 px inside, 12 px between thumbnail, text and the remove button.
   card: { flexDirection: "row", alignItems: "center", gap: Space.md, padding: Space.sm, paddingRight: 10, maxWidth: 460, width: "100%", borderRadius: Radius.r3, backgroundColor: Palette.surface, borderWidth: 1, borderColor: Palette.line },
@@ -103,4 +103,4 @@ const styles = StyleSheet.create({
   preview: { gap: Space.md },
   previewImage: { width: "100%", aspectRatio: 1, borderRadius: Radius.r3, backgroundColor: Palette.surfaceSunken },
   previewActions: { flexDirection: "row", justifyContent: "flex-end", gap: Space.sm },
-});
+}));

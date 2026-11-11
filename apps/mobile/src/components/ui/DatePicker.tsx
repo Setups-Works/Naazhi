@@ -1,12 +1,12 @@
 import { addDays, fromIso, isoDate, monthGrid } from "@untitled/logic";
 import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { AppText } from "./AppText";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
 import { Sheet } from "./Sheet";
-import { Palette, Radius } from "@/constants/theme";
+import { Palette, Radius, themedStyles } from "@/constants/theme";
 import { useAppState } from "@/providers/AppState";
 
 /** The app's own month calendar (the web never uses native date inputs either): pick a day, jump to today, or clear. */
@@ -156,7 +156,7 @@ export function DateField({ label, value, onChange, clearable = true }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   wrap: { gap: 6 },
   label: { marginLeft: 4 },
   box: {
@@ -182,4 +182,4 @@ const styles = StyleSheet.create({
   dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: Palette.greenFg, marginTop: 1 },
   actions: { flexDirection: "row", gap: 8, marginTop: 12 },
   flex: { flex: 1, paddingHorizontal: 8 },
-});
+}));

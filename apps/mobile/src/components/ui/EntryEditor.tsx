@@ -15,7 +15,7 @@ import { Icon, type IconName } from "./Icon";
 import { RecordButton } from "./RecordButton";
 import { Sheet } from "./Sheet";
 import { TextField } from "./TextField";
-import { Font, Palette, Radius, Space, Tints } from "@/constants/theme";
+import { Font, Palette, Radius, Space, Tints, themedStyles } from "@/constants/theme";
 import { isoDate } from "@/lib/dates";
 
 const DOT_GAP = 21;
@@ -250,7 +250,7 @@ export function EntryEditor(p: Props) {
           keyboardType="url"
           error={linkUrl && !isLinkAddress(linkUrl) ? "Use a web address that starts with https://, or one of the shortcuts below." : null}
         />
-        <AppText variant="label">LINK TO THIS APP</AppText>
+        <AppText variant="label">Link to this app</AppText>
         <View style={styles.shortcuts}>
           {appLinkShortcuts(isoDate()).map((shortcut) => (
             <Button
@@ -289,7 +289,7 @@ function RoundButton({ icon, label, onPress }: { icon: IconName; label: string; 
 // Round buttons use an exact half-size radius: Android draws a filled background square when the radius is far larger than the view.
 const ROUND = 52;
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   flex: { flex: 1 },
   // A horizontal ScrollView grows to fill a column by default; these rows must stay as tall as their content.
   row: { flexGrow: 0 },
@@ -331,4 +331,4 @@ const styles = StyleSheet.create({
   toolbar: { gap: Space.md, paddingHorizontal: Space.lg, paddingVertical: Space.md },
   group: { flexDirection: "row", gap: Space.xs, backgroundColor: Palette.surfaceSunken, borderRadius: Radius.r3, padding: Space.xs },
   tool: { width: 48, height: 48, borderRadius: Radius.r2, alignItems: "center", justifyContent: "center" },
-});
+}));

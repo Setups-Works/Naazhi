@@ -1,8 +1,8 @@
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
 import { AppText } from "./AppText";
 import { Icon, type IconName } from "./Icon";
-import { Palette, Radius, Space } from "@/constants/theme";
+import { Palette, Radius, Space, themedStyles } from "@/constants/theme";
 import { GlassPill } from "./GlassPill";
 
 /**
@@ -65,7 +65,7 @@ function Round({ icon, label, onPress, disabled }: { icon: IconName; label: stri
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   row: { flexDirection: "row", alignItems: "center", gap: Space.sm },
   round: {
     width: 44,
@@ -93,4 +93,4 @@ const styles = StyleSheet.create({
   },
   text: { alignItems: "center" },
   disabled: { opacity: 0.35 },
-});
+}));

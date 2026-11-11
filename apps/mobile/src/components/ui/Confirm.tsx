@@ -17,7 +17,7 @@ import { AppText } from "./AppText";
 import { Button } from "./Button";
 import { DeleteSheet } from "./DeleteSheet";
 import { Icon } from "./Icon";
-import { Font, Palette, Radius, Shadow, Tints } from "@/constants/theme";
+import { Font, Palette, Radius, Shadow, Tints, themedStyles } from "@/constants/theme";
 import { useRuntimePrefs } from "@/lib/preferences";
 
 /*
@@ -336,7 +336,7 @@ export function usePrompt() {
 
 // ---------- styles ----------
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   root: {
     flex: 1,
     justifyContent: "flex-end",
@@ -403,4 +403,4 @@ const styles = StyleSheet.create({
   // Full-width stacked for mobile thumb reach (column-reverse = confirm on top, matching destructive-last convention).
   actions: { flexDirection: "column-reverse", gap: 10, marginTop: 8 },
   btn: { alignSelf: "stretch" },
-});
+}));

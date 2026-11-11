@@ -1,8 +1,8 @@
 import type { Tone } from "@untitled/types";
-import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from "react-native";
+import { Pressable, type StyleProp, type ViewStyle } from "react-native";
 
 import { GlassSurface } from "./GlassSurface";
-import { Radius } from "@/constants/theme";
+import { Radius, themedStyles } from "@/constants/theme";
 import { useRuntimePrefs } from "@/lib/preferences";
 
 type Props = {
@@ -38,8 +38,8 @@ export function Card({ children, tone, onPress, style, liquidTint, accessibility
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   card: { padding: 16 },
   cardCompact: { padding: 10 },
   press: { borderRadius: Radius.r3 },
-});
+}));

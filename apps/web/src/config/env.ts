@@ -71,6 +71,12 @@ export function serverEnv() {
       .map((origin) => origin.trim())
       .filter(Boolean),
     google: { clientId: optional("GOOGLE_CLIENT_ID"), clientSecret: optional("GOOGLE_CLIENT_SECRET") },
+    /** The phone app's identity for passkeys. Apple Team ID (iOS) and the SHA-256 fingerprint(s) of the Android signing key, comma separated. */
+    appleTeamId: optional("APPLE_TEAM_ID"),
+    androidCertSha256: (optional("ANDROID_CERT_SHA256") ?? "")
+      .split(",")
+      .map((v) => v.trim().toUpperCase())
+      .filter(Boolean),
     adminEmails: (optional("ADMIN_EMAILS") ?? "")
       .split(",")
       .map((e) => e.trim().toLowerCase())

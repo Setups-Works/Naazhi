@@ -3,17 +3,19 @@ import { useWidgetSync } from "@/features/widgets";
 import { Geist_400Regular, Geist_500Medium, Geist_600SemiBold } from "@expo-google-fonts/geist";
 import { InstrumentSerif_400Regular, InstrumentSerif_400Regular_Italic } from "@expo-google-fonts/instrument-serif";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { router, Stack, useGlobalSearchParams, usePathname } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, View } from "react-native";
+import { useEffect, useState } from "react";
+import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AnimatedSplash } from "@/components/AnimatedSplash";
 import { AppText } from "@/components/ui/AppText";
 import { Screen } from "@/components/ui/Screen";
-import { Palette } from "@/constants/theme";
+import { WebSheetHost } from "@/components/ui/WebSheetHost";
+import { Palette, themedStyles, useThemeVersion, watchSystemScheme } from "@/constants/theme";
 import { mobileEnv } from "@/config/env";
 import { UpdateProvider } from "@/features/updates/UpdateProvider";
 import { AppStateProvider, useAppState } from "@/providers/AppState";
@@ -32,10 +34,20 @@ export default function RootLayout() {
   });
   const fontsReady = fontsLoaded || fontError !== null;
 
+  // Changing scheme or accent re-draws every screen with the new colours by remounting the navigator (data and the session stay, they live
+  // above it). The screen the person was on is remembered here and opened again afterwards.
+  const version = useThemeVersion();
+  const pathname = usePathname();
+  const params = useGlobalSearchParams<Record<string, string>>();
+  useEffect(() => {
+    lastRoute = { pathname, params };
+  }, [pathname, params]);
+  useEffect(() => watchSystemScheme(), []);
+
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <StatusBar style="dark" />
+        <StatusBar style={Palette.dark ? "light" : "dark"} />
         {!mobileEnv.apiBaseUrl ? (
           <>
             <SetupNotice />
@@ -43,7 +55,8 @@ export default function RootLayout() {
           </>
         ) : (
           <AppStateProvider>
-            <UpdateProvider>{fontsReady ? <Routes /> : null}</UpdateProvider>
+            <WebSheetHost />
+            <UpdateProvider>{fontsReady ? <Routes key={version} fresh={version > 0} /> : null}</UpdateProvider>
             <SplashGate fontsReady={fontsReady} />
           </AppStateProvider>
         )}
@@ -59,12 +72,34 @@ function SplashGate({ fontsReady }: { fontsReady: boolean }) {
 }
 
 /** Declarative guards: a screen in a group whose `guard` is false cannot be reached, and the router falls back to `index`. */
-function Routes() {
+type Resume = { pathname: string; params: Record<string, string> };
+/** The screen the person is on, kept outside React so a remount after a look change can open it again. */
+let lastRoute: Resume | null = null;
+const TAB_PATHS = ["/home", "/journal", "/chat", "/todo", "/library", "/workspace"];
+
+function Routes({ fresh }: { fresh: boolean }) {
+  // Read while rendering, before the root effect overwrites it with the post-remount path.
+  const [resume] = useState<Resume | null>(() => (fresh ? lastRoute : null));
   const { ready, onboardingDone, signedIn, user } = useAppState();
   // Keeps the home-screen widgets in step with the app (and wipes them on sign-out).
   useWidgetSync(signedIn);
   // Notifications: reminders planned on the phone, push registration, and opening the right screen when one is tapped.
   useNotificationSync(user?.id ?? null);
+
+  // After a look change: open the screen the person was on (a tab directly, anything else on top of Home).
+  useEffect(() => {
+    if (!resume || !ready || !signedIn) return;
+    const timer = setTimeout(() => {
+      const { pathname, params } = resume;
+      if (pathname === "/" || pathname === "/index") return;
+      if (TAB_PATHS.includes(pathname)) router.replace({ pathname, params } as never);
+      else {
+        router.replace("/home");
+        router.push({ pathname, params } as never);
+      }
+    }, 60);
+    return () => clearTimeout(timer);
+  }, [resume, ready, signedIn]);
 
   if (!ready) return null;
 
@@ -107,6 +142,7 @@ function Routes() {
         <Stack.Screen name="profile" options={{ presentation: "modal" }} />
         <Stack.Screen name="pricing" options={{ presentation: "modal" }} />
         <Stack.Screen name="notifications" options={{ presentation: "modal" }} />
+        <Stack.Screen name="search" options={{ presentation: "modal" }} />
       </Stack.Protected>
     </Stack>
   );
@@ -127,7 +163,7 @@ function SetupNotice() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   root: { flex: 1, backgroundColor: Palette.page },
   setup: { flex: 1, justifyContent: "center" },
-});
+}));

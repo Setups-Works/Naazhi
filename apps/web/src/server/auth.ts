@@ -11,6 +11,10 @@ import { sendEmail } from "./mail";
 import { templates } from "./email/templates";
 
 const env = serverEnv();
+
+/** `AB:CD:…` (a SHA-256 fingerprint as Android Studio and Play Console show it) → `android:apk-key-hash:` plus the same bytes in base64url. */
+const androidPasskeyOrigin = (fingerprint: string) =>
+  `android:apk-key-hash:${Buffer.from(fingerprint.replace(/[^0-9A-F]/gi, ""), "hex").toString("base64url")}`;
 const g = globalThis as unknown as { __authPool?: pg.Pool; __auth?: ReturnType<typeof create> };
 
 // Better Auth reads and writes the `auth` schema (see db/migrations/…_auth.sql); the search_path lets it use unqualified table names.
@@ -183,7 +187,8 @@ function create() {
       passkey({
         rpID: new URL(env.authUrl).hostname,
         rpName: "Naazhi",
-        origin: [env.authUrl, ...env.passkeyOrigins],
+        // The Android app signs passkey requests with an origin made from its signing key: android:apk-key-hash:<SHA-256, base64url>.
+        origin: [env.authUrl, ...env.passkeyOrigins, ...env.androidCertSha256.map(androidPasskeyOrigin)],
         schema: {
           passkey: {
             modelName: "passkeys",

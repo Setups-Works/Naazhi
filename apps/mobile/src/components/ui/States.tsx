@@ -1,9 +1,9 @@
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
 import { AppText } from "./AppText";
 import { Button } from "./Button";
 import { Icon, type IconName } from "./Icon";
-import { Palette, Radius } from "@/constants/theme";
+import { Palette, Radius, themedStyles } from "@/constants/theme";
 
 export function LoadingState({ label = "Loading…" }: { label?: string }) {
   return (
@@ -58,7 +58,7 @@ export function EmptyState({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   center: { alignItems: "center", gap: 12, paddingVertical: 40, paddingHorizontal: 12 },
   badge: { width: 48, height: 48, borderRadius: Radius.pill, alignItems: "center", justifyContent: "center" },
-});
+}));

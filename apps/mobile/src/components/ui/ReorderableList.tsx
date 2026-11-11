@@ -1,13 +1,13 @@
 import { moveItem } from "@untitled/logic";
 import * as Haptics from "expo-haptics";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 
 import { Icon } from "./Icon";
-import { Palette, Radius, Shadow } from "@/constants/theme";
+import { Palette, Radius, Shadow, themedStyles } from "@/constants/theme";
 import { useRuntimePrefs } from "@/lib/preferences";
 
 /** The grip a section places in its header: `handle` is the grip to render, already wired to the drag. */
@@ -194,8 +194,8 @@ function ReorderRow({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   lifted: { zIndex: 10, ...Shadow.e2 },
   grip: { width: 32, height: 32, borderRadius: Radius.pill, alignItems: "center", justifyContent: "center" },
   gripActive: { backgroundColor: Palette.surfaceMuted },
-});
+}));

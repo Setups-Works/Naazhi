@@ -1,15 +1,17 @@
+import type { ScrollViewHandle } from "@/types/native";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
-import { ScrollView, StyleSheet, View, useWindowDimensions } from "react-native";
+import { ScrollView, View, useWindowDimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { HealthScreen } from "@/features/health/HealthScreen";
 import { CalendarPage } from "@/features/calendar/CalendarPage";
 import { NotesScreen } from "@/features/notes/NotesScreen";
 import { TodoScreen } from "@/features/tasks/TodoScreen";
+import { PagerLockContext } from "@/components/ui/PagerLock";
 import { Segmented } from "@/components/ui/Segmented";
-import { Palette, Space } from "@/constants/theme";
+import { Palette, Space, themedStyles } from "@/constants/theme";
 
 type View_ = "todo" | "notes" | "calendar" | "health";
 const VIEWS: { key: View_; label: string }[] = [
@@ -29,9 +31,10 @@ const PAGE_EDGES: ("left" | "right")[] = ["left", "right"];
 export function PlannerScreen() {
   const { view: viewParam } = useLocalSearchParams<{ view?: string }>();
   const { width } = useWindowDimensions();
-  const pager = useRef<ScrollView>(null);
+  const pager = useRef<ScrollViewHandle>(null);
   const [view, setView] = useState<View_>(isView(viewParam) ? viewParam : "todo");
   const current = useRef(view);
+  const [locked, setLocked] = useState(false);
 
   const go = useCallback(
     (next: View_, animated = true) => {
@@ -59,10 +62,14 @@ export function PlannerScreen() {
       <View style={styles.pills}>
         <Segmented options={VIEWS} value={view} onChange={(v) => go(v)} />
       </View>
+      <PagerLockContext.Provider value={setLocked}>
       <ScrollView
         ref={pager}
         horizontal
         pagingEnabled
+        // Drag sideways to move between To-do, Notes, Calendar and Health. Pages with their own sideways scrolling (the To-do tabs) lock
+        // this while a finger is on them, so dragging those never changes page.
+        scrollEnabled={!locked}
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={settle}
         style={styles.pager}
@@ -81,12 +88,13 @@ export function PlannerScreen() {
           <HealthScreen edges={PAGE_EDGES} />
         </View>
       </ScrollView>
+      </PagerLockContext.Provider>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   root: { flex: 1, backgroundColor: Palette.page },
   pills: { paddingHorizontal: Space.lg, paddingTop: Space.sm },
   pager: { flex: 1 },
-});
+}));

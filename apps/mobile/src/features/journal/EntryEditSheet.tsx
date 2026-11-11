@@ -1,6 +1,6 @@
 import type { JournalEntry } from "@untitled/types";
 import { useState } from "react";
-import { Pressable, StyleSheet } from "react-native";
+import { Pressable } from "react-native";
 
 import { uploadJournalFile } from "./files";
 import { useJournalActions } from "./queries";
@@ -11,7 +11,7 @@ import { EntryEditor } from "@/components/ui/EntryEditor";
 import { Icon } from "@/components/ui/Icon";
 import { KeptAttachments } from "@/components/ui/KeptAttachments";
 import { Sheet } from "@/components/ui/Sheet";
-import { Palette } from "@/constants/theme";
+import { Palette, themedStyles } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { dayLabel, timeOf } from "@/lib/dates";
 import { useAppState } from "@/providers/AppState";
@@ -103,6 +103,6 @@ export function EntryEditSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   row: { minHeight: 48, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 },
-});
+}));

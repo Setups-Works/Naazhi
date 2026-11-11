@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
 import { AuthLink, AuthShell } from "./AuthShell";
 import { AppText } from "@/components/ui/AppText";
 import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
-import { Palette, Radius } from "@/constants/theme";
+import { Palette, Radius, themedStyles } from "@/constants/theme";
 import { useAuth } from "@/providers/AppState";
 import { friendlyAuthError } from "@untitled/validation";
 
@@ -53,7 +53,7 @@ export function ConfirmEmail({ email }: { email: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   badge: {
     width: 52,
     height: 52,
@@ -62,4 +62,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-});
+}));

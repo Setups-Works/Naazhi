@@ -1,7 +1,7 @@
 import { toDate } from "@untitled/logic";
 import type { CalendarEvent, Task, Tone } from "@untitled/types";
 import { useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
 import { useCalendarEvents } from "./queries";
 import { useTasks } from "@/features/tasks/queries";
@@ -9,9 +9,10 @@ import { AppText } from "@/components/ui/AppText";
 import { Card } from "@/components/ui/Card";
 import { CalendarGrid } from "@/components/ui/DatePicker";
 import { Icon } from "@/components/ui/Icon";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { Screen } from "@/components/ui/Screen";
 import { ErrorState, LoadingState } from "@/components/ui/States";
-import { Palette, Radius, Space, Tints } from "@/constants/theme";
+import { Palette, Radius, Space, Tints, themedStyles } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { dayLabel, isoDate, timeOf } from "@/lib/dates";
 
@@ -62,10 +63,7 @@ export function CalendarPage() {
 
   return (
     <Screen edges={EDGES} onRefresh={refresh} refreshing={refreshing}>
-      <View style={styles.head}>
-        <AppText variant="display">Calendar</AppText>
-        <AppText variant="small">Your events and the to-dos due each day</AppText>
-      </View>
+      <PageHeader title="Calendar" subtitle="Your events and the to-dos due each day" />
 
       {eventsQ.isPending ? (
         <LoadingState />
@@ -73,7 +71,7 @@ export function CalendarPage() {
         <ErrorState message={errorMessage(eventsQ.error)} onRetry={() => void eventsQ.refetch()} />
       ) : (
         <>
-          <Card tone="blue">
+          <Card>
             <CalendarGrid value={date} onPick={setDate} marks={marks} />
           </Card>
 
@@ -124,7 +122,7 @@ export function CalendarPage() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   flex: { flex: 1 },
   head: { gap: Space.xs, marginBottom: Space.lg },
   dayTitle: { marginTop: Space.xl, marginBottom: Space.sm },
@@ -132,4 +130,4 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: Space.md },
   bar: { width: 4, alignSelf: "stretch", borderRadius: Radius.pill },
   done: { textDecorationLine: "line-through", color: Palette.fgSubtle },
-});
+}));

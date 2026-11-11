@@ -2,7 +2,7 @@ import { SHARED_JOURNAL as LIMIT } from "@untitled/logic";
 import type { SharedJournal } from "@untitled/types";
 import { router } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
 import { useCollaborationActions, useMyInvites, useSharedJournals } from "./queries";
 import { InviteCard } from "./components/InviteCard";
@@ -10,19 +10,20 @@ import { JournalCard } from "./components/JournalCard";
 import { ManageSheet } from "./components/ManageSheet";
 import { AppText } from "@/components/ui/AppText";
 import { Banner } from "@/components/ui/Banner";
-import { BarButton, DetailBar } from "@/components/ui/DetailBar";
 import { Button } from "@/components/ui/Button";
 import { PromptSheet } from "@/components/ui/PromptSheet";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { Screen } from "@/components/ui/Screen";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/States";
 import { errorMessage } from "@/lib/api";
+import { themedStyles } from "@/constants/theme";
 
 function Section({ title, journals, onManage }: { title: string; journals: SharedJournal[]; onManage: (id: string) => void }) {
   if (!journals.length) return null;
   return (
     <View style={styles.section}>
       <AppText variant="label">
-        {title.toUpperCase()} · {journals.length}
+        {title} · {journals.length}
       </AppText>
       {journals.map((j) => (
         <JournalCard key={j.id} journal={j} onManage={() => onManage(j.id)} />
@@ -67,17 +68,13 @@ export function CollaborationScreen({ embedded = false }: { embedded?: boolean }
       onRefresh={() => void refresh()}
       refreshing={refreshing}
     >
-      {embedded ? (
-        <Button title="New shared journal" icon="plus" onPress={() => setCreating(true)} />
-      ) : (
-        <DetailBar
-          label="Collaboration"
-          closeLabel="Back"
-          onClose={() => router.back()}
-          action={<BarButton title="New" onPress={() => setCreating(true)} />}
-        />
-      )}
-      <AppText variant="body">Write a journal together. Invite people by username; they join when they accept.</AppText>
+      <PageHeader
+        title="Shared journals"
+        subtitle="Write a journal together. Invite people by username; they join when they accept."
+        onBack={embedded ? undefined : () => router.back()}
+        backLabel="Journal"
+        right={<Button title="New" icon="plus" onPress={() => setCreating(true)} style={styles.small} />}
+      />
       {err ? <Banner kind="error">{err}</Banner> : null}
 
       {journalsQ.isPending || invitesQ.isPending ? (
@@ -88,7 +85,7 @@ export function CollaborationScreen({ embedded = false }: { embedded?: boolean }
         <>
           {invites.length ? (
             <View style={styles.section}>
-              <AppText variant="label">INVITATIONS · {invites.length}</AppText>
+              <AppText variant="label">Invitations · {invites.length}</AppText>
               {invites.map((i) => (
                 <InviteCard
                   key={i.id}
@@ -120,4 +117,4 @@ export function CollaborationScreen({ embedded = false }: { embedded?: boolean }
   );
 }
 
-const styles = StyleSheet.create({ section: { gap: 10 } });
+const styles = themedStyles(() => ({ section: { gap: 12 }, small: { minHeight: 38, paddingHorizontal: 14 } }));

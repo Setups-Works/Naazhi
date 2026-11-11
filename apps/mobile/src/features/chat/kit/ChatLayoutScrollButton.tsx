@@ -1,8 +1,6 @@
-import { StyleSheet } from "react-native";
-
 import { GlassPill } from "@/components/ui/GlassPill";
 import { Icon } from "@/components/ui/Icon";
-import { Palette, Radius, Shadow } from "@/constants/theme";
+import { Palette, Radius, Shadow, themedStyles } from "@/constants/theme";
 
 /** Floats above the composer once the reader has scrolled up; jumps back to the newest message. */
 export function ChatLayoutScrollButton({ visible, onPress }: { visible: boolean; onPress: () => void }) {
@@ -14,7 +12,7 @@ export function ChatLayoutScrollButton({ visible, onPress }: { visible: boolean;
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   button: {
     position: "absolute",
     bottom: 12,
@@ -29,4 +27,4 @@ const styles = StyleSheet.create({
     borderColor: Palette.glassRing,
     ...Shadow.e2,
   },
-});
+}));

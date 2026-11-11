@@ -1,13 +1,13 @@
 import { toDate } from "@untitled/logic";
-import type { Note, Tone } from "@untitled/types";
+import type { Note } from "@untitled/types";
 import { router } from "expo-router";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
-import { Pressable, StyleSheet, View, type LayoutChangeEvent } from "react-native";
+import { Pressable, View, type LayoutChangeEvent } from "react-native";
 import { runOnJS } from "react-native-worklets";
 
-import { useNoteActions, useNotes } from "./queries";
+import { useNoteActions, useNotes, useTrashActions, useTrashedNotes } from "./queries";
 import { AppText } from "@/components/ui/AppText";
 import { AttachmentGallery } from "@/components/ui/AttachmentGallery";
 import { Banner } from "@/components/ui/Banner";
@@ -15,12 +15,14 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { Markdown } from "@/components/ui/Markdown";
-import { DeleteSheet } from "@/components/ui/DeleteSheet";
 import { Sheet } from "@/components/ui/Sheet";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { Screen } from "@/components/ui/Screen";
+import { NotesAtlas } from "./NotesAtlas";
+import { NotesTrash } from "./NotesTrash";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/States";
 import { TextField } from "@/components/ui/TextField";
-import { Palette, Radius, Space, Tints } from "@/constants/theme";
+import { Palette, Radius, Space, Tints, themedStyles, Neutral } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { timeOf } from "@/lib/dates";
 import { GlassPill } from "@/components/ui/GlassPill";
@@ -29,19 +31,12 @@ const open = (id: string) => router.push({ pathname: "/note/[id]", params: { id 
 const CATEGORIES = ["Others", "Ideas & Creativity", "Personal", "Work", "Learning", "Health"] as const;
 type NoteFilter = "all" | "pinned" | "voice";
 type NoteSort = "manual" | "edited" | "title";
-const AUTO_TONES: Tone[] = ["violet", "blue", "green", "amber", "clay", "mint", "gold"];
 type NotePosition = { y: number; height: number };
 
 function noteTitle(note: Note) {
   return note.title.trim() || note.body.split("\n").find((line) => line.trim())?.replace(/^[#>*\-\s]+/, "").slice(0, 80) || "Untitled";
 }
 
-function noteTone(note: Note): Tone {
-  if (note.color) return note.color;
-  let hash = 0;
-  for (const character of note.id) hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
-  return AUTO_TONES[hash % AUTO_TONES.length]!;
-}
 
 function editedLabel(iso: string) {
   const date = toDate(iso);
@@ -53,15 +48,26 @@ function editedLabel(iso: string) {
 /** `edges` lets the stack header own the top inset when Notes is opened as a pushed screen. */
 export function NotesScreen({ edges }: { edges?: ("top" | "bottom" | "left" | "right")[] } = {}) {
   const notesQ = useNotes();
-  const { create, update, remove } = useNoteActions();
+  const { create, update } = useNoteActions();
+  const { trash, restore } = useTrashActions();
+  const trashed = useTrashedNotes();
+  const [trashView, setTrashView] = useState(false);
+  const [undo, setUndo] = useState<{ ids: string[]; text: string } | null>(null);
+
+  // The "moved to the Trash" bar goes away by itself after a few seconds.
+  useEffect(() => {
+    if (!undo) return;
+    const timer = setTimeout(() => setUndo(null), 8000);
+    return () => clearTimeout(timer);
+  }, [undo]);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<NoteFilter>("all");
   const [categories, setCategories] = useState<string[]>([]);
   const [withAttachments, setWithAttachments] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [atlas, setAtlas] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const [actionNote, setActionNote] = useState<Note | null>(null);
-  const [deleteNote, setDeleteNote] = useState<Note | null>(null);
   const [error, setError] = useState("");
   const [sort, setSort] = useState<NoteSort>("manual");
   const [refreshing, setRefreshing] = useState(false);
@@ -156,14 +162,13 @@ export function NotesScreen({ edges }: { edges?: ("top" | "bottom" | "left" | "r
     setActionNote(null);
   }
 
-  async function confirmDelete() {
-    if (!deleteNote) return;
+  async function moveToTrash(note: Note) {
     setError("");
     try {
-      await remove.mutateAsync(deleteNote.id);
-      setDeleteNote(null);
+      await trash.mutateAsync([note.id]);
+      setUndo({ ids: [note.id], text: `“${noteTitle(note)}” moved to the Trash` });
     } catch (e) {
-      setError(errorMessage(e, "Couldn’t delete that note."));
+      setError(errorMessage(e, "Couldn’t move that to the Trash."));
     }
   }
 
@@ -173,18 +178,18 @@ export function NotesScreen({ edges }: { edges?: ("top" | "bottom" | "left" | "r
 
   return (
     <Screen onRefresh={refresh} refreshing={refreshing} edges={edges}>
-      <View style={styles.head}>
-        <View style={styles.titleWithCount}>
-          <AppText variant="title" accessibilityRole="header">Notes</AppText>
-          {notesQ.data ? <AppText variant="small" color={Palette.fgSubtle}>{notesQ.data.length}</AppText> : null}
-        </View>
-        <View style={styles.headActions}>
-          <GlassPill accessibilityRole="button" accessibilityLabel={`Sort notes, currently ${sort}`} onPress={() => setSortOpen(true)} style={styles.optionsButton}>
-            <Icon name="ellipsis" size={17} color={Palette.fgMuted} />
-          </GlassPill>
-          <Button title="New note" icon="plus" onPress={() => open("new")} />
-        </View>
-      </View>
+      <PageHeader
+        title="Notes"
+        subtitle={notesQ.data ? `${notesQ.data.length} ${notesQ.data.length === 1 ? "note" : "notes"}` : undefined}
+        right={
+          <>
+            <GlassPill accessibilityRole="button" accessibilityLabel={`Sort notes, currently ${sort}`} onPress={() => setSortOpen(true)} style={styles.optionsButton}>
+              <Icon name="ellipsis" size={16} color={Palette.fgMuted} />
+            </GlassPill>
+            <Button title="New note" icon="plus" onPress={() => open("new")} style={styles.newBtn} />
+          </>
+        }
+      />
       {notesQ.data?.length ? (
         <TextField label="Search notes" value={query} onChangeText={setQuery} placeholder="Search…" returnKeyType="search" />
       ) : null}
@@ -193,6 +198,8 @@ export function NotesScreen({ edges }: { edges?: ("top" | "bottom" | "left" | "r
         {(["all", "pinned", "voice"] as const).map((key) => (
           <FilterPill key={key} title={{ all: "All notes", pinned: "Pinned", voice: "Voice" }[key]} selected={filter === key} onPress={() => setFilter(key)} />
         ))}
+        <FilterPill title="Atlas" selected={atlas} onPress={() => { setAtlas((on) => !on); setTrashView(false); }} />
+        <FilterPill title="Trash" badge={trashed.data?.length || undefined} selected={trashView} onPress={() => { setTrashView((on) => !on); setAtlas(false); }} />
         <FilterPill title="More filters" badge={filtersOn || undefined} selected={filtersOpen} onPress={() => setFiltersOpen(true)} />
       </View>
 
@@ -254,7 +261,21 @@ export function NotesScreen({ edges }: { edges?: ("top" | "bottom" | "left" | "r
       </Sheet>
 
       {error ? <Banner kind="error">{error}</Banner> : null}
-      {notesQ.isPending ? (
+      {undo ? (
+        <View style={styles.undo} accessibilityRole="alert">
+          <AppText variant="small" color={Palette.fg} style={styles.undoText} numberOfLines={2}>
+            {undo.text}
+          </AppText>
+          <Pressable accessibilityRole="button" accessibilityLabel="Undo" hitSlop={10} onPress={() => { restore.mutate(undo.ids); setUndo(null); }}>
+            <AppText variant="bodyStrong">Undo</AppText>
+          </Pressable>
+        </View>
+      ) : null}
+      {trashView ? (
+        <NotesTrash />
+      ) : atlas && notesQ.data ? (
+        <NotesAtlas notes={notesQ.data} onOpen={open} />
+      ) : notesQ.isPending ? (
         <LoadingState />
       ) : notesQ.isError ? (
         <ErrorState message={errorMessage(notesQ.error)} onRetry={() => void notesQ.refetch()} />
@@ -269,7 +290,7 @@ export function NotesScreen({ edges }: { edges?: ("top" | "bottom" | "left" | "r
               onDragFinish={(translationY) => finishDrag(n, translationY)}
               onOpen={() => open(n.id)}
               onAction={() => setActionNote(n)}
-              onDelete={() => setDeleteNote(n)}
+              onDelete={() => void moveToTrash(n)}
             />
           ))}
         </View>
@@ -295,16 +316,6 @@ export function NotesScreen({ edges }: { edges?: ("top" | "bottom" | "left" | "r
         ) : null}
       </Sheet>
 
-      <DeleteSheet
-        visible={deleteNote !== null}
-        title="Delete this note?"
-        message={`“${deleteNote ? noteTitle(deleteNote) : ""}” and its attachments will be permanently deleted. This can’t be undone.`}
-        confirmLabel="Delete note"
-        error={error}
-        loading={remove.isPending}
-        onConfirm={() => void confirmDelete()}
-        onClose={() => setDeleteNote(null)}
-      />
     </Screen>
   );
 }
@@ -371,7 +382,8 @@ function NoteCard({
       // eslint-disable-next-line react-hooks/immutability
       dragActive.value = 0;
     });
-  const tone = noteTone(note);
+  const tone = note.color ?? null;
+  const tint = tone ? Tints[tone] : Neutral;
   return (
     <Animated.View onLayout={onLayout} style={animatedCardStyle}>
       <Card tone={tone} onPress={onOpen} accessibilityLabel={`Open note: ${noteTitle(note)}`} style={styles.noteCard}>
@@ -402,20 +414,20 @@ function NoteCard({
             </Pressable>
           )}
           <View style={styles.flex} />
-          {note.pinned ? <Icon name="thumbtack" size={14} color={Tints[tone].fg} /> : null}
+          {note.pinned ? <Icon name="thumbtack" size={14} color={tint.fg} /> : null}
           <Pressable accessibilityRole="button" accessibilityLabel={`Delete ${noteTitle(note)}`} onPress={onDelete} style={styles.cardIconButton}>
             <Icon name="trash" size={16} color={Palette.clayFg} />
           </Pressable>
         </View>
         <AppText variant="heading" numberOfLines={2} style={styles.noteTitle}>{noteTitle(note)}</AppText>
-        {note.kind === "voice" ? <View style={styles.metaChip}><Icon name="wave-square" size={13} color={Tints[tone].fg} /><AppText variant="small">Voice note</AppText></View> : null}
+        {note.kind === "voice" ? <View style={styles.metaChip}><Icon name="wave-square" size={13} color={tint.fg} /><AppText variant="small">Voice note</AppText></View> : null}
         {note.body.trim() ? <View style={styles.preview}><Markdown text={note.body} /></View> : null}
         {note.attachments.length > 0 && note.kind !== "voice" ? (
-          <View style={styles.metaChip}><Icon name="paperclip" size={13} color={Tints[tone].fg} /><AppText variant="small">{note.attachments.length} attached</AppText></View>
+          <View style={styles.metaChip}><Icon name="paperclip" size={13} color={tint.fg} /><AppText variant="small">{note.attachments.length} attached</AppText></View>
         ) : null}
         {note.attachments.length ? <AttachmentGallery attachments={note.attachments.slice(0, 1)} /> : null}
-        <View style={[styles.cardFooter, { borderTopColor: Tints[tone].line }]}>
-          <AppText variant="bodyStrong" color={Tints[tone].fg} style={styles.category}>{note.category || "Others"}</AppText>
+        <View style={[styles.cardFooter, { borderTopColor: tint.line }]}>
+          <AppText variant="bodyStrong" color={tint.fg} style={styles.category}>{note.category || "Others"}</AppText>
           <AppText variant="small" color={Palette.fgSubtle}>{editedLabel(note.updated_at)}</AppText>
         </View>
       </Card>
@@ -432,11 +444,12 @@ function OptionAction({ icon, title, onPress, disabled = false }: { icon: "thumb
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   head: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   titleWithCount: { flexDirection: "row", alignItems: "center", gap: 8 },
+  newBtn: { minHeight: 38, paddingHorizontal: 14 },
   headActions: { flexDirection: "row", alignItems: "center", gap: 8 },
-  optionsButton: { width: 42, height: 42, alignItems: "center", justifyContent: "center", borderRadius: Radius.pill, borderWidth: 1, borderColor: Palette.glassRing, backgroundColor: Palette.glassHi },
+  optionsButton: { width: 38, height: 38, alignItems: "center", justifyContent: "center", borderRadius: Radius.r1, borderWidth: 1, borderColor: Palette.glassRing, backgroundColor: Palette.glassHi },
   filters: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 },
   filterPill: { minHeight: 42, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingHorizontal: 16, borderRadius: 999, borderWidth: 1, borderColor: Palette.glassRing, backgroundColor: Palette.glassHi },
   filterPillSelected: { borderWidth: 2, borderColor: Palette.fillDark, backgroundColor: Palette.surface },
@@ -456,10 +469,12 @@ const styles = StyleSheet.create({
   preview: { maxHeight: 154, overflow: "hidden" },
   metaChip: { minHeight: 30, alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 7, paddingHorizontal: 11, borderRadius: Radius.pill, backgroundColor: Palette.glassHi },
   cardFooter: { minHeight: 38, flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 10, marginTop: 3, paddingTop: 10, borderTopWidth: 1 },
-  category: { fontSize: 13, lineHeight: 18, letterSpacing: 0.5, textTransform: "uppercase" },
+  category: { fontSize: 13, lineHeight: 18 },
   optionAction: { minHeight: 48, flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 8 },
   optionDisabled: { opacity: 0.45 },
   noteActions: { gap: 2 },
+  undo: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10, paddingHorizontal: 14, borderRadius: Radius.r2, borderWidth: 1, borderColor: Palette.lineStrong, backgroundColor: Palette.surfaceMuted },
+  undoText: { flex: 1 },
   noteList: { width: "100%", gap: Space.lg },
   sortOption: { minHeight: 58, flexDirection: "row", alignItems: "center", gap: 12 },
   sortCopy: { flex: 1, gap: 2 },
@@ -468,4 +483,4 @@ const styles = StyleSheet.create({
   radioDot: { width: 12, height: 12, borderRadius: Radius.pill, backgroundColor: Palette.greenFg },
   deleteMessage: { marginBottom: 8 },
   flex: { flex: 1 },
-});
+}));

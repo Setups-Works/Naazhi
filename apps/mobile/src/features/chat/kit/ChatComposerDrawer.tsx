@@ -1,5 +1,6 @@
 import { Children, type ReactNode } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
+import { themedStyles } from "@/constants/theme";
 
 /** The space above the text box that holds what is attached to the message (picture and audio previews). */
 export function ChatComposerDrawer({ children }: { children: ReactNode }) {
@@ -7,4 +8,4 @@ export function ChatComposerDrawer({ children }: { children: ReactNode }) {
   return items.length ? <View style={styles.drawer}>{items}</View> : null;
 }
 
-const styles = StyleSheet.create({ drawer: { gap: 8, marginBottom: 8 } });
+const styles = themedStyles(() => ({ drawer: { gap: 8, marginBottom: 8 } }));

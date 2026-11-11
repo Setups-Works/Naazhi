@@ -1,7 +1,8 @@
+import { openWeb } from "@/lib/webSheet";
 import { rssAge } from "@untitled/logic";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Image, Linking, Pressable, Share, StyleSheet, View } from "react-native";
+import { Image, Pressable, Share, View } from "react-native";
 
 import { useArticle, useRssActions } from "./queries";
 import { AppText } from "@/components/ui/AppText";
@@ -10,7 +11,7 @@ import { DetailBar } from "@/components/ui/DetailBar";
 import { Icon } from "@/components/ui/Icon";
 import { Screen } from "@/components/ui/Screen";
 import { ErrorState, LoadingState } from "@/components/ui/States";
-import { Palette, Radius, Space } from "@/constants/theme";
+import { Palette, Radius, Space, themedStyles } from "@/constants/theme";
 
 /** The reader: the article's picture, title, source and full text, with star, unread and "open original". */
 export function ArticleScreen() {
@@ -82,15 +83,15 @@ export function ArticleScreen() {
         ))}
       </View>
       <View style={styles.actions}>
-        {item.link ? <Button title="Open original" icon="arrow-up-right-from-square" onPress={() => void Linking.openURL(item.link!)} /> : null}
+        {item.link ? <Button title="Open original" icon="arrow-up-right-from-square" onPress={() => openWeb(item.link!, { title: item.title })} /> : null}
       </View>
     </Screen>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   hero: { width: "100%", aspectRatio: 16 / 9, borderRadius: Radius.r3, backgroundColor: Palette.surfaceMuted },
   text: { gap: Space.md },
   barIcons: { flexDirection: "row", alignItems: "center", gap: Space.lg },
   actions: { gap: Space.sm },
-});
+}));

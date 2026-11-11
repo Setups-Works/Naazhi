@@ -1,7 +1,8 @@
+import { openWeb } from "@/lib/webSheet";
 import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Linking, StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import { stripRefs, type ChatAction, type ChatProposal, type ShowItem } from "@untitled/validation";
 
 import { ShownItems } from "../shown/ShownItems";
@@ -10,7 +11,7 @@ import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { Markdown } from "@/components/ui/Markdown";
-import { Palette, Radius, Tints } from "@/constants/theme";
+import { Palette, Radius, themedStyles, Neutral } from "@/constants/theme";
 import { api, errorMessage } from "@/lib/api";
 import { qk } from "@/lib/queryKeys";
 
@@ -106,7 +107,7 @@ function Drafts({ proposals, messageId, chatId }: { proposals: ChatProposal[]; m
       {proposals.map((p) => {
         const a = p.action;
         const k = KIND[a.kind];
-        const t = Tints[k.tone];
+        const t = Neutral;
         const { title, preview } = look(a);
         return (
           <View
@@ -139,7 +140,7 @@ function Drafts({ proposals, messageId, chatId }: { proposals: ChatProposal[]; m
               <Button
                 title={k.href ? `Open ${k.label}` : "Open in Zoho"}
                 kind="secondary"
-                onPress={() => (k.href ? router.navigate(k.href) : void Linking.openURL(p.created!.path))}
+                onPress={() => (k.href ? router.navigate(k.href) : openWeb(p.created!.path))}
                 style={styles.draftBtn}
               />
             ) : (
@@ -167,10 +168,10 @@ function Drafts({ proposals, messageId, chatId }: { proposals: ChatProposal[]; m
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   drafts: { gap: 10, marginTop: 4 },
   draft: { gap: 6, padding: 14, borderRadius: Radius.r2, borderWidth: 1 },
   draftHead: { flexDirection: "row", alignItems: "center", gap: 8 },
   draftIcon: { width: 24, height: 24, borderRadius: Radius.pill, backgroundColor: Palette.glassHi, alignItems: "center", justifyContent: "center" },
   draftBtn: { alignSelf: "flex-start", minHeight: 40, marginTop: 4 },
-});
+}));

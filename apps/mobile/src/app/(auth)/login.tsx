@@ -1,11 +1,13 @@
+import type { TextInputHandle } from "@/types/native";
 import { useRef, useState } from "react";
-import * as ExpoLinking from "expo-linking";
-import { TextInput, View } from "react-native";
+import { View } from "react-native";
 import { Link } from "expo-router";
 
 import { AuthLink, AuthShell } from "@/features/auth/AuthShell";
 import { ConfirmEmail } from "@/features/auth/ConfirmEmail";
 import { GoogleButton, OrDivider } from "@/features/auth/GoogleButton";
+import { passkeysSupported, signInWithPasskey } from "@/features/auth/passkeys";
+import { useGoogleLogin } from "@/features/auth/useGoogleLogin";
 import { useAuthConfig } from "@/features/auth/useAuthConfig";
 import { AppText } from "@/components/ui/AppText";
 import { Banner } from "@/components/ui/Banner";
@@ -18,12 +20,25 @@ import { firstError, friendlyAuthError, isEmail, loginSchema } from "@untitled/v
 export default function LoginScreen() {
   const auth = useAuth();
   const config = useAuthConfig();
-  const passwordRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInputHandle>(null);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [googleBusy, setGoogleBusy] = useState(false);
   const [error, setError] = useState("");
+  const googleLogin = useGoogleLogin(auth, config.data, setError);
+  const googleBusy = googleLogin.busy;
+  const [passkeyBusy, setPasskeyBusy] = useState(false);
+
+  async function passkey() {
+    setError("");
+    setPasskeyBusy(true);
+    try {
+      const res = await signInWithPasskey(auth);
+      if (!res.ok && !res.cancelled) setError(res.message);
+    } finally {
+      setPasskeyBusy(false);
+    }
+  }
   const [needsConfirm, setNeedsConfirm] = useState(false);
 
   async function submit() {
@@ -51,20 +66,6 @@ export default function LoginScreen() {
     }
   }
 
-  async function google() {
-    setError("");
-    setGoogleBusy(true);
-    try {
-      // Give Better Auth's Expo browser session an explicit app deep link to return to after Google signs in.
-      const res = await auth.signIn.social({ provider: "google", callbackURL: ExpoLinking.createURL("/") });
-      if (res?.error) setError(friendlyAuthError(res.error.message ?? "Couldn’t start Google sign-in."));
-    } catch {
-      setError("Google sign-in was cancelled or couldn’t finish. Please try again.");
-    } finally {
-      setGoogleBusy(false);
-    }
-  }
-
   if (needsConfirm) return <ConfirmEmail email={identifier.trim()} />;
 
   const googleOn = config.data?.google === true;
@@ -75,9 +76,12 @@ export default function LoginScreen() {
       ) : null}
       {config.isError ? <Banner kind="info">Can’t reach the server. Check EXPO_PUBLIC_API_URL and your connection.</Banner> : null}
 
-      {googleOn ? (
+      {googleOn || passkeysSupported() ? (
         <>
-          <GoogleButton onPress={() => void google()} busy={googleBusy} disabled={busy} />
+          {googleOn ? <GoogleButton onPress={() => void googleLogin.run()} busy={googleBusy} disabled={busy || passkeyBusy} /> : null}
+          {passkeysSupported() ? (
+            <Button title="Sign in with a passkey" kind="secondary" icon="fingerprint" loading={passkeyBusy} disabled={busy || googleBusy} onPress={() => void passkey()} />
+          ) : null}
           <OrDivider />
         </>
       ) : null}

@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { AppText } from "@/components/ui/AppText";
 import { Card } from "@/components/ui/Card";
 import { Icon, type IconName } from "@/components/ui/Icon";
-import { Palette, Radius, Space } from "@/constants/theme";
+import { Palette, Radius, Space, themedStyles } from "@/constants/theme";
 
 type Props = {
   icon: IconName;
@@ -58,7 +58,7 @@ export function PanelEmpty({ children }: { children: ReactNode }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   card: { padding: Space.lg, gap: Space.md },
   header: { flexDirection: "row", alignItems: "center", gap: Space.sm },
   chip: {
@@ -73,4 +73,4 @@ const styles = StyleSheet.create({
   hint: { flexShrink: 1 },
   spacer: { flex: 1 },
   open: { minHeight: 32, paddingHorizontal: Space.sm, justifyContent: "center", borderRadius: Radius.pill },
-});
+}));

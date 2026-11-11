@@ -74,7 +74,7 @@ function PlanForm({ plan }: { plan: BillingPlan }) {
       }}
     >
       <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h3 className="m-0 font-serif text-[26px] leading-none font-normal tracking-[-0.02em]">
+        <h3 className="m-0 font-serif text-[26px] leading-none font-semibold tracking-[-0.02em]">
           {plan.name} <small className="font-sans text-[12.5px] tracking-normal text-fg-subtle">({plan.id})</small>
         </h3>
         <span className="text-[13.5px] text-fg-muted">

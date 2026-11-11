@@ -6,7 +6,7 @@ You are working on **Naazhi** (the product name, logo and voice are in `docs/BRA
 
 ## 1. Stack
 
-pnpm/Turborepo monorepo: Next.js 16 web in `apps/web`, Expo/React Native in `apps/mobile`, and shared API transport in `packages/api-client`. Web stack: React 19, TypeScript strict, PostgreSQL + Better Auth + S3-compatible storage + Redis, all self-hosted in Docker (no Supabase), Composio and provider-routed AI. Web styling is migrating from hand-written CSS (`apps/web/src/app/globals.css`) to Tailwind v4 (`apps/web/src/styles/tailwind.css`). Design tokens stay defined once and exposed as utilities. No UI kit; icons are Font Awesome Free (solid).
+pnpm/Turborepo monorepo: Next.js 16 web in `apps/web`, Expo/React Native in `apps/mobile`, and shared API transport in `packages/api-client`. Web stack: React 19, TypeScript strict, PostgreSQL + Better Auth + S3-compatible storage + Redis, all self-hosted in Docker (no Supabase), Composio and provider-routed AI. Web styling is migrating from hand-written CSS (`apps/web/src/app/globals.css`) to Tailwind v4 (`apps/web/src/styles/tailwind.css`). Design tokens stay defined once and exposed as utilities. No UI kit; icons are thin line icons (lucide) drawn through `components/ui/Icon.tsx`.
 
 ## 2. Commands
 

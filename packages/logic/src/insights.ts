@@ -98,7 +98,7 @@ export function analyse(tasks: InTask[], entries: InEntry[], notes: InNote[], no
   const withDue = done.filter((t) => t.due_date && t.done_at);
   const onTime = withDue.filter((t) => localDay(new Date(t.done_at!)) <= t.due_date!);
   const overdue = live.filter((t) => !t.done && t.due_date && t.due_date < today);
-  const prioritised = live.filter((t) => t.priority < 4);
+  const prioritised = live.filter((t) => t.priority < 5);
 
   /* --- writing --- */
   const entries30 = entries.filter((e) => e.entry_date >= d30);

@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { toneFor } from "@untitled/logic";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faBookOpen, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 import type { SharedJournal } from "../types";
 import RolePill from "./RolePill";
@@ -9,9 +8,9 @@ import RolePill from "./RolePill";
 export default function JournalCard({ journal, onManage }: { journal: SharedJournal; onManage: () => void }) {
   const mine = journal.role === "owner";
   return (
-    <li className={`ap-card at-${toneFor(journal.id)} flex flex-col gap-3 p-5`}>
+    <li className="flex flex-col gap-3 rounded-r3 border bg-raised p-5">
       <div className="flex items-start justify-between gap-3">
-        <h3 className="min-w-0 font-serif text-[26px] leading-[1.1] font-normal tracking-[-0.02em] text-balance [overflow-wrap:anywhere]">
+        <h3 className="m-0 min-w-0 text-[18px] leading-[1.25] font-semibold tracking-[-0.015em] text-balance [overflow-wrap:anywhere]">
           {journal.name}
         </h3>
         <RolePill role={journal.role} />

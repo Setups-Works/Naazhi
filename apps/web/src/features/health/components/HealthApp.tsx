@@ -60,14 +60,14 @@ export default function HealthApp() {
   return (
     <div className="mx-auto w-full max-w-[1120px]">
       <header className="mb-[18px] flex flex-col gap-1">
-        <h1 className="font-serif text-[clamp(30px,3.4vw,42px)] leading-[1.04] font-normal tracking-[-0.03em] text-balance">Health</h1>
+        <h1 className="font-serif text-[clamp(30px,3.4vw,42px)] leading-[1.04] font-semibold tracking-[-0.03em] text-balance">Health</h1>
         <p className="text-[14px] text-fg-muted">
           {latest ? `Synced from ${SOURCE_LABEL[latest.source]} at ${syncedAt}` : "Activity, sleep and heart rate from your phone"}
         </p>
       </header>
 
       {isError ? (
-        <p className="at-clay tint rounded-r3 p-4 text-[14px]" role="alert">
+        <p className="bg-critical-wash text-critical rounded-r3 p-4 text-[14px]" role="alert">
           Couldn’t load your health data. Please try again.
         </p>
       ) : isPending ? (

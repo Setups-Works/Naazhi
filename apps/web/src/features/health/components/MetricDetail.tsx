@@ -1,7 +1,7 @@
 "use client";
 
 import { faChevronLeft, faWandMagicSparkles } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -60,7 +60,7 @@ export default function MetricDetail({ metric }: { metric: HealthMetric }) {
         <FA icon={faChevronLeft} /> Health
       </Link>
       <header className="mb-[18px] flex flex-col gap-1">
-        <h1 className="font-serif text-[clamp(30px,3.4vw,42px)] leading-[1.04] font-normal tracking-[-0.03em] text-balance">{def.label}</h1>
+        <h1 className="font-serif text-[clamp(30px,3.4vw,42px)] leading-[1.04] font-semibold tracking-[-0.03em] text-balance">{def.label}</h1>
         <p className="text-[14px] text-fg-muted">
           {meta.label}
           {def.goal ? ` · goal ${def.format(def.goal)} a day` : ""}
@@ -68,7 +68,7 @@ export default function MetricDetail({ metric }: { metric: HealthMetric }) {
       </header>
 
       {isError ? (
-        <p className="at-clay tint rounded-r3 p-4 text-[14px]" role="alert">
+        <p className="bg-critical-wash text-critical rounded-r3 p-4 text-[14px]" role="alert">
           Couldn’t load your health data. Please try again.
         </p>
       ) : isPending ? (
@@ -84,7 +84,7 @@ export default function MetricDetail({ metric }: { metric: HealthMetric }) {
 
           <section className={`${toneClass(def.tone)} tint rounded-r4 p-5 sm:p-6`} aria-label={`${def.label}, ${meta.label}`}>
             <p className="text-[13px] opacity-80">{def.kind === "total" ? "Total" : "Average"}</p>
-            <p className="font-serif text-[clamp(40px,6vw,60px)] leading-none tracking-[-0.03em]">
+            <p className="font-serif font-semibold text-[clamp(40px,6vw,60px)] leading-none tracking-[-0.03em]">
               {series.headline === null ? "No data" : def.format(series.headline)}
             </p>
             {series.points.length > 1 ? (
@@ -129,7 +129,7 @@ export default function MetricDetail({ metric }: { metric: HealthMetric }) {
             {stats.map((s) => (
               <div key={s.label} className="glass rounded-r3 p-4">
                 <p className={SECTION_LABEL}>{s.label}</p>
-                <p className="mt-1 font-serif text-[24px] leading-tight tracking-[-0.02em]">{s.value ?? "No data"}</p>
+                <p className="mt-1 font-serif font-semibold text-[24px] leading-tight tracking-[-0.02em]">{s.value ?? "No data"}</p>
                 {s.note && <p className="text-[12.5px] text-fg-muted">{s.note}</p>}
               </div>
             ))}
@@ -145,7 +145,7 @@ export default function MetricDetail({ metric }: { metric: HealthMetric }) {
                   const text = metricRowText(metric, d);
                   const v = def.pick(d);
                   return (
-                    <li key={d.day} className="flex items-center gap-4 px-4 py-3 text-[14.5px] odd:bg-white/40">
+                    <li key={d.day} className="flex items-center gap-4 px-4 py-3 text-[14.5px] odd:bg-surface/40">
                       <span className="w-[120px] shrink-0 text-fg-muted">{d.day === today ? "Today" : shortDay(d.day)}</span>
                       <span
                         className={`${toneClass(def.tone)} relative h-2 min-w-0 flex-1 overflow-hidden rounded-pill bg-(--abl)`}

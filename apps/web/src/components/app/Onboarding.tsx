@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import {
   faArrowRight,
   faBookOpen,

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faBan, faCheck, faCodeBranch, faFileExport, faKey, faPlugCircleCheck, faUserLock } from "@fortawesome/free-solid-svg-icons";
 import { AccessMatrix } from "../../components/site/blocks";
 import JsonLd from "../../components/site/JsonLd";

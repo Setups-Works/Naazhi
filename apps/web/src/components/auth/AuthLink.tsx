@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { appHref } from "../../lib/hosts";
 import { useAuthState } from "./useAuthState";

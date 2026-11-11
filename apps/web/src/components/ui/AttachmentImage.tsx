@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faImage } from "@fortawesome/free-solid-svg-icons";
 
 /**
@@ -12,7 +12,7 @@ export default function AttachmentImage({ src, name }: { src: string; name: stri
   if (failed)
     return (
       <span
-        className="inline-flex max-w-full items-center gap-2 rounded-r2 bg-white/70 px-3 py-2 text-[13px] text-fg-muted shadow-[inset_0_0_0_1px_var(--line)]"
+        className="inline-flex max-w-full items-center gap-2 rounded-r2 bg-surface/70 px-3 py-2 text-[13px] text-fg-muted shadow-[inset_0_0_0_1px_var(--line)]"
         role="img"
         aria-label={`${name} (file unavailable)`}
       >

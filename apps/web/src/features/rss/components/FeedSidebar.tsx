@@ -1,6 +1,6 @@
 "use client";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronRight, faCirclePlus, faEnvelope, faLayerGroup, faStar, faTableColumns, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { Icon as FA } from "@/components/ui/Icon";
+import { faChevronDown, faChevronRight, faCirclePlus, faEnvelope, faLayerGroup, faStar, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { rssFeedName } from "@untitled/logic/rss";
 import type { RssFeed, RssFilter } from "@untitled/types";
 import { useState } from "react";
@@ -15,22 +15,17 @@ export default function FeedSidebar({
   feedId,
   filter,
   totalUnread,
-  collapsed,
   onView,
   onFeed,
   onAdd,
-  onCollapse,
 }: {
   feeds: RssFeed[];
   feedId: string | null;
   filter: RssFilter;
   totalUnread: number;
-  /** Desktop "closed" state: the sidebar shrinks to a rail of icons. */
-  collapsed: boolean;
   onView: (filter: RssFilter) => void;
   onFeed: (id: string) => void;
   onAdd: () => void;
-  onCollapse: () => void;
 }) {
   const [open, setOpen] = useState(true);
   const views: { key: RssFilter; label: string; icon: typeof faLayerGroup; count?: number }[] = [
@@ -40,20 +35,15 @@ export default function FeedSidebar({
   ];
 
   return (
-    <aside className="tsb at-sand" data-rail={collapsed} aria-label="Reader navigation">
-      <div className="tsb-top">
-        <button className="ne-btn" aria-label={collapsed ? "Show sidebar" : "Hide sidebar"} title={collapsed ? "Show sidebar" : "Hide sidebar"} onClick={onCollapse}>
-          <FA icon={faTableColumns} />
-        </button>
-      </div>
-      <button className="tsb-item tsb-add" aria-label="Add feed" title="Add feed" onClick={onAdd}>
+    <aside className="sbt" aria-label="Reader navigation">
+      <button className="sbt-item sbt-add" aria-label="Add feed" title="Add feed" onClick={onAdd}>
         <FA icon={faCirclePlus} /> <span>Add feed</span>
       </button>
-      <nav className="tsb-nav">
+      <nav className="sbt-views">
         {views.map((v) => {
           const on = feedId === null && filter === v.key;
           return (
-            <button key={v.key} className="tsb-item" data-on={on} aria-current={on ? "page" : undefined} aria-label={v.label} title={v.label} onClick={() => onView(v.key)}>
+            <button key={v.key} className="sbt-item" data-on={on} aria-current={on ? "page" : undefined} aria-label={v.label} title={v.label} onClick={() => onView(v.key)}>
               <FA icon={v.icon} /> <span>{v.label}</span>
               {!!v.count && <em>{v.count}</em>}
             </button>
@@ -61,16 +51,16 @@ export default function FeedSidebar({
         })}
       </nav>
 
-      <button className="tsb-sec" aria-expanded={open} onClick={() => setOpen(!open)} title="My feeds">
+      <button className="sbt-sec" aria-expanded={open} onClick={() => setOpen(!open)} title="My feeds">
         <FA icon={open ? faChevronDown : faChevronRight} /> My feeds
       </button>
       {open && (
-        <div className="tsb-lists">
-          {feeds.length === 0 && <p className="tsb-hint">Feeds you follow show up here. Add your first one above.</p>}
+        <div className="sbt">
+          {feeds.length === 0 && <p className="sbt-hint">Feeds you follow show up here. Add your first one above.</p>}
           {feeds.map((f) => {
             const on = feedId === f.id;
             return (
-              <button key={f.id} className="tsb-item" data-on={on} aria-current={on ? "page" : undefined} aria-label={rssFeedName(f)} title={f.last_error ?? rssFeedName(f)} onClick={() => onFeed(f.id)}>
+              <button key={f.id} className="sbt-item" data-on={on} aria-current={on ? "page" : undefined} aria-label={rssFeedName(f)} title={f.last_error ?? rssFeedName(f)} onClick={() => onFeed(f.id)}>
                 <FeedIcon src={f.image_url} name={rssFeedName(f)} className="size-5" /> <span>{rssFeedName(f)}</span>
                 {f.last_error && <FA icon={faTriangleExclamation} className="text-clay-fg" />}
                 {!!f.unread && <em>{f.unread}</em>}

@@ -1,0 +1,235 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 2020" width="2400" height="2020">
+<defs><marker id="ah" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M1 1 L11 6 L1 11 Z" fill="#1f6b4a"/></marker></defs>
+<rect width="2400" height="2020" fill="#ffffff"/>
+<text x="100" y="80" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="46" font-weight="700" fill="#16231d" text-anchor="start">Naazhi — system architecture &amp; flow</text>
+<text x="100" y="118" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="23" font-weight="400" fill="#5b6b63" text-anchor="start">One workspace for notes, tasks, journal and chat · AI is swappable or off · self-hosted data</text>
+<rect x="60" y="150" width="2280" height="210" rx="26" fill="#f6f9f7" stroke="#c9d6cf" stroke-width="2"/>
+<text x="88" y="194" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="700" fill="#1f6b4a" text-anchor="start">1 · CLIENTS</text>
+<rect x="100" y="200" width="640" height="130" rx="18" fill="#e6f2ec" stroke="#1f6b4a" stroke-width="2"/>
+<text x="420.0" y="259.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">Web app</text>
+<text x="420.0" y="291.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">naazhi.app (website) · dashboard.naazhi.app (app + admin)</text>
+<text x="420.0" y="317.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">Next.js 16 · React 19 · Tailwind v4</text>
+<rect x="800" y="200" width="640" height="130" rx="18" fill="#e6f2ec" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1120.0" y="259.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">Mobile app</text>
+<text x="1120.0" y="291.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">Expo / React Native · Android (iOS planned)</text>
+<text x="1120.0" y="317.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">SecureStore session · widgets · push</text>
+<rect x="1500" y="200" width="800" height="130" rx="18" fill="#fff" stroke="#c9d6cf" stroke-width="2" stroke-dasharray="10 8"/>
+<text x="1900.0" y="259.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">Puter.js (in the browser)</text>
+<text x="1900.0" y="291.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">Runs AI with the user’s own Puter account</text>
+<text x="1900.0" y="317.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">No server secret involved</text>
+<rect x="60" y="420" width="2280" height="720" rx="26" fill="#f6f9f7" stroke="#c9d6cf" stroke-width="2"/>
+<text x="88" y="464" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="700" fill="#1f6b4a" text-anchor="start">2 · SERVER</text>
+<text x="2312" y="464" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="end">Next.js 16 on Azure App Service (Docker image)</text>
+<rect x="100" y="480" width="430" height="120" rx="18" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="315.0" y="534.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">Proxy</text>
+<text x="315.0" y="566.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">host split · session gate</text>
+<text x="315.0" y="592.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">/dashboard, /admin redirects</text>
+<rect x="600" y="480" width="500" height="120" rx="18" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="850.0" y="534.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">API v1 routes</text>
+<text x="850.0" y="566.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">/api/v1/* · Zod validation</text>
+<text x="850.0" y="592.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">auth · rate limit · typed errors</text>
+<rect x="1170" y="480" width="500" height="120" rx="18" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="1420.0" y="534.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">Services</text>
+<text x="1420.0" y="566.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">business rules live here</text>
+<text x="1420.0" y="592.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">plain async functions</text>
+<rect x="1740" y="480" width="560" height="120" rx="18" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="2020.0" y="534.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">Repositories</text>
+<text x="2020.0" y="566.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">SQL only · one per aggregate</text>
+<text x="2020.0" y="592.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">runs as the user so RLS applies</text>
+<path d="M530,540 L600,540" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<path d="M1100,540 L1170,540" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<path d="M1670,540 L1740,540" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<text x="100" y="660" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#5b6b63" text-anchor="start">SERVICES</text>
+<rect x="100" y="680" width="178" height="52" rx="26" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="189.0" y="713" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="600" fill="#16231d" text-anchor="middle">Auth</text>
+<rect x="292" y="680" width="178" height="52" rx="26" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="381.0" y="713" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="600" fill="#16231d" text-anchor="middle">Notes</text>
+<rect x="484" y="680" width="178" height="52" rx="26" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="573.0" y="713" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="600" fill="#16231d" text-anchor="middle">Tasks</text>
+<rect x="676" y="680" width="178" height="52" rx="26" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="765.0" y="713" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="600" fill="#16231d" text-anchor="middle">Journal</text>
+<rect x="868" y="680" width="178" height="52" rx="26" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="957.0" y="713" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="600" fill="#16231d" text-anchor="middle">Chat</text>
+<rect x="1060" y="680" width="178" height="52" rx="26" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="1149.0" y="713" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="600" fill="#16231d" text-anchor="middle">Calendar</text>
+<rect x="100" y="746" width="178" height="52" rx="26" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="189.0" y="779" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="600" fill="#16231d" text-anchor="middle">Collaboration</text>
+<rect x="292" y="746" width="178" height="52" rx="26" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="381.0" y="779" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="600" fill="#16231d" text-anchor="middle">Health</text>
+<rect x="484" y="746" width="178" height="52" rx="26" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="573.0" y="779" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="600" fill="#16231d" text-anchor="middle">Notifications</text>
+<rect x="676" y="746" width="178" height="52" rx="26" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="765.0" y="779" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="600" fill="#16231d" text-anchor="middle">Billing</text>
+<rect x="868" y="746" width="178" height="52" rx="26" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="957.0" y="779" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="600" fill="#16231d" text-anchor="middle">Admin</text>
+<rect x="1060" y="746" width="178" height="52" rx="26" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="1149.0" y="779" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="600" fill="#16231d" text-anchor="middle">Search</text>
+<rect x="1330" y="665" width="420" height="120" rx="18" fill="#e6f2ec" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1540.0" y="719.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">AI Orchestrator</text>
+<text x="1540.0" y="751.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">builds context · tools</text>
+<text x="1540.0" y="777.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">writes need user confirmation</text>
+<rect x="1830" y="665" width="470" height="120" rx="18" fill="#e6f2ec" stroke="#1f6b4a" stroke-width="2"/>
+<text x="2065.0" y="719.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">Provider Router</text>
+<text x="2065.0" y="751.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">aiAccessFor(plan) · metering</text>
+<text x="2065.0" y="777.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">Groq · Puter · own key</text>
+<path d="M1750,725 L1830,725" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="100" y="880" width="2200" height="210" rx="18" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="130" y="920" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#5b6b63" text-anchor="start">CROSS-CUTTING</text>
+<rect x="130" y="940" width="412" height="120" rx="14" fill="#f6f9f7" stroke="#c9d6cf" stroke-width="2"/>
+<text x="336" y="978" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#16231d" text-anchor="middle">Better Auth</text>
+<text x="336" y="1010" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#5b6b63" text-anchor="middle">email · Google · passkeys</text>
+<text x="336" y="1036" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#5b6b63" text-anchor="middle">OTP reset · admin plugin</text>
+<rect x="562" y="940" width="412" height="120" rx="14" fill="#f6f9f7" stroke="#c9d6cf" stroke-width="2"/>
+<text x="768" y="978" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#16231d" text-anchor="middle">Row-Level Security</text>
+<text x="768" y="1010" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#5b6b63" text-anchor="middle">per user / workspace in</text>
+<text x="768" y="1036" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#5b6b63" text-anchor="middle">Postgres, never UI-only</text>
+<rect x="994" y="940" width="412" height="120" rx="14" fill="#f6f9f7" stroke="#c9d6cf" stroke-width="2"/>
+<text x="1200" y="978" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#16231d" text-anchor="middle">Realtime</text>
+<text x="1200" y="1010" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#5b6b63" text-anchor="middle">pg_notify → SSE</text>
+<text x="1200" y="1036" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#5b6b63" text-anchor="middle">→ query invalidation</text>
+<rect x="1426" y="940" width="412" height="120" rx="14" fill="#f6f9f7" stroke="#c9d6cf" stroke-width="2"/>
+<text x="1632" y="978" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#16231d" text-anchor="middle">Jobs &amp; cron</text>
+<text x="1632" y="1010" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#5b6b63" text-anchor="middle">reader news · reminders</text>
+<text x="1632" y="1036" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#5b6b63" text-anchor="middle">billing rollover</text>
+<rect x="1858" y="940" width="412" height="120" rx="14" fill="#f6f9f7" stroke="#c9d6cf" stroke-width="2"/>
+<text x="2064" y="978" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#16231d" text-anchor="middle">Observability</text>
+<text x="2064" y="1010" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#5b6b63" text-anchor="middle">audit logs · AI usage</text>
+<text x="2064" y="1036" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#5b6b63" text-anchor="middle">errors logged, no content</text>
+<path d="M315,330 L315,480" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="275.5" y="385" width="79" height="32" rx="16" fill="#fff" stroke="#c9d6cf"/>
+<text x="315" y="408" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="600" fill="#5b6b63" text-anchor="middle">HTTPS</text>
+<path d="M850,330 L850,480" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="755.5" y="385" width="189" height="32" rx="16" fill="#fff" stroke="#c9d6cf"/>
+<text x="850" y="408" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="600" fill="#5b6b63" text-anchor="middle">/api/v1 + token</text>
+<rect x="60" y="1200" width="1130" height="250" rx="26" fill="#f6f9f7" stroke="#c9d6cf" stroke-width="2"/>
+<text x="88" y="1244" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="700" fill="#1f6b4a" text-anchor="start">3 · DATA</text>
+<text x="1162" y="1244" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" fill="#5b6b63" text-anchor="end">Docker / Azure</text>
+<rect x="100" y="1250" width="330" height="150" rx="18" fill="#e6f2ec" stroke="#1f6b4a" stroke-width="2"/>
+<text x="265.0" y="1319.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">PostgreSQL</text>
+<text x="265.0" y="1351.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">RLS on every table</text>
+<text x="265.0" y="1377.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">auth + app schema</text>
+<rect x="450" y="1250" width="330" height="150" rx="18" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="615.0" y="1319.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">Redis</text>
+<text x="615.0" y="1351.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">rate limits · cache</text>
+<text x="615.0" y="1377.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">short-lived state</text>
+<rect x="800" y="1250" width="350" height="150" rx="18" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="975.0" y="1319.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">Object storage</text>
+<text x="975.0" y="1351.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">S3-compatible</text>
+<text x="975.0" y="1377.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">private buckets · signed links</text>
+<rect x="1230" y="1200" width="1110" height="250" rx="26" fill="#f6f9f7" stroke="#c9d6cf" stroke-width="2"/>
+<text x="2312" y="1244" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="700" fill="#1f6b4a" text-anchor="end">4 · EXTERNAL</text>
+<rect x="1270" y="1250" width="235" height="150" rx="18" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="1387.5" y="1319.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">Groq</text>
+<text x="1387.5" y="1351.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">server AI</text>
+<rect x="1520" y="1250" width="235" height="150" rx="18" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="1637.5" y="1319.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">Your own key</text>
+<text x="1637.5" y="1351.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">OpenAI-style</text>
+<text x="1637.5" y="1377.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">allow-listed hosts</text>
+<rect x="1770" y="1250" width="250" height="150" rx="18" fill="#fff" stroke="#c9d6cf" stroke-width="2" stroke-dasharray="10 8"/>
+<text x="1895.0" y="1319.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">Composio</text>
+<text x="1895.0" y="1351.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">Gmail · Calendar</text>
+<text x="1895.0" y="1377.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">(planned)</text>
+<rect x="2035" y="1250" width="265" height="150" rx="18" fill="#fff" stroke="#c9d6cf" stroke-width="2" stroke-dasharray="10 8"/>
+<text x="2167.5" y="1319.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">Razorpay</text>
+<text x="2167.5" y="1351.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">payments</text>
+<text x="2167.5" y="1377.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">(test mode next)</text>
+<path d="M265,1140 L265,1250" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="170.5" y="1152" width="189" height="32" rx="16" fill="#fff" stroke="#c9d6cf"/>
+<text x="265" y="1175" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="600" fill="#5b6b63" text-anchor="middle">SQL as the user</text>
+<path d="M615,1140 L615,1250" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="531.5" y="1152" width="167" height="32" rx="16" fill="#fff" stroke="#c9d6cf"/>
+<text x="615" y="1175" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="600" fill="#5b6b63" text-anchor="middle">limits, cache</text>
+<path d="M975,1140 L975,1250" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="897.0" y="1152" width="156" height="32" rx="16" fill="#fff" stroke="#c9d6cf"/>
+<text x="975" y="1175" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="600" fill="#5b6b63" text-anchor="middle">signed links</text>
+<path d="M1387,1140 L1387,1250" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="1325.5" y="1152" width="123" height="32" rx="16" fill="#fff" stroke="#c9d6cf"/>
+<text x="1387" y="1175" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="600" fill="#5b6b63" text-anchor="middle">AI stream</text>
+<path d="M1637,1140 L1637,1250" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="1581.0" y="1152" width="112" height="32" rx="16" fill="#fff" stroke="#c9d6cf"/>
+<text x="1637" y="1175" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="600" fill="#5b6b63" text-anchor="middle">your key</text>
+<path d="M1895,1140 L1895,1250" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" stroke-dasharray="9 7" marker-end="url(#ah)"/>
+<rect x="1855.5" y="1152" width="79" height="32" rx="16" fill="#fff" stroke="#c9d6cf"/>
+<text x="1895" y="1175" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="600" fill="#5b6b63" text-anchor="middle">tools</text>
+<path d="M2090,1140 L2090,1250" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" stroke-dasharray="9 7" marker-end="url(#ah)"/>
+<rect x="2045.0" y="1152" width="90" height="32" rx="16" fill="#fff" stroke="#c9d6cf"/>
+<text x="2090" y="1175" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="600" fill="#5b6b63" text-anchor="middle">orders</text>
+<rect x="60" y="1510" width="2280" height="200" rx="26" fill="#f6f9f7" stroke="#c9d6cf" stroke-width="2"/>
+<text x="88" y="1554" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="700" fill="#1f6b4a" text-anchor="start">5 · BUILD &amp; RELEASE</text>
+<rect x="100.0" y="1560" width="333.3333333333333" height="110" rx="18" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="266.66666666666663" y="1609.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">Push to main</text>
+<text x="266.66666666666663" y="1641.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">GitHub</text>
+<path d="M433.3333333333333,1615 L473.3333333333333,1615" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="473.3333333333333" y="1560" width="333.3333333333333" height="110" rx="18" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="640.0" y="1609.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">CI</text>
+<text x="640.0" y="1641.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">typecheck · tests · design check</text>
+<path d="M806.6666666666666,1615 L846.6666666666666,1615" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="846.6666666666666" y="1560" width="333.3333333333333" height="110" rx="18" fill="#e6f2ec" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1013.3333333333333" y="1609.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">Deploy web app</text>
+<text x="1013.3333333333333" y="1641.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">GitHub Actions → Azure</text>
+<path d="M1180.0,1615 L1220.0,1615" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="1220.0" y="1560" width="333.3333333333333" height="110" rx="18" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="1386.6666666666667" y="1609.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">Tag vX.Y.Z</text>
+<text x="1386.6666666666667" y="1641.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">starts Android build</text>
+<path d="M1553.3333333333333,1615 L1593.3333333333333,1615" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="1593.3333333333333" y="1560" width="333.3333333333333" height="110" rx="18" fill="#e6f2ec" stroke="#1f6b4a" stroke-width="2"/>
+<text x="1760.0" y="1609.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">Release Android</text>
+<text x="1760.0" y="1641.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">signed APK + checksum</text>
+<path d="M1926.6666666666665,1615 L1966.6666666666665,1615" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="1966.6666666666665" y="1560" width="333.3333333333333" height="110" rx="18" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<text x="2133.333333333333" y="1609.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#16231d" text-anchor="middle">In-app update</text>
+<text x="2133.333333333333" y="1641.0" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#5b6b63" text-anchor="middle">app checks GitHub Releases</text>
+<rect x="60" y="1770" width="2280" height="220" rx="26" fill="#f6f9f7" stroke="#c9d6cf" stroke-width="2"/>
+<text x="88" y="1814" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="700" fill="#1f6b4a" text-anchor="start">6 · FLOW: ASKING THE AI</text>
+<rect x="100.0" y="1835" width="248.75" height="120" rx="14" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<circle cx="130.0" cy="1895" r="20" fill="#1f6b4a"/>
+<text x="130.0" y="1902" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+<text x="246.375" y="1882" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="middle">You ask</text>
+<text x="246.375" y="1908" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#5b6b63" text-anchor="middle">chat in web</text>
+<text x="246.375" y="1930" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#5b6b63" text-anchor="middle">or app</text>
+<path d="M348.75,1895 L378.75,1895" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="378.75" y="1835" width="248.75" height="120" rx="14" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<circle cx="408.75" cy="1895" r="20" fill="#1f6b4a"/>
+<text x="408.75" y="1902" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+<text x="525.125" y="1882" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="middle">Proxy</text>
+<text x="525.125" y="1908" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#5b6b63" text-anchor="middle">checks session</text>
+<path d="M627.5,1895 L657.5,1895" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="657.5" y="1835" width="248.75" height="120" rx="14" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<circle cx="687.5" cy="1895" r="20" fill="#1f6b4a"/>
+<text x="687.5" y="1902" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+<text x="803.875" y="1882" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="middle">API route</text>
+<text x="803.875" y="1908" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#5b6b63" text-anchor="middle">validates with Zod</text>
+<path d="M906.25,1895 L936.25,1895" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="936.25" y="1835" width="248.75" height="120" rx="14" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<circle cx="966.25" cy="1895" r="20" fill="#1f6b4a"/>
+<text x="966.25" y="1902" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#fff" text-anchor="middle">4</text>
+<text x="1082.625" y="1882" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="middle">Plan check</text>
+<text x="1082.625" y="1908" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#5b6b63" text-anchor="middle">aiAccessFor():</text>
+<text x="1082.625" y="1930" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#5b6b63" text-anchor="middle">allowance or own key</text>
+<path d="M1185.0,1895 L1215.0,1895" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="1215.0" y="1835" width="248.75" height="120" rx="14" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<circle cx="1245.0" cy="1895" r="20" fill="#1f6b4a"/>
+<text x="1245.0" y="1902" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#fff" text-anchor="middle">5</text>
+<text x="1361.375" y="1882" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="middle">Orchestrator</text>
+<text x="1361.375" y="1908" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#5b6b63" text-anchor="middle">context + tools</text>
+<path d="M1463.75,1895 L1493.75,1895" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="1493.75" y="1835" width="248.75" height="120" rx="14" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<circle cx="1523.75" cy="1895" r="20" fill="#1f6b4a"/>
+<text x="1523.75" y="1902" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#fff" text-anchor="middle">6</text>
+<text x="1640.125" y="1882" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="middle">Provider</text>
+<text x="1640.125" y="1908" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#5b6b63" text-anchor="middle">Groq, own key</text>
+<text x="1640.125" y="1930" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#5b6b63" text-anchor="middle">or Puter</text>
+<path d="M1742.5,1895 L1772.5,1895" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="1772.5" y="1835" width="248.75" height="120" rx="14" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<circle cx="1802.5" cy="1895" r="20" fill="#1f6b4a"/>
+<text x="1802.5" y="1902" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#fff" text-anchor="middle">7</text>
+<text x="1918.875" y="1882" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="middle">Stream back</text>
+<text x="1918.875" y="1908" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#5b6b63" text-anchor="middle">answer appears live</text>
+<path d="M2021.25,1895 L2051.25,1895" fill="none" stroke="#1f6b4a" stroke-width="3.5" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="2051.25" y="1835" width="248.75" height="120" rx="14" fill="#fff" stroke="#c9d6cf" stroke-width="2"/>
+<circle cx="2081.25" cy="1895" r="20" fill="#1f6b4a"/>
+<text x="2081.25" y="1902" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#fff" text-anchor="middle">8</text>
+<text x="2197.625" y="1882" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16231d" text-anchor="middle">Record</text>
+<text x="2197.625" y="1908" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#5b6b63" text-anchor="middle">tokens counted,</text>
+<text x="2197.625" y="1930" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#5b6b63" text-anchor="middle">messages saved</text>
+</svg>

@@ -1,5 +1,5 @@
 "use client";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faArrowLeft, faArrowUpRightFromSquare, faEnvelope, faEnvelopeOpen, faShareNodes, faStar } from "@fortawesome/free-solid-svg-icons";
 import { rssAge } from "@untitled/logic/rss";
 import Link from "next/link";
@@ -76,7 +76,7 @@ export default function ArticleView() {
           </button>
         </div>
       </div>
-      {notice && <p role="alert" className="at-clay tint rounded-r2 px-3 py-2 text-[13px]">{notice}</p>}
+      {notice && <p role="alert" className="bg-critical-wash text-critical rounded-r2 px-3 py-2 text-[13px]">{notice}</p>}
       <article className="glass flex flex-col gap-5 rounded-r4 p-5 sm:p-8">
         <p className="flex min-w-0 items-center gap-2 text-[13px] text-fg-muted">
           <FeedIcon src={item.feed_image_url} name={item.feed_title} className="size-5" />
@@ -89,7 +89,7 @@ export default function ArticleView() {
             {rssAge(item.published_at)}
           </time>
         </p>
-        <h1 className="font-serif text-[clamp(28px,4vw,42px)] leading-[1.06] font-normal tracking-[-0.02em] text-balance">{item.title}</h1>
+        <h1 className="font-serif text-[clamp(28px,4vw,42px)] leading-[1.06] font-semibold tracking-[-0.02em] text-balance">{item.title}</h1>
         {item.image_url && !imageFailed && (
           // eslint-disable-next-line @next/next/no-img-element -- article pictures come from any site
           <img src={item.image_url} alt="" referrerPolicy="no-referrer" onError={() => setImageFailed(true)} className="max-h-[380px] w-full rounded-r3 bg-surface-muted object-cover" />

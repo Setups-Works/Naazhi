@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f5f4eb" />
+    <title>Untitled project — Tamil name hunt</title>
+    <style>
+      /* design-ok-file: Campaign artwork follows the mobile app design tokens. */
+      @font-face { font-family: Geist; src: url("assets/Geist-Regular.ttf") format("truetype"); font-weight: 400; }
+      @font-face { font-family: Geist; src: url("assets/Geist-Medium.ttf") format("truetype"); font-weight: 500; }
+      @font-face { font-family: Geist; src: url("assets/Geist-SemiBold.ttf") format("truetype"); font-weight: 600; }
+      @font-face { font-family: Instrument Serif; src: url("assets/InstrumentSerif-Regular.ttf") format("truetype"); font-weight: 400; }
+      @font-face { font-family: Instrument Serif; src: url("assets/InstrumentSerif-Italic.ttf") format("truetype"); font-style: italic; font-weight: 400; }
+      :root {
+        --page: #f5f4eb; --surface: #fff; --ink: #1b1c14; --muted: #5f6055; --quiet: #7e7e72;
+        --green: #1f5d49; --green-soft: #e8efe7; --blue: #3f6470; --blue-soft: #e4eef2; --amber: #8a6d2a; --amber-soft: #fae9bd;
+        --violet: #5f4a7a; --violet-soft: #ece5f2; --serif: "Instrument Serif", Georgia, serif; --sans: Geist, Arial, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #deddd5; color: var(--ink); font-family: var(--sans); }
+      body { display: grid; place-items: center; }
+      .story { width: 1080px; height: 1920px; position: relative; overflow: hidden; isolation: isolate; background: var(--page); }
+      .ambient { position: absolute; z-index: -1; inset: -12%; background: radial-gradient(ellipse at 2% 28%, rgba(220,239,230,.92), transparent 38%), radial-gradient(ellipse at 97% 43%, rgba(236,229,242,.8), transparent 37%), radial-gradient(ellipse at 60% 100%, rgba(250,233,189,.72), transparent 43%); }
+      .top { position: absolute; top: 64px; left: 80px; right: 80px; display: flex; align-items: center; justify-content: space-between; z-index: 3; }
+      .wordmark { display: flex; align-items: center; gap: 14px; padding: 12px 28px 12px 20px; border: 1.5px solid rgba(255,255,255,.92); border-radius: 999px; background: rgba(255,255,255,.55); box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 6px 20px rgba(0,0,0,.04); font: 400 36px/1 var(--serif); letter-spacing: -.02em; }
+      .ghost-mark { width: 42px; height: 42px; object-fit: contain; }
+      .series { color: var(--quiet); font-size: 19px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; }
+      .slide { position: absolute; inset: 0; display: none; }
+      .slide.active { display: block; }
+      .copy { position: absolute; top: 195px; left: 80px; right: 80px; z-index: 2; }
+      .eyebrow { display: flex; align-items: center; gap: 13px; color: var(--green); font-size: 19px; font-weight: 600; letter-spacing: .13em; text-transform: uppercase; }
+      .eyebrow::before { content: ""; width: 36px; height: 2px; background: currentColor; opacity: .48; }
+      h1 { max-width: 920px; margin: 24px 0 18px; font: 400 88px/.98 var(--serif); letter-spacing: -.035em; text-wrap: balance; }
+      h1 em { color: var(--green); font-weight: 400; }
+      .lead { max-width: 850px; margin: 0; color: var(--muted); font-size: 29px; line-height: 1.42; letter-spacing: -.02em; }
+
+      /* Feature cards: two columns, tinted like the app's note colours. */
+      .features { position: absolute; top: 470px; left: 80px; right: 80px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; z-index: 2; }
+      .feature { display: flex; align-items: center; gap: 18px; min-height: 150px; padding: 20px 22px; border: 1px solid rgba(255,255,255,.9); border-radius: 30px; background: rgba(255,255,255,.66); box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 8px 22px rgba(50,46,28,.055); }
+      .dot { flex: 0 0 64px; width: 64px; height: 64px; display: grid; place-items: center; border-radius: 22px; }
+      .dot svg { width: 32px; height: 32px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+      .dot.g { color: var(--green); background: var(--green-soft); }
+      .dot.b { color: var(--blue); background: var(--blue-soft); }
+      .dot.a { color: var(--amber); background: var(--amber-soft); }
+      .dot.v { color: var(--violet); background: var(--violet-soft); }
+      .feature h2 { margin: 0 0 5px; font-size: 27px; font-weight: 600; letter-spacing: -.035em; line-height: 1.08; }
+      .feature p { margin: 0; color: var(--muted); font-size: 19px; line-height: 1.3; letter-spacing: -.01em; }
+
+      .apps { position: absolute; top: 742px; left: 80px; right: 80px; z-index: 2; display: flex; align-items: center; gap: 14px; padding: 16px 22px; border: 1px solid rgba(255,255,255,.9); border-radius: 30px; background: rgba(255,255,255,.66); box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 8px 22px rgba(50,46,28,.055); }
+      .apps img { width: 62px; height: 62px; padding: 12px; object-fit: contain; border-radius: 20px; background: rgba(255,255,255,.85); box-shadow: 0 4px 14px rgba(50,46,28,.05); }
+      .apps .more { margin-left: auto; color: var(--quiet); font-size: 20px; font-weight: 500; white-space: nowrap; }
+
+      /* Name-hunt hero on slide 1. */
+      .tamil { margin: 4px 0 0; color: var(--green); font: 400 54px/1.1 var(--serif); }
+      .chips { position: absolute; top: 600px; left: 80px; right: 80px; display: flex; flex-wrap: wrap; gap: 12px; z-index: 2; }
+      .chip { padding: 12px 22px; border: 1px solid rgba(255,255,255,.9); border-radius: 999px; background: rgba(255,255,255,.66); color: var(--ink); font-size: 24px; font-weight: 500; letter-spacing: -.02em; box-shadow: 0 6px 18px rgba(50,46,28,.05); }
+      .ask { position: absolute; top: 790px; left: 80px; right: 80px; z-index: 2; display: flex; align-items: center; gap: 22px; padding: 26px 32px; border-radius: 34px; background: var(--green); color: #fff; box-shadow: 0 18px 40px rgba(31,93,73,.28); }
+      .ask strong { display: block; font: 400 46px/1.05 var(--serif); letter-spacing: -.02em; }
+      .ask span { display: block; margin-top: 8px; color: rgba(255,255,255,.82); font-size: 22px; }
+      .ask .arrow { margin-left: auto; font-size: 54px; line-height: 1; }
+
+      /* Half phone: the top half of the device rises from the bottom edge of the story. */
+      .phone { position: absolute; left: 50%; bottom: -640px; width: 760px; aspect-ratio: 1419 / 2796; transform: translateX(-50%); filter: drop-shadow(0 -10px 50px rgba(31,29,22,.2)); z-index: 1; }
+      .screen-window { position: absolute; top: 4.29%; left: 8.46%; width: 83.02%; height: 91.32%; overflow: hidden; border-radius: 12% / 5.5%; background: var(--page); }
+      .screen-shot { position: absolute; top: .45%; left: 0; display: block; width: 100%; height: 98.71%; object-fit: contain; object-position: center; }
+      .phone-frame { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; }
+      /* A soft fade keeps the cut edge of the phone from looking harsh. */
+      .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 280px; z-index: 2; background: linear-gradient(to top, var(--page) 32%, rgba(245,244,235,0)); }
+      .footer { position: absolute; bottom: 44px; left: 80px; right: 80px; display: flex; align-items: center; justify-content: space-between; z-index: 3; color: var(--quiet); font-size: 24px; }
+      .handle { color: var(--green); font-size: 32px; font-weight: 600; letter-spacing: .02em; }
+      .footer-ghost { width: 64px; height: 64px; object-fit: contain; display: block; filter: drop-shadow(0 4px 14px rgba(0,0,0,.08)); }
+      .count { font-weight: 500; letter-spacing: .1em; }
+      .controls { position: absolute; inset: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
+      .controls button { width: 58px; height: 58px; margin: 18px; border: 0; border-radius: 50%; color: var(--ink); background: rgba(255,255,255,.78); font-size: 30px; cursor: pointer; pointer-events: auto; box-shadow: 0 6px 22px rgba(40,35,10,.1); }
+      .export-mode .controls { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <main class="story" aria-label="Instagram story slides asking for a Tamil name for the app">
+      <div class="ambient"></div>
+      <header class="top"><div class="wordmark"><img class="ghost-mark" src="assets/ghost.png" alt="" /><span>untitled project</span></div><span class="series">Help us name it</span></header>
+
+      <!-- 1 · The ask -->
+      <section class="slide active" data-slide="1" aria-label="We need a Tamil name">
+        <div class="copy">
+          <div class="eyebrow">Name hunt</div>
+          <h1>We need a <em>Tamil name.</em></h1>
+          <p class="tamil">எங்களுக்கு ஒரு பெயர் வேண்டும்</p>
+          <p class="lead" style="margin-top:18px">One calm workspace for notes, tasks, journal and AI chat. It’s still called “untitled project”, so help us fix that.</p>
+        </div>
+        <div class="chips" aria-label="Name ideas from Tamil culture">
+          <span class="chip">From Sangam literature</span><span class="chip">From the Thirukkural</span><span class="chip">A Tamil word you love</span><span class="chip">Short &amp; easy to say</span>
+        </div>
+        <div class="ask"><div><strong>Drop your idea</strong><span>Reply or use the question sticker</span></div><span class="arrow" aria-hidden="true">→</span></div>
+        <div class="phone"><div class="screen-window"><img class="screen-shot" src="assets/screens/01-home.png" alt="App home screen with the journal streak, a to-do and notes" /></div><img class="phone-frame" src="assets/iphone-15-frame.png" alt="" /></div>
+        <div class="fade"></div>
+        <div class="footer"><span class="handle">untitled project</span><span class="count">1 / 4</span></div>
+      </section>
+
+      <!-- 2 · Features: capture -->
+      <section class="slide" data-slide="2" aria-label="Features: capture">
+        <div class="copy"><div class="eyebrow">What it does · 1</div><h1>Write it, plan it, <em>keep it.</em></h1></div>
+        <div class="features" style="top:400px">
+          <article class="feature"><span class="dot a"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg></span><div><h2>Notes</h2><p>Colours, slash commands, voice and file attachments</p></div></article>
+          <article class="feature"><span class="dot g"><svg viewBox="0 0 24 24"><path d="M5 7l2 2 3-3M5 17l2 2 3-3M13 8h7M13 18h7"/></svg></span><div><h2>To-do</h2><p>Lists, priorities, repeats, board and calendar views</p></div></article>
+          <article class="feature"><span class="dot v"><svg viewBox="0 0 24 24"><path d="M4 5c3-1 6-1 8 1 2-2 5-2 8-1v14c-3-1-6-1-8 1-2-2-5-2-8-1z"/><path d="M12 6v14"/></svg></span><div><h2>Journal</h2><p>Many entries a day, photos, voice notes and streaks</p></div></article>
+          <article class="feature"><span class="dot b"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></span><div><h2>AI chat</h2><p>Folders, pins, share links and sources you can check</p></div></article>
+          <article class="feature"><span class="dot g"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span><div><h2>Calendar</h2><p>Month, week, day and agenda with your tasks on it</p></div></article>
+          <article class="feature"><span class="dot a"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/></svg></span><div><h2>Universal search</h2><p>Find any task, note, entry or chat in one place</p></div></article>
+        </div>
+        <div class="phone"><div class="screen-window"><img class="screen-shot" src="assets/screens/03-notes.png" alt="Notes screen" /></div><img class="phone-frame" src="assets/iphone-15-frame.png" alt="" /></div>
+        <div class="fade"></div>
+        <div class="footer"><span class="handle">untitled project</span><span class="count">2 / 4</span></div>
+      </section>
+
+      <!-- 3 · Features: life -->
+      <section class="slide" data-slide="3" aria-label="Features: your life">
+        <div class="copy"><div class="eyebrow">What it does · 2</div><h1>Made for <em>your whole day.</em></h1></div>
+        <div class="features" style="top:400px">
+          <article class="feature"><span class="dot g"><svg viewBox="0 0 24 24"><path d="M5 5h14v14H5z"/><path d="M5 9h14M9 9v10"/></svg></span><div><h2>Home dashboard</h2><p>Cards you can drag into your own order</p></div></article>
+          <article class="feature"><span class="dot a"><svg viewBox="0 0 24 24"><path d="M5 19a14 14 0 0 1 14-14M5 12a7 7 0 0 1 7-7M6 18h.01"/></svg></span><div><h2>Reader</h2><p>Follow RSS feeds without leaving the app</p></div></article>
+          <article class="feature"><span class="dot v"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.4A4 4 0 0 1 19 10c0 5.600-7 10-7 10z"/></svg></span><div><h2>Health</h2><p>Steps, sleep and heart rate from your phone</p></div></article>
+          <article class="feature"><span class="dot b"><svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="3"/><circle cx="17" cy="10" r="2.4"/><path d="M3 19c.6-3 3-4.600 6-4.600s5.400 1.600 6 4.600M16 15c2.600 0 4.400 1.200 5 3.600"/></svg></span><div><h2>Shared journals</h2><p>Invite people with owner, editor or viewer roles</p></div></article>
+          <article class="feature"><span class="dot g"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-9"/><path d="M4 21h16"/></svg></span><div><h2>Insights</h2><p>Patterns from your tasks, notes and journal</p></div></article>
+          <article class="feature"><span class="dot a"><svg viewBox="0 0 24 24"><rect x="7" y="2.500" width="10" height="19" rx="3"/><path d="M11 18h2"/></svg></span><div><h2>Home-screen widgets</h2><p>Tasks, quick write, health and journal streak</p></div></article>
+        </div>
+        <div class="phone"><div class="screen-window"><img class="screen-shot" src="assets/screens/04-journal.png" alt="Journal screen" /></div><img class="phone-frame" src="assets/iphone-15-frame.png" alt="" /></div>
+        <div class="fade"></div>
+        <div class="footer"><span class="handle">untitled project</span><span class="count">3 / 4</span></div>
+      </section>
+
+      <!-- 4 · Features: control + final ask -->
+      <section class="slide" data-slide="4" aria-label="Features: your control, and the ask">
+        <div class="copy"><div class="eyebrow">What it does · 3</div><h1>Your data. <em>Your AI.</em></h1></div>
+        <div class="features" style="top:400px">
+          <article class="feature"><span class="dot b"><svg viewBox="0 0 24 24"><path d="M12 3l1.800 5.200L19 10l-5.200 1.800L12 17l-1.800-5.200L5 10l5.200-1.800z"/></svg></span><div><h2>Swap or switch off AI</h2><p>Use Groq, Puter or your own key, or none at all</p></div></article>
+          <article class="feature"><span class="dot g"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2.500"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><div><h2>Private by design</h2><p>Your data is scoped to you, and AI asks before saving</p></div></article>
+          <article class="feature"><span class="dot a"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.500"/><circle cx="18" cy="6" r="2.500"/><circle cx="18" cy="18" r="2.500"/><path d="M8.300 11l7.400-3.600M8.300 13l7.400 3.600"/></svg></span><div><h2>Connected apps</h2><p>Bring your other tools into one workspace</p></div></article>
+          <article class="feature"><span class="dot v"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="12" height="9" rx="2"/><rect x="15" y="9" width="6" height="11" rx="2"/><path d="M7 18h4"/></svg></span><div><h2>Web, iPhone &amp; Android</h2><p>Sign in with email, Google or a passkey</p></div></article>
+        </div>
+        <div class="apps" aria-label="Apps you can connect">
+          <img src="assets/logos/gmail.svg" alt="Gmail" /><img src="assets/logos/google-calendar.svg" alt="Google Calendar" /><img src="assets/logos/google-meet.svg" alt="Google Meet" /><img src="assets/logos/google-drive.svg" alt="Google Drive" /><img src="assets/logos/google-docs.svg" alt="Google Docs" /><img src="assets/logos/google-sheets.svg" alt="Google Sheets" /><img src="assets/logos/maps.svg" alt="Maps" /><span class="more">+ more soon</span>
+        </div>
+        <div class="ask" style="top:870px"><div><strong>So, what should we call it?</strong><span>Send your Tamil name idea in a reply</span></div><span class="arrow" aria-hidden="true">→</span></div>
+        <div class="phone"><div class="screen-window"><img class="screen-shot" src="assets/screens/05-chat.png" alt="AI chat screen" /></div><img class="phone-frame" src="assets/iphone-15-frame.png" alt="" /></div>
+        <div class="fade"></div>
+        <div class="footer"><span class="handle">untitled project</span><span class="count">4 / 4</span></div>
+      </section>
+
+      <div class="controls" aria-label="Story preview controls"><button type="button" id="prev" aria-label="Previous slide">‹</button><button type="button" id="next" aria-label="Next slide">›</button></div>
+    </main>
+    <script>
+      const slides = [...document.querySelectorAll(".slide")];
+      let current = Number(new URLSearchParams(location.search).get("slide") || 1) - 1;
+      function show(index) {
+        current = (index + slides.length) % slides.length;
+        slides.forEach((slide, i) => slide.classList.toggle("active", i === current));
+        history.replaceState(null, "", `?slide=${current + 1}`);
+      }
+      document.getElementById("prev").addEventListener("click", () => show(current - 1));
+      document.getElementById("next").addEventListener("click", () => show(current + 1));
+      window.addEventListener("keydown", (event) => { if (event.key === "ArrowRight") show(current + 1); if (event.key === "ArrowLeft") show(current - 1); });
+      if (new URLSearchParams(location.search).has("export")) document.body.classList.add("export-mode");
+      show(current);
+    </script>
+  </body>
+</html>

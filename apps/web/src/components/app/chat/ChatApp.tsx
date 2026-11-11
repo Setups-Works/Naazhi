@@ -1,7 +1,7 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import {
   faBars,
   faClone,
@@ -15,6 +15,11 @@ import {
   faThumbtack,
   faTrash,
   faTriangleExclamation,
+  faClock,
+  faEnvelope,
+  faListCheck,
+  faPenToSquare,
+  faTableCells,
 } from "@fortawesome/free-solid-svg-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../lib/api/client";
@@ -22,7 +27,11 @@ import { qk } from "../../../lib/query/keys";
 import { useRealtimeInvalidate } from "../../../hooks/useRealtimeInvalidate";
 import type { Attachment, Chat, ChatFolder, Message } from "../../../lib/workspace";
 import { chatGreeting, isUnread, prettyTitle } from "../../../lib/chat";
-import { fmtTime } from "../../../lib/prefs";
+import { fmtTime, readPrefs } from "../../../lib/prefs";
+import { writeText } from "../../../lib/drafts";
+import ChatMessageActions from "./ChatMessageActions";
+import { setCrumb } from "../../../lib/crumb";
+import SidebarPortal from "../SidebarPortal";
 import { safeName } from "../../../lib/notes";
 import { BrandMark } from "../../BrandMark";
 import Menu, { MenuItem, MenuSeparator } from "../../ui/Menu";
@@ -33,7 +42,6 @@ import Markdown from "../Markdown";
 import { useAiProviders } from "../../../features/ai/useAiProviders";
 import { openSearch } from "../UniversalSearch";
 import ChatSidebar, { type Tab } from "./ChatSidebar";
-import ChatRail from "./ChatRail";
 import Composer from "./Composer";
 import {
   ChatLayout,
@@ -58,6 +66,16 @@ const CHAT_COLS = "id,title,updated_at,pinned,folder_id,last_read_at,share_token
 const MSG_COLS = "id,role,body,created_at,attachments";
 const SIDE_KEY = "up_chat_sidebar";
 
+/** "27 min ago" today, otherwise a short date ("Oct 12"). */
+function ago(iso: string) {
+  const d = new Date(iso);
+  const mins = Math.round((Date.now() - d.getTime()) / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins} min ago`;
+  if (d.toDateString() === new Date().toDateString()) return `${Math.round(mins / 60)} h ago`;
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
 const titleFrom = (text: string, files: File[]) => prettyTitle((text.split("\n")[0].trim() || files[0]?.name || "New chat").slice(0, 60));
 
 export default function ChatApp({ name }: { name: string }) {
@@ -72,7 +90,8 @@ export default function ChatApp({ name }: { name: string }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [err, setErr] = useState("");
   const [tab, setTab] = useState<Tab>("all");
-  const [side, setSide] = useState(true);
+  // The chats panel starts closed so the page opens like the reference (one centred column); the menu button shows it.
+  const [side, setSide] = useState(false);
   const [drawer, setDrawer] = useState(false);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -85,7 +104,27 @@ export default function ChatApp({ name }: { name: string }) {
   // The reply that is being written right now (shown as it arrives; the saved copy replaces it when finished).
   const [streaming, setStreaming] = useState<{ chatId: string; text: string } | null>(null);
   const hello = useMemo(() => chatGreeting(name), [name]);
-  const today = useMemo(() => new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }), []);
+  // "Or make something" chips put a starter sentence in the composer (not sent), so the person finishes it.
+  const [prefill, setPrefill] = useState(0);
+  const starters: [string, typeof faClock, string][] = [
+    ["Write a note", faPenToSquare, "Write a note about "],
+    ["Make a to-do list", faListCheck, "Make a to-do list for "],
+    ["Build a table", faTableCells, "Build a table comparing "],
+    ["Draft an email", faEnvelope, "Draft an email to "],
+  ];
+  /** Keeps a reply as a note in Notes (the first line becomes the title). */
+  async function saveReplyAsNote(text: string): Promise<boolean> {
+    const body = text.trim();
+    if (!body) return false;
+    const first = body.split("\n").find((l) => l.trim()) ?? "";
+    const title = first.replace(/^[#>*\s-]+/, "").slice(0, 80);
+    const { error } = await sb.from("notes").insert({ title, body, category: readPrefs().defaultCategory });
+    if (error) {
+      setErr("Couldn’t save that as a note.");
+      return false;
+    }
+    return true;
+  }
 
   useEffect(() => {
     try {
@@ -474,7 +513,7 @@ export default function ChatApp({ name }: { name: string }) {
           Copied to clipboard
         </div>
       )}
-      <div className="cx-sidewrap">
+      <SidebarPortal>
         <ChatSidebar
           chats={chats}
           folders={folders}
@@ -485,7 +524,6 @@ export default function ChatApp({ name }: { name: string }) {
           onOpen={open}
           onNew={fresh}
           onSearch={openSearch}
-          onCollapse={toggleSide}
           onAddFolder={addFolder}
           onRenameFolder={renameFolder}
           onDeleteFolder={deleteFolder}
@@ -499,24 +537,14 @@ export default function ChatApp({ name }: { name: string }) {
           onExport={exportChat}
           onClear={clearChat}
         />
-      </div>
-      <ChatRail
-        chats={chats}
-        activeId={activeId}
-        onOpen={open}
-        onNew={fresh}
-        onSearch={openSearch}
-        onAddFolder={addFolder}
-        onExpand={toggleSide}
-      />
+      </SidebarPortal>
 
       <section className="cx-main">
+        <CrumbSync label={active ? prettyTitle(active.title) : "New chat"} />
         <header className="cx-head">
-          <button className="ne-btn cx-menu" aria-label="Show chats" data-show={!side} onClick={toggleSide}>
-            <FA icon={faBars} />
-          </button>
           {active ? (
-            <div className="cx-titlewrap">
+            // The title lives in the breadcrumb at the top of the page; it stays here for screen readers and keeps Rename reachable.
+            <div className="cx-titlewrap" data-quiet>
               <button
                 className="cx-title"
                 onClick={() => rename(active)}
@@ -604,6 +632,7 @@ export default function ChatApp({ name }: { name: string }) {
 
         <ChatLayout
           footer={
+            activeId ? (
             <>
               {activeId && provider === "none" && (
                 <ChatSystemMessage icon={<FA icon={faTriangleExclamation} />}>
@@ -622,6 +651,7 @@ export default function ChatApp({ name }: { name: string }) {
                 autoFocus
               />
             </>
+            ) : null
           }
         >
           {!activeId ? (
@@ -629,9 +659,55 @@ export default function ChatApp({ name }: { name: string }) {
               <span className="cx-mark" aria-hidden>
                 <BrandMark size={40} />
               </span>
-              <small>{today}</small>
               <h2>{hello.title}</h2>
               <p>{hello.sub}</p>
+              <div className="cx-hello-compose">
+                <Composer
+                  key={`new-${prefill}`}
+                  draftKey="chat:new"
+                  starter={prefill > 0}
+                  busy={busy}
+                  providers={providers}
+                  provider={provider}
+                  onProvider={selectProvider}
+                  onSend={send}
+                  onError={setErr}
+                  autoFocus
+                />
+              </div>
+              {chats.length > 0 && (
+                <section className="cx-recent" aria-labelledby="cx-recent-h">
+                  <h3 id="cx-recent-h">Pick up where you left off</h3>
+                  <ul>
+                    {chats.slice(0, 3).map((c) => (
+                      <li key={c.id}>
+                        <button type="button" onClick={() => open(c.id)}>
+                          <FA icon={faClock} />
+                          <span>{prettyTitle(c.title)}</span>
+                          <time dateTime={c.updated_at}>{ago(c.updated_at)}</time>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+              <section className="cx-make" aria-labelledby="cx-make-h">
+                <h3 id="cx-make-h">Or make something</h3>
+                <div>
+                  {starters.map(([label, icon, prompt]) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => {
+                        writeText("chat:new", prompt);
+                        setPrefill((n) => n + 1);
+                      }}
+                    >
+                      <FA icon={icon} /> {label}
+                    </button>
+                  ))}
+                </div>
+              </section>
             </div>
           ) : (
             <ChatMessageList endRef={end}>
@@ -667,7 +743,12 @@ export default function ChatApp({ name }: { name: string }) {
                           </div>
                         );
                       })}
-                      <ChatMessageMetadata at={m.created_at} />
+                      <div className="cx-msgfoot">
+                        {m.role === "assistant" && (parsed?.body || m.body) && (
+                          <ChatMessageActions text={parsed?.body || m.body} onSaveNote={saveReplyAsNote} />
+                        )}
+                        <ChatMessageMetadata at={m.created_at} />
+                      </div>
                     </ChatMessageBubble>
                   </ChatMessage>
                 );
@@ -685,4 +766,13 @@ export default function ChatApp({ name }: { name: string }) {
       </section>
     </div>
   );
+}
+
+/** Puts the open chat's name in the breadcrumb ("Chat / Exception handling in C#"). */
+function CrumbSync({ label }: { label: string }) {
+  useEffect(() => {
+    setCrumb(label);
+    return () => setCrumb(undefined);
+  }, [label]);
+  return null;
 }

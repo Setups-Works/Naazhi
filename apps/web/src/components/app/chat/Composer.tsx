@@ -1,6 +1,6 @@
 "use client";
 import { useRef } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faChevronDown, faPaperclip } from "@fortawesome/free-solid-svg-icons";
 import type { Provider } from "../../../lib/ai";
 import Menu, { MenuLabel, MenuRadioGroup, MenuRadioItem } from "../../ui/Menu";
@@ -17,6 +17,7 @@ import {
 import { useRecorder } from "../useRecorder";
 import { useDraftFiles, useDraftText } from "../../../hooks/useDraft";
 import { clearDraft } from "../../../lib/drafts";
+import { useSkills } from "../../../features/settings/useSkills";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -29,6 +30,7 @@ export default function Composer({
   onError,
   autoFocus,
   draftKey,
+  starter = false,
 }: {
   busy: boolean;
   /** Every AI choice (the server decides which are available). */
@@ -42,9 +44,15 @@ export default function Composer({
   autoFocus?: boolean;
   /** Where the unsent message, attachments and voice recordings are kept so a refresh doesn't lose them (one per chat). */
   draftKey: string;
+  /** The text was put there by a starter chip, so it is not announced as a restored draft. */
+  starter?: boolean;
 }) {
   const [text, setText, restored] = useDraftText(draftKey);
   const [files, setFiles] = useDraftFiles(draftKey);
+  // Typing "/" at the start lists the person's saved prompts (Settings → Skills); picking one puts its prompt in the box.
+  const { skills } = useSkills();
+  const slash = /^\/([a-z0-9-]*)$/i.exec(text);
+  const skillMatches = slash ? skills.filter((s) => s.name.startsWith(slash[1].toLowerCase())) : [];
   const ta = useRef<HTMLTextAreaElement>(null);
   const picker = useRef<HTMLInputElement>(null);
   const current = providers.find((p) => p.id === provider) ?? providers[0];
@@ -83,7 +91,29 @@ export default function Composer({
     <ChatComposer onSubmit={submit}>
       <ChatComposerDrawer>
         <FilePreviewList files={files} onRemove={(i) => setFiles((x) => x.filter((_, j) => j !== i))} />
-        {restored && (
+        {slash && (
+          <ul className="cx-slash" aria-label="Skills">
+            {skillMatches.length === 0 ? (
+              <li className="cx-slash-none">{skills.length === 0 ? "No skills yet. Add one in Settings → Skills." : "No skill with that name."}</li>
+            ) : (
+              skillMatches.map((s) => (
+                <li key={s.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setText(s.prompt);
+                      ta.current?.focus();
+                    }}
+                  >
+                    <b className="font-mono">/{s.name}</b>
+                    <small>{s.description || s.prompt.slice(0, 70)}</small>
+                  </button>
+                </li>
+              ))
+            )}
+          </ul>
+        )}
+        {restored && !starter && (
           <p className="m-0 flex items-center gap-2 text-[12.5px] text-fg-subtle" role="status">
             <ChatComposerTokenElement onRemove={sent} removeLabel="Discard the restored draft">
               Restored your unsent draft

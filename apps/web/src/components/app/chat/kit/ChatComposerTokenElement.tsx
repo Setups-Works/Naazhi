@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 /** A small chip in the composer (a restored draft, a pasted address). With `onRemove` it has a button to dismiss it. */

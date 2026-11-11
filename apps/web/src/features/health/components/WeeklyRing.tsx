@@ -23,7 +23,7 @@ export default function WeeklyRing({ fraction, label, detail }: { fraction: numb
       </svg>
       <div className="relative text-center">
         <p className="text-[12px] font-semibold tracking-[0.1em] text-fg-faint uppercase">{label}</p>
-        <p className="font-serif text-[52px] leading-none tracking-[-0.03em]">{Math.round(fraction * 100)}%</p>
+        <p className="font-serif font-semibold text-[52px] leading-none tracking-[-0.03em]">{Math.round(fraction * 100)}%</p>
         <p className="text-[13px] text-fg-muted">{detail}</p>
       </div>
     </div>

@@ -21,9 +21,10 @@ export default function Modal({
   label: string;
   onClose: () => void;
   children: ReactNode;
-  size?: "sm" | "md" | "lg";
+  /** "side" is a flat panel on the right edge (task details, file previews). */
+  size?: "sm" | "md" | "lg" | "side";
   top?: boolean;
-  /** Liquid-glass look: a frosted, translucent panel that blooms in with a springy animation (used by search). */
+  /** Kept so callers still compile; every dialog is now the same flat panel (see docs/DESIGN_LANGUAGE.md and the reference DESIGN.md). */
   glass?: boolean;
 }) {
   return (
@@ -35,15 +36,11 @@ export default function Modal({
     >
       <Dialog.Portal>
         <Dialog.Overlay
-          className={`tm-back ${glass ? "animate-glass-fade bg-page/60 backdrop-blur-[10px] motion-reduce:animate-none [html[data-motion=reduce]_&]:animate-none" : ""}`}
+          className="tm-back"
           data-top={top}
         >
           <Dialog.Content
-            className={`tm ${
-              glass
-                ? "animate-glass-in rounded-[30px] bg-linear-to-b from-white/85 to-white/60 backdrop-blur-3xl backdrop-saturate-200 shadow-[inset_0_1px_0_rgba(255,255,255,1),inset_0_0_0_1px_rgba(255,255,255,0.75),inset_0_-1px_2px_rgba(27,28,20,0.05),0_40px_90px_-24px_rgba(27,28,20,0.5)] motion-reduce:animate-none [html[data-motion=reduce]_&]:animate-none"
-                : ""
-            }`}
+            className="tm"
             data-size={size}
             aria-describedby={undefined}
           >

@@ -10,16 +10,20 @@ export type Task = {
   id: string;
   title: string;
   description: string;
-  /** 1 (urgent) to 4 (none). */
-  priority: 1 | 2 | 3 | 4;
+  /** 1 urgent, 2 high, 3 medium, 4 low, 5 none. */
+  priority: 1 | 2 | 3 | 4 | 5;
   list_id: string | null;
-  /** YYYY-MM-DD */
+  /** YYYY-MM-DD. For a task that spans days this is the last day. */
   due_date: string | null;
+  /** YYYY-MM-DD, the first day of a task that spans several days; null for a single-day task. */
+  start_date?: string | null;
   done: boolean;
   done_at: string | null;
   cancelled: boolean;
   archived: boolean;
   recurrence: string | null;
+  /** The task this is a sub-task of, or null for a top-level task. */
+  parent_id?: string | null;
   created_at: string;
 };
 
@@ -33,6 +37,9 @@ export type Note = {
   sort_order: number;
   color: Tone | null;
   attachments: Attachment[];
+  /** The folder the note is filed in, or null. */
+  folder_id: string | null;
+  labels: string[];
   created_at: string;
   updated_at: string;
 };
@@ -193,3 +200,20 @@ export type MyBilling = {
   /** False until a payment provider is connected: plan changes are recorded but nobody is charged. */
   payments_connected: boolean;
 };
+
+/* ---------- notification inbox ---------- */
+
+export type NotificationKind = "admin" | "invite" | "reader";
+
+export type AppNotification = {
+  id: string;
+  kind: NotificationKind;
+  title: string;
+  body: string;
+  /** An in-app path (for example /journal/collaborate); the server only accepts paths inside the app. */
+  url: string | null;
+  read_at: string | null;
+  created_at: string;
+};
+
+export type Inbox = { items: AppNotification[]; unread: number };

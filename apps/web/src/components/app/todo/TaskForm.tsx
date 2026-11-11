@@ -1,12 +1,14 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { readText, writeText } from "../../../lib/drafts";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
-import { faCalendarDay, faFlag, faRotate, faXmark, faHashtag } from "@fortawesome/free-solid-svg-icons";
+import { Icon as FA } from "@/components/ui/Icon";
+import { faBell, faCalendarDay, faChevronDown, faFlag, faInbox, faRotate, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { PRIORITIES, firstDue, recurrenceChoices, type Draft } from "../../../lib/tasks";
-import { addDays, dayLabel, isoDate } from "../../../lib/dates";
-import JournalCalendar from "../JournalCalendar";
+import { isoDate, rangeLabel } from "../../../lib/dates";
 import type { TaskList } from "../../../lib/workspace";
+import Menu, { MenuRadioGroup, MenuRadioItem } from "../../ui/Menu";
+import DatePopover from "./DatePopover";
+import ListPicker from "./ListPicker";
 
 /** Used for quick add, inline add and editing. */
 export default function TaskForm({
@@ -17,6 +19,7 @@ export default function TaskForm({
   onCancel,
   autoFocus = true,
   draftKey,
+  onCreateList,
 }: {
   initial: Draft;
   lists: TaskList[];
@@ -26,6 +29,8 @@ export default function TaskForm({
   autoFocus?: boolean;
   /** For "new task" forms: keeps the typed name and description in this browser until the task is added, so a refresh doesn't lose them. */
   draftKey?: string;
+  /** Make a list with this name and resolve to its id (for "type a name" in the list picker). */
+  onCreateList?: (name: string) => Promise<string | undefined>;
 }) {
   const [d, setD] = useState<Draft>(() => {
     if (!draftKey) return initial;
@@ -64,6 +69,8 @@ export default function TaskForm({
       title: d.title.trim(),
       description: d.description.trim(),
       due_date: d.recurrence ? firstDue(d.due_date, d.recurrence, today) : d.due_date,
+      // A range needs an end date and cannot repeat.
+      start_date: d.due_date && !d.recurrence ? (d.start_date ?? null) : null,
     });
     if (draftKey) {
       sent.current = true;
@@ -102,81 +109,94 @@ export default function TaskForm({
         maxLength={5000}
         aria-label="Description"
       />
-      <div className="tf-pills">
-        <div className="tf-pill tf-date" data-set={!!d.due_date} data-tone={d.due_date && d.due_date < today ? "late" : undefined}>
-          <FA icon={faCalendarDay} />
-          {/* The site's own calendar instead of the browser's date picker. */}
-          <JournalCalendar
-            value={d.due_date ?? today}
-            today={today}
-            counts={{}}
-            allowFuture
-            label={d.due_date ? dayLabel(d.due_date, today) : "Due date"}
-            onPick={(iso) => set("due_date", iso)}
-          />
-          {d.due_date && (
-            <button type="button" aria-label="Clear date" onClick={() => set("due_date", null)}>
+      <div className="tf-chips">
+        {d.due_date ? (
+          <span className="qa-chip" data-set data-late={d.due_date < today || undefined}>
+            <DatePopover
+              value={d.due_date}
+              start={d.start_date ?? null}
+              today={today}
+              onChange={(x) => setD((v) => ({ ...v, due_date: x, start_date: null }))}
+              onRange={(from, to) => setD((v) => ({ ...v, start_date: from, due_date: to, recurrence: null }))}
+            >
+              <button type="button" className="qa-chip-btn" aria-label="Change date">
+                <FA icon={faCalendarDay} /> {rangeLabel(d.start_date, d.due_date, today)}
+              </button>
+            </DatePopover>
+            <button type="button" aria-label="Clear date" onClick={() => setD((v) => ({ ...v, due_date: null, start_date: null }))}>
               <FA icon={faXmark} />
             </button>
-          )}
-        </div>
-        <button type="button" className="tf-quick" onClick={() => set("due_date", today)}>
-          Today
-        </button>
-        <button type="button" className="tf-quick" onClick={() => set("due_date", addDays(today, 1))}>
-          Tomorrow
-        </button>
-        <label className="tf-pill" data-p={d.priority}>
-          <FA icon={faFlag} />
-          <select value={d.priority} onChange={(e) => set("priority", Number(e.target.value) as Draft["priority"])} aria-label="Priority">
-            {PRIORITIES.map((p) => (
-              <option key={p.p} value={p.p}>
-                P{p.p} · {p.label}
-              </option>
+          </span>
+        ) : (
+          <DatePopover
+            value={null}
+            today={today}
+            onChange={(x) => setD((v) => ({ ...v, due_date: x, start_date: null }))}
+            onRange={(from, to) => setD((v) => ({ ...v, start_date: from, due_date: to, recurrence: null }))}
+          >
+            <button type="button" className="qa-chip" aria-label="Pick a date">
+              <FA icon={faCalendarDay} /> Date
+            </button>
+          </DatePopover>
+        )}
+        <Menu
+          label="Priority"
+          align="start"
+          trigger={<><FA icon={faFlag} /> {d.priority < 5 ? PRIORITIES[d.priority - 1].label : "Priority"}</>}
+          className="qa-pop"
+        >
+          <MenuRadioGroup value={String(d.priority)} onValueChange={(v) => set("priority", Number(v) as Draft["priority"])}>
+            <MenuRadioItem value="5">None</MenuRadioItem>
+            {PRIORITIES.filter((p) => p.p < 5).map((p) => (
+              <MenuRadioItem key={p.p} value={String(p.p)}>
+                {p.label}
+              </MenuRadioItem>
             ))}
-          </select>
-        </label>
-        <label className="tf-pill">
-          <FA icon={faHashtag} />
-          <select value={d.list_id ?? ""} onChange={(e) => set("list_id", e.target.value || null)} aria-label="List">
-            <option value="">Inbox</option>
-            {lists.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="tf-pill" data-set={!!d.recurrence}>
-          <FA icon={faRotate} />
-          <select
+          </MenuRadioGroup>
+        </Menu>
+        <span className="qa-chip" data-off aria-disabled="true" title="Reminders are coming soon">
+          <FA icon={faBell} /> Reminders
+        </span>
+        <Menu
+          label="Repeat"
+          align="start"
+          trigger={<><FA icon={faRotate} /> {d.recurrence ? (recurrenceChoices(d.due_date, d.recurrence).find(([v]) => v === d.recurrence)?.[1] ?? "Repeat") : "Repeat"}</>}
+          className="qa-pop"
+        >
+          <MenuRadioGroup
             value={d.recurrence ?? ""}
             // A repeating to-do needs a first day, so choosing a repeat without a date starts it today (or on the next matching day).
-            onChange={(e) =>
+            onValueChange={(v) =>
               setD((x) => {
-                const recurrence = e.target.value || null;
-                return { ...x, recurrence, due_date: x.due_date ?? firstDue(null, recurrence, today) };
+                const recurrence = v || null;
+                return { ...x, recurrence, start_date: recurrence ? null : x.start_date, due_date: x.due_date ?? firstDue(null, recurrence, today) };
               })
             }
-            aria-label="Repeat"
           >
             {recurrenceChoices(d.due_date, d.recurrence).map(([v, l]) => (
-              <option key={v} value={v}>
+              <MenuRadioItem key={v} value={v}>
                 {l}
-              </option>
+              </MenuRadioItem>
             ))}
-          </select>
-        </label>
+          </MenuRadioGroup>
+        </Menu>
       </div>
-      <div className="tf-acts">
-        {onCancel && (
-          <button type="button" className="btn btn-secondary btn-sm" onClick={onCancel}>
-            Cancel
+      <div className="tf-foot">
+        <ListPicker lists={lists} value={d.list_id} onChange={(id) => set("list_id", id)} onCreate={onCreateList ?? (async () => undefined)}>
+          <button type="button" className="qa-chip" aria-label="Choose a list">
+            <FA icon={faInbox} /> {lists.find((l) => l.id === d.list_id)?.name ?? "Inbox"} <FA icon={faChevronDown} />
           </button>
-        )}
-        <button className="btn btn-primary btn-sm" disabled={!d.title.trim() || busy}>
-          {submitLabel}
-        </button>
+        </ListPicker>
+        <span className="tf-acts">
+          {onCancel && (
+            <button type="button" className="btn btn-secondary btn-sm" onClick={onCancel}>
+              Cancel
+            </button>
+          )}
+          <button className="btn btn-primary btn-sm" disabled={!d.title.trim() || busy}>
+            {submitLabel}
+          </button>
+        </span>
       </div>
     </form>
   );

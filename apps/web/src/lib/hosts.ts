@@ -26,7 +26,7 @@ export const APP_HOME = "/home";
 export const homePath = () => (isSplit() ? APP_HOME : "/dashboard");
 
 /** The pages inside app/dashboard. On the app host their address drops the prefix: /dashboard/workspace is shown as /workspace. */
-export const DASHBOARD_SECTIONS = ["calendar", "chat", "health", "journal", "notes", "settings", "todo", "workspace"];
+export const DASHBOARD_SECTIONS = ["calendar", "chat", "health", "journal", "library", "notes", "settings", "todo", "workspace"];
 
 const firstSegment = (path: string) => path.split("/")[1] ?? "";
 

@@ -1,8 +1,8 @@
 "use client";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faCheck, faTrash } from "@fortawesome/free-solid-svg-icons";
 import type { Task } from "../../lib/workspace";
-import { daysBetween, dayLabel } from "../../lib/dates";
+import { dayLabel } from "../../lib/dates";
 
 export default function TaskRow({
   task,
@@ -19,7 +19,7 @@ export default function TaskRow({
 }) {
   const right =
     mode === "overdue" && task.due_date
-      ? `${daysBetween(task.due_date, today)}d ago`
+      ? new Date(`${task.due_date}T12:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric" })
       : mode === "upcoming" || mode === "plain"
         ? task.due_date
           ? dayLabel(task.due_date, today)

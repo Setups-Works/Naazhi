@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { parseInline, parseMarkdown, type Inline } from "@untitled/logic/markdown";
 import HtmlPreview, { looksLikeHtml } from "../ui/HtmlPreview";
+import CodeBlock from "./CodeBlock";
 
 /** A link into the app with a small card on hover or keyboard focus that says what it points to. */
 function ItemLink({ href, text, tip }: { href: string; text: string; tip?: string }) {
@@ -18,7 +19,7 @@ function ItemLink({ href, text, tip }: { href: string; text: string; tip?: strin
       {tip && (
         <span
           role="tooltip"
-          className="pointer-events-none invisible absolute top-full left-0 z-30 mt-2 w-max max-w-[min(280px,70vw)] translate-y-1 rounded-r2 bg-white/95 p-3 text-left text-[13px] leading-snug font-normal text-fg opacity-0 shadow-[0_14px_34px_-14px_rgba(27,28,20,0.45),inset_0_0_0_1px_rgba(27,28,20,0.08)] backdrop-blur-md transition-[opacity,transform] duration-200 group-focus-within/item:visible group-focus-within/item:translate-y-0 group-focus-within/item:opacity-100 group-hover/item:visible group-hover/item:translate-y-0 group-hover/item:opacity-100"
+          className="pointer-events-none invisible absolute top-full left-0 z-30 mt-2 w-max max-w-[min(280px,70vw)] translate-y-1 rounded-r2 bg-surface/95 p-3 text-left text-[13px] leading-snug font-normal text-fg opacity-0 shadow-[0_14px_34px_-14px_rgba(27,28,20,0.45),inset_0_0_0_1px_rgba(27,28,20,0.08)] backdrop-blur-md transition-[opacity,transform] duration-200 group-focus-within/item:visible group-focus-within/item:translate-y-0 group-focus-within/item:opacity-100 group-hover/item:visible group-hover/item:translate-y-0 group-hover/item:opacity-100"
         >
           <span className="block text-[11px] font-semibold tracking-wide text-fg-muted uppercase">{kind}</span>
           {title && <span className="mt-0.5 block font-semibold">{title}</span>}
@@ -54,9 +55,7 @@ export default function Markdown({ text }: { text: string }) {
         return looksLikeHtml(b.lang, b.source) ? (
           <HtmlPreview key={i} code={b.source} />
         ) : (
-          <pre key={i}>
-            <code>{b.source}</code>
-          </pre>
+          <CodeBlock key={i} lang={b.lang} source={b.source} />
         );
       case "table":
         return (

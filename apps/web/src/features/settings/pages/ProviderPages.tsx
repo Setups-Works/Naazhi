@@ -1,0 +1,167 @@
+"use client";
+import { useState } from "react";
+import { Icon as FA } from "@/components/ui/Icon";
+import {
+  faAddressCard,
+  faCalendarDays,
+  faChevronDown,
+  faChevronUp,
+  faCloud,
+  faComments,
+  faEnvelope,
+  faFileInvoiceDollar,
+  faFolderOpen,
+  faHeadset,
+  faListCheck,
+  faMoneyBillWave,
+  faPenNib,
+  faReceipt,
+  faUserGroup,
+  faUserTie,
+  faDiagramProject,
+  type IconDefinition,
+} from "@fortawesome/free-solid-svg-icons";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import Modal from "../../../components/ui/Modal";
+import { PROVIDERS, type Provider, type ProviderId } from "../../../lib/composio/catalog";
+import { LogoTile } from "../ui";
+
+/** Each service's own icon and colour, so Outlook mail and Outlook calendar (or Zoho's thirteen apps) can be told apart at a glance. */
+const LOOK: Record<string, [IconDefinition, string]> = {
+  gmail: [faEnvelope, "text-critical"],
+  calendar: [faCalendarDays, "text-blue-fg"],
+  drive: [faFolderOpen, "text-green-fg"],
+  outlook: [faEnvelope, "text-blue-fg"],
+  "outlook-calendar": [faCalendarDays, "text-blue-fg"],
+  onedrive: [faCloud, "text-blue-fg"],
+  todo: [faListCheck, "text-blue-fg"],
+  mail: [faEnvelope, "text-clay-fg"],
+  cliq: [faComments, "text-blue-fg"],
+  workdrive: [faFolderOpen, "text-green-fg"],
+  projects: [faDiagramProject, "text-violet-fg"],
+  sign: [faPenNib, "text-amber-fg"],
+  crm: [faAddressCard, "text-clay-fg"],
+  books: [faReceipt, "text-green-fg"],
+  billing: [faFileInvoiceDollar, "text-blue-fg"],
+  expense: [faMoneyBillWave, "text-amber-fg"],
+  desk: [faHeadset, "text-violet-fg"],
+  people: [faUserGroup, "text-blue-fg"],
+  recruit: [faUserTie, "text-clay-fg"],
+};
+
+/** The service's icon in a rounded tile; a letter for the provider itself. */
+function Mark({ id, name, size = "size-10" }: { id?: string; name: string; size?: string }) {
+  const look = id ? LOOK[id] : undefined;
+  if (!look) return <LogoTile name={name} className={size} />;
+  return (
+    <span aria-hidden className={`grid shrink-0 place-items-center rounded-r2 border bg-raised text-[14px] ${look[1]} ${size}`}>
+      <FA icon={look[0]} />
+    </span>
+  );
+}
+
+/** "Connect Google": pick the services Naazhi may use, see exactly what it can see, then continue to the provider's sign-in. */
+function ConnectDialog({ provider, onClose }: { provider: Provider; onClose: () => void }) {
+  const all = provider.groups.flatMap((g) => g.services);
+  const [picked, setPicked] = useState<Set<string>>(new Set(all.map((s) => s.id)));
+  const [details, setDetails] = useState(false);
+  const [msg, setMsg] = useState("");
+  const toggle = (id: string) =>
+    setPicked((p) => {
+      const n = new Set(p);
+      if (!n.delete(id)) n.add(id);
+      return n;
+    });
+  return (
+    <Modal label={`Connect ${provider.name}`} onClose={onClose} size="lg">
+      <div className="p-6">
+        <Mark name={provider.name.charAt(0)} />
+        <h2 className="m-0 mt-4 text-[22px] font-semibold tracking-[-0.02em]">Connect {provider.name}</h2>
+        <p className="m-0 mt-1 text-[14.5px] text-ink-2">Choose what Naazhi can use. You can add more later.</p>
+        <div className="mt-5 flex items-center justify-between text-[14px] text-ink-2">
+          <span>
+            {picked.size} of {all.length} selected
+          </span>
+          <button type="button" className="hover:text-ink" onClick={() => setPicked(picked.size ? new Set() : new Set(all.map((s) => s.id)))}>
+            {picked.size ? "Clear all" : "Select all"}
+          </button>
+        </div>
+        {provider.groups.map((g) => (
+          <section key={g.label} className="mt-5">
+            <h3 className="m-0 mb-2 text-[13.5px] font-normal text-ink-3">{g.label}</h3>
+            <ul className="m-0 grid list-none grid-cols-2 gap-x-6 gap-y-4 p-0 max-[600px]:grid-cols-1">
+              {g.services.map((s) => (
+                <li key={s.id}>
+                  <label className="flex cursor-pointer items-start gap-3">
+                    <Mark id={s.id} name={s.name} size="size-8" />
+                    <span className="min-w-0 flex-1">
+                      <b className="block text-[15px] font-semibold">{s.name}</b>
+                      <small className="block text-[13.5px] text-ink-2">{s.description}</small>
+                    </span>
+                    <Checkbox checked={picked.has(s.id)} onCheckedChange={() => toggle(s.id)} aria-label={s.name} className="mt-1 size-5" />
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+        {details && (
+          <div className="mt-5 grid gap-2 rounded-r2 bg-side p-4 text-[13.5px] text-ink-2">
+            {all
+              .filter((s) => picked.has(s.id))
+              .map((s) => (
+                <p key={s.id} className="m-0">
+                  <b className="font-medium text-ink">{s.name}</b> · {s.access}
+                </p>
+              ))}
+            {picked.size === 0 && <p className="m-0">Pick a service to see what Naazhi can do with it.</p>}
+            <p className="m-0 text-ink-3">You sign in on {provider.signIn}, so Naazhi never sees your password. Disconnect any time from this page.</p>
+          </div>
+        )}
+        {msg && (
+          <p className="form-err mt-4" role="alert">
+            {msg}
+          </p>
+        )}
+        <div className="mt-6 flex items-center justify-between gap-3">
+          <button type="button" className="inline-flex items-center gap-2 text-[14px] text-ink-2 hover:text-ink" aria-expanded={details} onClick={() => setDetails(!details)}>
+            What Naazhi can see <FA icon={details ? faChevronUp : faChevronDown} className="text-[11px]" />
+          </button>
+          <Button
+            size="lg"
+            disabled={picked.size === 0}
+            onClick={() => setMsg(`Signing in with ${provider.name} isn’t set up on this server yet, so nothing was connected. Your choices aren’t saved.`)}
+          >
+            Continue with {provider.name}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+/** A connection page: the Accounts header with its connect button, then the accounts, or an invitation to add the first. */
+function ProviderPage({ id }: { id: ProviderId }) {
+  const provider = PROVIDERS[id];
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <div className="mt-2 flex items-center justify-between gap-3 max-[600px]:flex-wrap">
+        <h2 className="m-0 flex items-baseline gap-2 text-[15px] font-semibold">
+          Accounts <small className="text-[13px] font-normal text-ink-3">{provider.covers}</small>
+        </h2>
+        <Button onClick={() => setOpen(true)}>Connect {provider.name} account</Button>
+      </div>
+      <div className="mt-3 rounded-r3 border bg-raised px-4 py-10 text-center">
+        <b className="block text-[15px] font-semibold">No {provider.name} account connected</b>
+        <p className="m-0 mt-1 text-[14px] text-ink-3">{provider.invite}</p>
+      </div>
+      {open && <ConnectDialog provider={provider} onClose={() => setOpen(false)} />}
+    </>
+  );
+}
+
+export const GooglePage = () => <ProviderPage id="google" />;
+export const MicrosoftPage = () => <ProviderPage id="microsoft" />;
+export const ZohoPage = () => <ProviderPage id="zoho" />;

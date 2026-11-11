@@ -23,6 +23,24 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-11",
+    title: "Version 5.0.0: a new paper-and-ink look across the app",
+    summary: "Every page has been redesigned with a calmer paper-and-ink style, plus note sharing and trash, low priority and date ranges for tasks, and a notifications bell.",
+    tone: "gold",
+    appVersion: "v5.0.0",
+    changes: [
+      { kind: "improved", platform: "web", text: "A new look for To-do, Notes, Journal, Chat, Home, Settings and the Admin panel: flat paper surfaces, thin borders, rounder corners and simpler dialogs." },
+      { kind: "improved", platform: "web", text: "The sidebar now holds each page’s own lists and tools, and Settings has its own sidebar." },
+      { kind: "new", platform: "web", text: "Notes can be moved to Trash and restored for 30 days, and shared with a private link you can turn off." },
+      { kind: "new", platform: "web", text: "Notes Atlas shows how your notes connect through links, labels and folders." },
+      { kind: "new", platform: "web", text: "Tasks have a Low priority and a No priority option, and can span a range of dates, shown in List, Week and Month views." },
+      { kind: "improved", platform: "web", text: "The Add task window is rebuilt with date, priority, reminders, repeat and list in one row." },
+      { kind: "new", platform: "web", text: "A notifications bell shows messages from the team and updates, with unread marks." },
+      { kind: "new", platform: "web", text: "Admins get a System page with database status and row counts." },
+      { kind: "improved", platform: "app", text: "Tasks and notifications on the phone understand the new Low and No priority levels." },
+    ],
+  },
+  {
+    date: "2026-11-11",
     title: "Version 4.2.0: terms, refund policy and contact pages",
     summary: "The website now has its Terms & Conditions, Refund & Cancellation Policy and a Contact page, linked from the footer.",
     tone: "green",

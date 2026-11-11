@@ -9,6 +9,8 @@ export const CLIENT_TABLES = [
   "tasks",
   "task_lists",
   "notes",
+  "note_folders",
+  "skills",
   "note_versions",
   "journal_entries",
   "chats",

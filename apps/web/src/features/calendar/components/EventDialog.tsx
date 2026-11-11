@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faAlignLeft, faCalendarDay, faCheck, faClock, faLocationDot, faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
 import JournalCalendar from "../../../components/app/JournalCalendar";
 import Modal from "../../../components/ui/Modal";

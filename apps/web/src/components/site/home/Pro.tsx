@@ -1,6 +1,6 @@
 import { faBan, faCalendarDays, faCheck, faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { Count } from "../Count";
 import { Logo } from "../Logo";
 import { R, Reveal } from "../Reveal";
@@ -25,7 +25,7 @@ export default function Pro() {
                 <IconBadge icon={x.icon} />
                 {x.up && <span className="rounded-pill bg-surface-muted px-3 py-1 text-[12px] font-medium text-fg-muted">Up to</span>}
               </div>
-              <div className="font-serif text-[clamp(64px,8vw,96px)] leading-[0.9] tracking-[-0.045em] text-fg">
+              <div className="font-serif font-semibold text-[clamp(64px,8vw,96px)] leading-[0.9] tracking-[-0.045em] text-fg">
                 <Count to={x.n} />
               </div>
               <h3 className="text-[17px] font-semibold text-fg">{x.t}</h3>

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faFile, faFileLines, faFilePdf, faMagnifyingGlassPlus, faMicrophone, faXmark } from "@fortawesome/free-solid-svg-icons";
 import Modal from "./Modal";
 import AudioWave from "./AudioWave";
@@ -50,7 +50,7 @@ export default function FilePreviewList({
           return (
             <li
               key={`${f.name}${f.size}${i}`}
-              className="flex w-full max-w-[460px] items-center gap-3 rounded-r3 bg-white p-2 pr-2.5 shadow-[inset_0_0_0_1px_var(--line)]"
+              className="flex w-full max-w-[460px] items-center gap-3 rounded-r3 bg-surface p-2 pr-2.5 shadow-[inset_0_0_0_1px_var(--line)]"
             >
               {k === "image" && url ? (
                 <button

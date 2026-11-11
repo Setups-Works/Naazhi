@@ -1,7 +1,7 @@
 "use client";
 import { SHARED_JOURNAL as LIMIT, personName } from "@untitled/logic";
 import { useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faPen, faRightFromBracket, faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../../../components/ui/Modal";
 import { useConfirm, usePrompt } from "../../../components/ui/Confirm";

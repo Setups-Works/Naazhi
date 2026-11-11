@@ -127,7 +127,7 @@ export default function Page() {
                   <IconBadge icon={p.icon} className="size-12" />
                   <StatusChip status={p.status} />
                 </div>
-                <h3 className="font-serif text-[30px] leading-tight tracking-[-0.022em]">{p.name}</h3>
+                <h3 className="font-serif font-semibold text-[30px] leading-tight tracking-[-0.022em]">{p.name}</h3>
                 <p className="flex-1 text-[15px] leading-relaxed text-fg-muted">{p.d}</p>
                 {p.action === "apk" && (
                   <>

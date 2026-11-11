@@ -53,12 +53,13 @@ export const toneAt = (i: number): Tone => TONE_CYCLE[((i % TONE_CYCLE.length) +
 /** A tint as a translucent colour for the glass effect (the pastel background at about 60% strength). */
 export const glassTint = (tone: Tone) => `${Tints[tone].bg}99`;
 
-/** Task priorities 1–4, coloured like the web's priority flags. */
+/** Task priorities 1–5 (5 is none), coloured like the web's priority flags. */
 export const PriorityColor: Record<number, string> = {
   1: Palette.rec,
   2: Palette.orangeFg,
-  3: Tints.blue.fg,
-  4: Palette.fgFaint,
+  3: Palette.fgSubtle,
+  4: Tints.blue.fg,
+  5: Palette.fgFaint,
 };
 
 export const Radius = { r1: 10, r2: 14, r3: 20, r4: 28, r5: 36, pill: 999 } as const;

@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { createElement, useEffect, useMemo, useRef, useState } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { Icon as FA } from "@/components/ui/Icon";
 import {
   faBold,
   faHeading,
@@ -22,6 +23,15 @@ import {
   faCopy,
   faDownload,
   faChevronUp,
+  faItalic,
+  faStrikethrough,
+  faListOl,
+  faMinus,
+  faPlus,
+  faFileLines,
+  faEarthAmericas,
+  faFolder,
+  faCheck,
   faChevronDown,
   faEye,
   faPen,
@@ -76,9 +86,11 @@ export default function NoteEditor({
   onSaved,
   onPatch,
   onDelete,
+  onShare,
   onDuplicate,
   onAttach,
   onRemoveAttachment,
+  folders,
 }: {
   note: Note;
   sb: ApiClient;
@@ -87,9 +99,11 @@ export default function NoteEditor({
   onSaved: (id: string, updated_at: string) => void;
   onPatch: (id: string, p: Partial<Note>) => void;
   onDelete: (id: string) => void;
+  onShare?: (id: string) => void;
   onDuplicate: (id: string) => void;
   onAttach: (id: string, f: File) => void;
   onRemoveAttachment: (id: string, a: Attachment) => void;
+  folders?: { id: string; name: string }[];
 }) {
   const [title, setTitle] = useState(note.title);
   const [body, setBody] = useState(note.body);
@@ -106,7 +120,17 @@ export default function NoteEditor({
   // A note with text opens as it will read (headings, lists and code blocks rendered, like its card); click it, or any
   // toolbar button, to edit the Markdown source. The textarea stays mounted so the toolbar helpers always have it.
   const [editing, setEditing] = useState(() => !note.body.trim());
+  // "Viewing" locks the note: nothing can be typed or changed until it is switched back to "Editing".
+  const [mode, setMode] = useState<"editing" | "viewing">("editing");
+  const viewing = mode === "viewing";
+  // Text size in the note body (the 15 in the toolbar stepper), and whether the second toolbar row is open.
+  const [fs, setFs] = useState(15);
+  const [more, setMore] = useState(false);
   useEffect(() => {
+    if (viewing) setEditing(false);
+  }, [viewing]);
+  useEffect(() => {
+    setMode("editing");
     setEditing(!note.body.trim());
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only when a different note is opened
   }, [note.id]);
@@ -116,6 +140,12 @@ export default function NoteEditor({
   const [range, setRange] = useState<[number, number]>([0, 0]);
   const selected = range[1] > range[0] ? body.slice(range[0], range[1]) : "";
   const { prompt: askLink, dialog: linkDialog } = usePrompt();
+  async function addLabel() {
+    const raw = await askLink({ title: "Add a label", label: "Label", placeholder: "Work, Ideas, Recipes…", confirmLabel: "Add label" });
+    const l = raw?.trim().slice(0, 30);
+    if (!l || (note.labels ?? []).some((x) => x.toLowerCase() === l.toLowerCase()) || (note.labels ?? []).length >= 20) return;
+    onPatch(note.id, { labels: [...(note.labels ?? []), l] });
+  }
   const { providers, provider } = useAiProviders();
   const ai = useNoteAi(provider);
   const aiReady = providers.some((p) => p.id === provider && p.available && p.runtime === "server");
@@ -183,6 +213,15 @@ export default function NoteEditor({
       el.setSelectionRange(ls, ls + p.length);
       document.execCommand("delete");
     } else put(p, ls, ls);
+  };
+  /** Make the current line a heading of the given level ("" turns it back into normal text). */
+  const setStyle = (mark: string) => {
+    const el = ta.current!;
+    const ls = el.value.lastIndexOf("\n", el.selectionStart - 1) + 1;
+    const m = /^#{1,6}\s+/.exec(el.value.slice(ls));
+    el.focus();
+    el.setSelectionRange(ls, ls + (m ? m[0].length : 0));
+    put(mark);
   };
   const codeBlock = () => {
     const el = ta.current!;
@@ -356,6 +395,26 @@ export default function NoteEditor({
     setHist(null);
   }
 
+  /** Copy the note as plain text, Markdown or HTML; HTML is the same rendering the preview shows. */
+  async function copyAs(kind: "text" | "markdown" | "html") {
+    const md = `# ${title || "Untitled"}\n\n${body}\n`;
+    const out =
+      kind === "markdown"
+        ? md
+        : kind === "html"
+          ? renderToStaticMarkup(createElement(Markdown, { text: md }))
+          : md
+              .replace(/^#{1,6}\s+/gm, "")
+              .replace(/(\*\*|__|`)/g, "")
+              .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+    try {
+      await navigator.clipboard.writeText(out);
+      setMsg("Copied");
+    } catch {
+      setMsg("Couldn’t copy. Allow clipboard access and try again.");
+    }
+  }
+
   function download() {
     const blob = new Blob([`# ${title || "Untitled"}\n\n${body}\n`], { type: "text/markdown" });
     const a = document.createElement("a");
@@ -369,14 +428,14 @@ export default function NoteEditor({
     label: string,
     icon: Parameters<typeof FA>[0]["icon"],
     run: () => void,
-    extra: { disabled?: boolean; on?: boolean; title?: string } = {},
+    extra: { disabled?: boolean; on?: boolean; title?: string; keepEnabled?: boolean } = {},
   ) => (
     <button
       type="button"
       className="ne-btn"
       aria-label={label}
       title={extra.title ?? label}
-      disabled={extra.disabled}
+      disabled={extra.disabled || (viewing && !extra.keepEnabled)}
       data-on={extra.on}
       onMouseDown={(e) => e.preventDefault()}
       onClick={() => {
@@ -391,21 +450,54 @@ export default function NoteEditor({
   );
 
   return (
-    <aside className={`ne at-${toneOf(note)}`} aria-label="Note editor">
+    <aside className={`ne at-${toneOf(note)}`} aria-label="Note editor" style={{ "--ne-fs": `${fs}px` } as React.CSSProperties}>
       {linkDialog}
+      <div className="ne-crumb">
+        <button type="button" onClick={onClose}>
+          <FA icon={faFileLines} /> Notes
+        </button>
+        <span aria-hidden>/</span>
+        <b>{title.trim() || "Untitled"}</b>
+        <span className="ne-gap" />
+        <small className="ne-state" data-saved={status !== "error" && (!!body.trim() || !!title.trim())}>
+          {statusText(status) || (body.trim() || title.trim() ? "Saved" : "Draft")}
+        </small>
+        <button type="button" className="ne-btn" aria-label="Close note" onClick={onClose}>
+          <FA icon={faXmark} />
+        </button>
+      </div>
       <div className="ne-head">
         <div className="ne-title">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             maxLength={200}
-            placeholder="Untitled Note"
+            readOnly={viewing}
+            placeholder="Untitled"
             aria-label="Note title"
           />
           <div className="ne-chips">
-            <span>{selected ? `${wordCount(selected)} of ${plural(wordCount(body), "word")}` : plural(wordCount(body), "word")}</span>
-            <span>{selected ? `${lineCount(selected)} of ${plural(lineCount(body), "line")}` : plural(lineCount(body), "line")}</span>
-            <span className="ne-st">{statusText(status) || `Edited ${editedLabel(note.updated_at)}`}</span>
+            <span>
+              <FA icon={faFolder} /> {folders?.find((f) => f.id === note.folder_id)?.name ?? "Not in a folder"}
+            </span>
+            <span className="ne-st">Edited {editedLabel(note.updated_at)}</span>
+            <span>
+              {selected ? `${wordCount(selected)} of ${plural(wordCount(body), "word")}` : plural(wordCount(body), "word")} ·{" "}
+              {selected ? `${lineCount(selected)} of ${plural(lineCount(body), "line")}` : plural(lineCount(body), "line")}
+            </span>
+          </div>
+          <div className="ne-labels">
+            {(note.labels ?? []).map((l) => (
+              <span key={l}>
+                {l}
+                <button type="button" aria-label={`Remove label ${l}`} onClick={() => onPatch(note.id, { labels: note.labels.filter((x) => x !== l) })}>
+                  ×
+                </button>
+              </span>
+            ))}
+            <button type="button" className="ne-addlabel" onClick={addLabel}>
+              + Add label
+            </button>
           </div>
         </div>
         <button
@@ -425,32 +517,60 @@ export default function NoteEditor({
       </div>
 
       <div className="ne-bar" role="toolbar" aria-label="Formatting">
+        {tb("Undo", faRotateLeft, () => history("undo"))}
+        {tb("Redo", faRotateRight, () => history("redo"))}
+        <span className="ne-sep" aria-hidden />
+        <Menu label="Text style" trigger={<>Normal text <FA icon={faChevronDown} /></>} className="ne-mode ne-style" disabled={viewing}>
+          {(
+            [
+              ["Normal text", "", "ne-s-p"],
+              ["Heading 1", "# ", "ne-s-h1"],
+              ["Heading 2", "## ", "ne-s-h2"],
+              ["Heading 3", "### ", "ne-s-h3"],
+            ] as const
+          ).map(([label, mark, cls]) => (
+            <MenuItem
+              key={label}
+              onSelect={() => {
+                setEditing(true);
+                requestAnimationFrame(() => setStyle(mark));
+              }}
+            >
+              <span className={cls}>{label}</span>
+            </MenuItem>
+          ))}
+          <MenuItem
+            onSelect={() => {
+              setEditing(true);
+              requestAnimationFrame(() => prefix("> "));
+            }}
+          >
+            <span>Quote</span>
+          </MenuItem>
+        </Menu>
+        <span className="ne-sep" aria-hidden />
+        <span className="ne-size" role="group" aria-label="Text size">
+          <button type="button" className="ne-btn" aria-label="Smaller text" disabled={fs <= 12} onClick={() => setFs(fs - 1)}>
+            <FA icon={faMinus} />
+          </button>
+          <output aria-live="polite">{fs}</output>
+          <button type="button" className="ne-btn" aria-label="Larger text" disabled={fs >= 24} onClick={() => setFs(fs + 1)}>
+            <FA icon={faPlus} />
+          </button>
+        </span>
+        <span className="ne-sep" aria-hidden />
         <button
           type="button"
           className="ne-btn"
-          aria-label={editing ? "Preview note" : "Edit note"}
-          title={editing ? "Preview" : "Edit"}
-          aria-pressed={!editing}
-          data-on={!editing}
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => setEditing(!editing)}
+          aria-label={more ? "Hide formatting options" : "Show formatting options"}
+          aria-expanded={more}
+          onClick={() => setMore(!more)}
         >
-          <FA icon={editing ? faEye : faPen} />
+          <FA icon={more ? faChevronUp : faChevronDown} />
         </button>
-        {tb("Bold", faBold, () => wrap("**"))}
-        {tb("Quote", faQuoteLeft, () => prefix("> "))}
-        {tb("Heading", faHeading, () => prefix("# "))}
-        {tb("Bullet list", faListUl, () => prefix("- "))}
-        {tb("Inline code", faCode, () => wrap("`"))}
-        {tb("Undo", faRotateLeft, () => history("undo"))}
-        {tb("Redo", faRotateRight, () => history("redo"))}
         <span className="ne-gap" />
         {aiReady ? (
-          <Menu
-            label="AI actions"
-            trigger={<AiIcon />}
-            className="ne-more"
-          >
+          <Menu label="AI actions" trigger={<AiIcon />} className="ne-more">
             <MenuLabel>{selected ? "AI on the selection" : "AI on the whole note"}</MenuLabel>
             {AI_ACTIONS.map((a) => (
               <MenuItem key={a.k} onSelect={() => void runAi(a.k)}>
@@ -477,10 +597,92 @@ export default function NoteEditor({
           on: dictating,
           title: SpeechCtor ? (dictating ? "Stop dictation" : "Dictate") : "Dictation isn’t supported in this browser",
         })}
-        {tb("Code block", faTerminal, codeBlock)}
-        {tb("Find in note", faMagnifyingGlass, () => setFind(find === null ? "" : null), { on: find !== null })}
-        {tb("Version history", faClockRotateLeft, openHistory, { on: hist !== null })}
+        <Menu label="Editing mode" trigger={<><FA icon={viewing ? faEye : faPen} /> {viewing ? "Viewing" : "Editing"} <FA icon={faChevronDown} /></>} className="ne-mode">
+          <MenuRadioGroup value={mode} onValueChange={(v) => setMode(v as "editing" | "viewing")}>
+            <MenuRadioItem value="editing">Editing</MenuRadioItem>
+            <MenuRadioItem value="viewing">Viewing</MenuRadioItem>
+          </MenuRadioGroup>
+        </Menu>
+        <button
+          type="button"
+          className="ne-btn"
+          aria-label={editing ? "Show source as formatted text" : "Show Markdown source"}
+          title={editing ? "Formatted view" : "Markdown source"}
+          aria-pressed={editing}
+          disabled={viewing}
+          data-on={editing}
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => setEditing(!editing)}
+        >
+          <FA icon={faCode} />
+        </button>
+        {tb("Find in note", faMagnifyingGlass, () => setFind(find === null ? "" : null), { on: find !== null, keepEnabled: true })}
+        {tb("Version history", faClockRotateLeft, openHistory, { on: hist !== null, keepEnabled: true })}
         <Menu label="More" trigger={<FA icon={faEllipsisVertical} />} className="ne-more">
+          <MenuLabel>Note</MenuLabel>
+          <MenuItem onSelect={() => onPatch(note.id, { pinned: !note.pinned })}>
+            <span>
+              <FA icon={faThumbtack} /> {note.pinned ? "Unpin" : "Pin"}
+            </span>
+          </MenuItem>
+          {folders && folders.length > 0 && (
+            <>
+              <MenuLabel>Move to folder</MenuLabel>
+              <MenuRadioGroup value={note.folder_id ?? ""} onValueChange={(v) => onPatch(note.id, { folder_id: v || null })}>
+                <MenuRadioItem value="">No folder</MenuRadioItem>
+                {folders.map((f) => (
+                  <MenuRadioItem key={f.id} value={f.id}>
+                    {f.name}
+                  </MenuRadioItem>
+                ))}
+              </MenuRadioGroup>
+            </>
+          )}
+          {onShare && (
+            <MenuItem onSelect={() => onShare(note.id)}>
+              <span>
+                <FA icon={faEarthAmericas} /> {note.share_token ? "Manage shared link" : "Share…"}
+              </span>
+            </MenuItem>
+          )}
+          <MenuItem onSelect={() => file.current?.click()}>
+            <span>
+              <FA icon={faPaperclip} /> Attach a file
+            </span>
+          </MenuItem>
+          <MenuItem onSelect={() => onDuplicate(note.id)}>
+            <span>
+              <FA icon={faCopy} /> Duplicate
+            </span>
+          </MenuItem>
+          <MenuItem danger onSelect={() => onDelete(note.id)}>
+            <span>
+              <FA icon={faTrash} /> Move to Trash
+            </span>
+          </MenuItem>
+          <MenuSeparator />
+          <MenuLabel>Copy</MenuLabel>
+          <MenuItem onSelect={() => void copyAs("text")}>
+            <span>
+              <FA icon={faFileLines} /> Plain text
+            </span>
+          </MenuItem>
+          <MenuItem onSelect={() => void copyAs("markdown")}>
+            <span>
+              <FA icon={faCode} /> Markdown
+            </span>
+          </MenuItem>
+          <MenuItem onSelect={() => void copyAs("html")}>
+            <span>
+              <FA icon={faCopy} /> HTML
+            </span>
+          </MenuItem>
+          <MenuItem onSelect={download}>
+            <span>
+              <FA icon={faDownload} /> Export as Markdown file
+            </span>
+          </MenuItem>
+          <MenuSeparator />
           <MenuLabel>Colour</MenuLabel>
           <div className="ne-swatches" role="group" aria-label="Note colour">
             {TONES.map((t) => (
@@ -496,7 +698,6 @@ export default function NoteEditor({
               </MenuItem>
             ))}
           </div>
-          <MenuSeparator />
           <MenuLabel>Category</MenuLabel>
           <MenuRadioGroup value={note.category} onValueChange={(c) => onPatch(note.id, { category: c })}>
             {CATEGORIES.map((c) => (
@@ -505,27 +706,6 @@ export default function NoteEditor({
               </MenuRadioItem>
             ))}
           </MenuRadioGroup>
-          <MenuSeparator />
-          <MenuItem onSelect={() => file.current?.click()}>
-            <span>
-              <FA icon={faPaperclip} /> Attach a file
-            </span>
-          </MenuItem>
-          <MenuItem onSelect={download}>
-            <span>
-              <FA icon={faDownload} /> Export as Markdown
-            </span>
-          </MenuItem>
-          <MenuItem onSelect={() => onDuplicate(note.id)}>
-            <span>
-              <FA icon={faCopy} /> Duplicate
-            </span>
-          </MenuItem>
-          <MenuItem danger onSelect={() => onDelete(note.id)}>
-            <span>
-              <FA icon={faTrash} /> Delete
-            </span>
-          </MenuItem>
         </Menu>
         <input
           ref={file}
@@ -538,6 +718,23 @@ export default function NoteEditor({
           }}
         />
       </div>
+      {more && (
+        <div className="ne-bar ne-bar2" role="toolbar" aria-label="More formatting">
+          {tb("Bold", faBold, () => wrap("**"))}
+          {tb("Italic", faItalic, () => wrap("*"))}
+          {tb("Strikethrough", faStrikethrough, () => wrap("~~"))}
+          {tb("Inline code", faCode, () => wrap("`"))}
+          <span className="ne-sep" aria-hidden />
+          {tb("Add link", faLink, link)}
+          {tb("Code block", faTerminal, codeBlock)}
+          {tb("Divider", faMinus, () => put("\n---\n"))}
+          <span className="ne-sep" aria-hidden />
+          {tb("Checklist", faListCheck, () => prefix("- [ ] "))}
+          {tb("Bullet list", faListUl, () => prefix("- "))}
+          {tb("Numbered list", faListOl, () => prefix("1. "))}
+          {tb("Quote", faQuoteLeft, () => prefix("> "))}
+        </div>
+      )}
 
       {find !== null && (
         <div className="ne-find">
@@ -562,7 +759,7 @@ export default function NoteEditor({
         </div>
       )}
       {(msg || ai.err) && (
-        <p className="form-err ne-msg" role="alert">
+        <p className={msg === "Copied" ? "ne-msg" : "form-err ne-msg"} role="alert">
           {msg || ai.err}
         </p>
       )}
@@ -584,15 +781,15 @@ export default function NoteEditor({
         {!editing && (
           <div
             className="ne-read"
-            role="button"
-            tabIndex={0}
-            aria-label="Note preview. Press Enter to edit"
+            role={viewing ? undefined : "button"}
+            tabIndex={viewing ? undefined : 0}
+            aria-label={viewing ? "Note, read only" : "Note preview. Press Enter to edit"}
             onClick={(e) => {
-              // Links inside the note keep working; anywhere else starts editing.
-              if (!(e.target as HTMLElement).closest("a")) setEditing(true);
+              // Links inside the note keep working; anywhere else starts editing (unless the note is in Viewing mode).
+              if (!viewing && !(e.target as HTMLElement).closest("a")) setEditing(true);
             }}
             onKeyDown={(e) => {
-              if (e.key === "Enter") setEditing(true);
+              if (!viewing && e.key === "Enter") setEditing(true);
             }}
           >
             <Markdown text={body} />

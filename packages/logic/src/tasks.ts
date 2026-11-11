@@ -6,6 +6,7 @@ export const PRIORITIES = [
   { p: 2, label: "High" },
   { p: 3, label: "Medium" },
   { p: 4, label: "Low" },
+  { p: 5, label: "None" },
 ] as const;
 
 export const RECURRENCES: [string, string][] = [
@@ -24,15 +25,20 @@ export type Draft = {
   title: string;
   description: string;
   due_date: string | null;
-  priority: 1 | 2 | 3 | 4;
+  priority: 1 | 2 | 3 | 4 | 5;
+  /** The first day of a task that spans several days (due_date is the last); null for a single day. */
+  start_date?: string | null;
   list_id: string | null;
   recurrence: string | null;
+  /** Set when the new task is a sub-task of another. */
+  parent_id?: string | null;
 };
 export const emptyDraft = (over: Partial<Draft> = {}): Draft => ({
   title: "",
   description: "",
   due_date: null,
-  priority: 4,
+  start_date: null,
+  priority: 5,
   list_id: null,
   recurrence: null,
   ...over,
@@ -62,7 +68,7 @@ export type ViewOpts = {
   sortBy: "date" | "priority" | "name" | "created";
   dir: "asc" | "desc";
   groupBy: "none" | "date" | "priority" | "list";
-  priority: 0 | 1 | 2 | 3 | 4; // 0 = all
+  priority: 0 | 1 | 2 | 3 | 4 | 5; // 0 = all
 };
 export const DEFAULT_OPTS: ViewOpts = { layout: "list", showCompleted: false, sortBy: "date", dir: "asc", groupBy: "none", priority: 0 };
 
@@ -71,6 +77,8 @@ export const isOverdue = (t: Task, today: string) => isOpen(t) && !!t.due_date &
 
 /** Tasks that belong in a view, before the user's sort/filter options. */
 export function inView(t: Task, view: ViewKey, today: string, showCompleted: boolean): boolean {
+  // Sub-tasks are shown under their parent, not as rows of their own.
+  if (t.parent_id) return false;
   if (t.archived) return view === "archived";
   if (view === "archived") return false;
   if (t.cancelled) return view === "cancelled";
@@ -129,7 +137,7 @@ export function groupTasks(tasks: Task[], by: ViewOpts["groupBy"], lists: TaskLi
         t,
         t.due_date ?? undefined,
       );
-    if (by === "priority") put(`p${t.priority}`, PRIORITIES[t.priority - 1].label, ["clay", "gold", "blue", "sand"][t.priority - 1], t);
+    if (by === "priority") put(`p${t.priority}`, PRIORITIES[t.priority - 1].label, ["clay", "gold", "blue", "mint", "sand"][t.priority - 1], t);
     if (by === "list") {
       const l = lists.find((x) => x.id === t.list_id);
       put(l?.id ?? "inbox", l?.name ?? "Inbox", l?.color ?? "sand", t);

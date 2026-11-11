@@ -1,5 +1,5 @@
 "use client";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faArrowUpRightFromSquare, faBars, faCheckDouble, faMagnifyingGlass, faPlus, faRotate, faRss } from "@fortawesome/free-solid-svg-icons";
 import { RSS, rssFeedName } from "@untitled/logic/rss";
 import type { RssFilter, RssItem } from "@untitled/types";
@@ -12,6 +12,7 @@ import AddFeedDialog from "./AddFeedDialog";
 import ArticleCard from "./ArticleCard";
 import FeedIcon from "./FeedIcon";
 import FeedSidebar from "./FeedSidebar";
+import SidebarPortal from "../../../components/app/SidebarPortal";
 
 const SEARCH_DELAY_MS = 250;
 const SIDE_KEY = "up_reader_sidebar";
@@ -102,28 +103,22 @@ export default function ReaderApp() {
   const empty = !feedsQ.isPending && feeds.length === 0;
 
   return (
-    <div className="tdo" data-side={side} data-drawer={drawer}>
+    <div className="tdo" data-side="false">
       {dialog}
-      {drawer && <div className="tdo-scrim" onClick={() => setDrawer(false)} />}
-      <div className="tdo-sidewrap">
+      <SidebarPortal>
         <FeedSidebar
           feeds={feeds}
           feedId={feed?.id ?? null}
           filter={filter}
           totalUnread={totalUnread}
-          collapsed={!side}
           onView={pickView}
           onFeed={pickFeed}
           onAdd={() => setAdding(true)}
-          onCollapse={toggleSide}
         />
-      </div>
+      </SidebarPortal>
 
       <main className="tdo-main">
         <header className="tdo-head">
-          <button className="ne-btn tdo-menu" aria-label="Show sidebar" title="Show sidebar" data-show={!side} onClick={toggleSide}>
-            <FA icon={faBars} />
-          </button>
           <div className="tdo-title">
             <h1 className="h2">{title}</h1>
             {!empty && (
@@ -147,7 +142,7 @@ export default function ReaderApp() {
 
         {empty ? (
           <section className="ap-card at-green flex flex-col items-center gap-3 p-8 text-center">
-            <span className="at-green tint grid size-12 place-items-center rounded-full text-[18px]" aria-hidden>
+            <span className="grid size-12 place-items-center rounded-r2 bg-hover text-[18px] text-fg-muted" aria-hidden>
               <FA icon={faRss} />
             </span>
             <h2 className="h3">No feeds yet</h2>
@@ -164,7 +159,7 @@ export default function ReaderApp() {
                 <div className="min-w-0 flex-1">
                   {feed.description && <p className="line-clamp-2 text-[13.5px] text-fg-muted">{feed.description}</p>}
                   {feed.last_error && (
-                    <p className="at-clay tint mt-1 inline-block rounded-[7px] px-2 py-[3px] text-[12px]" role="status">
+                    <p className="bg-critical-wash text-critical mt-1 inline-block rounded-[7px] px-2 py-[3px] text-[12px]" role="status">
                       {feed.last_error}
                     </p>
                   )}
@@ -193,13 +188,13 @@ export default function ReaderApp() {
             </label>
 
             {notice && (
-              <p className="at-clay tint rounded-r2 px-3.5 py-2 text-[13.5px]" role="alert">
+              <p className="bg-critical-wash text-critical rounded-r2 px-3.5 py-2 text-[13.5px]" role="alert">
                 {notice}
               </p>
             )}
 
             {articlesQ.isError ? (
-              <p className="at-clay tint rounded-r3 p-4 text-[14px]" role="alert">
+              <p className="bg-critical-wash text-critical rounded-r3 p-4 text-[14px]" role="alert">
                 Couldn’t load your articles. Please try again.
               </p>
             ) : articlesQ.isPending ? (

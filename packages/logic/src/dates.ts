@@ -80,3 +80,11 @@ export function monthGrid(year: number, month: number, weekStart: 0 | 1 = 0): st
   const offset = (first.getDay() - weekStart + 7) % 7;
   return Array.from({ length: 42 }, (_, i) => isoDate(new Date(year, month, 1 - offset + i)));
 }
+
+/** "Oct 20 – 24" for a task that spans days within a month, "Oct 30 – Nov 2" across months; the plain day label with no start date. */
+export const rangeLabel = (start: string | null | undefined, end: string, today = isoDate()) => {
+  if (!start || start === end) return dayLabel(end, today);
+  const fmt = (iso: string, o: Intl.DateTimeFormatOptions) => new Date(`${iso}T12:00:00`).toLocaleDateString(undefined, o);
+  const same = start.slice(0, 7) === end.slice(0, 7);
+  return `${fmt(start, { month: "short", day: "numeric" })} – ${same ? fmt(end, { day: "numeric" }) : fmt(end, { month: "short", day: "numeric" })}`;
+};

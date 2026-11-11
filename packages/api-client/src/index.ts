@@ -61,5 +61,7 @@ export function createApiClient(options: ApiClientOptions) {
 }
 export * from "./sharedJournals";
 export * from "./journal";
+export * from "./notes";
+export * from "./notifications";
 export * from "./rss";
 export * from "./billing";

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faWandMagicSparkles, faCalendarDays, faListCheck, faEnvelope, faBookOpen } from "@fortawesome/free-solid-svg-icons";
 
 export default function BriefDemo() {

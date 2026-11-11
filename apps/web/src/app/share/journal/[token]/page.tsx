@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faBookOpen, faPaperclip } from "@fortawesome/free-solid-svg-icons";
 import { serverConfigured } from "../../../../server/session";
 import { getPublicEntry } from "../../../../server/services/journal/journal.service";

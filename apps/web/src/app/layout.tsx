@@ -11,6 +11,7 @@ import Refresh from "../components/site/Refresh";
 import ContextMenu from "../components/app/ContextMenu";
 import JsonLd from "../components/site/JsonLd";
 import { KEYWORDS, organizationSchema, setupsWorksSchema, websiteSchema } from "../lib/seo";
+import { lookBootScript } from "../lib/look";
 
 config.autoAddCss = false;
 
@@ -51,8 +52,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable} ${mono.variable} ${serif.variable} ${tamil.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${geist.variable} ${mono.variable} ${serif.variable} ${tamil.variable}`}>
       <body>
+        {/* App pages paint the person's colour scheme before the first frame (see lib/look.ts). */}
+        <script dangerouslySetInnerHTML={{ __html: lookBootScript(publicEnv.appUrl ? new URL(publicEnv.appUrl).host : null) }} />
         <JsonLd data={[organizationSchema(), setupsWorksSchema(), websiteSchema()]} />
         {/* Marketing content starts hidden for its entrance animation; without JavaScript it must simply be there. */}
         <noscript>

@@ -11,7 +11,10 @@ export const qk = {
     home: (today: string) => ["tasks", "home", today] as const, // open tasks + today's (Home card)
   },
   taskLists: ["task-lists"] as const,
-  notes: { all: ["notes"] as const, home: ["notes", "home"] as const }, // home: latest few (Home card)
+  library: ["library"] as const,
+  skills: ["skills"] as const,
+  notifications: ["notifications"] as const,
+  notes: { all: ["notes"] as const, home: ["notes", "home"] as const, folders: ["notes", "folders"] as const, trash: ["notes", "trash"] as const }, // home: latest few (Home card)
   // What a chat reply asked the app to show as cards (kept apart from the pages' own caches, which select other columns).
   chatShow: {
     journal: (date: string) => ["chat-show", "journal", date] as const,

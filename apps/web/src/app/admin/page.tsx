@@ -1,4 +1,4 @@
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import {
   faUsers,
   faUserPlus,
@@ -19,7 +19,7 @@ const DAY = 86_400_000;
 function Bars({ title, tone, data, note }: { title: string; tone: string; data: { label: string; n: number }[]; note: string }) {
   const max = Math.max(1, ...data.map((d) => d.n));
   return (
-    <div className={`dash-card at-${tone}`}>
+    <div className="dash-card">
       <h4>{title}</h4>
       <div className="adm-chart" role="img" aria-label={title}>
         {data.map((d) => (
@@ -91,8 +91,8 @@ export default async function Page() {
       </div>
       <div className="dash-stats">
         {stats.map(([ic, l, n, t]) => (
-          <div className={`dash-stat at-${t}`} key={l}>
-            <span className="mega-ico">
+          <div className={`dash-stat`} key={l}>
+            <span className="adm-ico">
               <FA icon={ic} />
             </span>
             <b>{n}</b>
@@ -102,8 +102,8 @@ export default async function Page() {
       </div>
       <div className="dash-stats adm-six">
         {content.map(([ic, l, n, t]) => (
-          <div className={`dash-stat at-${t}`} key={l}>
-            <span className="mega-ico">
+          <div className={`dash-stat`} key={l}>
+            <span className="adm-ico">
               <FA icon={ic} />
             </span>
             <b>{n}</b>
@@ -124,7 +124,7 @@ export default async function Page() {
           data={days.map((d) => ({ label: d.label, n: d.seen }))}
           note="Counts each user on the day of their latest sign-in."
         />
-        <div className="dash-card at-mint">
+        <div className="dash-card">
           <h4>Latest sign-ups</h4>
           {recent.length === 0 && <p className="meta">No users yet.</p>}
           {recent.map((u) => (
@@ -137,7 +137,7 @@ export default async function Page() {
             </blockquote>
           ))}
         </div>
-        <div className="dash-card at-amber">
+        <div className="dash-card">
           <h4>At a glance</h4>
           <dl className="st-facts">
             <div>

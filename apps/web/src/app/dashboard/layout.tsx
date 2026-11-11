@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { redirect } from "next/navigation";
 import { accountInfo, currentUser, isAdmin, serverConfigured, userDb } from "../../server/session";

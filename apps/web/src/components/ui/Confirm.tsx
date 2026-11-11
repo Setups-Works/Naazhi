@@ -2,7 +2,7 @@
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useCallback, useState, type ReactNode } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faTrash, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 
 /*

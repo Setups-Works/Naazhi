@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import type { Tone } from "../../../../lib/tones";
@@ -28,9 +28,9 @@ export default function ShownGroup({
   children: ReactNode;
 }) {
   return (
-    <section className={`at-${tone} mt-3 rounded-r2 bg-(--ab) p-3.5 text-fg shadow-[inset_0_0_0_1px_var(--abl)]`} aria-label={title}>
-      <p className="flex items-center gap-2 text-xs font-semibold tracking-wide text-(--abf) uppercase">
-        <span className="grid size-7 place-items-center rounded-full bg-white/70 text-[12px] shadow-[inset_0_0_0_1px_var(--abl)]">
+    <section className="mt-3 rounded-r3 border bg-raised p-4 text-ink" data-tone={tone} aria-label={title}>
+      <p className="m-0 flex items-center gap-2 text-[13px] font-medium text-ink-2">
+        <span className="grid size-7 place-items-center rounded-ctl bg-hover text-[12px] text-ink-2">
           <FA icon={icon} />
         </span>
         {title}
@@ -51,7 +51,7 @@ export function ShownRow({ href, label, children }: { href: string; label: strin
       <Link
         href={href}
         aria-label={label}
-        className="flex flex-col gap-0.5 rounded-r1 bg-white/65 px-3 py-2 transition-colors hover:bg-white/85"
+        className="flex flex-col gap-0.5 rounded-ctl bg-hover px-3 py-2 transition-colors hover:bg-press"
       >
         {children}
       </Link>
@@ -60,5 +60,5 @@ export function ShownRow({ href, label, children }: { href: string; label: strin
 }
 
 export const ShownEmpty = ({ children }: { children: ReactNode }) => (
-  <li className="rounded-r1 bg-white/55 px-3 py-2 text-[13.5px] text-fg-muted">{children}</li>
+  <li className="rounded-ctl bg-hover px-3 py-2 text-[13.5px] text-ink-2">{children}</li>
 );

@@ -1,7 +1,7 @@
 "use client";
 
 import { faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { useMemo } from "react";
 import JournalCalendar from "../../../components/app/JournalCalendar";
 import { dayRange, HEALTH_RANGES, rangeMeta, stepRange, type HealthRange } from "../format";
@@ -42,7 +42,7 @@ export default function RangeFilter({
     ? new Date(`${meta.from}T12:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "long" })
     : `${shortDate(meta.from)} – ${shortDate(meta.to)}`;
   const arrow =
-    "grid size-[42px] place-items-center rounded-full text-fg-muted transition-colors hover:bg-white/60 active:scale-95 disabled:opacity-35 disabled:hover:bg-transparent";
+    "grid size-[42px] place-items-center rounded-full text-fg-muted transition-colors hover:bg-surface/60 active:scale-95 disabled:opacity-35 disabled:hover:bg-transparent";
 
   return (
     <div className="flex w-full max-w-[420px] flex-col gap-3">
@@ -54,7 +54,7 @@ export default function RangeFilter({
               type="button"
               aria-pressed={value === r.key}
               onClick={() => onChange(r.key)}
-              className="h-9 shrink-0 rounded-pill px-4 text-[13.5px] font-medium text-fg-muted transition-colors active:scale-95 aria-pressed:bg-white aria-pressed:text-fg aria-pressed:shadow-e1"
+              className="h-9 shrink-0 rounded-pill px-4 text-[13.5px] font-medium text-fg-muted transition-colors active:scale-95 aria-pressed:bg-surface aria-pressed:text-fg aria-pressed:shadow-e1"
             >
               {r.label}
             </button>
@@ -62,7 +62,7 @@ export default function RangeFilter({
         </div>
       )}
 
-      <div className="at-sand tint flex flex-col gap-3 rounded-r4 p-3.5">
+      <div className="flex flex-col gap-3 rounded-r3 bg-side p-3.5 shadow-[inset_0_0_0_1px_var(--line)]">
         <div className="flex items-center justify-between px-1">
           <button type="button" aria-label="Previous day" disabled={!back} onClick={() => back && onChange(back)} className={arrow}>
             <FA icon={faChevronLeft} />

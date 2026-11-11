@@ -2,10 +2,17 @@
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type ReactNode } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   faBookOpen,
+  faEnvelope,
+  faCalendarDays,
+  faChartColumn,
+  faPaperPlane,
+  faComment,
+  faMicrophone,
+  faArrowUpRightFromSquare,
   faCalendarDay,
   faComments,
   faHeartPulse,
@@ -14,6 +21,7 @@ import {
   faPenToSquare,
   faPlus,
   faUserGroup,
+  faChevronDown,
 } from "@fortawesome/free-solid-svg-icons";
 import { fmtDuration } from "@untitled/logic/health";
 import { api } from "../../lib/api/client";
@@ -34,18 +42,27 @@ import { useHomeLayout, type HomeColumn } from "../../features/home/useHomeLayou
 import DragHandle from "../../features/home/DragHandle";
 import TaskRow from "./TaskRow";
 import InsightsCard from "./InsightsCard";
+import HomeTip from "./HomeTip";
 
 // Stable empty values so a still-loading query doesn't create a new array on every render.
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+
 const EMPTY_TASKS: Task[] = [];
 const EMPTY_CHATS: Chat[] = [];
 const EMPTY_NOTES: Pick<Note, "id" | "title" | "updated_at">[] = [];
 const EMPTY_ENTRIES: { id: string; body: string; created_at: string }[] = [];
 
+const ask = (q: string) => `/dashboard/chat?ask=${encodeURIComponent(q)}`;
 const QUICK = [
-  { href: "/dashboard/todo", t: "Plan my day", icon: faListCheck },
-  { href: "/dashboard/journal", t: "Journal", icon: faBookOpen },
-  { href: "/dashboard/notes?new=1", t: "New note", icon: faPenToSquare },
-  { href: "/dashboard/chat?new=1", t: "New chat", icon: faComments },
+  { href: ask("Check my email and tell me what needs a reply."), t: "Check my email", icon: faEnvelope },
+  { href: ask("What is on my calendar today?"), t: "Today’s calendar", icon: faCalendarDays },
+  { href: ask("Plan my day from my tasks and calendar."), t: "Plan my day", icon: faListCheck },
+  { href: ask("Summarize my week: tasks done, notes and journal entries."), t: "Summarize my week", icon: faChartColumn },
+  { href: ask("Draft an email for me."), t: "Draft an email", icon: faPaperPlane },
 ];
 
 /** A quiet glass panel: small tinted icon, a label, an optional link to the full screen. */
@@ -54,11 +71,14 @@ function Panel({
   title,
   href,
   hint,
+  meta,
   className = "",
   drag,
   children,
 }: {
-  icon: IconDefinition;
+  icon?: IconDefinition;
+  /** Muted text at the right of the header ("Next 7 days"). */
+  meta?: string;
   title: string;
   href?: string;
   hint?: string;
@@ -67,25 +87,21 @@ function Panel({
   children: ReactNode;
 }) {
   return (
-    <section className={`liquid-flat rounded-r3 p-[18px] [backdrop-filter:var(--glass-blur)] max-[700px]:p-4 ${className}`}>
-      <header className="mb-3 flex items-center gap-2.5">
-        <span className="grid size-7 place-items-center rounded-[9px] bg-surface-muted text-[12px] text-fg-muted">
-          <FA icon={icon} />
-        </span>
-        <h2 className="m-0 text-[15px] font-semibold">{title}</h2>
-        {hint && <small className="text-[12.5px] opacity-70">{hint}</small>}
+    <Card className={className}>
+      <CardHeader className="flex flex-row items-center gap-2">
+        {icon && <FA icon={icon} className="w-3.5 text-[13px] text-fg-subtle" />}
+        <CardTitle className="text-[15.5px] leading-none tracking-[-0.01em]">{title}</CardTitle>
+        {hint && <small className="text-[13px] text-fg-subtle">{hint}</small>}
+        {meta && <small className="ml-auto text-[13px] text-fg-subtle">{meta}</small>}
         {href && (
-          <Link
-            href={href}
-            className="ml-auto rounded-pill px-2.5 py-1 text-[12.5px] opacity-70 transition-colors hover:bg-surface-muted hover:opacity-100"
-          >
-            Open
-          </Link>
+          <Button asChild variant="ghost" size="sm" className="ml-auto text-fg-subtle">
+            <Link href={href}>Open</Link>
+          </Button>
         )}
-        <span className={href ? "" : "ml-auto"}>{drag}</span>
-      </header>
-      {children}
-    </section>
+        <span className={href || meta ? "" : "ml-auto"}>{drag}</span>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
   );
 }
 
@@ -133,7 +149,7 @@ export default function HomeView({ name }: { name: string }) {
   const chatsQ = useQuery({
     queryKey: qk.chats.recent,
     queryFn: async () => {
-      const { data, error } = await sb.from("chats").select("id,title,updated_at").order("updated_at", { ascending: false }).limit(4);
+      const { data, error } = await sb.from("chats").select("id,title,updated_at").order("updated_at", { ascending: false }).limit(5);
       if (error) throw error;
       return data as Chat[];
     },
@@ -141,7 +157,7 @@ export default function HomeView({ name }: { name: string }) {
   const notesQ = useQuery({
     queryKey: qk.notes.home,
     queryFn: async () => {
-      const { data, error } = await sb.from("notes").select("id,title,updated_at").order("updated_at", { ascending: false }).limit(4);
+      const { data, error } = await sb.from("notes").select("id,title,updated_at").is("deleted_at", null).order("updated_at", { ascending: false }).limit(4);
       if (error) throw error;
       return data as Pick<Note, "id" | "title" | "updated_at">[];
     },
@@ -209,7 +225,7 @@ export default function HomeView({ name }: { name: string }) {
     const v = title.trim();
     if (!v) return;
     setTitle("");
-    taskActions.add({ title: v, description: "", due_date: today, priority: 4, list_id: null, recurrence: null });
+    taskActions.add({ title: v, description: "", due_date: today, priority: 5, list_id: null, recurrence: null });
   }
   const { layout, dragging, handleProps } = useHomeLayout();
   const drag = (id: string, label: string) => <DragHandle label={label} {...handleProps(id)} />;
@@ -232,35 +248,24 @@ export default function HomeView({ name }: { name: string }) {
         </Panel>
       ) : null,
     today: (
-      <section aria-label="Today" className="liquid-flat rounded-r3 p-[22px] [backdrop-filter:var(--glass-blur)] max-[700px]:p-4">
-        <div className="mb-1 flex items-baseline justify-between gap-3">
-          <h2 className="m-0 font-serif text-[26px] leading-none font-normal tracking-[-0.02em]">Today</h2>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[13px] opacity-70 tabular-nums">
-              {doneToday} of {todays.length} done
+      <section aria-label="Today" className="flex flex-col gap-4">
+        <div>
+          <div className="flex items-center justify-between text-[13.5px] text-fg-subtle tabular-nums">
+            <span>
+              {doneToday} of {todays.length} tasks done today
             </span>
-            {drag("today", "Today")}
+            <span>{pct}%</span>
           </div>
-        </div>
-        <div
-          className="mt-3 mb-4 h-1 overflow-hidden rounded-pill bg-line"
-          role="progressbar"
-          aria-label="Today’s progress"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={pct}
-        >
-          <i className="block h-full rounded-pill bg-green-fg transition-[width] duration-300 ease-(--ease)" style={{ width: `${pct}%` }} />
+          <Progress value={pct} className="mt-2" aria-label="Today’s progress" />
         </div>
 
         <form
           onSubmit={add}
-          className="mb-3 flex h-11 items-center gap-2.5 rounded-pill bg-surface-muted px-4 focus-within:bg-surface focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-green-fg"
+          className="flex h-11 items-center gap-2.5 rounded-r2 bg-raised px-4 shadow-[inset_0_0_0_1px_var(--line-2)] focus-within:shadow-[inset_0_0_0_1px_var(--line-3)]"
         >
           <FA icon={faPlus} className="text-[12px] text-fg-subtle" />
-          <input
-            className="h-full min-w-0 flex-1 border-0 bg-transparent text-[14.5px] text-fg outline-none placeholder:text-fg-subtle"
-            style={{ font: "inherit" }}
+          <Input
+            className="h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-0 text-[14.5px] focus-visible:ring-0"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Add a task for today…"
@@ -269,62 +274,76 @@ export default function HomeView({ name }: { name: string }) {
           />
         </form>
 
-        {overdue.length > 0 && (
-          <>
-            <div className="mt-4 mb-1 text-[11px] font-semibold tracking-[0.1em] text-clay-fg uppercase">Overdue</div>
-            <ul className="m-0 list-none p-0">
-              {overdue.map((t) => (
-                <TaskRow key={t.id} task={t} today={today} mode="overdue" onToggle={toggle} />
-              ))}
-            </ul>
-          </>
-        )}
-        <ul className="m-0 list-none p-0">
-          {todays.map((t) => (
-            <TaskRow key={t.id} task={t} today={today} mode="today" onToggle={toggle} />
-          ))}
-        </ul>
-        {ready && todays.length === 0 && overdue.length === 0 && <Empty>Nothing planned yet. Add the first thing above.</Empty>}
+        <Panel title="Focus" meta={`${overdue.length} overdue · ${todays.length} today`} drag={drag("today", "Today")} className="min-h-[260px]">
+          {overdue.length > 0 && (
+            <>
+              <div className="mb-1 flex items-center gap-1.5 text-[13.5px] text-overdue">
+                <FA icon={faChevronDown} className="text-[10px]" /> Overdue
+              </div>
+              <ul className="m-0 mb-3 list-none p-0">
+                {overdue.map((t) => (
+                  <TaskRow key={t.id} task={t} today={today} mode="overdue" onToggle={toggle} />
+                ))}
+              </ul>
+            </>
+          )}
+          <div className="mb-1 flex items-center gap-1.5 text-[13.5px] text-fg-muted">
+            <FA icon={faChevronDown} className="text-[10px]" /> Today
+          </div>
+          <ul className="m-0 list-none p-0">
+            {todays.map((t) => (
+              <TaskRow key={t.id} task={t} today={today} mode="today" onToggle={toggle} />
+            ))}
+          </ul>
+          {ready && todays.length === 0 && <Empty>No tasks for today</Empty>}
+        </Panel>
       </section>
     ),
     journal: (
-      <Panel
-        drag={drag("journal", "Today’s journal")}
-        icon={faBookOpen}
-        title="Today’s journal"
-        href="/dashboard/journal"
-        className="max-[900px]:order-3"
-      >
-        {entries.length > 0 && (
-          <ul className="m-0 mb-3 flex list-none flex-col gap-1.5 p-0">
-            {entries.map((en) => (
-              <li key={en.id} className="flex gap-3 text-[13.5px]">
-                <time className="shrink-0 text-fg-subtle tabular-nums">{fmtTime(en.created_at)}</time>
-                <span className="line-clamp-2 text-fg-muted">{en.body || "Voice or attachment"}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-        <form onSubmit={addEntry} className="flex items-end gap-2.5">
-          <textarea
-            className="max-h-40 min-h-[44px] flex-1 resize-none rounded-r2 border-0 bg-surface-muted px-4 py-3 text-[14.5px] text-fg placeholder:text-fg-subtle focus:bg-surface"
-            style={{ font: "inherit" }}
-            rows={1}
+      <Card aria-label="Today’s journal" className="min-h-[320px] gap-0 max-[900px]:order-3">
+        <CardHeader className="flex flex-row items-center gap-2 pb-2">
+          <CardTitle className="text-[15.5px] leading-none tracking-[-0.01em]">Today’s journal</CardTitle>
+          <span className="ml-auto flex items-center gap-1">
+            <Button asChild variant="ghost" size="icon" className="size-7 text-fg-subtle">
+              <Link href="/dashboard/journal" aria-label="Open journal">
+                <FA icon={faArrowUpRightFromSquare} className="text-[13px]" />
+              </Link>
+            </Button>
+            {drag("journal", "Today’s journal")}
+          </span>
+        </CardHeader>
+        <CardContent className="flex-1">
+          {entries.length > 0 ? (
+            <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
+              {entries.map((en) => (
+                <li key={en.id} className="flex gap-3 text-[13.5px]">
+                  <time className="shrink-0 text-fg-subtle tabular-nums">{fmtTime(en.created_at)}</time>
+                  <span className="line-clamp-2 text-fg-muted">{en.body || "Voice or attachment"}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="m-0 grid h-full min-h-[150px] place-items-center text-center text-[14px] text-fg-subtle">Write your first entry for today</p>
+          )}
+        </CardContent>
+        <form onSubmit={addEntry} className="flex items-center gap-2 border-t p-2">
+          <Button asChild variant="secondary" size="icon" className="size-9 rounded-pill text-fg-muted">
+            <Link href="/dashboard/journal" aria-label="Record a voice entry">
+              <FA icon={faMicrophone} className="text-[14px]" />
+            </Link>
+          </Button>
+          <Input
+            className="h-9 min-w-0 flex-1 rounded-none border-0 bg-transparent px-1 text-[14.5px] focus-visible:ring-0"
             value={journal}
             onChange={(e) => setJournal(e.target.value)}
-            onKeyDown={(e) => {
-              if ((e.metaKey || e.ctrlKey) && e.key === "Enter") addEntry(e);
-            }}
             maxLength={50000}
-            placeholder={entries.length ? "Add another entry…" : "How is today going?"}
+            placeholder="Start writing…"
             aria-label="New journal entry"
             disabled={!ready}
           />
-          <button className="btn btn-primary btn-sm" disabled={!journal.trim()}>
-            Add
-          </button>
+          {journal.trim() && <Button size="sm">Add</Button>}
         </form>
-      </Panel>
+      </Card>
     ),
     notes: (
       <Panel drag={drag("notes", "Notes")} icon={faPenToSquare} title="Notes" href="/dashboard/notes">
@@ -348,39 +367,45 @@ export default function HomeView({ name }: { name: string }) {
       </Panel>
     ),
     chats: (
-      <Panel drag={drag("chats", "Chats")} icon={faComments} title="Chats" href="/dashboard/chat">
-        {ready && chats.length === 0 ? (
-          <Empty>No chats yet</Empty>
-        ) : (
-          <ul className="m-0 flex list-none flex-col p-0">
-            {chats.map((c) => (
-              <li key={c.id}>
-                <Link
-                  href={`/dashboard/chat?c=${c.id}`}
-                  className="flex items-baseline justify-between gap-3 rounded-r1 px-2 py-2 text-[13.5px] hover:bg-surface-muted"
-                >
-                  <span className="truncate">{c.title}</span>
-                  <small className="shrink-0 text-fg-subtle">{ago(c.updated_at)}</small>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Panel>
+      <Card aria-label="Recent chats" className="min-h-[320px] gap-0 max-[900px]:order-3">
+        <CardHeader className="flex flex-row items-center gap-2 pb-2">
+          <FA icon={faComment} className="w-3.5 text-[13px] text-fg-subtle" />
+          <CardTitle className="text-[15.5px] leading-none tracking-[-0.01em]">Recent chats</CardTitle>
+          <span className="ml-auto">{drag("chats", "Chats")}</span>
+        </CardHeader>
+        <CardContent className="flex-1">
+          {ready && chats.length === 0 ? (
+            <Empty>No chats yet</Empty>
+          ) : (
+            <ul className="m-0 list-none p-0">
+              {chats.map((c) => (
+                <li key={c.id} className="border-b border-line last:border-0">
+                  <Link href={`/dashboard/chat?c=${c.id}`} className="flex items-baseline justify-between gap-3 py-2.5 text-[14px] hover:text-fg-muted">
+                    <span className="truncate">{c.title}</span>
+                    <small className="shrink-0 text-[13px] text-fg-faint">{ago(c.updated_at)}</small>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+        <CardFooter className="border-t p-0">
+          <Link href="/dashboard/chat?new=1" className="flex w-full items-center gap-2 px-[18px] py-3 text-[14px] text-fg-muted hover:text-fg">
+            <FA icon={faPlus} className="text-[12px]" /> New chat
+          </Link>
+        </CardFooter>
+      </Card>
     ),
     insights: <InsightsCard handle={drag("insights", "Personality insights")} />,
     schedule: (
       <Panel
         drag={drag("schedule", "Schedule")}
-        icon={faCalendarDay}
-        title="Schedule"
-        href="/dashboard/calendar"
-        hint="today"
+        title="Upcoming"
+        meta="Next 7 days"
         className="max-[900px]:order-2"
       >
-        {events.length === 0 ? (
-          <Empty>No events today</Empty>
-        ) : (
+        {events.length === 0 && upcoming.length === 0 && <Empty>No tasks for the next 7 days</Empty>}
+        {events.length > 0 && (
           <ul className="m-0 flex list-none flex-col gap-2 p-0">
             {events.slice(0, 5).map((ev) => (
               <li key={ev.id} className="flex items-baseline gap-3 text-[13.5px]">
@@ -392,7 +417,7 @@ export default function HomeView({ name }: { name: string }) {
         )}
         {upcoming.length > 0 && (
           <>
-            <div className="mt-4 mb-1 text-[11px] font-semibold tracking-[0.1em] uppercase opacity-60">Due this week</div>
+            <div className="mt-3 mb-1 text-[13px] text-fg-subtle">Due this week</div>
             <ul className="m-0 list-none p-0">
               {upcoming.slice(0, 4).map((t) => (
                 <TaskRow key={t.id} task={t} today={today} mode="upcoming" onToggle={toggle} />
@@ -444,11 +469,11 @@ export default function HomeView({ name }: { name: string }) {
           <dl className="m-0 grid grid-cols-2 gap-3">
             <div>
               <dt className="text-[12px] text-fg-subtle">Steps</dt>
-              <dd className="m-0 font-serif text-[26px] leading-tight tracking-[-0.02em]">{(health.steps ?? 0).toLocaleString()}</dd>
+              <dd className="m-0 font-serif font-semibold text-[26px] leading-tight tracking-[-0.02em]">{(health.steps ?? 0).toLocaleString()}</dd>
             </div>
             <div>
               <dt className="text-[12px] text-fg-subtle">Sleep</dt>
-              <dd className="m-0 font-serif text-[26px] leading-tight tracking-[-0.02em]">
+              <dd className="m-0 font-serif font-semibold text-[26px] leading-tight tracking-[-0.02em]">
                 {health.sleep_minutes ? fmtDuration(health.sleep_minutes) : "–"}
               </dd>
             </div>
@@ -459,16 +484,18 @@ export default function HomeView({ name }: { name: string }) {
       </Panel>
     ),
   };
+  /** Cards that share a row in the main column (two across); everything else spans the column. */
+  const HALF = new Set(["journal", "chats"]);
   /** One column of cards, each in a wrapper the drag code can measure. */
   const column = (col: HomeColumn) => (
-    <div data-home-col={col} className="flex min-w-0 flex-col gap-[18px]">
+    <div data-home-col={col} className={col === "main" ? "grid min-w-0 grid-cols-2 content-start gap-[18px] max-[900px]:grid-cols-1" : "flex min-w-0 flex-col gap-[18px]"}>
       {layout[col].map((id) =>
         cards[id] ? (
           <div
             key={id}
             data-drag-id={id}
             data-dragging={dragging === id}
-            className="rounded-r3 transition-[transform,box-shadow] duration-200 ease-(--ease) data-[dragging=true]:relative data-[dragging=true]:z-10 data-[dragging=true]:scale-[1.015] data-[dragging=true]:shadow-e3 data-[dragging=true]:transition-none motion-reduce:transition-none"
+            className={`rounded-r3 [&>*]:h-full ${col === "main" && !HALF.has(id) ? "col-span-2 max-[900px]:col-span-1" : ""} transition-[transform,box-shadow] duration-200 ease-(--ease) data-[dragging=true]:relative data-[dragging=true]:z-10 data-[dragging=true]:scale-[1.015] data-[dragging=true]:shadow-e3 data-[dragging=true]:transition-none motion-reduce:transition-none`}
           >
             {cards[id]}
           </div>
@@ -479,34 +506,33 @@ export default function HomeView({ name }: { name: string }) {
 
   return (
     <div className="mx-auto w-full max-w-[1040px] pb-16 max-[700px]:pb-24">
-      <header className="mb-6 mt-2 flex max-[700px]:mb-4 max-[700px]:flex-col max-[700px]:items-stretch flex-wrap items-end justify-between gap-x-6 gap-y-2">
-        <div>
-          <p className="m-0 mb-1.5 text-[13.5px] text-fg-subtle">
-            {date}
+      <header className="mt-6 mb-7 max-[700px]:mt-2 max-[700px]:mb-5">
+        <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-1">
+          <h1 className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 font-serif text-[clamp(28px,3vw,32px)] leading-[1.1] font-semibold tracking-[-0.022em] text-balance">
+            <span>
+              {greeting()}, {first}
+            </span>
             {planLabel && (
-              <span className="at-green tint ml-2.5 rounded-pill px-2 py-[2px] align-middle text-[11px] font-semibold tracking-[0.08em] uppercase">
+              <Badge variant="secondary" className="rounded-xs font-normal tracking-normal text-fg-muted">
                 {planLabel}
-              </span>
+              </Badge>
             )}
-          </p>
-          <h1 className="m-0 font-serif text-[clamp(30px,3.4vw,42px)] leading-[1.04] font-normal tracking-[-0.03em] text-balance">
-            {greeting()}, <span className="text-green-fg italic">{first}</span>
           </h1>
+          <p className="m-0 pb-1 text-[13.5px] text-fg-subtle">{date}</p>
         </div>
         <nav
           aria-label="Quick actions"
-          className="flex flex-wrap gap-2 max-[700px]:-mx-3.5 max-[700px]:flex-nowrap max-[700px]:overflow-x-auto max-[700px]:px-3.5 max-[700px]:pb-1 max-[700px]:[scrollbar-width:none]"
+          className="mt-5 flex flex-wrap gap-2 max-[700px]:-mx-3.5 max-[700px]:mt-4 max-[700px]:flex-nowrap max-[700px]:overflow-x-auto max-[700px]:px-3.5 max-[700px]:pb-1 max-[700px]:[scrollbar-width:none]"
         >
           {QUICK.map((q) => (
-            <Link
-              key={q.t}
-              href={q.href}
-              className="glass glass-hover inline-flex h-[38px] shrink-0 items-center gap-2 rounded-pill px-3.5 text-[13.5px] text-fg-muted transition-[transform,background-color,box-shadow] duration-300 ease-(--spring) hover:text-fg active:scale-95 motion-reduce:transition-none"
-            >
-              <FA icon={q.icon} className="text-[12px]" /> {q.t}
-            </Link>
+            <Button key={q.t} asChild variant="outline" size="lg" className="shrink-0 font-normal">
+              <Link href={q.href}>
+                <FA icon={q.icon} className="text-[12px] text-fg-subtle" /> {q.t}
+              </Link>
+            </Button>
           ))}
         </nav>
+        <HomeTip />
       </header>
 
       {(err || loadFailed) && (

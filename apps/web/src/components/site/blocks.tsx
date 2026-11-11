@@ -1,5 +1,5 @@
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faCheck, faMinus } from "@fortawesome/free-solid-svg-icons";
 import { R, Reveal } from "./Reveal";
 import { IconBadge, Surface } from "./ui";
@@ -13,9 +13,9 @@ export function StepCards({ steps }: { steps: readonly { icon: IconDefinition; t
           <Surface lift className="flex h-full flex-col gap-3 p-6 sm:p-8">
             <div className="flex items-start justify-between">
               <IconBadge icon={s.icon} className="size-12" />
-              <span className="font-serif text-[56px] leading-none tracking-[-0.04em] text-green-fg/20">{String(n + 1).padStart(2, "0")}</span>
+              <span className="font-serif font-semibold text-[56px] leading-none tracking-[-0.04em] text-green-fg/20">{String(n + 1).padStart(2, "0")}</span>
             </div>
-            <h3 className="font-serif text-[28px] leading-tight tracking-[-0.022em]">{s.t}</h3>
+            <h3 className="font-serif font-semibold text-[28px] leading-tight tracking-[-0.022em]">{s.t}</h3>
             <p className="text-[15.5px] leading-relaxed text-fg-muted">{s.d}</p>
             <ul className="mt-1 flex flex-col gap-2">
               {s.pts.map((p) => (
@@ -116,7 +116,7 @@ export function CompareTable({ plans, rows }: { plans: string[]; rows: { label: 
                 <span className="sr-only">Feature</span>
               </th>
               {plans.map((p) => (
-                <th key={p} scope="col" className="px-4 py-4 text-center font-serif text-[22px] font-normal tracking-[-0.02em]">
+                <th key={p} scope="col" className="px-4 py-4 text-center font-serif text-[22px] font-semibold tracking-[-0.02em]">
                   {p}
                 </th>
               ))}

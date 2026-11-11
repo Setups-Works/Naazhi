@@ -1,10 +1,11 @@
 "use client";
 import Link from "next/link";
 import { canWrite, groupByDay, journalFilePath } from "@untitled/logic";
-import { useMemo, useState } from "react";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
+import { useEffect, useMemo, useState } from "react";
+import { Icon as FA } from "@/components/ui/Icon";
 import { faArrowLeft, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 import { useConfirm } from "../../../components/ui/Confirm";
+import { setCrumb } from "../../../lib/crumb";
 import { isoDate } from "../../../lib/dates";
 import { safeName } from "../../../lib/notes";
 import { fmtTime } from "../../../lib/prefs";
@@ -37,6 +38,11 @@ export default function SharedJournalApp({ id }: { id: string }) {
   const today = useMemo(() => isoDate(), []);
 
   const journal = journalQ.data;
+  const journalName = journal?.name;
+  useEffect(() => {
+    setCrumb(journalName);
+    return () => setCrumb(undefined);
+  }, [journalName]);
   const entries = useMemo(() => feedQ.data?.pages.flatMap((p) => p.entries) ?? [], [feedQ.data]);
   const days = useMemo(() => groupByDay(entries), [entries]);
   const urls = useSignedUrls(entries.flatMap((e) => e.attachments.map((a) => a.path)));
@@ -81,11 +87,11 @@ export default function SharedJournalApp({ id }: { id: string }) {
     );
 
   return (
-    <div className="mx-auto w-full max-w-[940px]">
+    <div className="jr" data-side="false">
       {dialog}
       {people && <ManageDialog id={id} onClose={() => setPeople(false)} />}
 
-      <section className="jr-main ap-card at-violet" aria-label={journal?.name ?? "Shared journal"}>
+      <section className="jr-main ap-card" aria-label={journal?.name ?? "Shared journal"}>
         <header className="jr-head">
           <Link
             href="/dashboard/journal/collaborate"
@@ -95,7 +101,7 @@ export default function SharedJournalApp({ id }: { id: string }) {
           </Link>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
-              <h1 className="h3">{journal?.name ?? " "}</h1>
+              <h1 className="jr-title">{journal?.name ?? " "}</h1>
               <small>{journal ? `${journal.entry_count} ${journal.entry_count === 1 ? "entry" : "entries"}` : " "}</small>
             </div>
             {journal && (
@@ -104,7 +110,7 @@ export default function SharedJournalApp({ id }: { id: string }) {
                 {/* Not a <ul>: the card's global "ap-card ul" rule would stack the avatars in a column. */}
                 <div className="flex items-center -space-x-2" role="group" aria-label={`${journal.members.length} people`}>
                   {journal.members.slice(0, AVATARS_SHOWN).map((m) => (
-                    <span key={m.person.id} className="flex rounded-full ring-2 ring-white/80">
+                    <span key={m.person.id} className="flex rounded-full ring-2 ring-raised">
                       <PersonAvatar person={m.person} size="sm" />
                     </span>
                   ))}
@@ -122,11 +128,14 @@ export default function SharedJournalApp({ id }: { id: string }) {
 
         <div className="jr-list" aria-live="polite">
           {!feedQ.isPending && entries.length === 0 && (
-            <p className="ap-none jr-empty">{writer ? "Nothing here yet. Write the first entry." : "Nothing here yet."}</p>
+            <div className="jr-empty">
+              <b>No entries yet</b>
+              <span>{writer ? "Write the first entry below." : "Nothing has been written here yet."}</span>
+            </div>
           )}
           {days.map((day) => (
             <section key={day.date} aria-label={dayLabel(day.date, today)}>
-              <h2 className="ap-sec mt-5 mb-1">{dayLabel(day.date, today)}</h2>
+              <h2 className="m-0 mt-6 mb-1 text-[16px] font-semibold">{dayLabel(day.date, today)}</h2>
               {day.entries.map((e) => {
                 const mine = e.author.id === journal?.me;
                 return (

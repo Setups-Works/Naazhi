@@ -16,7 +16,29 @@
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
+/* shadcn/ui's `dark:` follows the app's scheme class on <html>, not the OS setting. */
+@custom-variant dark (&:is(.dark *));
+
 @theme inline {
+  /* shadcn/ui's semantic names, mapped onto the paper-and-ink tokens (no second palette). Its "accent" (a hover fill) is
+     written as `hover` in the copied components, because `accent` here is the person's chosen accent colour. */
+  --color-background: var(--paper);
+  --color-foreground: var(--ink);
+  --color-card: var(--raised);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--raised);
+  --color-popover-foreground: var(--ink);
+  --color-primary: var(--ink);
+  --color-primary-foreground: var(--paper);
+  --color-secondary: var(--hover);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--side);
+  --color-muted-foreground: var(--ink-3);
+  --color-destructive: var(--critical);
+  --color-border: var(--line);
+  --color-input: var(--line-2);
+  --color-ring: var(--data);
+
   --color-page: var(--page);
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
@@ -45,7 +67,29 @@
   --color-sand-fg: var(--sand-fg);
   --color-orange-fg: var(--orange-fg);
   --color-rec: var(--rec);
+  --color-paper: var(--paper);
+  --color-side: var(--side);
+  --color-sunken: var(--sunken);
+  --color-raised: var(--raised);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+  --color-line-2: var(--line-2);
+  --color-hover: var(--hover);
+  --color-press: var(--press);
+  --color-accent: var(--accent-color);
+  --color-accent-wash: var(--accent-wash);
+  --color-data: var(--data);
+  --color-coral: var(--coral);
+  --color-critical: var(--critical);
+  --color-critical-wash: var(--critical-wash);
+  --color-success: var(--success);
+  --color-overdue: var(--overdue);
 
+  --radius-xs: var(--r-xs);
+  --radius-tab: var(--r-sm);
+  --radius-ctl: var(--r-ctl);
   --radius-r1: var(--r1);
   --radius-r2: var(--r2);
   --radius-r3: var(--r3);
@@ -53,6 +97,7 @@
   --radius-r5: var(--r5);
   --radius-pill: var(--pill);
 
+  --shadow-pop: var(--shadow-pop);
   --shadow-e1: var(--e1);
   --shadow-e2: var(--e2);
   --shadow-e3: var(--e3);
@@ -65,6 +110,7 @@
 
   --font-sans: var(--sans);
   --font-serif: var(--serif);
+  --font-brand: var(--brand-serif);
   --font-mono: var(--mono);
 
   --ease-site: var(--ease);
@@ -287,5 +333,23 @@
     &:active {
       transform: none;
     }
+  }
+}
+
+/*
+ * The two bits of Tailwind's preflight the shadcn/ui components rely on, without loading the whole reset (which would restyle the
+ * legacy screens). In the `base` layer, so any unlayered legacy rule that sets its own border colour or font still wins.
+ */
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--line);
+  }
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
   }
 }

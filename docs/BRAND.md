@@ -144,3 +144,7 @@ These are identifiers, not branding, and are left as they are so nothing breaks:
 2. Take colours from the UI tokens, not from §2.
 3. Check it at 375 px width and on `--fill-dark`.
 4. If you need a new logo asset size, add it to `scripts/brand/build-assets.mjs` and rerun the script.
+
+## 10. The brand guidelines book
+
+A 90-page brand book (PDF and HTML) with logo rules, colours, typography, voice, applications and governance lives in `marketing/naazhi-brand-guide/` (see its README). Rebuild it with `node marketing/naazhi-brand-guide/build.mjs` after changing this file or the tokens.

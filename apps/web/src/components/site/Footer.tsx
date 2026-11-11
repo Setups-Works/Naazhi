@@ -16,7 +16,7 @@ export default function Footer() {
       <div className={WRAP}>
         <div className="grid gap-10 lg:grid-cols-[1.2fr_2fr]">
           <div className="flex flex-col items-start gap-4">
-            <Link href="/" className="flex items-center gap-2.5 font-serif text-[26px] tracking-[-0.02em]">
+            <Link href="/" className="flex items-center gap-2.5 font-brand text-[26px] tracking-[-0.02em]">
               <BrandMark size={32} />
               Naazhi
             </Link>

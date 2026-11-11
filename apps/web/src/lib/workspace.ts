@@ -2,7 +2,9 @@ export type Task = {
   id: string;
   title: string;
   description: string;
-  priority: 1 | 2 | 3 | 4;
+  priority: 1 | 2 | 3 | 4 | 5;
+  /** First day of a task that spans several days; due_date is the last. */
+  start_date?: string | null;
   list_id: string | null;
   due_date: string | null;
   done: boolean;
@@ -10,6 +12,7 @@ export type Task = {
   cancelled: boolean;
   archived: boolean;
   recurrence: string | null;
+  parent_id?: string | null;
   created_at: string;
 };
 export type TaskList = { id: string; name: string; color: string; created_at: string };
@@ -36,6 +39,13 @@ export type Note = {
   sort_order: number;
   attachments: Attachment[];
   color: string | null;
+  /** The folder the note is filed in, or null. */
+  folder_id: string | null;
+  labels: string[];
+  /** When the note was moved to the Trash; null for a note that is not in the Trash. */
+  deleted_at: string | null;
+  /** The secret in the note's public link; null while the note is private. */
+  share_token: string | null;
 };
 export type NoteVersion = { id: string; title: string; body: string; created_at: string };
 export type Chat = {

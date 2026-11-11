@@ -17,7 +17,8 @@ import type { Task, TaskList } from "../../lib/workspace";
  * task endpoints (UNT-56/57/61) land, only the `queryFn` / `mutationFn` bodies change — components and cache logic stay the same.
  */
 
-const TASK_COLS = "id,title,description,priority,list_id,due_date,done,done_at,cancelled,archived,recurrence,created_at";
+import { readPrefs } from "../../lib/prefs";
+const TASK_COLS = "id,title,description,priority,list_id,due_date,start_date,done,done_at,cancelled,archived,recurrence,parent_id,created_at";
 const LIST_COLS = "id,name,color,created_at";
 const EMPTY_TASKS: Task[] = [];
 const EMPTY_LISTS: TaskList[] = [];
@@ -84,15 +85,24 @@ export function useTaskActions(onError: (message: string) => void, today: string
 
   const add = useMutation({
     mutationFn: async (d: Draft) => {
-      const { error } = await sb.from("tasks").insert({
-        title: d.title,
-        description: d.description,
-        due_date: d.due_date,
-        priority: d.priority,
-        list_id: d.list_id,
-        recurrence: d.recurrence,
-      });
+      const { data, error } = await sb
+        .from("tasks")
+        .insert({
+          title: d.title,
+          description: d.description,
+          due_date: d.due_date,
+          // A range needs an end date and cannot repeat (the database enforces both).
+          start_date: d.due_date && !d.recurrence ? (d.start_date ?? null) : null,
+          priority: d.priority,
+          list_id: d.list_id,
+          recurrence: d.recurrence,
+          ...(d.parent_id ? { parent_id: d.parent_id } : {}),
+        })
+        .select("id")
+        .single();
       if (error) throw error;
+      // The new task's id, so the page can offer "Undo" and "Open" on its toast.
+      return data as { id: string };
     },
     onError: () => onError("Couldn’t add that task."),
     onSettled: refresh,
@@ -104,7 +114,8 @@ export function useTaskActions(onError: (message: string) => void, today: string
       const done = !t.done;
       const { error } = await sb
         .from("tasks")
-        .update({ done, done_at: done ? new Date().toISOString() : null })
+        // With "Archive completed tasks" on (Settings → To-do), a finished task goes straight to the archive.
+        .update({ done, done_at: done ? new Date().toISOString() : null, ...(done && readPrefs().archiveCompleted ? { archived: true } : {}) })
         .eq("id", t.id);
       if (error) throw error;
       if (done && t.recurrence && t.due_date) {

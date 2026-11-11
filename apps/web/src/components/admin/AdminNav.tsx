@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FontAwesomeIcon as FA } from "@fortawesome/react-fontawesome";
-import { faChartPie, faUsers, faArrowLeft, faChartColumn, faBullhorn, faClipboardList, faWallet, faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import { Icon as FA } from "@/components/ui/Icon";
+import { faChartPie, faUsers, faArrowLeft, faChartColumn, faBullhorn, faClipboardList, faWallet, faPaperPlane, faServer } from "@fortawesome/free-solid-svg-icons";
 
 /** Add a line here for every new admin section — pages live in app/admin/<section>. */
 const SECTIONS = [
@@ -11,7 +11,8 @@ const SECTIONS = [
   { href: "/admin/usage", t: "Usage", icon: faChartColumn },
   { href: "/admin/plans", t: "Plans", icon: faWallet },
   { href: "/admin/announcements", t: "Announcements", icon: faBullhorn },
-  { href: "/admin/messages", t: "Messages", icon: faPaperPlane },
+  { href: "/admin/messages", t: "Messages", icon: faPaperPlane, faServer },
+  { href: "/admin/system", t: "System", icon: faServer },
   { href: "/admin/audit", t: "Audit log", icon: faClipboardList },
 ];
 

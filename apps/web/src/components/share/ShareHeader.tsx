@@ -9,7 +9,7 @@ import { BrandMark } from "../BrandMark";
 export default function ShareHeader() {
   return (
     <header className="mx-auto flex w-full max-w-[820px] items-center justify-between gap-3 px-[clamp(16px,4vw,24px)] pt-5">
-      <Link href="/" className="flex items-center gap-2 font-serif text-[22px] tracking-[-0.02em]">
+      <Link href="/" className="flex items-center gap-2 font-brand text-[22px] tracking-[-0.02em]">
         <BrandMark size={26} />
         Naazhi
       </Link>

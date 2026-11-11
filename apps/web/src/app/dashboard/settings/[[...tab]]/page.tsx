@@ -1,5 +1,5 @@
-import { notFound, redirect } from "next/navigation";
-import { settingsHref, tabFromSlug } from "../../../../features/settings/tabs";
+import { notFound } from "next/navigation";
+import { tabFromSlug } from "../../../../features/settings/tabs";
 import Dashboard from "../../page";
 
 /**
@@ -8,7 +8,7 @@ import Dashboard from "../../page";
  */
 export default async function Page({ params }: { params: Promise<{ tab?: string[] }> }) {
   const { tab } = await params;
-  if (!tab?.length) redirect(settingsHref("profile"));
+  if (!tab?.length) return Dashboard(); // the Settings home grid
   if (tab.length > 1 || !tabFromSlug(tab[0])) notFound();
   return Dashboard();
 }

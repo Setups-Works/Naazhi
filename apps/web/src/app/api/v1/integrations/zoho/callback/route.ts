@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { serverEnv } from "../../../../../../config/env";
+import { publicPath } from "../../../../../../lib/hosts";
 import { ServiceError } from "../../../../../../server/errors";
 import { currentUser } from "../../../../../../server/session";
 import { finishZohoConnect } from "../../../../../../server/services/integrations/zoho";
@@ -11,7 +12,7 @@ export const runtime = "nodejs";
 export async function GET(req: Request) {
   const base = serverEnv().authUrl.replace(/\/+$/, "");
   const back = (result: string, message?: string) => {
-    const url = new URL("/dashboard/settings/zoho", base);
+    const url = new URL(publicPath("/dashboard/settings/zoho"), base);
     url.searchParams.set("zoho", result);
     if (message) url.searchParams.set("msg", message.slice(0, 200));
     return NextResponse.redirect(url, { headers: { "cache-control": "no-store" } });

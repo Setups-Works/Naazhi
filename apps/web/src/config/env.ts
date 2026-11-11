@@ -77,6 +77,13 @@ export function serverEnv() {
       .filter(Boolean),
     groqApiKey: optional("GROQ_API_KEY"),
     composioApiKey: optional("COMPOSIO_API_KEY"),
+    /** Zoho ("Server-based Application" client from api-console.zoho.com). Without both values the Zoho connect button says it isn't set up. */
+    zoho: {
+      clientId: optional("ZOHO_CLIENT_ID"),
+      clientSecret: optional("ZOHO_CLIENT_SECRET"),
+      /** Where the sign-in starts. People in other data centers are sent to theirs automatically (Zoho tells us which on the way back). */
+      accountsServer: (optional("ZOHO_ACCOUNTS_SERVER") ?? "https://accounts.zoho.com").replace(/\/+$/, ""),
+    },
     /** Razorpay: the key id is public (the checkout window needs it); the secret and webhook secret never leave the server. */
     /** "Sign in with ChatGPT" (device-code OAuth). Off until an OAuth client id that OpenAI has registered for this app is set. */
     chatgptOauth: {

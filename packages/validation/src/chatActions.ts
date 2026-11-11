@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+/** The Zoho services a card can show. The same list is in apps/web/src/lib/zoho (a unit test keeps the two equal). */
+export const ZOHO_SERVICE_IDS = ["mail", "calendar", "cliq", "workdrive", "projects", "sign", "crm", "books", "billing", "expense", "desk", "people", "recruit"] as const;
+
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 /** A short label a journal draft uses to point at a to-do or note draft from the same reply (see `[[text|ref]]` below). */
 const ref = z
@@ -25,6 +28,17 @@ export const chatActionSchema = z.discriminatedUnion("kind", [
   }),
   /** Follow a website's feed in the Reader: only created after the person presses Create (the server then checks the address). */
   z.object({ kind: z.literal("feed"), title: z.string().trim().min(1).max(200), url: z.string().trim().min(3).max(2048) }),
+  /**
+   * Things done in the person's connected Zoho account. Like every draft they are only proposed here: nothing is sent to Zoho until the
+   * person presses Create on the card, and the server then re-checks every field (see services/integrations/zoho).
+   */
+  z.object({
+    kind: z.literal("zoho_crm"),
+    module: z.enum(["Leads", "Contacts", "Accounts"]),
+    fields: z.record(z.string().max(40), z.string().max(2000)).refine((f) => Object.keys(f).length <= 10, "Too many fields."),
+  }),
+  z.object({ kind: z.literal("zoho_mail"), to: z.string().trim().email().max(320), subject: z.string().trim().min(1).max(300), body: z.string().max(10_000) }),
+  z.object({ kind: z.literal("zoho_cliq"), channel: z.string().trim().min(1).max(100), text: z.string().trim().min(1).max(4000) }),
 ]);
 
 export type ChatAction = z.infer<typeof chatActionSchema>;
@@ -40,6 +54,8 @@ export const showItemSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("notes"), query: z.string().trim().max(100).optional() }),
   z.object({ kind: z.literal("health"), date }),
   /** Articles from the person's Reader: the latest, the starred or the unread ones, optionally only from one followed site (matched by name or address) or about a topic (searched in the titles and text). */
+  /** Records from the person's connected Zoho account (leads, inbox, invoices, tickets…); `view` picks the list, `query` searches it. Read by the app with the person's own Zoho connection. */
+  z.object({ kind: z.literal("zoho"), service: z.enum(ZOHO_SERVICE_IDS), view: z.string().trim().max(20).optional(), query: z.string().trim().max(100).optional() }),
   z.object({ kind: z.literal("rss"), view: z.enum(["latest", "starred", "unread"]).optional(), site: z.string().trim().max(100).optional(), query: z.string().trim().max(100).optional() }),
 ]);
 
@@ -75,6 +91,9 @@ export function describeItem(a: ChatAction): string {
     return `To-do · ${clean(a.title, 120)}${due}`;
   }
   if (a.kind === "feed") return `Feed · ${clean(a.title, 80)}`;
+  if (a.kind === "zoho_crm") return `Zoho CRM · ${a.module.slice(0, -1)} · ${clean(a.fields.Last_Name ?? a.fields.Account_Name ?? "", 80)}`;
+  if (a.kind === "zoho_mail") return `Zoho Mail · ${clean(a.subject, 80)}`;
+  if (a.kind === "zoho_cliq") return `Zoho Cliq · #${clean(a.channel, 40)}`;
   if (a.kind === "note") return `Note · ${clean(a.title, 80)}${a.body.trim() ? ` · ${clean(a.body, 100)}` : ""}`;
   return "Journal entry";
 }
@@ -98,7 +117,7 @@ const MAX_PROPOSALS = 6;
 const BLOCK = /<(create-item|created-item)>\s*([\s\S]*?)\s*<\/\1>/g;
 
 const createdSchema = z.object({
-  kind: z.enum(["note", "journal", "task", "feed"]),
+  kind: z.enum(["note", "journal", "task", "feed", "zoho_crm", "zoho_mail", "zoho_cliq"]),
   path: z.string().max(500),
   id: z.string().max(60).optional(),
   action: chatActionSchema,

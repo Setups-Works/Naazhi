@@ -11,7 +11,8 @@ import { redis } from "../../redis";
 import { userDb } from "../../db/builders";
 import { calendarFor } from "../../../lib/dates";
 import { healthContextFor } from "../health/health.service";
-import { CHAT_PROMPT, personaLine } from "./prompts/chat";
+import { zohoStatus } from "../integrations/zoho";
+import { CHAT_PROMPT, personaLine, zohoLine } from "./prompts/chat";
 
 /** Limits live here (not in routes) so every caller gets the same behaviour. */
 const LIMITS = { historyMessages: 20, charsPerMessage: 6000, repliesPerMinute: 20, savedChars: 19000 } as const;
@@ -149,13 +150,15 @@ export async function startChatReply(opts: {
   if (rows[rows.length - 1].role !== "user") return { ok: false, status: 400, error: "Nothing to reply to." };
 
   // The model is bad at calendar arithmetic ("next Tuesday", "the 20th"), so it gets a ready list of the coming dates instead.
-  const [health, profile] = await Promise.all([
+  const [health, profile, zoho] = await Promise.all([
     healthContextFor(opts.userId, opts.localDate),
     db.from("profiles").select("preferences").maybeSingle(),
+    // Only the ids of the services they picked: no Zoho data ever reaches the model. A failed lookup means "not connected" for this reply.
+    zohoStatus(opts.userId).catch(() => null),
   ]);
   const persona = personaLine((profile.data as { preferences?: { role?: unknown; writeTone?: unknown } } | null)?.preferences);
   const messages: AiMessage[] = [
-    { role: "system", content: `${CHAT_PROMPT.system} ${calendarFor(opts.localDate)}${health ? `\n${health}` : ""}${persona ? `\n${persona}` : ""}` },
+    { role: "system", content: `${CHAT_PROMPT.system} ${calendarFor(opts.localDate)}${health ? `\n${health}` : ""}${persona ? `\n${persona}` : ""}${zoho?.configured ? `\n${zohoLine(zoho.connected ? zoho.services : [])}` : ""}` },
     ...rows.map((m) => ({ role: m.role, content: m.body.slice(0, LIMITS.charsPerMessage) })),
   ];
   const it = provider

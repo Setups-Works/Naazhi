@@ -6,6 +6,7 @@ import { JournalShown } from "./JournalShown";
 import { NotesShown } from "./NotesShown";
 import { RssShown } from "./RssShown";
 import { TasksShown } from "./TasksShown";
+import { ZohoShown } from "./ZohoShown";
 import { Space } from "@/constants/theme";
 
 /**
@@ -25,6 +26,8 @@ export function ShownItems({ shows }: { shows: ShowItem[] }) {
             return <NotesShown key={i} query={s.query} />;
           case "rss":
             return <RssShown key={i} view={s.view} site={s.site} query={s.query} />;
+          case "zoho":
+            return <ZohoShown key={i} service={s.service} view={s.view} query={s.query} />;
           case "health":
             return <HealthShown key={i} date={s.date} />;
         }

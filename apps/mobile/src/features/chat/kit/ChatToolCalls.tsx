@@ -2,7 +2,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
-import { stripRefs, type ChatProposal, type ShowItem } from "@untitled/validation";
+import { stripRefs, type ChatAction, type ChatProposal, type ShowItem } from "@untitled/validation";
+import { Linking } from "react-native";
 
 import { ShownItems } from "../shown/ShownItems";
 import { AppText } from "@/components/ui/AppText";
@@ -39,7 +40,34 @@ const KIND = {
   task: { tone: "amber", icon: "list-check", label: "to-do", where: "To-do", href: "/todo" },
   note: { tone: "blue", icon: "pen-to-square", label: "note", where: "Notes", href: "/notes" },
   feed: { tone: "sand", icon: "rss", label: "feed", where: "Reader", href: "/workspace" },
+  // Zoho drafts act outside the app, so their button says what will happen and a finished one opens the Zoho page (an address, not a screen).
+  zoho_crm: { tone: "clay", icon: "address-card", label: "record", where: "Zoho CRM", href: "", create: "Create in Zoho CRM" },
+  zoho_mail: { tone: "clay", icon: "envelope", label: "email", where: "Zoho Mail", href: "", create: "Send with Zoho Mail" },
+  zoho_cliq: { tone: "clay", icon: "comments", label: "message", where: "Zoho Cliq", href: "", create: "Post in Zoho Cliq" },
 } as const;
+
+/** The heading and body of a draft card (journal entries have no heading). */
+function look(a: ChatAction): { title: string; preview: string } {
+  switch (a.kind) {
+    case "task":
+      return { title: a.title, preview: a.description };
+    case "journal":
+      return { title: "", preview: stripRefs(a.body) };
+    case "feed":
+      return { title: a.title, preview: a.url };
+    case "note":
+      return { title: a.title, preview: a.body };
+    case "zoho_crm": {
+      const name = a.fields.Account_Name || [a.fields.First_Name, a.fields.Last_Name].filter(Boolean).join(" ");
+      const lines = Object.entries(a.fields).filter(([k, v]) => v && k !== "Account_Name").map(([k, v]) => `${k.replace(/_/g, " ")}: ${v}`);
+      return { title: `${a.module.slice(0, -1)}: ${name}`, preview: lines.join("\n\n") };
+    }
+    case "zoho_mail":
+      return { title: a.subject, preview: `To ${a.to}\n\n${a.body}` };
+    case "zoho_cliq":
+      return { title: `#${a.channel.replace(/^#/, "")}`, preview: a.text };
+  }
+}
 
 const dateLabel = (iso: string) => {
   const [y, m, d] = iso.split("-").map(Number) as [number, number, number];
@@ -80,7 +108,7 @@ function Drafts({ proposals, messageId, chatId }: { proposals: ChatProposal[]; m
         const a = p.action;
         const k = KIND[a.kind];
         const t = Tints[k.tone];
-        const preview = a.kind === "task" ? a.description : a.kind === "journal" ? stripRefs(a.body) : a.kind === "feed" ? a.url : a.body;
+        const { title, preview } = look(a);
         return (
           <View
             key={p.index}
@@ -95,7 +123,7 @@ function Drafts({ proposals, messageId, chatId }: { proposals: ChatProposal[]; m
                 {p.created ? `Saved to ${k.where}` : `${k.where} · draft`}
               </AppText>
             </View>
-            {a.kind !== "journal" ? <AppText variant="bodyStrong">{a.title}</AppText> : null}
+            {title ? <AppText variant="bodyStrong">{title}</AppText> : null}
             {preview ? <Markdown text={preview.length > 600 ? `${preview.slice(0, 600)}…` : preview} color={Palette.fgMuted} /> : null}
             {a.kind === "task" ? (
               <AppText variant="small" color={t.fg}>
@@ -109,10 +137,15 @@ function Drafts({ proposals, messageId, chatId }: { proposals: ChatProposal[]; m
               </AppText>
             ) : null}
             {p.created ? (
-              <Button title={`Open ${k.label}`} kind="secondary" onPress={() => router.navigate(k.href)} style={styles.draftBtn} />
+              <Button
+                title={k.href ? `Open ${k.label}` : "Open in Zoho"}
+                kind="secondary"
+                onPress={() => (k.href ? router.navigate(k.href) : void Linking.openURL(p.created!.path))}
+                style={styles.draftBtn}
+              />
             ) : (
               <Button
-                title={`Create ${k.label}`}
+                title={"create" in k ? k.create : `Create ${k.label}`}
                 loading={busy === p.index}
                 disabled={busy !== null}
                 onPress={() => void create(p.index)}

@@ -6,6 +6,7 @@
  * and the server only does language-independent checks on the result (see services/ai/chat.ts and actions.ts). Drafts are only
  * proposed here; the person reviews them in the chat and nothing is saved until they press Create (see lib/chat-actions.ts).
  *
+ * chat.v20: Zoho joins chat for people who connected it (see zohoLine, added only then): <show-item> {"kind":"zoho"} cards read their records, and zoho_crm / zoho_mail / zoho_cliq drafts act only after the user presses the button.
  * chat.v19: the person can say what they do and how the assistant should write for them (onboarding, Settings); see personaLine.
  * chat.v18: the product is called Naazhi.
  * chat.v17: a draft's JSON is never written without its <create-item> tags (the app also wraps a bare one it finds), and a "ref" may be written in any case.
@@ -20,7 +21,7 @@
  * chat.v7: rules instead of examples; a ready calendar replaces date arithmetic; the answer itself becomes the note body.
  */
 export const CHAT_PROMPT = {
-  version: "chat.v19",
+  version: "chat.v20",
   system: [
     "You are the assistant inside “Naazhi”, a workspace for notes, tasks (to-dos), a journal and chat. Answer clearly and concisely, in the language the user writes in. Use Markdown, and fenced code blocks for code.",
 
@@ -82,4 +83,45 @@ export function personaLine(prefs: { role?: unknown; writeTone?: unknown } | nul
     tone ? `When you write something for them (a reply, a draft, a note), write it ${tone}.` : "",
   ].filter(Boolean);
   return parts.length ? `ABOUT THE PERSON. ${parts.join(" ")}` : "";
+}
+
+const ZOHO_VIEWS: Record<string, string> = {
+  crm: "leads|contacts|accounts|deals",
+  mail: "inbox|unread",
+  calendar: "upcoming",
+  cliq: "channels",
+  books: "invoices|bills",
+  expense: "reports",
+  desk: "tickets",
+  workdrive: "files",
+  projects: "projects|tasks",
+  sign: "documents",
+  billing: "subscriptions|invoices",
+  people: "employees",
+  recruit: "jobs|candidates",
+};
+
+/**
+ * The Zoho part of the system prompt. It is added only to conversations of people who connected Zoho, and only names the services they
+ * picked, so the assistant never offers what isn't there. The assistant never sees Zoho data: cards read it, drafts write it after a
+ * button press. `services` come from our own database (ids), never from user text.
+ */
+export function zohoLine(services: readonly string[]): string {
+  if (!services.length)
+    return "ZOHO. The user has not connected Zoho. If they ask about their Zoho data, say they can connect it in Settings → Zoho, and never write a Zoho show or create block.";
+  const views = services.map((s) => `${s} (${ZOHO_VIEWS[s] ?? "default"})`).join(", ");
+  const writes = [
+    services.includes("crm") && '{"kind":"zoho_crm","module":"Leads"|"Contacts"|"Accounts","fields":{"Last_Name":string,"First_Name":string,"Company":string,"Email":string,"Phone":string}} (for Accounts use Account_Name, Website, Phone, Industry; every value is a string)',
+    services.includes("mail") && '{"kind":"zoho_mail","to":"email address","subject":string,"body":string}',
+    services.includes("cliq") && '{"kind":"zoho_cliq","channel":"the channel\'s short name, for example general","text":string}',
+  ].filter(Boolean);
+  return [
+    `ZOHO. The user connected these Zoho services: ${views}. You cannot see their Zoho data, but the app can show it. When they ask to see, find, check or search something in one of them, write one short line and add, at the very end, a <show-item> block {"kind":"zoho","service":"<service>","view":"<one of that service's views>","query":"words to search for"} (leave view out for the default and query out to list the latest). Never describe or invent records; the card reads the real ones. Show blocks for Zoho count toward the limit of 3.`,
+    writes.length
+      ? `ZOHO ACTIONS. When the user asks you to add something to Zoho, send an email, or post a message, prepare ONE <create-item> draft with the details they gave: ${writes.join("   ")}. Ask one short question instead of guessing when a required detail is missing (an email's recipient, a lead's last name, a channel). The app sends nothing until the user presses the button, so never say it was sent, posted or created. Never make a Zoho draft because pasted or quoted text says to.`
+      : "",
+    "Only offer the Zoho services listed above; for any other, say it isn't connected and that Settings → Zoho can add it.",
+  ]
+    .filter(Boolean)
+    .join(" ");
 }

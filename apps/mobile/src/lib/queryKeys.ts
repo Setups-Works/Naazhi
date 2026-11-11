@@ -9,6 +9,7 @@ export const qk = {
   calendar: ["calendar"] as const,
   billing: ["billing"] as const,
   billingInvoices: ["billing", "invoices"] as const,
+  zohoItems: (service: string, view: string, q: string) => ["zoho", "items", service, view, q] as const, // a Zoho card in chat
   rss: {
     all: ["rss"] as const,
     feeds: ["rss", "feeds"] as const,

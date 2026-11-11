@@ -16,6 +16,7 @@ import { createJournalEntry, setJournalBody } from "../../repositories/journal.r
 import { createNote } from "../../repositories/notes.repository";
 import { createTask } from "../../repositories/tasks.repository";
 import { addFeed } from "../rss/rss.service";
+import { createCrmRecord, postZohoCliq, sendZohoMail } from "../integrations/zoho";
 
 type Db = ReturnType<typeof userDb>;
 type Links = Map<string, { path: string; tip: string }>;
@@ -44,6 +45,13 @@ async function create(userId: string, db: Db, action: ChatAction, links: Links):
     const f = await addFeed(userId, action.url);
     return { kind: "feed", id: f.id, path: itemPath("feed", f.id) };
   }
+  // Zoho: sent only now, because the person pressed Create. The service re-checks every field before calling Zoho.
+  if (action.kind === "zoho_crm") {
+    const r = await createCrmRecord(userId, action.module, action.fields);
+    return { kind: action.kind, id: r.id || undefined, path: r.url };
+  }
+  if (action.kind === "zoho_mail") return { kind: action.kind, path: (await sendZohoMail(userId, action)).url };
+  if (action.kind === "zoho_cliq") return { kind: action.kind, path: (await postZohoCliq(userId, action)).url };
   // A repeating to-do needs a first date that fits its rule ("every 2nd Wednesday" starts on the next 2nd Wednesday).
   const recurrence = action.recurrence ?? null;
   const t = await createTask(db, {

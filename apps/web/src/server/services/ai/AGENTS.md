@@ -24,3 +24,5 @@
 - Prompts are files in `prompts/` with a version string and tests (fixed inputs → expected structure); no ad-hoc prompt strings in routes.
 - Respect `AbortSignal`. Never log prompt or answer text.
 - Puter (`runtime: "client"`): hand the prepared messages to the browser and accept the final message back through `/api/v1/ai/messages`.
+
+**Zoho in chat (`chat.v20`):** `zohoLine` (prompts/chat.ts) is added only for people with Zoho set up; `<show-item>{"kind":"zoho"}` cards are read by `services/integrations/zoho`; `zoho_crm` / `zoho_mail` / `zoho_cliq` drafts are created in `actions.ts` after the button press. See `docs/ZOHO.md`.

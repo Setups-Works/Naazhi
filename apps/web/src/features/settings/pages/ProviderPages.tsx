@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
 import {
   faAddressCard,
@@ -27,7 +27,10 @@ import Modal from "../../../components/ui/Modal";
 import { PROVIDERS, type Provider, type ProviderId } from "../../../lib/composio/catalog";
 import { BrandLogo, brandOf } from "@/components/ui/BrandLogo";
 import { Logo } from "../../../components/site/Logo";
-import { LogoTile } from "../ui";
+import { LogoTile, SettingsNotice, Tag } from "../ui";
+import { ZOHO_SERVICES, isZohoService } from "../../../lib/zoho";
+import { useConfirm } from "../../../components/ui/Confirm";
+import { useConnectZoho, useDisconnectZoho, useZohoStatus } from "../../integrations/zoho";
 
 /** Each service's own icon and colour, so Outlook mail and Outlook calendar (or Zoho's thirteen apps) can be told apart at a glance. */
 const LOOK: Record<string, [IconDefinition, string]> = {
@@ -95,9 +98,21 @@ function Mark({ provider, id, name, size = "size-10" }: { provider?: ProviderId;
 }
 
 /** "Connect Google": pick the services Naazhi may use, see exactly what it can see, then continue to the provider's sign-in. */
-function ConnectDialog({ provider, onClose }: { provider: Provider; onClose: () => void }) {
+function ConnectDialog({
+  provider,
+  onClose,
+  onContinue,
+  initial,
+}: {
+  provider: Provider;
+  onClose: () => void;
+  /** Starts the real sign-in with the picked services (Zoho). Without it the button says the provider isn't set up yet. */
+  onContinue?: (ids: string[]) => Promise<void>;
+  initial?: string[];
+}) {
   const all = provider.groups.flatMap((g) => g.services);
-  const [picked, setPicked] = useState<Set<string>>(new Set(all.map((s) => s.id)));
+  const [picked, setPicked] = useState<Set<string>>(new Set(initial ?? all.map((s) => s.id)));
+  const [busy, setBusy] = useState(false);
   const [details, setDetails] = useState(false);
   const [msg, setMsg] = useState("");
   const toggle = (id: string) =>
@@ -135,7 +150,9 @@ function ConnectDialog({ provider, onClose }: { provider: Provider; onClose: () 
                   <label className="flex cursor-pointer items-start gap-3">
                     <Mark provider={provider.id} id={s.id} name={s.name} size="size-8" />
                     <span className="min-w-0 flex-1">
-                      <b className="block text-[15px] font-semibold">{s.name}</b>
+                      <b className="block text-[15px] font-semibold">
+                        {s.name} {provider.id === "zoho" && isZohoService(s.id) && ZOHO_SERVICES[s.id].beta && <Tag>Beta</Tag>}
+                      </b>
                       <small className="block text-[13.5px] text-ink-2">{s.description}</small>
                     </span>
                     <Checkbox checked={picked.has(s.id)} onCheckedChange={() => toggle(s.id)} aria-label={s.name} className="mt-1 size-5" />
@@ -155,6 +172,7 @@ function ConnectDialog({ provider, onClose }: { provider: Provider; onClose: () 
                 </p>
               ))}
             {picked.size === 0 && <p className="m-0">Pick a service to see what Naazhi can do with it.</p>}
+            {provider.id === "zoho" && <p className="m-0 text-ink-3">Beta services follow Zoho’s documentation but haven’t been tried on a live account yet; they start unticked.</p>}
             <p className="m-0 text-ink-3">You sign in on {provider.signIn}, so Naazhi never sees your password. Disconnect any time from this page.</p>
           </div>
         )}
@@ -169,10 +187,20 @@ function ConnectDialog({ provider, onClose }: { provider: Provider; onClose: () 
           </button>
           <Button
             size="lg"
-            disabled={picked.size === 0}
-            onClick={() => setMsg(`Signing in with ${provider.name} isn’t set up on this server yet, so nothing was connected. Your choices aren’t saved.`)}
+            disabled={picked.size === 0 || busy}
+            onClick={async () => {
+              if (!onContinue) return setMsg(`Signing in with ${provider.name} isn’t set up on this server yet, so nothing was connected. Your choices aren’t saved.`);
+              setBusy(true);
+              setMsg("");
+              try {
+                await onContinue([...picked]);
+              } catch (e) {
+                setMsg(e instanceof Error ? e.message : "Couldn’t start the sign-in.");
+                setBusy(false);
+              }
+            }}
           >
-            Continue with {provider.name}
+            {busy ? "Opening Zoho…" : `Continue with ${provider.name}`}
           </Button>
         </div>
       </div>
@@ -204,4 +232,88 @@ function ProviderPage({ id }: { id: ProviderId }) {
 
 export const GooglePage = () => <ProviderPage id="google" />;
 export const MicrosoftPage = () => <ProviderPage id="microsoft" />;
-export const ZohoPage = () => <ProviderPage id="zoho" />;
+
+/** Zoho: connect once, pick the services, and see which account is connected. Tokens stay on the server. */
+export function ZohoPage() {
+  const status = useZohoStatus();
+  const connect = useConnectZoho();
+  const disconnect = useDisconnectZoho();
+  const { ask, dialog } = useConfirm();
+  const provider = PROVIDERS.zoho;
+  const [open, setOpen] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
+
+  // Zoho sends the person back to this page with the outcome in the address; show it once, then tidy the address.
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const r = sp.get("zoho");
+    if (!r) return;
+    setResult(r === "connected" ? { ok: true, text: "Zoho is connected." } : { ok: false, text: sp.get("msg") || "Zoho couldn’t be connected." });
+    window.history.replaceState(null, "", window.location.pathname);
+  }, []);
+
+  const s = status.data;
+  // Beta services start unticked on a first connect; when changing services the current ones stay ticked.
+  const initial = s?.connected ? s.services : Object.entries(ZOHO_SERVICES).filter(([, d]) => !d.beta).map(([id]) => id);
+  return (
+    <>
+      {result && (
+        <p className={result.ok ? "mt-2 text-[14px] text-green-fg" : "form-err mt-2"} role={result.ok ? "status" : "alert"}>
+          {result.text}
+        </p>
+      )}
+      {s && !s.configured && (
+        <SettingsNotice className="mt-2">
+          Zoho isn’t set up on this server yet. An admin adds the Zoho client id and secret (ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET) and registers {s.redirectUri} in the Zoho API console.
+        </SettingsNotice>
+      )}
+      <div className="mt-2 flex items-center justify-between gap-3 max-[600px]:flex-wrap">
+        <h2 className="m-0 flex items-center gap-2 text-[15px] font-semibold">
+          <BrandLogo name="zoho" size={20} />
+          Accounts <small className="text-[13px] font-normal text-ink-3">{provider.covers}</small>
+        </h2>
+        <Button onClick={() => setOpen(true)} disabled={!s?.configured}>
+          {s?.connected ? "Change services" : "Connect Zoho account"}
+        </Button>
+      </div>
+      {s?.connected ? (
+        <div className="mt-3 rounded-r3 border bg-raised p-4">
+          <div className="flex items-center justify-between gap-3 max-[600px]:flex-wrap">
+            <div className="min-w-0">
+              <b className="block truncate text-[15px] font-semibold">{s.label ?? "Zoho account"}</b>
+              <p className="m-0 mt-0.5 text-[13.5px] text-ink-3">Connected. Ask in chat, for example “show my latest Zoho leads”.</p>
+            </div>
+            <Button
+              variant="outline"
+              disabled={disconnect.isPending}
+              onClick={async () => {
+                if (await ask({ title: "Disconnect Zoho?", body: "Naazhi will stop reading your Zoho account and Zoho will be told to cancel the access. You can connect again any time.", confirmLabel: "Disconnect", danger: true })) disconnect.mutate();
+              }}
+            >
+              {disconnect.isPending ? "Disconnecting…" : "Disconnect"}
+            </Button>
+          </div>
+          <ul className="m-0 mt-3 flex list-none flex-wrap gap-2 p-0">
+            {s.services.map((id) => (
+              <li key={id}>
+                <Tag>{ZOHO_SERVICES[id].name}</Tag>
+              </li>
+            ))}
+          </ul>
+          {disconnect.isError && (
+            <p className="form-err mt-3" role="alert">
+              {disconnect.error.message}
+            </p>
+          )}
+        </div>
+      ) : (
+        <div className="mt-3 rounded-r3 border bg-raised px-4 py-10 text-center">
+          <b className="block text-[15px] font-semibold">No {provider.name} account connected</b>
+          <p className="m-0 mt-1 text-[14px] text-ink-3">{provider.invite}</p>
+        </div>
+      )}
+      {open && <ConnectDialog provider={provider} initial={initial} onClose={() => setOpen(false)} onContinue={(ids) => connect.mutateAsync(ids)} />}
+      {dialog}
+    </>
+  );
+}

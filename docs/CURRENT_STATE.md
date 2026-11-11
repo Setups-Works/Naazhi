@@ -72,3 +72,8 @@ Target URLs (`/notes`, `/tasks`, …, route groups `(marketing)`, `(auth)`, `(ap
 - `profiles.personality` column is unused (the quiz was removed).
 - Plan (`free`/`pro`) is stored but never enforced.
 - Marketing "demo" pages are static illustrations, not the real app.
+
+
+## Zoho (chat)
+
+Settings → Zoho signs in with Zoho OAuth and connects the picked services; chat shows Zoho records as cards and can create a CRM record, send a Zoho Mail email or post to Cliq after a button press. Needs `ZOHO_CLIENT_ID` / `ZOHO_CLIENT_SECRET`. Six services are Beta (not yet run against a live account). See `docs/ZOHO.md`.

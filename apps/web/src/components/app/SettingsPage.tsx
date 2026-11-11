@@ -87,7 +87,7 @@ const GROUPS: { label: string; tiles: Tile[] }[] = [
     tiles: [
       { k: "google", label: "Google", desc: "Gmail, Calendar and Drive accounts.", icon: faEnvelope, soon: ["Connect Gmail, Google Calendar and Drive", "Choose a primary account", "Disconnect an account at any time"] },
       { k: "microsoft", label: "Microsoft", desc: "Outlook mail, calendar, OneDrive and To Do.", icon: faBriefcase, soon: ["Connect Outlook mail and calendar", "Link OneDrive and Microsoft To Do"] },
-      { k: "zoho", label: "Zoho", desc: "Zoho Mail, Calendar, WorkDrive and more.", icon: faLayerGroup, soon: ["Sign in once and pick the Zoho services you use"] },
+      { k: "zoho", label: "Zoho", desc: "Zoho Mail, Calendar, WorkDrive and more.", icon: faLayerGroup },
       { k: "health", label: "Health", desc: "Steps, sleep and heart data from your phone.", icon: faHeartPulse },
       { k: "integrations", label: "Other apps", desc: "Slack, GitHub, Notion and other connected apps.", icon: faPlug, soon: ["Connect Slack, GitHub, Notion, Linear and more", "See which apps are connected"] },
       { k: "imports", label: "Imports & backup", desc: "Bring in notes and tasks, and back up your data.", icon: faFileImport },

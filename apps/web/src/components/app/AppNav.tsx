@@ -7,7 +7,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Prefs } from "../../lib/prefs";
 import PrefsSync from "./PrefsSync";
-import SettingsModal from "./SettingsModal";
 import { settingsHref, tabFromPath, type SettingsTab } from "../../features/settings/tabs";
 import { OPEN_ONBOARDING_EVENT } from "./Onboarding";
 import UniversalSearch, { OPEN_SETTINGS_EVENT } from "./UniversalSearch";
@@ -62,6 +61,9 @@ const NAV: NavItem[] = [
   { href: "/dashboard/health", t: "Health", icon: faHeartPulse },
   { href: "/dashboard/workspace", t: "Workspace", icon: faBriefcase },
 ];
+
+/** The Settings page has no row in the workspace list; this stands in for it in the breadcrumb. */
+const SETTINGS_SECTION: NavItem = { href: "/dashboard/settings", t: "Settings", icon: faGear };
 
 /** Pages that put their own list in the sidebar. */
 const hasPageList = (p: string) => p.startsWith("/dashboard/chat") || p === "/dashboard/workspace/reader" || p === "/dashboard/journal" || p === "/dashboard/notes";
@@ -131,25 +133,14 @@ export default function AppNav({
       }
       return !on;
     });
-  // Settings lives in the address (/dashboard/settings/<section>). Opening it only changes the address, so the page you were
-  // on stays behind the popup; `returnTo` is that page, kept to highlight its row and to go back to when the popup closes.
+  // Settings is an ordinary page (/dashboard/settings/<section>); the sidebar turns into its menu while it is open.
   const settingsTab = tabFromPath(path);
-  const returnTo = useRef<string | null>(null);
-  const openSettings = useCallback((tab: SettingsTab = "home") => {
-    returnTo.current = window.location.pathname + window.location.search;
-    window.history.pushState(null, "", publicPath(settingsHref(tab)));
-  }, []);
-  const closeSettings = useCallback(() => {
-    if (returnTo.current) window.history.back();
-    else router.push(publicPath("/dashboard"));
-    returnTo.current = null;
-  }, [router]);
-  const pickSettingsTab = useCallback((tab: SettingsTab) => window.history.replaceState(null, "", publicPath(settingsHref(tab))), []);
+  const openSettings = useCallback((tab: SettingsTab = "home") => router.push(publicPath(settingsHref(tab))), [router]);
   const box = useRef<HTMLDivElement>(null);
 
-  const here = settingsTab ? internalPath((returnTo.current ?? "/dashboard").split("?")[0]) : path;
-  const current = NAV.findIndex((t) => isHere(t, here));
-  const section = NAV[current] ?? NAV[0];
+  const here = path;
+  const current = settingsTab ? -1 : NAV.findIndex((t) => isHere(t, here));
+  const section = settingsTab ? SETTINGS_SECTION : (NAV[current] ?? NAV[0]);
   const todoView = here.startsWith("/dashboard/todo") ? search.get("v") : null;
   const crumb = useCrumb();
   const unread = useInbox().data?.unread ?? 0;
@@ -168,7 +159,7 @@ export default function AppNav({
     void look.change({ scheme });
   };
   const sub = settingsTab
-    ? "Settings"
+    ? undefined
     : (here.startsWith("/dashboard/journal/shared") && crumb ? crumb : undefined) ??
       (SUBPAGES.find(([p]) => here.startsWith(p))?.[1] ??
       (todoView && isView(todoView)
@@ -180,7 +171,7 @@ export default function AppNav({
             : undefined));
 
   // On a touch screen, swipe the page sideways to go to the next or previous section.
-  useSwipeNav(current, NAV.length, (to) => router.push(publicPath(NAV[to].href)));
+  useSwipeNav(settingsTab ? 0 : current, settingsTab ? 1 : NAV.length, (to) => !settingsTab && router.push(publicPath(NAV[to].href)));
 
   // While Settings is open the sidebar shows its sections, so it opens (and goes back to how it was when Settings closes).
   const wasExpanded = useRef<boolean | null>(null);
@@ -424,9 +415,6 @@ export default function AppNav({
 
       {inboxOpen && <NotificationsPanel onClose={() => setInboxOpen(false)} />}
       <PrefsSync prefs={prefs} />
-      {settingsTab && (
-        <SettingsModal account={account} prefs={prefs} tab={settingsTab} onTab={pickSettingsTab} onClose={closeSettings} />
-      )}
     </>
   );
 }

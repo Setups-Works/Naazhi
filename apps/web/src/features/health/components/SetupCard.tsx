@@ -1,46 +1,38 @@
 import Link from "next/link";
 import { Icon as FA } from "@/components/ui/Icon";
-import { faHeartPulse, faMobileScreen, faShieldHalved, faRotate } from "@fortawesome/free-solid-svg-icons";
+import { faHeartPulse, faLock } from "@fortawesome/free-solid-svg-icons";
+import HealthSources from "./HealthSources";
 
-const STEPS = [
-  { icon: faMobileScreen, title: "Open the app on your phone", body: "Sign in to Naazhi with this same account, then open the Health tab." },
-  {
-    icon: faShieldHalved,
-    title: "Allow access to health data",
-    body: "iPhone: Apple Health. Android: Health Connect. We only ask to read steps, distance, calories, heart rate and sleep.",
-  },
-  { icon: faRotate, title: "Let it sync", body: "Your daily totals appear here within a minute, and stay up to date whenever you open the app." },
-] as const;
-
-/** Shown while no health data has reached the account: either the phone was never set up or access was not allowed. */
+/** The not-connected screen: shown while no health data has reached the account (the phone was never set up, or access wasn't allowed). */
 export default function SetupCard() {
   return (
-    <section className="rounded-r3 bg-side p-[clamp(20px,3vw,32px)] shadow-[inset_0_0_0_1px_var(--line)]" aria-labelledby="health-setup">
-      <div className="flex items-center gap-3">
-        <span className="grid size-12 place-items-center rounded-r2 bg-raised text-[20px] shadow-[inset_0_0_0_1px_var(--line)] text-fg-muted">
+    <section className="mx-auto flex max-w-[760px] flex-col gap-6" aria-labelledby="health-setup">
+      <div className="flex flex-col items-center gap-3 rounded-r4 border bg-paper px-6 py-10 text-center">
+        <span className="grid size-12 place-items-center rounded-r3 border text-[20px] text-ink-2">
           <FA icon={faHeartPulse} />
         </span>
-        <div>
-          <h2 id="health-setup" className="text-[20px] leading-[1.2] font-semibold tracking-[-0.015em]">
-            Set up Health on your phone
-          </h2>
-          <p className="text-[14px] opacity-80">Your health data is read on your phone and shown here. Nothing is shared without your say.</p>
-        </div>
+        <h2 id="health-setup" className="m-0 text-[20px] font-semibold tracking-[-0.01em]">
+          Connect your health data
+        </h2>
+        <p className="m-0 max-w-[460px] text-[14px] text-ink-2">
+          Naazhi shows your steps, sleep and heart rate once you connect Apple Health or Health Connect from the phone app.
+        </p>
       </div>
-      <ol className="mt-5 grid gap-3 md:grid-cols-3">
-        {STEPS.map((s, i) => (
-          <li key={s.title} className="rounded-r3 bg-raised p-4 shadow-[inset_0_0_0_1px_var(--line)]">
-            <p className="flex items-center gap-2 text-[11px] font-semibold tracking-[0.1em] text-fg-faint uppercase">
-              <FA icon={s.icon} className="text-fg-muted" aria-hidden />
-              Step {i + 1}
-            </p>
-            <p className="mt-1.5 text-[15px] font-medium text-fg">{s.title}</p>
-            <p className="mt-1 text-[13.5px] leading-relaxed text-fg-muted">{s.body}</p>
-          </li>
-        ))}
-      </ol>
-      <p className="m-0 mt-4 text-[13.5px] text-fg-muted">
-        See what is connected, or choose what the assistant can use, in{" "}
+
+      <div className="flex items-center gap-3 rounded-r3 bg-side px-4 py-3 text-[14px] text-ink-2" role="note">
+        <FA icon={faLock} className="shrink-0 text-[12px] text-ink-3" />
+        <span>Health data stays on your phone until you connect. Nothing is shared without your say.</span>
+      </div>
+
+      <div>
+        <h3 className="m-0 mb-2 flex items-baseline gap-2 text-[15px] font-semibold">
+          Sources <small className="text-[13px] font-normal text-ink-3">Connected from the phone app</small>
+        </h3>
+        <HealthSources days={[]} />
+      </div>
+
+      <p className="m-0 px-1 text-[13.5px] text-ink-3">
+        Apple and Google keep health data on your phone, so connecting can’t happen on the web. Choose what the assistant can use in{" "}
         <Link href="/dashboard/settings/health" className="underline underline-offset-2">
           Settings → Health
         </Link>

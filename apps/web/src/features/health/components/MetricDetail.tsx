@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { isoDate } from "../../../lib/dates";
-import { toneClass } from "../../../lib/tones";
 import {
   daysInRange,
   HEALTH_METRICS,
@@ -23,7 +22,7 @@ import {
 import { useHealthDays } from "../queries";
 import RangeFilter from "./RangeFilter";
 
-const SECTION_LABEL = "text-[11px] font-semibold tracking-[0.1em] text-fg-faint uppercase";
+const SECTION_LABEL = "text-[13px] font-semibold text-ink";
 const shortDay = (iso: string) =>
   new Date(`${iso}T12:00:00`).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
 
@@ -60,19 +59,19 @@ export default function MetricDetail({ metric }: { metric: HealthMetric }) {
         <FA icon={faChevronLeft} /> Health
       </Link>
       <header className="mb-[18px] flex flex-col gap-1">
-        <h1 className="font-serif text-[clamp(30px,3.4vw,42px)] leading-[1.04] font-semibold tracking-[-0.03em] text-balance">{def.label}</h1>
-        <p className="text-[14px] text-fg-muted">
+        <h1 className="m-0 text-[28px] leading-tight font-semibold tracking-[-0.02em]">{def.label}</h1>
+        <p className="text-[14px] text-ink-3">
           {meta.label}
           {def.goal ? ` · goal ${def.format(def.goal)} a day` : ""}
         </p>
       </header>
 
       {isError ? (
-        <p className="bg-critical-wash text-critical rounded-r3 p-4 text-[14px]" role="alert">
+        <p className="rounded-r3 border bg-paper p-4 text-[14px] text-critical" role="alert">
           Couldn’t load your health data. Please try again.
         </p>
       ) : isPending ? (
-        <p className="p-6 text-xs text-fg-muted">Loading…</p>
+        <p className="p-6 text-xs text-ink-3">Loading…</p>
       ) : (
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -82,9 +81,9 @@ export default function MetricDetail({ metric }: { metric: HealthMetric }) {
             </Link>
           </div>
 
-          <section className={`${toneClass(def.tone)} tint rounded-r4 p-5 sm:p-6`} aria-label={`${def.label}, ${meta.label}`}>
-            <p className="text-[13px] opacity-80">{def.kind === "total" ? "Total" : "Average"}</p>
-            <p className="font-serif font-semibold text-[clamp(40px,6vw,60px)] leading-none tracking-[-0.03em]">
+          <section className="rounded-r4 border bg-paper p-5 sm:p-6" aria-label={`${def.label}, ${meta.label}`}>
+            <p className="m-0 text-[13px] text-ink-3">{def.kind === "total" ? "Total" : "Average"}</p>
+            <p className="m-0 text-[clamp(36px,6vw,52px)] leading-none font-semibold tracking-[-0.03em]">
               {series.headline === null ? "No data" : def.format(series.headline)}
             </p>
             {series.points.length > 1 ? (
@@ -96,7 +95,7 @@ export default function MetricDetail({ metric }: { metric: HealthMetric }) {
                     title={`${shortDay(p.day)}: ${p.value === null ? "no data" : def.format(p.value)}`}
                   >
                     <span
-                      className={`block min-h-1 rounded-pill ${p.value === null ? "bg-(--abl)" : "bg-(--abf)"}`}
+                      className={`block min-h-1 rounded-pill ${p.value === null ? "bg-hover" : "bg-ink"}`}
                       style={{ height: `${Math.max(ratio(p.value ?? 0, peak) * 100, 3)}%` }}
                     />
                   </li>
@@ -105,18 +104,18 @@ export default function MetricDetail({ metric }: { metric: HealthMetric }) {
             ) : def.goal ? (
               // One day has nothing to compare against, so show progress toward the goal instead of a lone bar.
               <div
-                className="mt-6 h-3.5 overflow-hidden rounded-pill bg-(--abl)"
+                className="mt-6 h-3.5 overflow-hidden rounded-pill bg-hover"
                 role="progressbar"
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={Math.round(ratio(series.headline ?? 0, def.goal) * 100)}
                 aria-label="Progress toward the goal"
               >
-                <div className="h-full rounded-pill bg-(--abf)" style={{ width: `${Math.round(ratio(series.headline ?? 0, def.goal) * 100)}%` }} />
+                <div className="h-full rounded-pill bg-ink" style={{ width: `${Math.round(ratio(series.headline ?? 0, def.goal) * 100)}%` }} />
               </div>
             ) : null}
             {def.goal ? (
-              <p className="mt-2 text-[12.5px] opacity-80">
+              <p className="m-0 mt-2 text-[12.5px] text-ink-3">
                 Goal {def.format(def.goal)} a day ·{" "}
                 {series.points.length === 1
                   ? `${Math.round(ratio(series.headline ?? 0, def.goal) * 100)}% reached`
@@ -127,10 +126,10 @@ export default function MetricDetail({ metric }: { metric: HealthMetric }) {
 
           <section aria-label="Summary" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {stats.map((s) => (
-              <div key={s.label} className="glass rounded-r3 p-4">
+              <div key={s.label} className="rounded-r3 border bg-paper p-4">
                 <p className={SECTION_LABEL}>{s.label}</p>
-                <p className="mt-1 font-serif font-semibold text-[24px] leading-tight tracking-[-0.02em]">{s.value ?? "No data"}</p>
-                {s.note && <p className="text-[12.5px] text-fg-muted">{s.note}</p>}
+                <p className="mt-1 m-0 text-[22px] leading-tight font-semibold tracking-[-0.02em]">{s.value ?? "No data"}</p>
+                {s.note && <p className="text-[12.5px] text-ink-3">{s.note}</p>}
               </div>
             ))}
           </section>
@@ -138,21 +137,21 @@ export default function MetricDetail({ metric }: { metric: HealthMetric }) {
           <section aria-label="Day by day">
             <p className={`${SECTION_LABEL} mb-2`}>Day by day</p>
             {rows.length === 0 ? (
-              <p className="ap-none glass rounded-r3 p-5 text-[14px] text-fg-muted">Nothing recorded in this period yet.</p>
+              <p className="ap-none rounded-r3 border bg-paper p-5 text-[14px] text-ink-3">Nothing recorded in this period yet.</p>
             ) : (
-              <ul className="glass overflow-hidden rounded-r3">
+              <ul className="divide-y divide-line overflow-hidden rounded-r3 border bg-paper">
                 {rows.map((d) => {
                   const text = metricRowText(metric, d);
                   const v = def.pick(d);
                   return (
-                    <li key={d.day} className="flex items-center gap-4 px-4 py-3 text-[14.5px] odd:bg-surface/40">
-                      <span className="w-[120px] shrink-0 text-fg-muted">{d.day === today ? "Today" : shortDay(d.day)}</span>
+                    <li key={d.day} className="flex items-center gap-4 px-4 py-3 text-[14.5px]">
+                      <span className="w-[120px] shrink-0 text-ink-3">{d.day === today ? "Today" : shortDay(d.day)}</span>
                       <span
-                        className={`${toneClass(def.tone)} relative h-2 min-w-0 flex-1 overflow-hidden rounded-pill bg-(--abl)`}
+                        className="relative h-2 min-w-0 flex-1 overflow-hidden rounded-pill bg-hover"
                         aria-hidden
                       >
                         <span
-                          className="absolute inset-y-0 left-0 rounded-pill bg-(--abf)"
+                          className="absolute inset-y-0 left-0 rounded-pill bg-ink"
                           style={{ width: `${Math.round(ratio(v ?? 0, peak) * 100)}%` }}
                         />
                       </span>

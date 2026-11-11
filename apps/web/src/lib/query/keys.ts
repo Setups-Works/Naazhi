@@ -25,6 +25,7 @@ export const qk = {
     home: (today: string) => ["journal", "home", today] as const, // today's latest entries (Home card)
     day: (date: string) => ["journal", "day", date] as const,
     counts: ["journal", "counts"] as const,
+    share: (date: string) => ["journal", "day-share", date] as const,
   },
   sharedJournals: {
     all: ["shared-journals"] as const,

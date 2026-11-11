@@ -2,9 +2,7 @@
 import { noteShareUrl, setNoteShared } from "@untitled/api-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Icon as FA } from "@/components/ui/Icon";
-import { faCheck, faCopy, faLink, faLinkSlash, faXmark } from "@fortawesome/free-solid-svg-icons";
-import Modal from "../ui/Modal";
+import ShareLinkDialog from "./ShareLinkDialog";
 import { http, restMessage } from "../../lib/api/rest";
 import { qk } from "../../lib/query/keys";
 
@@ -17,7 +15,6 @@ export default function ShareNoteDialog({ note, onClose }: { note: { id: string;
   const [token, setToken] = useState(note.share_token);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
-  const [copied, setCopied] = useState(false);
   const url = token ? noteShareUrl(window.location.origin, token) : "";
 
   async function toggle(on: boolean) {
@@ -31,57 +28,16 @@ export default function ShareNoteDialog({ note, onClose }: { note: { id: string;
     }
     setBusy(false);
   }
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setErr("Couldn’t copy. Select the link and copy it by hand.");
-    }
-  }
-
   return (
-    <Modal label="Share note" onClose={onClose} size="md">
-      <div className="td">
-        <div className="td-head">
-          <h2 className="h3">Share note</h2>
-          <button type="button" className="ne-btn" aria-label="Close" onClick={onClose}>
-            <FA icon={faXmark} />
-          </button>
-        </div>
-        <section className="flex flex-col gap-2.5">
-          {token ? (
-            <>
-              <p className="m-0 text-[13.5px] text-ink-3">Anyone with this link can read “{note.title.trim() || "Untitled"}”. It shows no name, and you can switch it off at any time.</p>
-              <div className="flex flex-wrap items-center gap-2">
-                <label className="tf-pill min-w-[200px] flex-1">
-                  <FA icon={faLink} aria-hidden />
-                  <input className="w-full cursor-text" readOnly value={url} aria-label="Public link" onFocus={(e) => e.currentTarget.select()} />
-                </label>
-                <button type="button" className="btn btn-primary btn-sm" onClick={() => void copy()}>
-                  <FA icon={copied ? faCheck : faCopy} aria-hidden /> {copied ? "Copied" : "Copy link"}
-                </button>
-              </div>
-              <button type="button" className="btn btn-secondary btn-sm w-fit" disabled={busy} onClick={() => void toggle(false)}>
-                <FA icon={faLinkSlash} aria-hidden /> Stop sharing
-              </button>
-            </>
-          ) : (
-            <>
-              <p className="m-0 text-[13.5px] text-ink-3">Make a secret link to this one note. Nothing else in your notes is shared.</p>
-              <button type="button" className="btn btn-secondary btn-sm w-fit" disabled={busy} onClick={() => void toggle(true)}>
-                <FA icon={faLink} aria-hidden /> Create link
-              </button>
-            </>
-          )}
-          {err && (
-            <p className="form-err" role="alert">
-              {err}
-            </p>
-          )}
-        </section>
-      </div>
-    </Modal>
+    <ShareLinkDialog
+      title="Share note"
+      noun="this note"
+      url={token ? url : null}
+      busy={busy}
+      err={err}
+      detail={`It shows “${note.title.trim() || "Untitled"}” without your name, and you can switch it off at any time.`}
+      onToggle={(on) => void toggle(on)}
+      onClose={onClose}
+    />
   );
 }

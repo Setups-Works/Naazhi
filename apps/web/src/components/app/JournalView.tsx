@@ -14,6 +14,7 @@ import {
   faTableColumns,
   faCopy,
   faTrash,
+  faShareNodes,
 } from "@fortawesome/free-solid-svg-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api/client";
@@ -36,7 +37,7 @@ import { useRecorder } from "./useRecorder";
 import SidebarPortal from "./SidebarPortal";
 import { setCrumb } from "../../lib/crumb";
 import { ctxProps, useCtxActions } from "../../lib/context-actions";
-import { ShareEntryDialog } from "../../features/journal";
+import { ShareDayDialog, ShareEntryDialog } from "../../features/journal";
 
 const COLS = "id,entry_date,body,created_at,updated_at,kind,attachments,share_token";
 const DAY_TONES = TONES.filter((t) => t !== "sand");
@@ -100,6 +101,7 @@ export default function JournalView() {
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [sharing, setSharing] = useState<Entry | null>(null);
+  const [sharingDay, setSharingDay] = useState(false);
   const [draft, setDraft] = useState("");
   const [urls, setUrls] = useState<Record<string, string>>({});
   const uid = useRef("");
@@ -365,6 +367,7 @@ export default function JournalView() {
       <span className="jr-status" role="status">
         {justSaved ? "Saved" : "Synced"}
       </span>
+      {sharingDay && <ShareDayDialog date={date} heading={title} onClose={() => setSharingDay(false)} />}
       {sharing && <ShareEntryDialog key={sharing.id} entry={sharing} onClose={() => setSharing(null)} />}
       <SidebarPortal>
         <aside className="sbt" aria-label="Journal days">
@@ -434,7 +437,7 @@ export default function JournalView() {
         </aside>
       </SidebarPortal>
 
-      <section className="jr-main ap-card at-violet" aria-label={title}>
+      <section className="jr-main ap-card" aria-label={title}>
         <header className="jr-head">
           <div className="jr-head-nav">
             {view !== "all" && (
@@ -462,6 +465,11 @@ export default function JournalView() {
               </>
             )}
             <span className="ml-auto flex items-center gap-1">
+              {view === "day" && (
+                <button type="button" className="jc-btn" aria-label="Share this day" title="Share this day" disabled={entries.length === 0} onClick={() => setSharingDay(true)}>
+                  <FA icon={faShareNodes} />
+                </button>
+              )}
               <JournalCalendar value={date} today={today} counts={counts} onPick={setDate} />
             </span>
           </div>

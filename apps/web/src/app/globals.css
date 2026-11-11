@@ -10830,17 +10830,19 @@
     padding: 14px 16px;
     border: 0;
     border-radius: var(--r2);
-    background: var(--raised);
-    box-shadow: inset 0 0 0 1px var(--abl);
+    background: var(--paper);
+    border: 1px solid var(--line-2);
+    border-radius: var(--r-ctl);
+    box-shadow: none;
     font: inherit;
-    font-size: 15px;
+    font-size: 14px;
     line-height: 1.5;
     resize: vertical;
     outline: 0;
   }
   .adm-compose textarea:focus,
   .adm-compose input:focus {
-    box-shadow: inset 0 0 0 2px var(--abf);
+    border-color: var(--ink);
   }
   .adm-compose-row {
     display: flex;
@@ -13955,7 +13957,7 @@
   }
   .jr-head {
     padding: 22px 26px 16px;
-    border-bottom: 1px solid var(--abl);
+    border-bottom: 1px solid var(--line);
   }
   .jr-head .h3 {
     display: flex;
@@ -13995,8 +13997,8 @@
     margin-top: 12px;
     padding: 14px 18px 16px;
     border-radius: var(--r3);
-    background: color-mix(in srgb, var(--raised) 70%, transparent);
-    box-shadow: inset 0 0 0 1px var(--abl);
+    background: var(--paper);
+    box-shadow: inset 0 0 0 1px var(--line);
   }
   .jr-meta {
     display: flex;
@@ -14072,7 +14074,7 @@
   }
   .jr-compose {
     padding: 14px 20px 18px;
-    border-top: 1px solid var(--abl);
+    border-top: 1px solid var(--line);
     background: color-mix(in srgb, var(--raised) 40%, transparent);
   }
   .jr-compose > textarea {
@@ -14102,7 +14104,7 @@
     padding: 0 18px;
     border-radius: 99px;
     background: var(--raised);
-    box-shadow: inset 0 0 0 1px var(--abl);
+    box-shadow: inset 0 0 0 1px var(--line);
     font-size: 14px;
     color: var(--fg-muted);
     transition:
@@ -14111,7 +14113,7 @@
   }
   .jr-pill:hover {
     color: var(--fg);
-    box-shadow: inset 0 0 0 1px var(--abf);
+    box-shadow: inset 0 0 0 1px var(--ink);
   }
   .jr-pill[data-on="true"] {
     background: var(--clay-bg);
@@ -14590,22 +14592,13 @@
     }
   }
 
-  /* ===== settings popup ===== */
-  /* Settings is a full-page layer beside the sidebar rail (reference: 09-settings, 10-settings-appearance). */
+  /* ===== settings page ===== */
+  /* Settings is an ordinary page in the page area beside the sidebar (reference: 09-settings, 10-settings-appearance). */
   .sm-back {
-    position: fixed;
-    inset: 0 0 0 var(--sb-w, var(--rail));
-    z-index: 50;
+    min-height: calc(100dvh - 48px);
     background: var(--page);
-    animation: cdFade 0.14s ease-out;
-  }
-  @media (max-width: 767px) {
-    .sm-back {
-      left: 0;
-    }
   }
   .sm {
-    height: 100%;
     display: flex;
     flex-direction: column;
     outline: 0;
@@ -16397,4 +16390,112 @@
   .adm .dash-head h1 {
     font-size: 22px;
     font-weight: 600;
+  }
+
+  /* ===== share dialog (notes, journal, chat): flat reference look ===== */
+  .sh-state,
+  .sh-state[data-on="true"] {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+  }
+  .sh-state > span,
+  .sh-state[data-on="true"] > span {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--r-tile);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--line);
+    color: var(--ink-2);
+  }
+  .sh-link {
+    margin-top: 12px;
+  }
+  .sh-field {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: var(--r-ctl);
+    border: 1px solid var(--line-2);
+    color: var(--ink-2);
+  }
+  .sh-field:focus-within {
+    border-color: var(--ink);
+  }
+  .sh-field input,
+  .sh-field input:focus {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font: 13px var(--mono);
+    color: var(--ink);
+  }
+  .sh-foot {
+    margin-top: 16px;
+  }
+
+  /* admin filter bar (audit log) */
+  .adm-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .adm-filters label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12.5px;
+    color: var(--ink-3);
+  }
+  .adm-filters select,
+  .adm-filters input {
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--line-2);
+    border-radius: var(--r-ctl);
+    background: var(--paper);
+    font: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    outline: 0;
+  }
+  .adm-filters select:focus,
+  .adm-filters input:focus {
+    border-color: var(--ink);
+  }
+  .adm-filters-acts {
+    display: flex;
+    gap: 8px;
+  }
+
+  /* ===== public share pages: the journal's flat paper look, no tints ===== */
+  .sh-badge {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--line);
+    color: var(--ink-2);
+    border-radius: var(--r-ctl);
+  }
+  .sh-head h1 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: clamp(26px, 4vw, 36px);
+    letter-spacing: -0.02em;
+  }
+  .sh-cta {
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--paper);
+    box-shadow: none;
   }

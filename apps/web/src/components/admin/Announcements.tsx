@@ -30,7 +30,7 @@ export default function Announcements({ items }: { items: Announcement[] }) {
     <>
       {dialog}
       <form
-        className="dash-card at-violet adm-compose"
+        className="dash-card adm-compose"
         onSubmit={(e) => {
           e.preventDefault();
           run(async () => {

@@ -12,6 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import Modal from "../../../components/ui/Modal";
 import { useHealthDays } from "../../health/queries";
+import { HEALTH_SOURCES, type HealthSource } from "../../health/sources";
+import ConnectHealthDialog from "../../health/components/ConnectHealthDialog";
 import { AppRow, LogoTile, SettingsEmpty, SettingsNotice, SettingsRow, SettingsSection, Tag } from "../ui";
 
 const SOON = "Not available yet";
@@ -61,16 +63,11 @@ export function InvitesPage() {
   );
 }
 
-const HEALTH_SOURCES = [
-  { id: "health_connect", name: "Google Health Connect", description: "Android phones. Steps, sleep, activity, resting heart rate and weight.", icon: faHeartPulse, tone: "text-blue-fg", steps: ["Open the Naazhi app on your Android phone and sign in with this account.", "Open the Health tab and choose Connect Health Connect.", "Allow Naazhi to read steps, distance, calories, heart rate and sleep."] },
-  { id: "healthkit", name: "Apple Health", description: "iPhone. Steps, sleep, workouts, heart rate, weight, mood and more.", icon: faHeart, tone: "text-critical", steps: ["Open the Naazhi app on your iPhone and sign in with this account.", "Open the Health tab and choose Connect Apple Health.", "Allow Naazhi to read steps, distance, calories, heart rate and sleep."] },
-] as const;
-
 /** Health: where your health data comes from (the phone app writes it) and whether the assistant may use it. Status is read from what has synced. */
 export function HealthPage({ prefs: initial }: { prefs: Prefs }) {
   const { prefs, change, error } = usePrefsSave(initial);
   const { days, isPending } = useHealthDays(60);
-  const [help, setHelp] = useState<(typeof HEALTH_SOURCES)[number] | null>(null);
+  const [help, setHelp] = useState<HealthSource | null>(null);
   const last = (src: string) => days.find((d) => d.source === src)?.synced_at;
   const any = days.length > 0;
   return (
@@ -113,22 +110,7 @@ export function HealthPage({ prefs: initial }: { prefs: Prefs }) {
           {error}
         </p>
       )}
-      {help && (
-        <Modal label={`Connect ${help.name}`} onClose={() => setHelp(null)}>
-          <div className="p-5">
-            <h2 className="m-0 text-[20px] font-semibold">Connect {help.name}</h2>
-            <ol className="m-0 mt-4 grid gap-3 pl-5 text-[14.5px] text-ink-2">
-              {help.steps.map((t) => (
-                <li key={t}>{t}</li>
-              ))}
-            </ol>
-            <p className="m-0 mt-4 text-[13.5px] text-ink-3">Your daily totals appear here within a minute of the first sync. Only daily totals are stored, never raw readings.</p>
-            <Button className="mt-5" onClick={() => setHelp(null)}>
-              Got it
-            </Button>
-          </div>
-        </Modal>
-      )}
+      {help && <ConnectHealthDialog source={help} onClose={() => setHelp(null)} />}
     </>
   );
 }

@@ -11,7 +11,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
     return (
       <main className="section">
         <div className="container" style={{ maxWidth: 640 }}>
-          <div className="panel" data-tone="amber">
+          <div className="panel">
             <p className="body">
               The server isn’t connected yet. Run <code>docker compose up -d</code> and copy <code>.env.example</code> to{" "}
               <code>.env.local</code>.

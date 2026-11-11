@@ -48,7 +48,7 @@ export default async function Page() {
             <small>{p.name}</small>
           </div>
         ))}
-        <div className="dash-stat at-sand">
+        <div className="dash-stat">
           <b>{formatTokens(tokens30d)}</b>
           <small>Tokens, last 30 days</small>
         </div>

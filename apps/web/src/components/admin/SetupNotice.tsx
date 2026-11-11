@@ -1,6 +1,6 @@
 export default function SetupNotice() {
   return (
-    <div className="panel" data-tone="amber">
+    <div className="panel">
       <h2 className="h3">The server isn’t connected</h2>
       <p className="body" style={{ marginTop: 8 }}>
         The admin panel reads users from the database. Start the Docker services with <code>docker compose up -d</code>, make sure{" "}

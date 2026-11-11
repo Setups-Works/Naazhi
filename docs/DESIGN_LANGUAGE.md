@@ -21,7 +21,7 @@ The look follows the paper-and-ink reference design (Home, Journal, Notes, To-do
 | Dashboard cards                          | `Panel` in `apps/web/src/components/app/HomeView.tsx`                                                         |
 | Centred writing column + flat composer   | `apps/web/src/components/app/JournalView.tsx` (`jr-title`, `jr-compose`)                                      |
 | Chat greeting + grey composer            | `cx-hello` in `apps/web/src/components/app/chat/ChatApp.tsx`                                                  |
-| Settings home (tile grid) and section pages | `apps/web/src/components/app/SettingsModal.tsx` (`sm-tiles`, `sm-crumbs`)                                  |
+| Settings home (tile grid) and section pages | `apps/web/src/components/app/SettingsPage.tsx` (`sm-tiles`, `sm-crumbs`)                                  |
 | Empty state with a thin ink line drawing | `Empty` in `apps/web/src/components/app/todo/Views.tsx`, `jr-empty` in `JournalView.tsx`                      |
 | Date picking                             | `apps/web/src/components/app/JournalCalendar.tsx` (never `<input type="date">`)                               |
 | Confirm / prompt                         | `useConfirm()` / `usePrompt()` in `apps/web/src/components/ui/Confirm.tsx`                                    |

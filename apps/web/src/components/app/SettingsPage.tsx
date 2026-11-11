@@ -1,5 +1,5 @@
 "use client";
-import * as Dialog from "@radix-ui/react-dialog";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
@@ -45,8 +45,9 @@ import SkillsPage from "../../features/settings/pages/SkillsPage";
 import LegalPage from "../../features/settings/pages/LegalPage";
 import GetAppsPage from "../../features/settings/pages/GetAppsPage";
 import ComingSoonPage from "../../features/settings/pages/ComingSoonPage";
-import type { Prefs } from "../../lib/prefs";
-import type { SettingsSection, SettingsTab } from "../../features/settings/tabs";
+import { settingsHref, type SettingsSection, type SettingsTab } from "../../features/settings/tabs";
+import { publicPath } from "../../lib/hosts";
+import { useSettingsData } from "./SettingsData";
 import SettingsView from "./SettingsView";
 
 type Account = {
@@ -129,23 +130,15 @@ const GROUPS: { label: string; tiles: Tile[] }[] = [
 const TILES = GROUPS.flatMap((g) => g.tiles.map((t) => ({ ...t, group: g.label })));
 
 /**
- * Settings, as a full-page layer over the app (the sidebar rail stays in view). Its home is a searchable grid of sections;
- * a section opens as its own page with a "Settings / Group / Section" breadcrumb. Radix Dialog handles the focus trap,
- * Escape (including when a confirm dialog is stacked on top), scroll lock and focus restore.
+ * Settings as a normal page (/dashboard/settings/<section>), not a popup: it sits in the page area beside the sidebar, which becomes
+ * the Settings menu while it is open. Its home is a searchable grid of sections; a section opens as its own page with a
+ * "Settings / Group / Section" breadcrumb. Moving between sections is ordinary navigation, so Back and links work.
  */
-export default function SettingsModal({
-  account,
-  prefs,
-  tab,
-  onTab,
-  onClose,
-}: {
-  account: Account;
-  prefs: Prefs;
-  tab: SettingsTab;
-  onTab: (tab: SettingsTab) => void;
-  onClose: () => void;
-}) {
+export default function SettingsPage({ tab }: { tab: SettingsTab }) {
+  const { account, prefs } = useSettingsData();
+  const router = useRouter();
+  const onTab = (t: SettingsTab) => router.push(publicPath(settingsHref(t)));
+  const onClose = () => router.push(publicPath("/dashboard"));
   const [q, setQ] = useState("");
   const shown = useMemo(() => {
     const t = q.trim().toLowerCase();
@@ -193,22 +186,8 @@ export default function SettingsModal({
           </div>
         </nav>
       </SidebarPortal>
-    {/* Not modal: the sidebar beside it stays usable (it is the Settings menu while this is open). */}
-    <Dialog.Root
-      modal={false}
-      open
-      onOpenChange={(open) => {
-        if (!open) onClose();
-      }}
-    >
-      <Dialog.Portal>
-        <div className="sm-back">
-          <Dialog.Content
-            className="sm"
-            aria-describedby={undefined}
-            onInteractOutside={(e) => e.preventDefault()}
-            onFocusOutside={(e) => e.preventDefault()}
-          >
+      <div className="sm-back">
+        <div className="sm">
             <div className="sm-head">
               {here ? (
                 <nav aria-label="Breadcrumb" className="sm-crumbs">
@@ -223,17 +202,12 @@ export default function SettingsModal({
                   <span aria-hidden>/</span>
                   <span aria-current="page">{here.label}</span>
                 </nav>
-              ) : (
-                <nav aria-label="Breadcrumb" className="sm-crumbs">
-                  <FA icon={faGear} />
-                  <span aria-current="page">Settings</span>
-                </nav>
-              )}
+              ) : null}
             </div>
             <div className="sm-body">
               {here ? (
                 <div className="sm-page">
-                  <Dialog.Title className="sm-h1">{here.label}</Dialog.Title>
+                  <h1 className="sm-h1">{here.label}</h1>
                   <p className="sm-sub">{here.desc}</p>
                   {here.k === "invites" ? (
                     <InvitesPage />
@@ -277,7 +251,7 @@ export default function SettingsModal({
                 </div>
               ) : (
                 <div className="sm-page sm-home">
-                  <Dialog.Title className="sm-h1">Settings</Dialog.Title>
+                  <h1 className="sm-h1">Settings</h1>
                   <label className="sm-search">
                     <FA icon={faMagnifyingGlass} />
                     <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search settings" aria-label="Search settings" />
@@ -306,10 +280,8 @@ export default function SettingsModal({
                 </div>
               )}
             </div>
-          </Dialog.Content>
         </div>
-      </Dialog.Portal>
-    </Dialog.Root>
+      </div>
     </>
   );
 }

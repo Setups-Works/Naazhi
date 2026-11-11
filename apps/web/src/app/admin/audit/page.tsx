@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { serverConfigured, adminDb } from "../../../server/session";
 import SetupNotice from "../../../components/admin/SetupNotice";
+import AuditExport, { type AuditRow } from "../../../components/admin/AuditExport";
 
 const LABELS: Record<string, string> = {
   "user.make_admin": "Made admin",
@@ -11,19 +13,49 @@ const LABELS: Record<string, string> = {
   "user.password_reset": "Sent password reset",
   "user.resend_confirmation": "Resent confirmation",
   "user.invite": "Invited user",
+  "plan.update": "Edited a plan",
+  "message.send": "Sent a message",
   "announcement.create": "Created announcement",
   "announcement.show": "Showed announcement",
   "announcement.hide": "Hid announcement",
   "announcement.delete": "Deleted announcement",
 };
+const LIMIT = 500;
+const PERIODS: Record<string, [label: string, days: number]> = { today: ["Today", 1], "7d": ["Last 7 days", 7], "30d": ["Last 30 days", 30] };
+type Row = { id: string; admin_email: string; action: string; target: string | null; meta: Record<string, unknown> | null; created_at: string };
 
-export default async function Page() {
+const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
+const describe = (m: Record<string, unknown> | null) =>
+  Object.keys(m ?? {}).length
+    ? Object.entries(m!)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(", ")
+    : "";
+
+/** The admin action log: filter by action, person or day range, and export what is shown. Read-only; entries can't be edited or deleted here. */
+export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   if (!serverConfigured()) return <SetupNotice />;
-  const { data, error } = await adminDb()
-    .from("admin_audit")
-    .select("id,admin_email,action,target,meta,created_at")
-    .order("created_at", { ascending: false })
-    .limit(200);
+  const sp = await searchParams;
+  const action = one(sp.action);
+  const q = one(sp.q).trim().toLowerCase();
+  const period = PERIODS[one(sp.period)] ? one(sp.period) : "";
+
+  let query = adminDb().from("admin_audit").select("id,admin_email,action,target,meta,created_at").order("created_at", { ascending: false }).limit(LIMIT);
+  if (action && LABELS[action]) query = query.eq("action", action);
+  if (period) query = query.gte("created_at", new Date(Date.now() - PERIODS[period][1] * 86_400_000).toISOString());
+  const { data, error } = await query;
+  const rows = ((data ?? []) as Row[]).filter((r) => !q || `${r.admin_email} ${r.target ?? ""}`.toLowerCase().includes(q));
+  const when = (iso: string) => new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  const filtered = !!(action || q || period);
+
+  const exportRows: AuditRow[] = rows.map((r) => ({
+    when: new Date(r.created_at).toISOString(),
+    admin: r.admin_email,
+    action: LABELS[r.action] ?? r.action,
+    target: r.target ?? "",
+    details: describe(r.meta),
+  }));
+
   return (
     <div className="dash">
       <div className="dash-head">
@@ -32,9 +64,50 @@ export default async function Page() {
           <h1 className="h2" style={{ marginTop: 8 }}>
             What admins did
           </h1>
-          <p className="meta">The latest 200 actions. Entries can’t be edited or deleted from the app.</p>
+          <p className="meta">The latest {LIMIT} matching actions. Entries can’t be edited or deleted from the app.</p>
         </div>
+        <AuditExport rows={exportRows} />
       </div>
+
+      <form method="get" className="adm-filters" aria-label="Filter the audit log">
+        <label>
+          <span>Action</span>
+          <select name="action" defaultValue={action}>
+            <option value="">All actions</option>
+            {Object.entries(LABELS).map(([k, label]) => (
+              <option key={k} value={k}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Admin or target</span>
+          <input name="q" type="search" defaultValue={one(sp.q)} placeholder="name@example.com" />
+        </label>
+        <label>
+          <span>Period</span>
+          <select name="period" defaultValue={period}>
+            <option value="">All time</option>
+            {Object.entries(PERIODS).map(([k, [label]]) => (
+              <option key={k} value={k}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <span className="adm-filters-acts">
+          <button type="submit" className="btn btn-primary btn-sm">
+            Apply
+          </button>
+          {filtered && (
+            <Link href="/admin/audit" className="btn btn-secondary btn-sm">
+              Clear
+            </Link>
+          )}
+        </span>
+      </form>
+
       {error && (
         <p className="form-err" role="alert">
           Couldn’t load the audit log. Make sure the latest database migration has been applied.
@@ -52,39 +125,23 @@ export default async function Page() {
             </tr>
           </thead>
           <tbody>
-            {(data ?? []).map((r) => (
-              <tr key={r.id as string}>
+            {rows.map((r) => (
+              <tr key={r.id}>
+                <td>{when(r.created_at)}</td>
+                <td>{r.admin_email}</td>
                 <td>
-                  {new Date(r.created_at as string).toLocaleString(undefined, {
-                    day: "numeric",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </td>
-                <td>{r.admin_email as string}</td>
-                <td>
-                  <span
-                    className="adm-pill"
-                    data-k={String(r.action).includes("delete") || String(r.action).includes("ban") ? "ban" : undefined}
-                  >
-                    {LABELS[r.action as string] ?? (r.action as string)}
+                  <span className="adm-pill" data-k={r.action.includes("delete") || r.action.includes("ban") ? "ban" : undefined}>
+                    {LABELS[r.action] ?? r.action}
                   </span>
                 </td>
-                <td className="wrap">{(r.target as string) || "—"}</td>
-                <td className="wrap">
-                  {Object.keys((r.meta as object) ?? {}).length
-                    ? Object.entries(r.meta as Record<string, unknown>)
-                        .map(([k, v]) => `${k}: ${v}`)
-                        .join(", ")
-                    : "—"}
-                </td>
+                <td className="wrap">{r.target || "—"}</td>
+                <td className="wrap">{describe(r.meta) || "—"}</td>
               </tr>
             ))}
-            {(data ?? []).length === 0 && (
+            {rows.length === 0 && (
               <tr>
                 <td colSpan={5} className="empty">
-                  No admin actions recorded yet.
+                  {filtered ? "No actions match these filters." : "No admin actions recorded yet."}
                 </td>
               </tr>
             )}

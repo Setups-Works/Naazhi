@@ -7,6 +7,7 @@ import { getPublicEntry } from "../../../../server/services/journal/journal.serv
 import AuthLink from "../../../../components/auth/AuthLink";
 import AttachmentImage from "../../../../components/ui/AttachmentImage";
 import AudioWave from "../../../../components/ui/AudioWave";
+import LocalTime from "../../../../components/app/LocalTime";
 import Markdown from "../../../../components/app/Markdown";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ export default async function Page({ params }: { params: Promise<{ token: string
     return (
       <main className="section">
         <div className="container" style={{ maxWidth: 640 }}>
-          <div className="panel" data-tone="amber">
+          <div className="panel">
             <p className="body">Shared entries aren’t available until the server is configured.</p>
           </div>
         </div>
@@ -53,7 +54,10 @@ export default async function Page({ params }: { params: Promise<{ token: string
           <h1>{day}</h1>
         </header>
 
-        <article className="jr-entry at-violet">
+        <article className="jr-entry">
+          <div className="jr-meta">
+            <LocalTime iso={entry.createdAt} />
+          </div>
           {entry.body && <Markdown text={entry.body} />}
           {entry.files.length > 0 && (
             <ul className="jr-files">
@@ -76,7 +80,7 @@ export default async function Page({ params }: { params: Promise<{ token: string
           )}
         </article>
 
-        <aside className="sh-cta panel" data-tone="forest">
+        <aside className="sh-cta">
           <div>
             <h2 className="h3">Want a journal like this?</h2>
             <p className="body">Notes, tasks, journal and chat in one place — with any AI, or none.</p>

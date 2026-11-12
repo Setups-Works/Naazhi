@@ -15,7 +15,6 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { SPLASH_STAR_CENTER } from "./splashMark";
-import { Icon } from "@/components/ui/Icon";
 import { Font, Palette, themedStyles } from "@/constants/theme";
 
 const NAME = "Naazhi";
@@ -24,6 +23,7 @@ const MARK = 176;
 const BODY = require("../../assets/images/splash-mark-body.png") as number;
 const LINES = require("../../assets/images/splash-mark-lines.png") as number;
 const STAR = require("../../assets/images/splash-mark-star.png") as number;
+const HEART = require("../../assets/images/health-heart.png") as number;
 const SETUPS_WORKS = require("../../assets/images/setups-works.png") as number;
 
 /** The launch, in milliseconds from the first frame: the body is drawn top to bottom, the lines of the bubble write in, the star lands. */
@@ -167,7 +167,7 @@ export function AnimatedSplash({ ready }: { ready: boolean }) {
         <View style={styles.from}>
           <Animated.Text style={styles.fromText}>from</Animated.Text>
           <Animated.View style={heartStyle}>
-            <Icon name="heart" size={15} color={Palette.clayFg} fill={Palette.clayFg} />
+            <Image source={HEART} style={{ width: 15, height: 15 }} resizeMode="contain" />
           </Animated.View>
         </View>
         <Image source={SETUPS_WORKS} style={styles.company} resizeMode="contain" />

@@ -52,6 +52,7 @@ export default function Footer() {
           <span>© {new Date().getFullYear()} Naazhi. All rights reserved.</span>
           <span className="flex items-center gap-3">
             Backed by
+            <Image src="/brand/health-heart.png" alt="" width={64} height={64} aria-hidden className="size-3.5 object-contain" />
             <Image src="/brand/setups-works.png" alt="Setups Works, the digital agency" width={982} height={360} className="h-10 w-auto" />
           </span>
         </div>

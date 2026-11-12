@@ -23,6 +23,19 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-12",
+    title: "Version 6.4.0: a livelier home page, and a heart that fits",
+    summary: "The home page opens on a field of dots that move with your cursor, and Naazhi’s pink heart now appears where it belongs, on the web and in the app.",
+    tone: "clay",
+    appVersion: "v6.4.0",
+    changes: [
+      { kind: "new", platform: "web", text: "The home page opens on a grid of quiet dots that swell and glow as your cursor passes through, and ripple when you click. It stays behind the words and stops short of the phones." },
+      { kind: "improved", platform: "web", text: "The home page headline is tighter under the menu, and a pink heart sits beside “Your AI can change.” on its first line." },
+      { kind: "improved", platform: "web", text: "The pink heart now also appears in the footer credit and on the Heart rate tile in Health." },
+      { kind: "improved", platform: "app", text: "The launch screen’s “from ♥ Setups Works” and the Heart rate tile in Health use the pink heart." },
+    ],
+  },
+  {
+    date: "2026-11-12",
     title: "Version 6.3.0: made for iPad and tablets",
     summary: "On an iPad or tablet, Naazhi now shows the same sidebar as the website, beside every page, on the web and in the app.",
     tone: "blue",

@@ -161,6 +161,7 @@ export default function HealthApp() {
                   <StatTile
                     href={`/dashboard/health/heart?range=${range}`}
                     icon={faHeart}
+                    heart
                     label="Heart rate"
                     value={sum.hrMin === null || sum.hrMax === null ? null : `${sum.hrMin}–${sum.hrMax} bpm`}
                   />

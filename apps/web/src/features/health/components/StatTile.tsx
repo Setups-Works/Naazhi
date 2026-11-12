@@ -11,6 +11,7 @@ export default function StatTile({
   note,
   fill,
   href,
+  heart,
 }: {
   icon: IconDefinition;
   label: string;
@@ -20,12 +21,19 @@ export default function StatTile({
   fill?: number;
   /** Opens the metric's detail page. */
   href?: string;
+  /** Draws Naazhi's pink heart instead of the line icon (the heart-rate tile). */
+  heart?: boolean;
 }) {
   const cls = "relative flex items-center gap-3 rounded-r3 border bg-paper p-3.5";
   const inner = (
     <>
       <span className="grid size-10 shrink-0 place-items-center rounded-r2 border text-[16px] text-ink-2">
-        <FA icon={icon} />
+        {heart ? (
+          // eslint-disable-next-line @next/next/no-img-element -- a small fixed picture
+          <img src="/brand/health-heart.png" alt="" width={64} height={64} aria-hidden className="size-5 object-contain" />
+        ) : (
+          <FA icon={icon} />
+        )}
       </span>
       <div className="min-w-0 flex-1">
         <p className="m-0 text-[13px] leading-tight text-ink-3">{label}</p>

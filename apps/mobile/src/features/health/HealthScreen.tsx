@@ -211,6 +211,7 @@ export function HealthScreen({ edges }: { edges?: ScreenEdges }) {
                     <Tile
                       tone="clay"
                       icon="heart"
+                      heart
                       label="Heart rate"
                       value={sum.hrMin === null || sum.hrMax === null ? null : `${sum.hrMin}–${sum.hrMax} bpm`}
                       onPress={() => openMetric("heart")}
@@ -315,6 +316,7 @@ function SetupCard({ onConnect, name, logo }: { onConnect: () => void; name: str
 function Tile({
   tone,
   icon,
+  heart,
   label,
   value,
   note,
@@ -322,6 +324,8 @@ function Tile({
 }: {
   tone: Tone;
   icon: IconName;
+  /** Draws Naazhi's pink heart instead of the line icon (the heart-rate tile). */
+  heart?: boolean;
   label: string;
   value: string | null;
   note?: string;
@@ -333,7 +337,7 @@ function Tile({
       <Card onPress={onPress} accessibilityLabel={`${label}, ${value ?? "no data"}. Open details`}>
         <View style={styles.tile}>
           <View style={styles.badge}>
-            <Icon name={icon} size={17} color={Neutral.fg} />
+            {heart ? <Icon name="heart-pulse" size={20} /> : <Icon name={icon} size={17} color={Neutral.fg} />}
           </View>
           <View style={styles.flex}>
             <AppText variant="small" color={Neutral.fg}>

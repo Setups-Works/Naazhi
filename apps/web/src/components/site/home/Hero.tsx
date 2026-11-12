@@ -3,6 +3,7 @@ import { useRef } from "react";
 import AuthLink from "../../auth/AuthLink";
 import { Heading } from "../Heading";
 import { showNow, useMotion } from "../motion";
+import HeroDots from "./HeroDots";
 import Phone from "../Phone";
 import StoreBadges from "../StoreBadges";
 import { buttonClass, Kicker, Lead, TextLink, WRAP } from "../ui";
@@ -50,29 +51,53 @@ export default function Hero() {
 
   const hidden = "opacity-0";
   return (
-    <section ref={root} className="relative overflow-hidden pt-[clamp(40px,6vw,88px)]">
-      <div aria-hidden data-glow className={`pointer-events-none absolute top-[38%] left-1/2 h-[min(640px,70vw)] w-[min(1100px,120vw)] -translate-x-1/2 rounded-full bg-green-bg blur-3xl ${hidden}`} />
+    <section ref={root} className="relative overflow-hidden pt-10">
+      <div
+        aria-hidden
+        data-glow
+        className={`pointer-events-none absolute top-[38%] left-1/2 h-[min(640px,70vw)] w-[min(1100px,120vw)] -translate-x-1/2 rounded-full bg-green-bg blur-3xl ${hidden}`}
+      />
       <div className={`${WRAP} relative flex flex-col items-center text-center`}>
-        <div data-copy data-reveal className={hidden}>
-          <Kicker>One workspace · Any AI</Kicker>
-        </div>
-        <div data-copy data-reveal className={`mt-4 ${hidden}`}>
-          <Heading as="h1" size="display" quiet="Your workspace shouldn’t." immediate className="max-w-[920px]">
-            Your AI can change.
-          </Heading>
-        </div>
-        <div data-copy data-reveal className={`mt-5 ${hidden}`}>
-          <Lead className="mx-auto text-[clamp(18px,1.8vw,22px)]">
-            Notes, tasks, journal, chat and calendar in one calm place. Use AI when it helps, switch it, or switch it off. Everything you’ve written stays put.
-          </Lead>
-        </div>
-        <div data-copy data-reveal className={`mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 ${hidden}`}>
-          <AuthLink arrow className={buttonClass("primary")} />
-          <TextLink href="/demo">Watch the product demo</TextLink>
-        </div>
+        {/* The dots stay behind the words only: the grid ends where the phones begin. */}
+        <div className="relative flex w-full flex-col items-center">
+          <HeroDots />
+          <div data-copy data-reveal className={`relative ${hidden}`}>
+            <Kicker>One workspace · Any AI</Kicker>
+          </div>
+          <div data-copy data-reveal className={`mt-4 ${hidden}`}>
+            <Heading as="h1" size="display" quiet="Your workspace shouldn’t." immediate className="max-w-[920px]">
+              {/* On a desktop the first sentence is its own line, with the heart kept beside its full stop. */}
+              <span className="md:block">
+                Your AI can{" "}
+                <span className="whitespace-nowrap">
+                  change.
+                  {/* eslint-disable-next-line @next/next/no-img-element -- a small fixed picture sized by the heading's text */}
+                  <img
+                    src="/brand/health-heart.png"
+                    alt=""
+                    width={64}
+                    height={64}
+                    aria-hidden
+                    className="ml-[0.12em] inline-block h-[0.62em] w-[0.62em] object-contain align-[0.02em]"
+                  />
+                </span>
+              </span>
+            </Heading>
+          </div>
+          <div data-copy data-reveal className={`mt-5 ${hidden}`}>
+            <Lead className="mx-auto text-[clamp(18px,1.8vw,22px)]">
+              Notes, tasks, journal, chat and calendar in one calm place. Use AI when it helps, switch it, or switch it off. Everything
+              you’ve written stays put.
+            </Lead>
+          </div>
+          <div data-copy data-reveal className={`mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 ${hidden}`}>
+            <AuthLink arrow className={buttonClass("primary")} />
+            <TextLink href="/demo">Watch the product demo</TextLink>
+          </div>
 
-        <div data-copy data-reveal className={`mt-6 flex justify-center ${hidden}`}>
-          <StoreBadges className="justify-center" />
+          <div data-copy data-reveal className={`mt-6 flex justify-center ${hidden}`}>
+            <StoreBadges className="justify-center" />
+          </div>
         </div>
 
         <div

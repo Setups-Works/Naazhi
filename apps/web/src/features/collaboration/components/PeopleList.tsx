@@ -70,7 +70,9 @@ export function PendingInvites({ invites, onCancel }: { invites: SharedJournalIn
           <PersonAvatar person={i.invitee} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-[14.5px] font-medium">{personName(i.invitee)}</p>
-            <p className="truncate text-[12.5px] text-fg-subtle">{handle(i.invitee)} · waiting for an answer</p>
+            <p className="truncate text-[12.5px] text-fg-subtle">
+              {i.invitee_email ? "Waiting for them to sign up with this email" : `${handle(i.invitee)} · waiting for an answer`}
+            </p>
           </div>
           <RolePill role={i.role} />
           <button

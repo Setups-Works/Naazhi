@@ -23,6 +23,21 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-12",
+    title: "Version 6.7.0: invite by email, links that open the app, and a fuller shared journal",
+    summary: "Invite people by username or email, even before they have an account. Links to Naazhi open the app when it is installed, and a shared journal now works like your personal one.",
+    tone: "green",
+    appVersion: "v6.7.0",
+    changes: [
+      { kind: "new", platform: "web", text: "Invite someone to a shared journal by email, even if they don’t have an account yet. They get an email, and the invitation waits for them once they sign up with that address." },
+      { kind: "improved", platform: "app", text: "The app’s invite form takes a username or an email address, and shows who is still waiting to sign up." },
+      { kind: "new", platform: "app", text: "Links to Naazhi, such as a journal invitation, a shared chat or a dashboard page, open in the app when it is installed, and on the web when it isn’t." },
+      { kind: "improved", platform: "web", text: "The invitation email links straight to your invitations, and opens the app if you have it." },
+      { kind: "improved", platform: "web", text: "A shared journal now has the Day, Calendar and All entries views, a streak, voice notes and drafts kept for each day, just like your personal journal." },
+      { kind: "new", platform: "web", text: "The sidebar shows a shared journal’s month and recent days, and the list of your shared journals on the Collaboration page." },
+    ],
+  },
+  {
+    date: "2026-11-12",
     title: "Version 6.6.0: new pages, a cleaner sign-in, and a sharper site",
     summary: "Notes, Tasks, Journal and Integrations each get their own page, there is a full FAQ, and log in, sign up and the password reset have a new look.",
     tone: "violet",

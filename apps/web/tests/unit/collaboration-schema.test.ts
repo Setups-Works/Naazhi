@@ -24,6 +24,10 @@ describe("shared journal inputs", () => {
   it("only lets an owner hand out editor or viewer", () => {
     expect(inviteBody.safeParse({ username: "ada", role: "viewer" }).success).toBe(true);
     expect(inviteBody.safeParse({ username: "ada", role: "owner" }).success).toBe(false);
+    // An email address is accepted in the same field, lower-cased and trimmed; a malformed one is not.
+    expect(inviteBody.parse({ username: "  Ada@Example.COM ", role: "editor" }).username).toBe("ada@example.com");
+    expect(inviteBody.safeParse({ username: "ada@", role: "editor" }).success).toBe(false);
+    expect(inviteBody.safeParse({ username: "not an email@x", role: "editor" }).success).toBe(false);
     // The same field takes an email address, normalised to lower case.
     expect(inviteBody.parse({ username: "  Ada@Example.COM ", role: "editor" }).username).toBe("ada@example.com");
     expect(inviteBody.safeParse({ username: "ada@", role: "editor" }).success).toBe(false);

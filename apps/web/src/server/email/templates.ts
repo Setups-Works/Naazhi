@@ -49,11 +49,17 @@ export const templates = {
   }),
 
   /* ---------- collaboration ---------- */
-  journalInvite: (p: { from: string; journal: string; role: "editor" | "viewer"; url: string }): EmailContent => ({
+  /** `needsAccount`: the address has no account yet, so the button takes them to sign up first (the invitation waits for them). */
+  journalInvite: (p: { from: string; journal: string; role: "editor" | "viewer"; url: string; needsAccount?: boolean }): EmailContent => ({
     subject: "You’re invited to a shared journal",
     heading: "You’re invited to a shared journal",
-    paragraphs: [`${p.from} invited you to write in the shared journal “${p.journal}” as ${p.role === "editor" ? "an editor" : "a viewer"}. Open the app to accept or decline.`],
-    action: { label: "View invitation", url: p.url },
+    paragraphs: [
+      `${p.from} invited you to write in the shared journal “${p.journal}” as ${p.role === "editor" ? "an editor" : "a viewer"}.`,
+      p.needsAccount
+        ? "Create a free Naazhi account with this email address and the invitation will be waiting for you to accept or decline."
+        : "Open it in the Naazhi app if you have it, or on the web, to accept or decline.",
+    ],
+    action: { label: p.needsAccount ? "Create your account" : "View invitation", url: p.url },
   }),
 
   /* ---------- billing ---------- */

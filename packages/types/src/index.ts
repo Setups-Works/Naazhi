@@ -86,10 +86,16 @@ export type SharedJournalInvite = {
   journal_id: string;
   journal_name: string;
   role: SharedJournalInviteRole;
+  /** Who was invited. For an invitation to an email address with no account yet this is a stand-in whose `name` is that address. */
   invitee: JournalPerson;
+  /** The email address the invitation was sent to, when it was sent to an address rather than an account (owner's view only). */
+  invitee_email: string | null;
   inviter: JournalPerson;
   created_at: string;
 };
+
+/** One day of a shared journal in short: how many entries, and the first words and photo, for calendars and lists. */
+export type SharedJournalDay = { date: string; count: number; body: string; image: string | null };
 
 export type SharedJournalDetail = SharedJournal & {
   /** The signed-in person's own id, to tell which row in `members` is them. */

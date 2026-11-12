@@ -39,64 +39,64 @@ export default function EntryCard({
         <time dateTime={entry.created_at}>{fmtTime(entry.created_at)}</time>
       </div>
       <div className="jr-row-b">
-      <span className="mb-1 flex min-w-0 items-center gap-2">
-        <PersonAvatar person={entry.author} size="sm" />
-        <b className="truncate text-[13.5px] font-medium text-ink-2">{personName(entry.author)}</b>
-      </span>
+        <span className="mb-1 flex min-w-0 items-center gap-2">
+          <PersonAvatar person={entry.author} size="sm" />
+          <b className="truncate text-[13.5px] font-medium text-ink-2">{personName(entry.author)}</b>
+        </span>
 
-      {editing ? (
-        <div className="jr-edit">
-          <textarea
-            autoFocus
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            aria-label="Edit entry"
-            onKeyDown={(e) => {
-              if ((e.metaKey || e.ctrlKey) && e.key === "Enter") void save();
-              if (e.key === "Escape") setEditing(false);
-            }}
-          />
-          <div>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditing(false)}>
-              Cancel
-            </button>{" "}
-            <button type="button" className="btn btn-primary btn-sm" onClick={() => void save()}>
-              Save
-            </button>
+        {editing ? (
+          <div className="jr-edit">
+            <textarea
+              autoFocus
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              aria-label="Edit entry"
+              onKeyDown={(e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === "Enter") void save();
+                if (e.key === "Escape") setEditing(false);
+              }}
+            />
+            <div>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditing(false)}>
+                Cancel
+              </button>{" "}
+              <button type="button" className="btn btn-primary btn-sm" onClick={() => void save()}>
+                Save
+              </button>
+            </div>
           </div>
-        </div>
-      ) : (
-        entry.body && (
-          <div className="jr-row-text">
-            <Markdown text={entry.body} />
-          </div>
-        )
-      )}
+        ) : (
+          entry.body && (
+            <div className="jr-row-text">
+              <Markdown text={entry.body} />
+            </div>
+          )
+        )}
 
-      {entry.attachments.length > 0 && (
-        <ul className="jr-files">
-          {entry.attachments.map((a) => {
-            const url = urls[a.path];
-            const image = a.type.startsWith("image/");
-            const audio = a.type.startsWith("audio/");
-            return (
-              <li key={a.path}>
-                {url && image && <AttachmentImage src={url} name={a.name} />}
-                {url && audio && <AudioWave src={url} label={a.name} />}
-                {!image &&
-                  !audio &&
-                  (url ? (
-                    <a href={url} target="_blank" rel="noopener noreferrer">
-                      <FA icon={faPaperclip} /> {a.name}
-                    </a>
-                  ) : (
-                    <span>{a.name}</span>
-                  ))}
-              </li>
-            );
-          })}
-        </ul>
-      )}
+        {entry.attachments.length > 0 && (
+          <ul className="jr-files">
+            {entry.attachments.map((a) => {
+              const url = urls[a.path];
+              const image = a.type.startsWith("image/");
+              const audio = a.type.startsWith("audio/");
+              return (
+                <li key={a.path}>
+                  {url && image && <AttachmentImage src={url} name={a.name} />}
+                  {url && audio && <AudioWave src={url} label={a.name} />}
+                  {!image &&
+                    !audio &&
+                    (url ? (
+                      <a href={url} target="_blank" rel="noopener noreferrer">
+                        <FA icon={faPaperclip} /> {a.name}
+                      </a>
+                    ) : (
+                      <span>{a.name}</span>
+                    ))}
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
       <div className="jr-row-a">
         {canEdit && (

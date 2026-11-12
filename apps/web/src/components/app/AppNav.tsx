@@ -68,7 +68,9 @@ const SETTINGS_SECTION: NavItem = { href: "/dashboard/settings", t: "Settings", 
 const ADMIN_ROOT: NavItem = { href: "/admin", t: "Admin", icon: faShieldHalved };
 
 /** Pages that put their own list in the sidebar. */
-const hasPageList = (p: string) => p.startsWith("/dashboard/chat") || p === "/dashboard/workspace/reader" || p === "/dashboard/journal" || p === "/dashboard/notes";
+// The shared journals have a list (/collaborate) and a month with its days (/shared/…) of their own, as the personal journal does.
+const hasPageList = (p: string) =>
+  p.startsWith("/dashboard/chat") || p === "/dashboard/workspace/reader" || p === "/dashboard/journal" || p === "/dashboard/notes" || p === "/dashboard/journal/collaborate" || p.startsWith("/dashboard/journal/shared/");
 
 /** Second breadcrumb for pages below a section. */
 const SUBPAGES: [prefix: string, label: string][] = [

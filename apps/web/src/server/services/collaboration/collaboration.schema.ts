@@ -54,6 +54,8 @@ export const entryUpdate = z.object({
 });
 /** `?cursor=<oldest date loaded>&limit=<n>` for a journal's feed. */
 export const feedQuery = z.object({
+  /** One day's entries (all of them) instead of a page of the feed. */
+  date: date.optional(),
   cursor: date.optional(),
   limit: z.coerce.number().int().min(1).max(LIMIT.pageMax).default(LIMIT.pageSize),
 });

@@ -33,6 +33,8 @@ export const qk = {
     invites: ["shared-journals", "invites"] as const, // invitations waiting for the signed-in person
     detail: (id: string) => ["shared-journals", "detail", id] as const,
     entries: (id: string) => ["shared-journals", "entries", id] as const,
+    day: (id: string, date: string) => ["shared-journals", "day", id, date] as const, // one day's entries
+    days: (id: string) => ["shared-journals", "days", id] as const, // the days with writing (counts and previews)
   },
   signedUrls: (bucket: string, paths: string[]) => ["signed-urls", bucket, paths] as const, // expiring links for stored files
   chats: {

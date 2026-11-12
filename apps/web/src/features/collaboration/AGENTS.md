@@ -1,6 +1,6 @@
 # features/collaboration
 
-**Does:** shared journals. Named journals that several people read and write together: create one, invite people **by username**, they accept or decline, owners manage roles, everyone writes entries (text and files). The Journal page links to a separate **Collaboration** page that manages all of it. **Track B. Reference for multi-person features.**
+**Does:** shared journals. Named journals that several people read and write together: create one, invite people **by username or email address** (an address with no account yet gets an email telling them to sign up; the invitation waits and is claimed by the first person whose **confirmed** email matches, in `listMyInvites`), they accept or decline, owners manage roles, everyone writes entries (text and files). The Journal page links to a separate **Collaboration** page that manages all of it. **Track B. Reference for multi-person features.**
 
 **Design:** follows `docs/DESIGN_LANGUAGE.md` (glass `ap-card at-<tint>`, serif titles, `btn`, `tf-pill`, `at-<tint> tint` pills). The feed reuses the Journal's own `jr-*` look so the two read as one product. No literal colours, sizes or limits: tints come from `ROLE_TONE` / `toneFor`, limits from `SHARED_JOURNAL` (both in `@untitled/logic`).
 
@@ -25,3 +25,5 @@
 - Changes are applied after the server answers (no optimistic updates): outcomes depend on permissions.
 - Dates print only inside `ClientOnly` (the page files wrap it).
 - Gated by `FEATURES.sharedJournals`.
+
+**Links into the app:** the invitation email links to `<app address>/journal/collaborate` (`appUrl` in the service), which opens the phone app when it is installed (Android intent filters, iOS `applinks`) and the web page otherwise. Which paths the app claims, and the web path → screen map, are in `packages/logic/src/appLinks.ts`; the app applies it in `apps/mobile/src/app/+native-intent.ts`, the website lists the paths in `/.well-known/apple-app-site-association`, and a web test keeps `apps/mobile/app.config.js` equal to the list. Verification needs `APPLE_TEAM_ID` and `ANDROID_CERT_SHA256` (see `docs/RELEASING.md`); without them links simply open in the browser.

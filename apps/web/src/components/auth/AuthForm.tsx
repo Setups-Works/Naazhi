@@ -160,11 +160,11 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           password: pw,
           name,
           username,
-          callbackURL: "/dashboard",
+          callbackURL: next,
         });
         if (error) throw new Error(error.message || "Couldn’t create the account.");
         if (data?.token) {
-          router.push("/dashboard");
+          router.push(next);
           router.refresh();
         } else setDone("confirm");
         return;
@@ -223,7 +223,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
 
   async function resend() {
     setBusy(true);
-    const { error } = await authClient.sendVerificationEmail({ email: email.trim(), callbackURL: "/dashboard" });
+    const { error } = await authClient.sendVerificationEmail({ email: email.trim(), callbackURL: next });
     setBusy(false);
     setErr(error ? friendly(error.message ?? "") : "");
   }

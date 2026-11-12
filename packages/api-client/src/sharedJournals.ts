@@ -1,5 +1,6 @@
 import type {
   SharedJournal,
+  SharedJournalDay,
   SharedJournalDetail,
   SharedJournalEntry,
   SharedJournalInvite,
@@ -47,6 +48,10 @@ export function createSharedJournalsApi(http: Http) {
 
     entries: (id: string, cursor?: string) =>
       unwrap(http.get<Data<EntriesPage>>(`${base}/${id}/entries${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`)),
+    /** Every entry of one day (YYYY-MM-DD), oldest first. */
+    entriesOn: (id: string, date: string) => unwrap(http.get<Data<EntriesPage>>(`${base}/${id}/entries?date=${encodeURIComponent(date)}`)),
+    /** The days that have writing, oldest first, each with its count and first words and photo. */
+    days: (id: string) => unwrap(http.get<Data<SharedJournalDay[]>>(`${base}/${id}/days`)),
     addEntry: (id: string, entry: EntryInput) => unwrap(http.post<Data<SharedJournalEntry>>(`${base}/${id}/entries`, entry)),
     editEntry: (id: string, entryId: string, patch: { body?: string; attachments?: Attachment[] }) =>
       unwrap(http.patch<Data<SharedJournalEntry>>(`${base}/${id}/entries/${entryId}`, patch)),

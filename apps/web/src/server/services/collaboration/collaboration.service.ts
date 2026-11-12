@@ -3,6 +3,7 @@ import { notifyQuietly } from "../notifications/notifications.service";
 import type {
   JournalPerson,
   SharedJournal,
+  SharedJournalDay,
   SharedJournalDetail,
   SharedJournalEntry,
   SharedJournalInvite,
@@ -16,10 +17,11 @@ import * as repo from "../../repositories/collaboration.repository";
 import { deleteObjects } from "../../storage";
 import { sendEmail } from "../../mail";
 import { templates } from "../../email/templates";
-import { serverEnv } from "../../../config/env";
+import { publicEnv, serverEnv } from "../../../config/env";
+import { publicPath } from "../../../lib/hosts";
 import type { FeedQuery } from "./collaboration.schema";
 
-// Shared journals: named journals several people write in. Owner / editor / viewer, invite by username, accept to join.
+// Shared journals: named journals several people write in. Owner / editor / viewer, invite by username or email, accept to join.
 // Permissions are decided by row-level security in the database; this service adds the rules SQL can't (invitations, limits) and
 // turns "not allowed" into friendly errors. A stranger gets "not found", never a hint that the journal exists.
 
@@ -63,7 +65,9 @@ function inviteFrom(row: repo.InviteRow, map: Map<string, JournalPerson>): Share
     journal_id: row.journal_id,
     journal_name: row.journal_name,
     role: row.role,
-    invitee: person(map, row.invitee_id),
+    // An invitation to an address with no account yet has no person: stand in with the address as the name (the owner typed it).
+    invitee: row.invitee_id ? person(map, row.invitee_id) : { ...UNKNOWN_PERSON, name: row.invitee_email ?? "Someone" },
+    invitee_email: row.invitee_id ? null : row.invitee_email,
     inviter: person(map, row.inviter_id),
     created_at: row.created_at,
   };
@@ -79,7 +83,7 @@ export async function getJournal(userId: string, id: string): Promise<SharedJour
     return { row, members, invites };
   });
   if (!row) throw NOT_FOUND();
-  const map = await people([row.owner_id, ...members.map((m) => m.user_id), ...invites.flatMap((i) => [i.inviter_id, i.invitee_id])]);
+  const map = await people([row.owner_id, ...members.map((m) => m.user_id), ...invites.flatMap((i) => [i.inviter_id, i.invitee_id ?? i.inviter_id])]);
   return {
     ...journalFrom(row, map),
     me: userId,
@@ -130,53 +134,60 @@ async function removeFiles(paths: string[]) {
 
 /** Invite someone by username. They are not added until they accept. */
 export async function inviteByUsername(userId: string, journalId: string, username: string, role: SharedJournalInviteRole) {
-  return invite(userId, journalId, (c) => repo.findUserIdByUsername(c, username), "No one has that username.", role);
+  return invite(userId, journalId, { find: (c) => repo.findUserIdByUsername(c, username), notFound: "No one has that username." }, role);
 }
 
 /**
- * Invite someone by email address. The answer is the same whether or not an account uses that address (`id` is null when none does),
+ * Invite someone by email address. If an account uses that address they get the invitation straight away; if not, the invitation waits
+ * for whoever signs up with (and confirms) that address, and the email tells them to. Either way the answer is the same shape (an id),
  * so this can't be used to find out who has an account.
  */
 export async function inviteByEmail(userId: string, journalId: string, email: string, role: SharedJournalInviteRole) {
-  return invite(userId, journalId, (c) => repo.findUserIdByEmail(c, email), null, role);
+  const address = email.trim().toLowerCase();
+  return invite(userId, journalId, { find: (c) => repo.findUserIdByEmail(c, address), notFound: null, email: address }, role);
 }
 
-async function invite(
-  userId: string,
-  journalId: string,
-  find: (c: Parameters<Parameters<typeof withOwner>[0]>[0]) => Promise<string | null>,
-  notFound: string | null,
-  role: SharedJournalInviteRole,
-): Promise<{ id: string | null }> {
+type Target = {
+  find: (c: Parameters<Parameters<typeof withOwner>[0]>[0]) => Promise<string | null>;
+  /** What to say when nobody matches; null for an email, which then waits for the person to sign up. */
+  notFound: string | null;
+  email?: string;
+};
+
+/** A link into the app's own pages: the app's address when it has one, with the /dashboard prefix dropped there (see lib/hosts.ts). */
+function appUrl(path: string) {
+  const base = (publicEnv.appUrl ?? serverEnv().authUrl).replace(/\/$/, "");
+  return `${base}${publicPath(path)}`;
+}
+
+const COLLAB_PATH = "/dashboard/journal/collaborate";
+
+async function invite(userId: string, journalId: string, target: Target, role: SharedJournalInviteRole): Promise<{ id: string }> {
   await requireOwner(userId, journalId);
   if (!(await underLimit(`invite:${userId}`, LIMIT.invitesPerHour, 3600)))
     throw new RateLimitError("You’ve sent a lot of invitations. Try again in a little while.");
   const made = await withOwner(async (c) => {
     // The owner connection bypasses RLS, so every check below is ours to make.
-    const inviteeId = await find(c);
-    if (!inviteeId) {
-      if (notFound) throw new NotFoundError(notFound);
-      return null;
-    }
+    const inviteeId = await target.find(c);
+    if (!inviteeId && !target.email) throw new NotFoundError(target.notFound ?? "No one has that username.");
     if (inviteeId === userId) throw new ValidationError("You’re already in this journal.");
-    if (await repo.isMemberOrOwner(c, journalId, inviteeId)) throw new ConflictError("They’re already in this journal.");
+    if (inviteeId && (await repo.isMemberOrOwner(c, journalId, inviteeId))) throw new ConflictError("They’re already in this journal.");
     if ((await repo.countMembersAndInvites(c, journalId)) + 1 >= LIMIT.maxPeople)
       throw new ConflictError(`A journal holds up to ${LIMIT.maxPeople} people.`);
     try {
-      const id = await repo.insertInvite(c, { journalId, inviterId: userId, inviteeId, role });
+      const id = await repo.insertInvite(c, { journalId, inviterId: userId, inviteeId, inviteeEmail: inviteeId ? null : target.email, role });
       const [to, from, journal] = await Promise.all([
-        repo.selectContact(c, inviteeId),
+        inviteeId ? repo.selectContact(c, inviteeId) : Promise.resolve(target.email ? { email: target.email, name: null } : null),
         repo.selectContact(c, userId),
         repo.selectJournalName(c, journalId),
       ]);
       return { id, to, from, journal, inviteeId };
     } catch (e) {
-      // The partial unique index allows one open invitation per person.
+      // The partial unique indexes allow one open invitation per person (or per address).
       if ((e as { code?: string }).code === "23505") throw new ConflictError("They already have an invitation to this journal.");
       throw e;
     }
   });
-  if (!made) return { id: null };
   // The invitation is saved either way; a mail problem must not fail it (they also see it the next time they open the app).
   if (made.to)
     void sendEmail(
@@ -185,16 +196,19 @@ async function invite(
         from: made.from?.name || "Someone",
         journal: made.journal ?? "Shared journal",
         role,
-        url: `${serverEnv().authUrl.replace(/\/$/, "")}/dashboard/journal/collaborate`,
+        // With an account: straight to the invitations (the app opens it when installed). Without: sign up first, then come back to them.
+        url: made.inviteeId ? appUrl(COLLAB_PATH) : `${appUrl("/signup")}?next=${encodeURIComponent(publicPath(COLLAB_PATH))}`,
+        needsAccount: !made.inviteeId,
       }),
     ).catch(() => undefined);
-  // And a notification in their inbox and on their phone, if they have the app.
-  notifyQuietly([made.inviteeId], {
-    kind: "invite",
-    title: "Shared journal invitation",
-    body: `${made.from?.name || "Someone"} invited you to write in “${made.journal ?? "Shared journal"}”.`,
-    url: "/journal/collaborate",
-  });
+  // And a notification in their inbox and on their phone, if they have an account (and the app).
+  if (made.inviteeId)
+    notifyQuietly([made.inviteeId], {
+      kind: "invite",
+      title: "Shared journal invitation",
+      body: `${made.from?.name || "Someone"} invited you to write in “${made.journal ?? "Shared journal"}”.`,
+      url: "/journal/collaborate",
+    });
   return { id: made.id };
 }
 
@@ -205,8 +219,13 @@ export async function cancelInvite(userId: string, journalId: string, inviteId: 
 
 /** Invitations waiting for the person to answer. */
 export async function listMyInvites(userId: string): Promise<SharedJournalInvite[]> {
-  const rows = await withOwner((c) => repo.selectInvitesFor(c, userId));
-  const map = await people(rows.flatMap((r) => [r.inviter_id, r.invitee_id]));
+  const rows = await withOwner(async (c) => {
+    // Invitations sent to the person's email before they had an account become theirs once that address is confirmed.
+    const who = await repo.selectEmailStatus(c, userId);
+    if (who?.verified) await repo.claimEmailInvites(c, userId, who.email);
+    return repo.selectInvitesFor(c, userId);
+  });
+  const map = await people(rows.flatMap((r) => [r.inviter_id, r.invitee_id ?? r.inviter_id]));
   return rows.map((r) => inviteFrom(r, map));
 }
 
@@ -243,10 +262,29 @@ async function withAuthors(rows: repo.EntryRow[]): Promise<SharedJournalEntry[]>
 }
 
 /** A page of entries, newest day first; pass the oldest day you have as `cursor` for the next page. */
-export async function listEntries(userId: string, journalId: string, { cursor, limit }: FeedQuery) {
+export async function listEntries(userId: string, journalId: string, { cursor, limit, date }: FeedQuery) {
   await roleIn(userId, journalId); // 404 for strangers rather than an empty list
+  if (date) return { entries: await withAuthors(await withUser(userId, (c) => repo.selectEntriesOn(c, journalId, date))), more: false };
   const rows = await withUser(userId, (c) => repo.selectEntries(c, journalId, { limit: limit + 1, before: cursor }));
   return { entries: await withAuthors(rows.slice(0, limit)), more: rows.length > limit };
+}
+
+/** A short summary per day that has writing, oldest day first: the entry count and the first words and photo (for the calendar, the list of days and the sidebar). */
+export async function listDays(userId: string, journalId: string): Promise<SharedJournalDay[]> {
+  await roleIn(userId, journalId);
+  const rows = await withUser(userId, (c) => repo.selectDayMaterial(c, journalId));
+  const by = new Map<string, SharedJournalDay>();
+  for (const r of rows) {
+    const image = r.attachments.find((a) => a.type.startsWith("image/"))?.path ?? null;
+    const cur = by.get(r.entry_date);
+    if (!cur) by.set(r.entry_date, { date: r.entry_date, count: 1, body: r.body.trim().slice(0, 160), image });
+    else {
+      cur.count += 1;
+      if (!cur.body && r.body.trim()) cur.body = r.body.trim().slice(0, 160);
+      if (!cur.image && image) cur.image = image;
+    }
+  }
+  return [...by.values()].sort((a, b) => a.date.localeCompare(b.date));
 }
 
 export async function addEntry(

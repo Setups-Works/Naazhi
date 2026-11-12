@@ -42,3 +42,19 @@ describe("invoice email", () => {
     expect(m.text).toContain("₹250");
   });
 });
+
+describe("shared journal invitation email", () => {
+  const base = { from: "Ravi", journal: "Our trip", role: "editor" as const, url: "https://dashboard.naazhi.app/journal/collaborate" };
+  it("for someone with an account links to the invitations and mentions the app", () => {
+    const m = renderEmail(templates.journalInvite(base));
+    expect(m.text).toContain("Open it in the Naazhi app");
+    expect(m.text).toContain(base.url);
+    expect(m.html).toContain("View invitation");
+  });
+  it("for an address with no account says to create one first", () => {
+    const m = renderEmail(templates.journalInvite({ ...base, url: "https://dashboard.naazhi.app/signup?next=%2Fjournal%2Fcollaborate", needsAccount: true }));
+    expect(m.text).toContain("Create a free Naazhi account with this email address");
+    expect(m.html).toContain("Create your account");
+    expect(m.text).not.toContain("Open it in the Naazhi app");
+  });
+});

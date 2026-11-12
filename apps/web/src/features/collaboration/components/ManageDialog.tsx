@@ -33,7 +33,12 @@ export default function ManageDialog({ id, onClose }: { id: string; onClose: () 
     const sent = await act.invite(id, username, role);
     const who = username.trim().replace(/^@/, "");
     // For an email address the answer is the same whether or not it has an account, so the message doesn't claim it was delivered.
-    if (sent) setNote(who.includes("@") ? `If ${who} has an account, they’ve been emailed an invitation. They join when they accept.` : `Invitation sent to @${who}. They join when they accept.`);
+    if (sent)
+      setNote(
+        who.includes("@")
+          ? `We’ve emailed ${who}. If they don’t have an account yet, they can create one with that address and the invitation will be waiting. They join when they accept.`
+          : `Invitation sent to @${who}. They join when they accept.`,
+      );
     return Boolean(sent);
   }
 

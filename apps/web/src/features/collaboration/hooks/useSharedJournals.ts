@@ -37,6 +37,13 @@ export function useJournalEntries(id: string) {
   });
 }
 
+/** One day's entries, oldest first (the Day view). */
+export const useJournalDay = (id: string, date: string) =>
+  useQuery({ queryKey: qk.sharedJournals.day(id, date), queryFn: async () => (await sharedJournalsApi.entriesOn(id, date)).entries });
+
+/** The days that have writing, with counts and previews (calendar dots, the day list, the Calendar and All entries views). */
+export const useJournalDays = (id: string) => useQuery({ queryKey: qk.sharedJournals.days(id), queryFn: () => sharedJournalsApi.days(id) });
+
 /**
  * Every write. Nothing is applied optimistically: these are rare, shared actions whose outcome depends on permissions, so the
  * screen waits for the server and then refreshes. Each action resolves to its result, or to `undefined` after telling `onError` why.

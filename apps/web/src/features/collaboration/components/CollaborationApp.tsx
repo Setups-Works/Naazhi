@@ -3,6 +3,8 @@ import { SHARED_JOURNAL as LIMIT } from "@untitled/logic";
 import { useState } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import Link from "next/link";
+import SidebarPortal from "../../../components/app/SidebarPortal";
 import { usePrompt } from "../../../components/ui/Confirm";
 import { useCollaborationActions, useCollaborationRealtime, useMyInvites, useSharedJournals } from "../hooks/useSharedJournals";
 import type { SharedJournal } from "../types";
@@ -69,12 +71,35 @@ export default function CollaborationApp() {
       {dialog}
       {managing && <ManageDialog id={managing} onClose={() => setManaging(null)} />}
 
+      {/* The journals in the sidebar, like the day list beside the personal journal: open one, or see an invitation is waiting. */}
+      <SidebarPortal>
+        <aside className="sbt" aria-label="Shared journals">
+          <h3 className="m-0 mb-1 px-2.5 text-[12px] font-medium text-ink-4">Shared journals</h3>
+          <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
+            {journals.map((j) => (
+              <li key={j.id}>
+                <Link href={`/dashboard/journal/shared/${j.id}`} className="sbt-item">
+                  <span className="truncate">{j.name}</span>
+                  <em>{j.entry_count}</em>
+                </Link>
+              </li>
+            ))}
+            {!loading && journals.length === 0 && <li className="px-2.5 py-1 text-[13px] text-ink-4">None yet</li>}
+          </ul>
+          {invites.length > 0 && (
+            <p className="m-0 mt-4 px-2.5 text-[12.5px] text-ink-3">
+              {invites.length} {invites.length === 1 ? "invitation is" : "invitations are"} waiting for you.
+            </p>
+          )}
+        </aside>
+      </SidebarPortal>
+
       <header className="mb-[18px] flex flex-col gap-3.5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h1 className="jr-title">Collaboration</h1>
             <p className="m-0 mt-2 text-[15px] text-ink-3">
-              Write a journal together. Invite people by username; they join when they accept.
+              Write a journal together. Invite people by username or email; they join when they accept.
             </p>
           </div>
           <button type="button" className="btn btn-primary btn-sm shrink-0" onClick={() => void create()}>

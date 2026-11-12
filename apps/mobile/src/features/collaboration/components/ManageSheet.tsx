@@ -52,7 +52,12 @@ export function ManageSheet({ id, onClose }: { id: string | null; onClose: () =>
     setNote("");
     try {
       await act.invite.mutateAsync({ id, username, role });
-      setNote(`Invitation sent to @${username.trim().replace(/^@/, "")}. They join when they accept.`);
+      const who = username.trim().replace(/^@/, "");
+      setNote(
+        who.includes("@")
+          ? `We’ve emailed ${who}. If they don’t have an account yet, they can create one with that address and the invitation will be waiting. They join when they accept.`
+          : `Invitation sent to @${who}. They join when they accept.`,
+      );
       setUsername("");
     } catch (e) {
       fail(e);
@@ -139,13 +144,14 @@ export function ManageSheet({ id, onClose }: { id: string | null; onClose: () =>
               <>
                 <AppText variant="label">Invite someone</AppText>
                 <TextField
-                  label="Username"
+                  label="Username or email"
                   value={username}
                   onChangeText={setUsername}
-                  placeholder="username"
-                  maxLength={LIMIT.usernameMax + 1}
+                  placeholder="username or email"
+                  maxLength={254}
                   autoCapitalize="none"
                   autoCorrect={false}
+                  keyboardType="email-address"
                   editable={!full}
                 />
                 <RolePicker value={role} onChange={setRole} />
@@ -163,7 +169,9 @@ export function ManageSheet({ id, onClose }: { id: string | null; onClose: () =>
                     <PersonBadge person={i.invitee} />
                     <View style={styles.text}>
                       <AppText variant="bodyStrong">{personName(i.invitee)}</AppText>
-                      <AppText variant="small">{handle(i.invitee)} · waiting for an answer</AppText>
+                      <AppText variant="small">
+                        {i.invitee_email ? "Waiting for them to sign up with this email" : `${handle(i.invitee)} · waiting for an answer`}
+                      </AppText>
                     </View>
                     <RolePill role={i.role} />
                     <Pressable

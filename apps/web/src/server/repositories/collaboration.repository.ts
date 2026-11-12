@@ -93,12 +93,14 @@ export type InviteRow = {
   journal_id: string;
   journal_name: string;
   inviter_id: string;
-  invitee_id: string;
+  /** Empty while the invitation waits for someone to sign up with `invitee_email`. */
+  invitee_id: string | null;
+  invitee_email: string | null;
   role: SharedJournalInviteRole;
   created_at: string;
 };
 
-const INVITE_SELECT = `select i.id, i.journal_id, j.name as journal_name, i.inviter_id, i.invitee_id, i.role, ${iso("i.created_at")} as created_at
+const INVITE_SELECT = `select i.id, i.journal_id, j.name as journal_name, i.inviter_id, i.invitee_id, i.invitee_email, i.role, ${iso("i.created_at")} as created_at
        from public.shared_journal_invites i join public.shared_journals j on j.id = i.journal_id`;
 
 /** Pending invitations of one journal (the owner's view). */
@@ -126,15 +128,40 @@ export async function findPendingInvite(c: PoolClient, id: string, inviteeId: st
   return rows[0] ?? null;
 }
 
+/** An invitation to an account (`inviteeId`) or, when nobody has that address yet, to an email address (`inviteeEmail`, lower-cased). */
 export async function insertInvite(
   c: PoolClient,
-  v: { journalId: string; inviterId: string; inviteeId: string; role: SharedJournalInviteRole },
+  v: { journalId: string; inviterId: string; inviteeId?: string | null; inviteeEmail?: string | null; role: SharedJournalInviteRole },
 ) {
   const { rows } = await c.query<{ id: string }>(
-    "insert into public.shared_journal_invites (journal_id, inviter_id, invitee_id, role) values ($1, $2, $3, $4) returning id",
-    [v.journalId, v.inviterId, v.inviteeId, v.role],
+    "insert into public.shared_journal_invites (journal_id, inviter_id, invitee_id, invitee_email, role) values ($1, $2, $3, $4, $5) returning id",
+    [v.journalId, v.inviterId, v.inviteeId ?? null, v.inviteeEmail ?? null, v.role],
   );
   return rows[0].id;
+}
+
+/** The person's email and whether they have confirmed it. Only a confirmed address may claim invitations sent to it. */
+export async function selectEmailStatus(c: PoolClient, userId: string) {
+  const { rows } = await c.query<{ email: string; verified: boolean }>("select email, email_verified as verified from auth.users where id = $1", [userId]);
+  return rows[0] ?? null;
+}
+
+/**
+ * Hands the invitations that wait for this (confirmed) address to the person. Ones for a journal they already belong to, or that
+ * duplicate an invitation they already hold, are dropped first so the claim can't collide. Returns how many were claimed.
+ */
+export async function claimEmailInvites(c: PoolClient, userId: string, email: string) {
+  const mine = `lower(i.invitee_email) = lower($2) and i.invitee_id is null and i.status = 'pending'`;
+  await c.query(
+    `delete from public.shared_journal_invites i
+      where ${mine}
+        and (exists (select 1 from public.shared_journals j where j.id = i.journal_id and j.owner_id = $1)
+          or exists (select 1 from public.shared_journal_members m where m.journal_id = i.journal_id and m.user_id = $1)
+          or exists (select 1 from public.shared_journal_invites o where o.journal_id = i.journal_id and o.invitee_id = $1 and o.status = 'pending'))`,
+    [userId, email],
+  );
+  const r = await c.query(`update public.shared_journal_invites i set invitee_id = $1 where ${mine}`, [userId, email]);
+  return r.rowCount ?? 0;
 }
 
 export async function markInvite(c: PoolClient, id: string, status: "accepted" | "declined") {
@@ -186,6 +213,26 @@ export async function selectEntries(c: PoolClient, journalId: string, opts: { li
       where journal_id = $1 and ($3::date is null or entry_date < $3)
       order by entry_date desc, created_at asc limit $2`,
     [journalId, opts.limit, opts.before ?? null],
+  );
+  return rows;
+}
+
+/** Every entry of one day, oldest first (a day holds at most a few dozen). */
+export async function selectEntriesOn(c: PoolClient, journalId: string, day: string) {
+  const { rows } = await c.query<EntryRow>(
+    `select ${ENTRY_COLUMNS} from public.shared_journal_entries where journal_id = $1 and entry_date = $2 order by created_at asc limit 500`,
+    [journalId, day],
+  );
+  return rows;
+}
+
+export type DayRow = { entry_date: string; body: string; attachments: Attachment[] };
+
+/** The raw material for the per-day summary: every entry's date, text and files, oldest first. */
+export async function selectDayMaterial(c: PoolClient, journalId: string) {
+  const { rows } = await c.query<DayRow>(
+    "select entry_date, body, attachments from public.shared_journal_entries where journal_id = $1 order by created_at asc limit 5000",
+    [journalId],
   );
   return rows;
 }

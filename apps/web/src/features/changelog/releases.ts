@@ -23,9 +23,10 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-12",
-    title: "Clearer messages when the server is unreachable",
+    title: "Version 6.8.1: clearer messages when the server is unreachable",
     summary: "If Naazhi can’t reach the server, you now get a plain message instead of setup instructions.",
     tone: "sand",
+    appVersion: "v6.8.1",
     changes: [
       { kind: "improved", platform: "web", text: "Sign-in, the dashboard and the admin panel show a short “try again in a moment” message when the server can’t be reached." },
       { kind: "improved", platform: "app", text: "The welcome screens and sign-in use the same plain wording." },

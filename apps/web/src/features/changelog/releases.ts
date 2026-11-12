@@ -23,6 +23,16 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-12",
+    title: "Version 6.8.2: Android bundle for Google Play",
+    summary: "Each Android release now also comes as an app bundle, ready to publish on Google Play.",
+    tone: "mint",
+    appVersion: "v6.8.2",
+    changes: [
+      { kind: "new", platform: "app", text: "Every release on GitHub now includes the app bundle (.aab) next to the APK, with a checksum file for both." },
+    ],
+  },
+  {
+    date: "2026-11-12",
     title: "Version 6.8.1: clearer messages when the server is unreachable",
     summary: "If Naazhi can’t reach the server, you now get a plain message instead of setup instructions.",
     tone: "sand",

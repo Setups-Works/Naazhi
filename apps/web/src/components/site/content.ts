@@ -38,7 +38,8 @@ import type { Tone } from "../../lib/tones";
  * "live" only for what ships today. When something ships, flip its status; don't reword the claim.
  */
 
-export type Capability = { icon: IconDefinition; t: string; d: string; tone: Tone; status: Status };
+/** `pts` are the short check-marked lines on a card (taken from what `d` already says); `shot` is an app screen under /public/mobile, shown at the top of the card. */
+export type Capability = { icon: IconDefinition; t: string; d: string; tone: Tone; status: Status; pts: readonly string[]; shot?: string };
 
 export const CAPABILITIES: Capability[] = [
   {
@@ -47,15 +48,39 @@ export const CAPABILITIES: Capability[] = [
     d: "Rich notes with colours, slash commands, voice, attachments, version history, a Trash you can restore from, and an Atlas that maps how notes connect.",
     tone: "blue",
     status: "live",
+    pts: [
+      "Colours, slash commands, voice and attachments",
+      "Version history and a Trash you can restore from",
+      "An Atlas that maps how notes connect",
+    ],
+    shot: "/mobile/notes-2.png",
   },
-  { icon: faListCheck, t: "Tasks", d: "Lists, priorities, repeats, and list, board or calendar views.", tone: "amber", status: "live" },
-  { icon: faBookOpen, t: "Journal", d: "Many entries a day, private to you, with voice and attachments.", tone: "violet", status: "live" },
+  {
+    icon: faListCheck,
+    t: "Tasks",
+    d: "Lists, priorities, repeats, and list, board or calendar views.",
+    tone: "amber",
+    status: "live",
+    pts: ["Lists and priorities from urgent to low", "Repeats: daily, weekly or the 2nd Wednesday", "List, board or calendar views"],
+    shot: "/mobile/todo-2.png",
+  },
+  {
+    icon: faBookOpen,
+    t: "Journal",
+    d: "Many entries a day, private to you, with voice and attachments.",
+    tone: "violet",
+    status: "live",
+    pts: ["Many entries a day", "Private to you", "Voice and attachments"],
+    shot: "/mobile/journal-2.png",
+  },
   {
     icon: faCalendarDays,
     t: "Calendar",
     d: "Month, week, day and agenda views with your tasks laid over them.",
     tone: "green",
     status: "live",
+    pts: ["Month, week, day and agenda views", "Your tasks laid over your events", "Eight colours for your events"],
+    shot: "/mobile/calendar.png",
   },
   {
     icon: faComments,
@@ -63,6 +88,12 @@ export const CAPABILITIES: Capability[] = [
     d: "Folders, pinned chats, share links, and drafts you confirm before anything is saved.",
     tone: "mint",
     status: "live",
+    pts: [
+      "Folders, pinned chats and unread markers",
+      "Drafts you confirm before anything is saved",
+      "Share one chat with a read-only link",
+    ],
+    shot: "/mobile/chat-2.png",
   },
   {
     icon: faPlug,
@@ -70,6 +101,12 @@ export const CAPABILITIES: Capability[] = [
     d: "Type @ and pick a connected app, like Zoho Books. Chat shows what it is doing, reads your real records, and drafts wait for you to press Create.",
     tone: "clay",
     status: "live",
+    pts: [
+      "Type @ and pick a connected app, like Zoho Books",
+      "Chat shows what it is doing and reads your real records",
+      "Drafts wait for you to press Create",
+    ],
+    shot: "/mobile/connect.png",
   },
   {
     icon: faMagnifyingGlass,
@@ -77,6 +114,7 @@ export const CAPABILITIES: Capability[] = [
     d: "One search box across tasks, notes, journal and chats. Press ⌘K anywhere.",
     tone: "gold",
     status: "live",
+    pts: ["One search across tasks, notes, journal and chats", "Press ⌘K anywhere"],
   },
   {
     icon: faUserGroup,
@@ -84,23 +122,49 @@ export const CAPABILITIES: Capability[] = [
     d: "Write a journal together with people you invite, as an editor or a viewer.",
     tone: "violet",
     status: "live",
+    pts: ["Write together with people you invite", "Invite by username or email", "Editor or viewer, and you can change it any time"],
   },
-  { icon: faLayerGroup, t: "Library", d: "Every file from your notes, journal and chats in one place, with search and preview.", tone: "sand", status: "live" },
-  { icon: faRss, t: "Reader", d: "Follow feeds and read articles beside your notes. The app tells you about new ones.", tone: "amber", status: "live" },
+  {
+    icon: faLayerGroup,
+    t: "Library",
+    d: "Every file from your notes, journal and chats in one place, with search and preview.",
+    tone: "sand",
+    status: "live",
+    pts: ["Every file from your notes, journal and chats", "Search and preview in one place"],
+  },
+  {
+    icon: faRss,
+    t: "Reader",
+    d: "Follow feeds and read articles beside your notes. The app tells you about new ones.",
+    tone: "amber",
+    status: "live",
+    pts: ["Follow feeds", "Read articles beside your notes", "The app tells you about new ones"],
+  },
   {
     icon: faMobileScreen,
     t: "Android app",
     d: "The same workspace on your phone, in the same look: a floating navbar, light, cream or charcoal, and sign-in with Google or a passkey.",
     tone: "mint",
     status: "live",
+    pts: ["The same workspace on your phone", "A floating navbar in light, cream or charcoal", "Sign in with Google or a passkey"],
+    shot: "/mobile/home-2.png",
   },
-  { icon: faHeartPulse, t: "Health", d: "Steps, sleep and heart rate from your phone, on the web and available to the chat.", tone: "clay", status: "live" },
+  {
+    icon: faHeartPulse,
+    t: "Health",
+    d: "Steps, sleep and heart rate from your phone, on the web and available to the chat.",
+    tone: "clay",
+    status: "live",
+    pts: ["Steps, sleep and heart rate from your phone", "On the web, and available to the chat"],
+    shot: "/mobile/health.png",
+  },
   {
     icon: faKey,
     t: "Your own AI",
     d: "Pick the model for each chat and add your own OpenAI, Anthropic, Google or OpenRouter key.",
     tone: "blue",
     status: "live",
+    pts: ["Pick the model for each chat", "Add your own OpenAI, Anthropic, Google or OpenRouter key"],
   },
   {
     icon: faWallet,
@@ -108,14 +172,23 @@ export const CAPABILITIES: Capability[] = [
     d: "An autopay subscription, prepaid credit you top up, or your own key, all in rupees.",
     tone: "green",
     status: "live",
+    pts: ["An autopay subscription", "Prepaid credit you top up", "Or your own key, all in rupees"],
   },
-  { icon: faFileImport, t: "Import and export", d: "Bring an Obsidian vault in as notes, and export your notes as Markdown.", tone: "mint", status: "live" },
+  {
+    icon: faFileImport,
+    t: "Import and export",
+    d: "Bring an Obsidian vault in as notes, and export your notes as Markdown.",
+    tone: "mint",
+    status: "live",
+    pts: ["Bring an Obsidian vault in as notes", "Export your notes as Markdown"],
+  },
   {
     icon: faComments,
     t: "ChatGPT sign-in",
     d: "Use the ChatGPT plan you already pay for inside Naazhi’s chat.",
     tone: "gold",
     status: "building",
+    pts: ["Use the ChatGPT plan you already pay for", "Right inside Naazhi’s chat"],
   },
   {
     icon: faDesktop,
@@ -123,6 +196,7 @@ export const CAPABILITIES: Capability[] = [
     d: "Mac and Windows apps, and a browser extension that turns a meeting into a note.",
     tone: "sand",
     status: "soon",
+    pts: ["Mac and Windows apps", "A browser extension that turns a meeting into a note"],
   },
   {
     icon: faEnvelope,
@@ -130,9 +204,24 @@ export const CAPABILITIES: Capability[] = [
     d: "Gmail and Outlook threads beside your notes. Compose, reply and forward.",
     tone: "clay",
     status: "soon",
+    pts: ["Gmail and Outlook threads beside your notes", "Compose, reply and forward"],
   },
-  { icon: faMicrophone, t: "Meetings", d: "Capture, transcribe and turn a meeting into follow-ups.", tone: "sand", status: "soon" },
-  { icon: faRoute, t: "Automations", d: "Rules that handle the repetitive parts for you.", tone: "violet", status: "soon" },
+  {
+    icon: faMicrophone,
+    t: "Meetings",
+    d: "Capture, transcribe and turn a meeting into follow-ups.",
+    tone: "sand",
+    status: "soon",
+    pts: ["Capture and transcribe a meeting", "Turn it into follow-ups"],
+  },
+  {
+    icon: faRoute,
+    t: "Automations",
+    d: "Rules that handle the repetitive parts for you.",
+    tone: "violet",
+    status: "soon",
+    pts: ["Rules that handle the repetitive parts for you"],
+  },
 ];
 
 export const NOTE_POINTS: [IconDefinition, string, string][] = [

@@ -9,9 +9,9 @@ import StoreBadges from "../StoreBadges";
 import { buttonClass, Kicker, Lead, TextLink, WRAP } from "../ui";
 
 const SCREENS = [
-  { src: "/mobile/todo.png", alt: "The to-do list in the Naazhi app" },
-  { src: "/mobile/home.png", alt: "Home in the Naazhi app" },
-  { src: "/mobile/journal.png", alt: "The journal in the Naazhi app" },
+  { src: "/mobile/calendar.png", alt: "Calendar and to-dos in the Naazhi app" },
+  { src: "/mobile/home-2.png", alt: "Home in the Naazhi app" },
+  { src: "/mobile/journal-2.png", alt: "The journal in the Naazhi app" },
 ] as const;
 
 /**
@@ -102,7 +102,7 @@ export default function Hero() {
 
         <div
           role="img"
-          aria-label="The Naazhi app on three iPhones: tasks, home and journal"
+          aria-label="The Naazhi app on three iPhones: calendar, home and journal"
           className="mt-[clamp(40px,6vw,80px)] flex w-full max-w-[980px] items-end justify-center gap-[1%] px-0 sm:gap-[2%] sm:px-2 [mask-image:linear-gradient(to_bottom,black_55%,transparent_98%)]"
         >
           <div data-phone="left" className={`w-[31%] sm:w-[28%] ${hidden}`}>

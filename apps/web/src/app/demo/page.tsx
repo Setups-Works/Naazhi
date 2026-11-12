@@ -133,7 +133,7 @@ export default function Page() {
             </Reveal>
           </div>
           <Reveal delay={400} className="hidden justify-center lg:flex">
-            <Phone src="/mobile/home.png" alt="Naazhi Home on an iPhone" priority className="w-[min(300px,100%)]" />
+            <Phone src="/mobile/home-2.png" alt="Naazhi Home on an iPhone" priority className="w-[min(300px,100%)]" />
           </Reveal>
         </div>
       </section>
@@ -203,7 +203,7 @@ export default function Page() {
             </Reveal>
           </div>
           <Reveal delay={200}>
-            <PhoneRow screens={["/mobile/notes.png", "/mobile/home.png", "/mobile/chat.png"]} />
+            <PhoneRow screens={["/mobile/notes-2.png", "/mobile/home-2.png", "/mobile/chat-2.png"]} />
           </Reveal>
         </div>
       </Section>
@@ -262,7 +262,7 @@ export default function Page() {
         quiet="you see?"
         lead="Bring your own notes, tasks and calendar into the real thing. It is free to start, and AI is your choice."
         secondary={["How it works", "/how-it-works"]}
-        phone="/mobile/home.png"
+        phone="/mobile/home-2.png"
       />
     </main>
   );

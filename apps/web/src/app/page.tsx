@@ -14,6 +14,7 @@ import Hero from "../components/site/home/Hero";
 import Integrations, { IntegrationsTicker } from "../components/site/home/Integrations";
 import Pro from "../components/site/home/Pro";
 import Shortcuts from "../components/site/home/Shortcuts";
+import Upcoming from "../components/site/home/Upcoming";
 import Story from "../components/site/home/Story";
 import Trust from "../components/site/home/Trust";
 import WhatsNew from "../components/site/home/WhatsNew";
@@ -36,6 +37,7 @@ export default function Page() {
       <Story />
       <HealthConnect />
       <Capabilities />
+      <Upcoming />
       <WhatsNew />
       <Integrations />
       <Shortcuts />
@@ -66,7 +68,7 @@ export default function Page() {
         quiet="together."
         lead="One workspace for personal and work information, on the web and in your pocket. Start with the notes, and connect the rest when you’re ready."
         secondary={["Browse integrations", "/#integrations"]}
-        phone="/mobile/home.png"
+        phone="/mobile/home-2.png"
       />
     </main>
   );

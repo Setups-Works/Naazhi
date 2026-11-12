@@ -174,7 +174,7 @@ export default function Page() {
         lead="Start with the notes, connect only what you want, and keep AI off until you’re ready."
         primary={["Get started", "/signup"]}
         secondary={["Read the FAQ", "/#faq"]}
-        phone="/mobile/journal.png"
+        phone="/mobile/journal-2.png"
       />
     </main>
   );

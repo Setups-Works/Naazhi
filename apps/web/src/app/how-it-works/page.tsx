@@ -111,7 +111,7 @@ export default function Page() {
         title="One workspace."
         quiet="Any AI, or none."
         lead="Naazhi brings your notes, tasks, journal, calendar and chat together, with email and meetings on the way, and keeps all of it separate from whichever AI you choose to use."
-        visual={<PhoneRow screens={["/mobile/todo.png", "/mobile/home.png", "/mobile/notes.png"]} />}
+        visual={<PhoneRow screens={["/mobile/calendar.png", "/mobile/home-2.png", "/mobile/health.png"]} />}
       >
         <Link className={buttonClass("primary")} href="/demo">
           Try the product demo <FA icon={faArrowRight} />
@@ -177,7 +177,7 @@ export default function Page() {
         lead="Click around a working preview of the workspace. No sign-up needed."
         primary={["Open the product demo", "/demo"]}
         secondary={["Read the FAQ", "/#faq"]}
-        phone="/mobile/chat.png"
+        phone="/mobile/chat-2.png"
       />
     </main>
   );

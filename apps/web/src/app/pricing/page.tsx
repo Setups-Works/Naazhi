@@ -196,7 +196,7 @@ export default async function Page() {
         lead="Start with the workspace and pick a plan whenever you need AI."
         primary={["Get started", "/signup"]}
         secondary={["Read the FAQ", "/#faq"]}
-        phone="/mobile/chat.png"
+        phone="/mobile/chat-2.png"
       />
     </main>
   );

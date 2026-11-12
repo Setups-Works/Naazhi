@@ -23,6 +23,19 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-12",
+    title: "Version 6.5.1: a fresher home page",
+    summary: "The home page tour, the iPad section and the workspace cards are rebuilt around real screens from the app.",
+    tone: "blue",
+    appVersion: "v6.5.1",
+    changes: [
+      { kind: "improved", platform: "web", text: "The home page uses new screens from the app throughout, and the tour now steps through To-do, Notes, Calendar and Health as you scroll." },
+      { kind: "new", platform: "web", text: "A new tour step shows how to ask your connected apps, like Zoho Books, from chat, with every app you can connect and a note on which are still coming." },
+      { kind: "new", platform: "web", text: "A new “Made for iPad and tablets” section shows the app on an iPad in landscape, with an iPhone beside it." },
+      { kind: "improved", platform: "web", text: "The workspace cards are now taller, with an app screen on top and the key points under each name, and you can drag the row with your mouse." },
+    ],
+  },
+  {
+    date: "2026-11-12",
     title: "Version 6.5.0: a softer, greener app",
     summary: "The app’s switches, tabs, buttons and sheets now follow Material 3 Expressive in Naazhi green, and deleting no longer flashes red.",
     tone: "green",

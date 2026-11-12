@@ -5,6 +5,7 @@ import { Marquee } from "../Marquee";
 import { R, Reveal } from "../Reveal";
 import { Section, SectionHead, Surface } from "../ui";
 import { Tip } from "../Tip";
+import { INTEGRATIONS_DISCLAIMER } from "./disclaimer";
 
 const note = (n: string) => (isLive(n) ? `${n} works with your workspace.` : `${n} is planned. We’ll mark it live when it ships.`);
 
@@ -59,6 +60,7 @@ export default function Integrations() {
           </R>
         ))}
       </Reveal>
+      <p className="mx-auto mt-8 max-w-[640px] text-center text-[13px] leading-relaxed text-fg-faint">{INTEGRATIONS_DISCLAIMER}</p>
     </Section>
   );
 }

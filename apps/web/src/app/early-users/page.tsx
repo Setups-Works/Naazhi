@@ -68,7 +68,7 @@ export default function Page() {
         title="Built with the people"
         quiet="who use it first."
         lead="Naazhi is in its early days. The first people to try it shape what it becomes, and we’ll share what they tell us right here."
-        visual={<PhoneRow screens={["/mobile/journal.png", "/mobile/home.png", "/mobile/chat.png"]} />}
+        visual={<PhoneRow screens={["/mobile/journal-2.png", "/mobile/home-2.png", "/mobile/chat-2.png"]} />}
       >
         <AuthLink arrow className={buttonClass("primary")} />
       </PageHero>
@@ -135,7 +135,7 @@ export default function Page() {
         quiet="the first."
         lead="Start with the notes, connect your tools as they arrive, and tell us what you think."
         secondary={["See the product demo", "/demo"]}
-        phone="/mobile/home.png"
+        phone="/mobile/home-2.png"
       />
     </main>
   );

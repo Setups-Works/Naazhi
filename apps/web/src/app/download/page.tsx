@@ -172,7 +172,7 @@ export default function Page() {
         title="Take your workspace"
         quiet="with you."
         lead="Notes, tasks, journal and chat in your pocket. Get the Android app today, and use the web app anywhere else."
-        visual={<PhoneRow screens={["/mobile/notes.png", "/mobile/home.png", "/mobile/chat.png"]} />}
+        visual={<PhoneRow screens={["/mobile/notes-2.png", "/mobile/home-2.png", "/mobile/chat-2.png"]} />}
       >
         <ButtonLink href={RELEASE} external arrow>
           Download for Android
@@ -275,8 +275,8 @@ export default function Page() {
           <Reveal>
             <div className="relative grid place-items-center overflow-hidden rounded-r5 bg-green-bg px-6 pt-10 ring-1 ring-green-fg/10 [mask-image:linear-gradient(to_bottom,black_80%,transparent)]">
               <div className="flex w-full max-w-[460px] items-end justify-center gap-[4%]">
-                <Phone src="/mobile/todo.png" alt="Tasks in the Naazhi Android app" className="w-[46%] -rotate-3" />
-                <Phone src="/mobile/journal.png" alt="The journal in the Naazhi Android app" className="w-[46%] translate-y-8 rotate-3" />
+                <Phone src="/mobile/calendar.png" alt="Calendar and to-dos in the Naazhi Android app" className="w-[46%] -rotate-3" />
+                <Phone src="/mobile/journal-2.png" alt="The journal in the Naazhi Android app" className="w-[46%] translate-y-8 rotate-3" />
               </div>
             </div>
           </Reveal>
@@ -308,7 +308,7 @@ export default function Page() {
         lead="Download the Android app, or start in the browser and pick it up on your phone later."
         primary={["Get started", "/signup"]}
         secondary={["See what’s new", "/changelog"]}
-        phone="/mobile/home.png"
+        phone="/mobile/home-2.png"
       />
     </main>
   );

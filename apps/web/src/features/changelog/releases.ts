@@ -23,6 +23,19 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-12",
+    title: "Version 6.5.0: a softer, greener app",
+    summary: "The app’s switches, tabs, buttons and sheets now follow Material 3 Expressive in Naazhi green, and deleting no longer flashes red.",
+    tone: "green",
+    appVersion: "v6.5.0",
+    changes: [
+      { kind: "improved", platform: "app", text: "Swiping a task shows just a small trash icon, with no red card. Tapping it still asks before anything is deleted." },
+      { kind: "improved", platform: "app", text: "Switches are now rounded Material 3 switches that turn Naazhi green, with a check on the thumb when on." },
+      { kind: "improved", platform: "app", text: "Buttons are fully rounded, tabs have a thicker green indicator, and the selected item in the navigation bar and menu is a soft green pill." },
+      { kind: "improved", platform: "app", text: "Sheets have larger rounded corners, and the delete dialog uses green instead of red." },
+    ],
+  },
+  {
+    date: "2026-11-12",
     title: "Version 6.4.0: a livelier home page, and a heart that fits",
     summary: "The home page opens on a field of dots that move with your cursor, and Naazhi’s pink heart now appears where it belongs, on the web and in the app.",
     tone: "clay",

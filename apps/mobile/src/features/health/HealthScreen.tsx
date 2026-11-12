@@ -1,3 +1,4 @@
+import { Switch } from "@/components/ui/Switch";
 import {
   daysInRange,
   fmtDistance,
@@ -19,7 +20,7 @@ import {
 import type { Tone } from "@untitled/types";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
-import { Switch, View } from "react-native";
+import { View } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 
 import { askChat } from "../chat/handoff";
@@ -280,8 +281,6 @@ function SyncToggle({ on, unsupported, name, onChange }: { on: boolean; unsuppor
             value={on}
             onValueChange={onChange}
             accessibilityLabel="Sync this phone"
-            trackColor={{ false: Palette.lineStrong, true: Palette.greenFg }}
-            thumbColor={Palette.surface}
           />
         )}
       </View>

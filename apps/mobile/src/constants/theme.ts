@@ -100,6 +100,10 @@ function buildPalette(look: Look) {
     clayBg: mix(F.red, B.raised, 0.13),
     clayFg: mix(F.red, B.ink, 0.78),
     orangeFg: dark ? "#e07050" : "#b5593a",
+    // Naazhi green (docs/BRAND.md): the brand colour for actions that are not the ink buttons. Tonal container + its on-colour (Material 3 style).
+    brand: dark ? "#5fb494" : "#1f5d49",
+    brandContainer: dark ? "#1f3a30" : "#dcebe4",
+    onBrandContainer: dark ? "#bfe6d6" : "#14392c",
     rec: dark ? "#f47682" : "#bc2a41",
     success: dark ? "#3dba77" : "#2d8659",
     data: dark ? "#7dbbe8" : "#2f7ab0",
@@ -214,7 +218,7 @@ export const glassTint = (tone: Tone) => `${Tints[tone].bg}99`;
 
 
 /** The web radii: controls 8, tiles 10, cards 12, dialogs 16 (`--r-ctl`, `--r1…r5` in globals.css). Pills stay for chips and avatars only. */
-export const Radius = { ctl: 8, r1: 8, r2: 10, r3: 12, r4: 16, r5: 14, pill: 999 } as const;
+export const Radius = { ctl: 8, r1: 8, r2: 10, r3: 12, r4: 16, r5: 14, pill: 999, sheet: 28 } as const;
 export const Space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
 
 /**

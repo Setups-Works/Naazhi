@@ -1,5 +1,6 @@
+import { Switch } from "@/components/ui/Switch";
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Linking, Switch, View } from "react-native";
+import { Alert, Linking, View } from "react-native";
 
 import { readPrefs, writePrefs, writeDeviceChoice, type NotificationPrefs } from "./prefs";
 import { registerPush, unregisterPush } from "./push";
@@ -81,7 +82,7 @@ function Row({ title, hint, value, onChange, disabled }: { title: string; hint: 
           {hint}
         </AppText>
       </View>
-      <Switch accessibilityLabel={title} value={value} disabled={disabled} onValueChange={onChange} trackColor={{ true: Palette.greenFg, false: Palette.lineStrong }} />
+      <Switch accessibilityLabel={title} value={value} disabled={disabled} onValueChange={onChange} />
     </View>
   );
 }

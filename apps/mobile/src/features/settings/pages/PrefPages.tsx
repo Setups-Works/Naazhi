@@ -1,7 +1,8 @@
+import { Switch } from "@/components/ui/Switch";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Pressable, Switch, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { ACCENT_SWATCH, ACCENTS, Palette, Radius, SCHEMES, type Accent, type Scheme, themedStyles } from "@/constants/theme";
 import { AppLogo } from "@/components/ui/AppLogo";
@@ -15,7 +16,7 @@ import { WRITE_TONES } from "@/lib/preferences";
 import { APP_ICONS, appIconsSupported, chooseAppIcon, currentAppIcon } from "../appIcon";
 
 function Toggle({ value, onChange, label }: { value: boolean; onChange: (v: boolean) => void; label: string }) {
-  return <Switch accessibilityLabel={label} value={value} onValueChange={onChange} trackColor={{ false: Palette.lineStrong, true: Palette.fillDark }} thumbColor={Palette.surface} />;
+  return <Switch accessibilityLabel={label} value={value} onValueChange={onChange} />;
 }
 
 const SCHEME_LABEL: Record<Scheme, string> = { system: "Device", light: "Light", cream: "Cream", dark: "Dark" };

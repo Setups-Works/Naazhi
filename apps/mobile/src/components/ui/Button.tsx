@@ -23,8 +23,8 @@ const palette = (): Record<Kind, { bg: string; fg: string; ring?: string }> => (
   primary: { bg: Palette.fillDark, fg: Palette.onDark },
   secondary: { bg: Palette.surface, fg: Palette.fg, ring: Palette.lineStrong },
   ghost: { bg: "transparent", fg: Palette.greenFg },
-  danger: { bg: Palette.clayBg, fg: Palette.clayFg },
-  dangerSolid: { bg: Palette.clayFg, fg: Palette.onDark },
+  danger: { bg: Palette.brandContainer, fg: Palette.onBrandContainer },
+  dangerSolid: { bg: Palette.brand, fg: Palette.onDark },
 });
 
 /** Pill button with a 48 pt touch target. */
@@ -65,7 +65,7 @@ export function Button({ title, onPress, kind = "primary", icon, loading, disabl
 }
 
 const styles = themedStyles(() => ({
-  base: { minHeight: 46, borderRadius: Radius.r2, paddingHorizontal: 18, alignItems: "center", justifyContent: "center" },
+  base: { minHeight: 48, borderRadius: Radius.pill, paddingHorizontal: 18, alignItems: "center", justifyContent: "center" },
   label: { fontSize: 14.5 },
   row: { flexDirection: "row", alignItems: "center", gap: 8 },
 }));

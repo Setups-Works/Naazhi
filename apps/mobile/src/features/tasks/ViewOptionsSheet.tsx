@@ -1,13 +1,14 @@
+import { Switch } from "@/components/ui/Switch";
 import type { ViewOpts } from "@untitled/logic";
 import { DEFAULT_OPTS, PRIORITIES } from "@untitled/logic";
-import { Switch, View } from "react-native";
+import { View } from "react-native";
 
 import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
 import { PickerField } from "@/components/ui/PickerField";
 import { Segmented } from "@/components/ui/Segmented";
 import { Sheet } from "@/components/ui/Sheet";
-import { Palette, themedStyles } from "@/constants/theme";
+import { themedStyles } from "@/constants/theme";
 
 const LAYOUTS = [
   { key: "list", label: "List" },
@@ -43,7 +44,6 @@ export function ViewOptionsSheet({
           <Switch
             value={opts.showCompleted}
             onValueChange={(showCompleted) => onChange({ showCompleted })}
-            trackColor={{ true: Palette.greenFg }}
             accessibilityLabel="Show completed tasks"
           />
         </View>

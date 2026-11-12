@@ -144,7 +144,7 @@ const styles = themedStyles(() => ({
     borderColor: Palette.lineStrong,
   },
   item: { flex: 1, height: 48, alignItems: "center", justifyContent: "center", gap: 2, borderRadius: Radius.pill },
-  itemOn: { backgroundColor: Palette.activeTabPill },
+  itemOn: { backgroundColor: Palette.brandContainer },
   pressed: { opacity: 0.7 },
   label: { fontSize: 11, lineHeight: 13 },
   labelOn: { ...Font.sansSemi },

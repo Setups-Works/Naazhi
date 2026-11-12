@@ -51,7 +51,7 @@ export function Segmented<T extends string>({
 const styles = themedStyles(() => ({
   rule: { borderBottomWidth: 1, borderBottomColor: Palette.line },
   row: { gap: 22 },
-  tab: { minHeight: 42, justifyContent: "center", borderBottomWidth: 2, borderBottomColor: "transparent", marginBottom: -1 },
-  tabOn: { borderBottomColor: Palette.fillDark },
+  tab: { minHeight: 42, justifyContent: "center", borderBottomWidth: 3, borderBottomColor: "transparent", marginBottom: -1 },
+  tabOn: { borderBottomColor: Palette.brand, borderTopLeftRadius: 3, borderTopRightRadius: 3 },
   textOn: { ...Font.sansMedium },
 }));

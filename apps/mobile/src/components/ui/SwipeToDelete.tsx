@@ -3,10 +3,9 @@ import { useRef } from "react";
 import { Pressable } from "react-native";
 import ReanimatedSwipeable, { type SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
 
-import { AppText } from "./AppText";
 import { useConfirm } from "./Confirm";
 import { Icon } from "./Icon";
-import { Palette, Radius, themedStyles } from "@/constants/theme";
+import { Palette, themedStyles } from "@/constants/theme";
 
 type Props = {
   children: ReactNode;
@@ -49,10 +48,7 @@ export function SwipeToDelete({ children, onDelete, title, message, what }: Prop
         overshootRight={false}
         renderRightActions={() => (
           <Pressable accessibilityRole="button" accessibilityLabel={`Delete ${what}`} onPress={() => void handlePress()} style={styles.action}>
-            <Icon name="trash" size={16} color={Palette.onDark} />
-            <AppText variant="small" color={Palette.onDark}>
-              Delete
-            </AppText>
+            <Icon name="trash" size={22} color={Palette.fgMuted} />
           </Pressable>
         )}
       >
@@ -65,12 +61,8 @@ export function SwipeToDelete({ children, onDelete, title, message, what }: Prop
 
 const styles = themedStyles(() => ({
   action: {
-    width: 84,
-    marginLeft: 8,
-    borderRadius: Radius.r2,
-    backgroundColor: Palette.rec,
+    width: 56,
     alignItems: "center",
     justifyContent: "center",
-    gap: 4,
   },
 }));

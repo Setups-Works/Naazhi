@@ -23,6 +23,16 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-12",
+    title: "Version 6.8.3: app bundle ready for Google Play",
+    summary: "The Android app bundle now carries a single signature, so it can be uploaded to Google Play.",
+    tone: "gold",
+    appVersion: "v6.8.3",
+    changes: [
+      { kind: "fixed", platform: "app", text: "The app bundle (.aab) on each release is now signed once with the Naazhi key, so Google Play accepts it." },
+    ],
+  },
+  {
+    date: "2026-11-12",
     title: "Version 6.8.2: Android bundle for Google Play",
     summary: "Each Android release now also comes as an app bundle, ready to publish on Google Play.",
     tone: "mint",

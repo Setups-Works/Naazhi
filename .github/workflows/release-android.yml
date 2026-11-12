@@ -115,7 +115,9 @@ jobs:
             "$APKSIGNER" sign --ks "$RUNNER_TEMP/release.keystore" --ks-key-alias "$KEY_ALIAS" \
               --ks-pass env:KEYSTORE_PASSWORD --key-pass env:KEY_PASSWORD "$APK"
             "$APKSIGNER" verify "$APK"
-            # An AAB is a jar, so it is signed with jarsigner rather than apksigner.
+            # An AAB is a jar, so it is signed with jarsigner rather than apksigner. Gradle already signed it with the debug key;
+            # Google Play rejects a bundle with more than one certificate chain, so drop that signature first.
+            zip -q -d "$AAB" 'META-INF/*.SF' 'META-INF/*.RSA' 'META-INF/*.DSA' 'META-INF/*.EC' || true
             jarsigner -keystore "$RUNNER_TEMP/release.keystore" -storepass:env KEYSTORE_PASSWORD -keypass:env KEY_PASSWORD \
               -sigalg SHA256withRSA -digestalg SHA-256 "$AAB" "$KEY_ALIAS"
             rm -f "$RUNNER_TEMP/release.keystore"

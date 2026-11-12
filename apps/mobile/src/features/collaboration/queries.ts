@@ -21,6 +21,13 @@ export function useJournalEntries(id: string) {
   });
 }
 
+/** One day's entries, oldest first (the day on screen). */
+export const useJournalDay = (id: string, date: string) =>
+  useQuery({ queryKey: [...qk.sharedJournals, "day", id, date], queryFn: async () => (await sharedJournalsApi.entriesOn(id, date)).entries });
+
+/** The days that have writing, with counts and first words (the marks on the calendar). */
+export const useJournalDays = (id: string) => useQuery({ queryKey: [...qk.sharedJournals, "days", id], queryFn: () => sharedJournalsApi.days(id) });
+
 /** Every write. Each one refreshes all shared-journal queries when it settles; the server decides what each role may do. */
 export function useCollaborationActions() {
   const qc = useQueryClient();

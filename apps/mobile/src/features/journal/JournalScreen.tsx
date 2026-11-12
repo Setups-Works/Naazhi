@@ -12,6 +12,7 @@ import { EntryShareSheet } from "./EntryShareSheet";
 import { FeedEntry } from "./FeedEntry";
 import { MAX_UPLOAD_BYTES, uploadJournalFile } from "./files";
 import { pickFiles, type PendingFile } from "@/features/chat/files";
+import { readPendingFiles } from "./draftFiles";
 import { useRecorder } from "@/features/chat/useRecorder";
 import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
@@ -37,24 +38,6 @@ const parseDate = (iso: string) => {
 const draftKey = (userId: string, date: string) => `journal:draft:${userId}:${date}`;
 const filesKey = (userId: string, date: string) => `journal:files:${userId}:${date}`;
 
-function readPendingFiles(raw: string | null): PendingFile[] {
-  if (!raw) return [];
-  try {
-    const value: unknown = JSON.parse(raw);
-    if (!Array.isArray(value)) return [];
-    return value.filter(
-      (file): file is PendingFile =>
-        typeof file === "object" &&
-        file !== null &&
-        "uri" in file && typeof file.uri === "string" &&
-        "name" in file && typeof file.name === "string" &&
-        "type" in file && typeof file.type === "string" &&
-        "size" in file && typeof file.size === "number",
-    );
-  } catch {
-    return [];
-  }
-}
 
 export function JournalScreen({ edges }: { edges?: ScreenEdges } = {}) {
   const { user } = useAppState();

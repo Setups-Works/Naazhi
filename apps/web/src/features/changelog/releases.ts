@@ -23,6 +23,18 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-12",
+    title: "Version 6.8.0: shared journals in the app, like your own",
+    summary: "A shared journal in the app now works the way your own Journal does.",
+    tone: "violet",
+    appVersion: "v6.8.0",
+    changes: [
+      { kind: "improved", platform: "app", text: "A shared journal in the app shows one day at a time, with a day switcher and a calendar that marks the days with writing, like your own Journal." },
+      { kind: "new", platform: "app", text: "Voice notes in shared journals, and your unsent text and files are kept for each journal and day." },
+      { kind: "improved", platform: "app", text: "Each entry shows who wrote it, and people who can only read see a clear notice instead of a write button." },
+    ],
+  },
+  {
+    date: "2026-11-12",
     title: "Version 6.7.0: invite by email, links that open the app, and a fuller shared journal",
     summary: "Invite people by username or email, even before they have an account. Links to Naazhi open the app when it is installed, and a shared journal now works like your personal one.",
     tone: "green",

@@ -61,7 +61,7 @@ export function PageHero({
 }
 
 /** A grid of small cards: icon, title, sentence. */
-export function FeatureCards({ items, cols = 3 }: { items: { icon: IconDefinition; t: string; d: string; tone?: string }[]; cols?: 2 | 3 | 4 }) {
+export function FeatureCards({ items, cols = 3 }: { items: readonly { icon: IconDefinition; t: string; d: string; tone?: string }[]; cols?: 2 | 3 | 4 }) {
   const grid = cols === 4 ? "sm:grid-cols-2 lg:grid-cols-4" : cols === 2 ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-3";
   return (
     <Reveal stagger={0.09} className={`mt-[clamp(28px,4vw,48px)] grid gap-4 ${grid}`}>

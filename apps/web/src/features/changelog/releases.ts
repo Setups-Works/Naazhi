@@ -23,6 +23,27 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-12",
+    title: "Version 6.6.0: new pages, a cleaner sign-in, and a sharper site",
+    summary: "Notes, Tasks, Journal and Integrations each get their own page, there is a full FAQ, and log in, sign up and the password reset have a new look.",
+    tone: "violet",
+    appVersion: "v6.6.0",
+    changes: [
+      { kind: "new", platform: "web", text: "Separate pages for Notes, Tasks, Journal and Integrations, each with real app screens, what you get, questions and answers, and the other pages to explore." },
+      { kind: "new", platform: "web", text: "A FAQ page with every question in its own section. Each question has its own link that opens that answer." },
+      { kind: "new", platform: "web", text: "A new Features menu with the app on a half phone that changes as you move over Notes, Tasks, Journal, Calendar and Integrations." },
+      { kind: "new", platform: "web", text: "A “Write a journal together” section on the home page, and a “Made for iPad and tablets” section showing the app on an iPad." },
+      { kind: "improved", platform: "web", text: "Log in, sign up and the password reset pages are rebuilt in a plain, single-colour style, with the app on an iPad and iPhone beside the form." },
+      { kind: "improved", platform: "web", text: "The How it works page is rebuilt, with each step beside the app screen that shows it." },
+      { kind: "improved", platform: "web", text: "Notes at the foot of every page explain names and logos, planned features, sample screens and AI answers, and the home page points to them." },
+      { kind: "improved", platform: "web", text: "Pages now open at the top when you follow a link, and pictures on the site can no longer be dragged." },
+      { kind: "improved", platform: "web", text: "Search engines and link previews get more: a working sitemap, a share picture for every page, and richer descriptions of the app, its features and its integrations." },
+      { kind: "fixed", platform: "web", text: "The last letter of italic headline words is no longer cut off." },
+      { kind: "improved", platform: "web", text: "The Google Play and App Store badges are removed. The Android app is still a download from the Download page." },
+      { kind: "fixed", platform: "app", text: "The “Password updated” screen has a proper green check and a Back to log in button." },
+    ],
+  },
+  {
+    date: "2026-11-12",
     title: "Version 6.5.1: a fresher home page",
     summary: "The home page tour, the iPad section and the workspace cards are rebuilt around real screens from the app.",
     tone: "blue",

@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -8,10 +9,12 @@ import AuthLink from "../auth/AuthLink";
 import { useAuthState } from "../auth/useAuthState";
 import { BrandMark } from "../BrandMark";
 import { appHref } from "../../lib/hosts";
-import { MEGA, MENU, NAV_LINKS } from "../../lib/site";
+import { MEGA, MEGA_DEFAULT_SHOT, MENU, NAV_LINKS, type MegaItem } from "../../lib/site";
+import Phone from "./Phone";
 import { buttonClass, WRAP } from "./ui";
 
-const link = "inline-flex h-9 items-center gap-1.5 rounded-pill px-3.5 text-[14px] whitespace-nowrap text-fg-muted transition-colors hover:text-fg aria-[current=page]:text-fg";
+const link =
+  "inline-flex h-9 items-center gap-1.5 rounded-pill px-3.5 text-[14px] whitespace-nowrap text-fg-muted transition-colors hover:text-fg aria-[current=page]:text-fg";
 
 /**
  * The site header: one slim frosted bar across the top with the name, a few plain links, a Features menu and the sign-in actions.
@@ -41,7 +44,10 @@ export default function Header() {
 
         <div className="flex items-center gap-3">
           {auth === "out" && (
-            <Link href={appHref("/login")} className="px-2 text-[14px] whitespace-nowrap text-fg-muted transition-colors hover:text-fg max-sm:hidden">
+            <Link
+              href={appHref("/login")}
+              className="px-2 text-[14px] whitespace-nowrap text-fg-muted transition-colors hover:text-fg max-sm:hidden"
+            >
               Log in
             </Link>
           )}
@@ -55,6 +61,7 @@ export default function Header() {
 
 function FeaturesMenu({ path }: { path: string }) {
   const [open, setOpen] = useState(false);
+  const [hover, setHover] = useState<MegaItem | null>(null);
   const wrap = useRef<HTMLDivElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hold = () => timer.current && clearTimeout(timer.current);
@@ -68,6 +75,9 @@ function FeaturesMenu({ path }: { path: string }) {
   };
   useEffect(() => setOpen(false), [path]);
   useEffect(() => {
+    if (!open) setHover(null);
+  }, [open]);
+  useEffect(() => {
     const outside = (e: MouseEvent) => wrap.current && !wrap.current.contains(e.target as Node) && setOpen(false);
     const escape = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     document.addEventListener("mousedown", outside);
@@ -78,54 +88,94 @@ function FeaturesMenu({ path }: { path: string }) {
     };
   }, []);
 
+  // The wrapper is not `relative`: the panel is positioned against the (sticky) header, so it centres on the page instead of hanging from the button.
   return (
-    <div ref={wrap} onMouseEnter={show} onMouseLeave={hide} className="relative">
-      <button type="button" className={link} aria-expanded={open} aria-haspopup="true" aria-controls="features-menu" onClick={() => setOpen(!open)}>
+    <div ref={wrap} onMouseEnter={show} onMouseLeave={hide}>
+      <button
+        type="button"
+        className={link}
+        aria-expanded={open}
+        aria-haspopup="true"
+        aria-controls="features-menu"
+        onClick={() => setOpen(!open)}
+      >
         Features <FA icon={faChevronDown} className={`text-[10px] transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
         <div
           id="features-menu"
           onMouseEnter={show}
-          className="absolute top-full left-0 mt-2 grid w-[min(720px,calc(100vw-48px))] grid-cols-[1.1fr_1fr] gap-8 rounded-r4 bg-surface p-5 ring-1 ring-line animate-glass-in motion-reduce:animate-none"
+          className="absolute top-full left-1/2 mt-2 grid w-[min(960px,calc(100vw-48px))] -translate-x-1/2 grid-cols-[1fr_1fr_270px] gap-6 rounded-r4 bg-surface p-4 shadow-e3 ring-1 ring-line animate-glass-in motion-reduce:animate-none"
         >
-          <div>
-            <p className="mb-3 px-2 text-[11px] font-semibold tracking-[0.1em] text-fg-faint uppercase">Features</p>
-            <div className="flex flex-col gap-1">
-              {MEGA.featured.map((f) => (
-                <Link key={f.href} href={f.href} className="group flex items-start gap-3.5 rounded-r3 p-3 transition-colors hover:bg-green-bg/60">
-                  <span className="grid size-10 shrink-0 place-items-center rounded-r2 bg-green-bg text-[16px] text-green-fg">
-                    <FA icon={f.icon} />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <b className="block text-[14.5px] font-semibold text-fg">{f.t}</b>
-                    <small className="mt-0.5 block text-[12.5px] leading-snug text-fg-muted">{f.d}</small>
-                  </span>
-                  <FA icon={faArrowRight} className="mt-1 text-[12px] text-fg-subtle transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="mb-3 px-2 text-[11px] font-semibold tracking-[0.1em] text-fg-faint uppercase">The workspace</p>
-            <ul className="flex flex-col gap-0.5">
-              {MEGA.workspace.map((w) => (
-                <li key={w.t}>
-                  <Link href={w.href} className="flex items-center gap-3 rounded-r2 p-2.5 transition-colors hover:bg-surface-muted">
-                    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-surface-muted text-[13px] text-fg-muted">
-                      <FA icon={w.icon} />
-                    </span>
-                    <span>
-                      <b className="block text-[14px] font-medium text-fg">{w.t}</b>
-                      <small className="block text-[12.5px] text-fg-subtle">{w.d}</small>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <MenuColumn title="The workspace" items={MEGA.workspace} onHover={setHover} />
+          <MenuColumn title="Features" items={MEGA.featured} onHover={setHover} />
+          <MenuVisual item={hover} />
         </div>
       )}
+    </div>
+  );
+}
+
+/** One column of the menu: a small heading, then a link for each item with its icon, name and one line. */
+function MenuColumn({ title, items, onHover }: { title: string; items: MegaItem[]; onHover: (i: MegaItem | null) => void }) {
+  return (
+    <div>
+      <p className="mb-2 px-3 text-[11px] font-semibold tracking-[0.1em] text-fg-faint uppercase">{title}</p>
+      <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
+        {items.map((it) => (
+          <li key={it.t}>
+            <Link
+              href={it.href}
+              onMouseEnter={() => onHover(it)}
+              onFocus={() => onHover(it)}
+              className="group flex items-start gap-3 rounded-r3 p-2.5 transition-colors hover:bg-surface-muted focus-visible:bg-surface-muted"
+            >
+              <span className="grid size-10 shrink-0 place-items-center rounded-r2 bg-green-bg text-[15px] text-green-fg">
+                <FA icon={it.icon} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <b className="block text-[14.5px] font-semibold text-fg">{it.t}</b>
+                <small className="mt-0.5 block text-[12.5px] leading-snug text-fg-muted">{it.d}</small>
+              </span>
+              <FA
+                icon={faArrowRight}
+                className="mt-1 text-[12px] text-fg-subtle transition-transform duration-300 group-hover:translate-x-1"
+                aria-hidden
+              />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** The picture column: the app on a phone that rises from the bottom edge, cut off at half, its screen following the hovered item. */
+function MenuVisual({ item }: { item: MegaItem | null }) {
+  const shots = [MEGA_DEFAULT_SHOT, ...new Set([...MEGA.workspace, ...MEGA.featured].flatMap((i) => (i.shot ? [i.shot] : [])))];
+  const on = item?.shot ?? MEGA_DEFAULT_SHOT;
+  return (
+    <div aria-hidden className="relative hidden min-h-[380px] overflow-hidden rounded-r3 bg-green-bg/50 ring-1 ring-green-fg/10 md:block">
+      <div className="absolute inset-x-0 top-0 z-10 p-4">
+        <p className="m-0 text-[11px] font-semibold tracking-[0.1em] text-fg-faint uppercase">{item ? item.t : "Naazhi"}</p>
+        <p className="m-0 mt-1 text-[13px] leading-snug text-fg-muted">
+          {item ? item.d : "One workspace for notes, tasks, journal and chat."}
+        </p>
+      </div>
+      <div className="absolute top-[34%] left-1/2 w-[200px] -translate-x-1/2">
+        <Phone alt="">
+          {shots.map((src) => (
+            <Image
+              key={src}
+              src={src}
+              alt=""
+              fill
+              sizes="200px"
+              className={`object-cover object-top transition-opacity duration-300 motion-reduce:transition-none ${src === on ? "opacity-100" : "opacity-0"}`}
+            />
+          ))}
+        </Phone>
+      </div>
     </div>
   );
 }

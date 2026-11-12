@@ -5,7 +5,7 @@ import { Marquee } from "../Marquee";
 import { R, Reveal } from "../Reveal";
 import { Section, SectionHead, Surface } from "../ui";
 import { Tip } from "../Tip";
-import { INTEGRATIONS_DISCLAIMER } from "./disclaimer";
+import NoteRef from "../NoteRef";
 
 const note = (n: string) => (isLive(n) ? `${n} works with your workspace.` : `${n} is planned. We’ll mark it live when it ships.`);
 
@@ -16,7 +16,9 @@ export function IntegrationsTicker() {
       <Marquee>
         {ALL_INTEGRATIONS.map((n) => (
           <Tip key={n} content={note(n)}>
-            <span className={`inline-flex items-center gap-2.5 rounded-pill bg-surface px-4 py-2.5 text-[14px] text-fg ring-1 ring-line ${isLive(n) ? "" : "opacity-60"}`}>
+            <span
+              className={`inline-flex items-center gap-2.5 rounded-pill bg-surface px-4 py-2.5 text-[14px] text-fg ring-1 ring-line ${isLive(n) ? "" : "opacity-60"}`}
+            >
               <Logo name={n} size={18} />
               {n}
             </span>
@@ -52,7 +54,9 @@ export default function Integrations() {
                       <b className="block text-[15px] font-medium text-fg">{x.name}</b>
                       <small className="block text-[13px] text-fg-muted">{x.use}</small>
                     </span>
-                    {!isLive(x.name) && <em className="rounded-pill bg-surface-sunken px-2 py-0.5 text-[11px] text-fg-muted not-italic">Soon</em>}
+                    {!isLive(x.name) && (
+                      <em className="rounded-pill bg-surface-sunken px-2 py-0.5 text-[11px] text-fg-muted not-italic">Soon</em>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -60,7 +64,11 @@ export default function Integrations() {
           </R>
         ))}
       </Reveal>
-      <p className="mx-auto mt-8 max-w-[640px] text-center text-[13px] leading-relaxed text-fg-faint">{INTEGRATIONS_DISCLAIMER}</p>
+      <p className="mx-auto mt-8 max-w-[640px] text-center text-[13px] leading-relaxed text-fg-faint">
+        Names and logos belong to their owners.
+        <NoteRef n={1} /> Apps marked Soon are not available yet.
+        <NoteRef n={2} />
+      </p>
     </Section>
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 import GoogleMark from "./GoogleMark";
+import { buttonClass } from "../site/ui";
+import { Field, LastUsed, linkCls, Meter, Or, PrimaryButton, SecondaryButton, TextInput, TextLink } from "./ui";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -235,61 +237,65 @@ export default function AuthForm({ mode }: { mode: Mode }) {
 
   if (done)
     return (
-      <div className="au-done" role="status">
-        <span className="au-ico">
+      <div className="flex flex-col items-center gap-4 py-3 text-center" role="status">
+        <span className="grid size-[72px] place-items-center rounded-full bg-green-bg text-[28px] text-green-fg">
           <FA icon={done === "confirm" ? faEnvelopeOpenText : faCircleCheck} />
         </span>
-        <h2 className="h3">{done === "reset" ? "Password updated" : "Confirm your email"}</h2>
-        <p className="body">
+        <h2 className="m-0 font-serif text-[28px] leading-tight font-semibold tracking-[-0.022em]">
+          {done === "reset" ? "Password updated" : "Confirm your email"}
+        </h2>
+        <p className="m-0 text-[15px] leading-relaxed text-fg-muted">
           {done === "reset" ? (
             "You can now log in with your new password."
           ) : (
             <>
-              We sent a confirmation link to <b>{email}</b>. Open it to activate your account.
+              We sent a confirmation link to <b className="text-fg">{email}</b>. Open it to activate your account.
             </>
           )}
         </p>
         {done === "confirm" && (
-          <button className="btn btn-secondary btn-sm" onClick={resend} disabled={busy}>
+          <SecondaryButton type="button" onClick={resend} disabled={busy}>
             Resend email
-          </button>
+          </SecondaryButton>
         )}
-        {err && (
-          <p className="form-err" role="alert">
-            {err}
-          </p>
-        )}
-        <Link className="au-link" href="/login">
+        {err && <FormError>{err}</FormError>}
+        <Link href="/login" className={done === "reset" ? `${buttonClass("primary")} w-full` : linkCls}>
           Back to log in
         </Link>
       </div>
     );
 
+  const oneTap = !!cfg?.google && (mode === "login" || mode === "signup");
+  const locked = busy || googleBusy || passkeyBusy;
+  const checking = mode === "signup" || mode === "reset" || (mode === "forgot" && otpSent);
+
   return (
-    <div className="au-card-in">
-      <div className="eyebrow">{c.eyebrow}</div>
-      <h1 className="h2">
-        {c.title} <span className="quiet">{c.quiet}</span>
-      </h1>
-      <p className="body">
-        {mode === "forgot" && otpSent
-          ? `If an account exists for ${email}, a code is on its way. Enter it below to set a new password.`
-          : c.sub}
-      </p>
+    <div className="flex flex-col gap-5">
+      <header className="flex flex-col gap-2">
+        <p className="m-0 text-[12px] font-semibold tracking-[0.1em] text-green-fg uppercase">{c.eyebrow}</p>
+        <h1 className="m-0 font-serif text-[clamp(30px,4vw,38px)] leading-[1.06] font-semibold tracking-[-0.03em]">
+          {c.title} <span className="text-fg-faint">{c.quiet}</span>
+        </h1>
+        <p className="m-0 text-[15px] leading-relaxed text-fg-muted">
+          {mode === "forgot" && otpSent
+            ? `If an account exists for ${email}, a code is on its way. Enter it below to set a new password.`
+            : c.sub}
+        </p>
+      </header>
 
       {cfg && !cfg.configured && (
-        <p className="au-note" role="note">
-          <FA icon={faTriangleExclamation} />{" "}
+        <p className="at-amber tint m-0 flex items-start gap-2.5 rounded-r2 p-3.5 text-[13px] leading-relaxed" role="note">
+          <FA icon={faTriangleExclamation} className="mt-0.5" />
           <span>
-            The server isn’t connected yet. Run <code>docker compose up -d</code>, then copy <code>.env.example</code> to{" "}
-            <code>.env.local</code>.
+            The server isn’t connected yet. Run <code className="font-mono text-[12px]">docker compose up -d</code>, then copy{" "}
+            <code className="font-mono text-[12px]">.env.example</code> to <code className="font-mono text-[12px]">.env.local</code>.
           </span>
         </p>
       )}
 
-      {cfg?.google && (mode === "login" || mode === "signup") && (
-        <>
-          <button type="button" className="au-google" onClick={google} disabled={busy || googleBusy || passkeyBusy}>
+      {oneTap && (
+        <div className="flex flex-col gap-3">
+          <SecondaryButton type="button" onClick={google} disabled={locked}>
             <GoogleMark />
             {googleBusy ? (
               <>
@@ -298,39 +304,30 @@ export default function AuthForm({ mode }: { mode: Mode }) {
             ) : (
               <>
                 Continue with Google
-                {lastUsedMethod === "google" && <small className="au-last-used">Last used</small>}
+                {lastUsedMethod === "google" && <LastUsed />}
               </>
             )}
-          </button>
+          </SecondaryButton>
           {mode === "login" && (
-            <button
-              className="btn btn-secondary au-passkey"
-              type="button"
-              onClick={signInWithPasskey}
-              disabled={busy || googleBusy || passkeyBusy}
-            >
+            <SecondaryButton type="button" onClick={signInWithPasskey} disabled={locked}>
               {passkeyBusy ? <FA icon={faSpinner} spin /> : <Image src="/passkey-icon.png" alt="" width={18} height={18} />}
               Continue with a passkey
-              {lastUsedMethod === "passkey" && <small className="au-last-used">Last used</small>}
-            </button>
+              {lastUsedMethod === "passkey" && <LastUsed />}
+            </SecondaryButton>
           )}
-          <div className="au-or">
-            <span>or</span>
-          </div>
-        </>
+          <Or />
+        </div>
       )}
 
-      <form className="wl-form au-form" onSubmit={submit} noValidate>
+      <form className="flex flex-col gap-4" onSubmit={submit} noValidate>
         {mode === "signup" && (
-          <label>
-            <span>Full name</span>
-            <input name="name" autoComplete="name" maxLength={80} placeholder="Ada Lovelace" />
-          </label>
+          <Field label="Full name">
+            <TextInput name="name" autoComplete="name" maxLength={80} placeholder="Ada Lovelace" />
+          </Field>
         )}
         {mode === "signup" && (
-          <label>
-            <span>Username</span>
-            <input
+          <Field label="Username" hint="You can use this with your password to log in.">
+            <TextInput
               name="username"
               autoComplete="username"
               minLength={3}
@@ -339,18 +336,14 @@ export default function AuthForm({ mode }: { mode: Mode }) {
               required
               placeholder="ada.lovelace"
             />
-            <small className="meta">You can use this with your password to log in.</small>
-          </label>
+          </Field>
         )}
         {mode !== "reset" && !(mode === "forgot" && otpSent) && (
-          <label>
-            <span className="au-pwrow">
-              <span>{mode === "login" ? "Email or username" : "Email"}</span>
-              {mode === "login" && (lastUsedMethod === "email" || lastUsedMethod === "username") && (
-                <small className="au-last-used">Last used</small>
-              )}
-            </span>
-            <input
+          <Field
+            label={mode === "login" ? "Email or username" : "Email"}
+            aside={mode === "login" && (lastUsedMethod === "email" || lastUsedMethod === "username") ? <LastUsed /> : undefined}
+          >
+            <TextInput
               type={mode === "login" ? "text" : "email"}
               autoComplete={mode === "login" ? "username" : "email"}
               maxLength={254}
@@ -358,14 +351,14 @@ export default function AuthForm({ mode }: { mode: Mode }) {
               onChange={(e) => setEmail(e.target.value)}
               placeholder={mode === "login" ? "you@example.com or username" : "you@example.com"}
             />
-          </label>
+          </Field>
         )}
         {mode === "forgot" && otpSent && (
           <>
-            <div className="meta">
-              Reset code sent to <b>{email}</b> ·{" "}
+            <p className="m-0 text-[13.5px] text-fg-muted">
+              Reset code sent to <b className="text-fg">{email}</b> ·{" "}
               <button
-                className="au-link"
+                className={linkCls}
                 type="button"
                 onClick={() => {
                   setOtpSent(false);
@@ -376,10 +369,9 @@ export default function AuthForm({ mode }: { mode: Mode }) {
               >
                 Change email
               </button>
-            </div>
-            <label>
-              <span>6-digit code</span>
-              <input
+            </p>
+            <Field label="6-digit code">
+              <TextInput
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 maxLength={6}
@@ -387,65 +379,59 @@ export default function AuthForm({ mode }: { mode: Mode }) {
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 placeholder="123456"
               />
-            </label>
+            </Field>
           </>
         )}
         {(mode !== "forgot" || otpSent) && (
-          <label>
-            <span className="au-pwrow">
-              {mode === "reset" || mode === "forgot" ? "New password" : "Password"}
-              {mode === "login" && (
-                <Link href="/forgot-password" className="au-link">
+          <Field
+            label={mode === "reset" || mode === "forgot" ? "New password" : "Password"}
+            aside={
+              mode === "login" ? (
+                <Link href="/forgot-password" className={`${linkCls} text-[13px]`}>
                   Forgot password?
                 </Link>
-              )}
-            </span>
-            <span className="au-pw">
-              <input
+              ) : undefined
+            }
+          >
+            <span className="relative block">
+              <TextInput
                 type={show ? "text" : "password"}
                 autoComplete={mode === "login" ? "current-password" : "new-password"}
                 value={pw}
                 onChange={(e) => setPw(e.target.value)}
                 placeholder={mode === "login" ? "Your password" : "At least 8 characters"}
+                className="pr-12"
               />
-              <button type="button" aria-label={show ? "Hide password" : "Show password"} onClick={() => setShow(!show)}>
+              <button
+                type="button"
+                aria-label={show ? "Hide password" : "Show password"}
+                onClick={() => setShow(!show)}
+                className="absolute top-1/2 right-2 grid size-9 -translate-y-1/2 place-items-center rounded-full text-fg-subtle transition-colors hover:bg-surface-muted hover:text-fg"
+              >
                 <FA icon={show ? faEyeSlash : faEye} />
               </button>
             </span>
-            {(mode === "signup" || mode === "reset" || (mode === "forgot" && otpSent)) && pw && (
-              <span className="au-meter" data-s={score}>
-                <i />
-                <i />
-                <i />
-                <i />
-                <small>{LABELS[score]}</small>
-              </span>
-            )}
-          </label>
+            {checking && pw && <Meter score={score} label={LABELS[score]!} />}
+          </Field>
         )}
         {mode === "forgot" && otpSent && (
           <>
-            <label>
-              <span>Confirm new password</span>
-              <input
+            <Field label="Confirm new password">
+              <TextInput
                 type="password"
                 autoComplete="new-password"
                 value={confirmPw}
                 onChange={(e) => setConfirmPw(e.target.value)}
                 placeholder="Enter it again"
               />
-            </label>
-            <button className="au-link" type="button" onClick={resendResetCode} disabled={busy}>
+            </Field>
+            <button className={`${linkCls} self-start text-[14px]`} type="button" onClick={resendResetCode} disabled={busy}>
               Resend code
             </button>
           </>
         )}
-        {err && (
-          <p className="form-err" role="alert">
-            {err}
-          </p>
-        )}
-        <button className="btn btn-primary" disabled={busy}>
+        {err && <FormError>{err}</FormError>}
+        <PrimaryButton disabled={busy}>
           {busy ? (
             <>
               <FA icon={faSpinner} spin /> Please wait…
@@ -455,35 +441,34 @@ export default function AuthForm({ mode }: { mode: Mode }) {
               {mode === "forgot" && otpSent ? "Verify code & reset password" : c.cta} <FA icon={faArrowRight} />
             </>
           )}
-        </button>
+        </PrimaryButton>
       </form>
 
-      <p className="au-switch">
+      <p className="m-0 text-center text-[14px] text-fg-muted">
         {mode === "login" && (
           <>
-            New here?{" "}
-            <Link className="au-link" href="/signup">
-              Create an account
-            </Link>
+            New here? <TextLink href="/signup">Create an account</TextLink>
           </>
         )}
         {mode === "signup" && (
           <>
-            Already have an account?{" "}
-            <Link className="au-link" href="/login">
-              Log in
-            </Link>
+            Already have an account? <TextLink href="/login">Log in</TextLink>
           </>
         )}
         {(mode === "forgot" || mode === "reset") && (
           <>
-            Remembered it?{" "}
-            <Link className="au-link" href="/login">
-              Back to log in
-            </Link>
+            Remembered it? <TextLink href="/login">Back to log in</TextLink>
           </>
         )}
       </p>
     </div>
+  );
+}
+
+function FormError({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="at-clay tint m-0 rounded-r2 px-4 py-3 text-[13.5px] leading-snug" role="alert">
+      {children}
+    </p>
   );
 }

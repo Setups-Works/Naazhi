@@ -4,12 +4,18 @@ import { R, Reveal } from "./Reveal";
  * Questions and answers as native disclosure rows: one hairline between them, a plus that turns into a minus, and no script at all,
  * so they open with the keyboard and work without JavaScript.
  */
-export function FaqList({ items }: { items: readonly (readonly [string, string])[] }) {
+export function FaqList({
+  items,
+  anchor,
+}: {
+  items: readonly (readonly [string, string])[];
+  /** Gives each question an address (`#slug`) so one answer can be linked to. */ anchor?: (q: string) => string;
+}) {
   return (
     <Reveal stagger={0.05} className="divide-y divide-line border-y border-line">
       {items.map(([q, a]) => (
         <R key={q}>
-          <details className="group py-1">
+          <details id={anchor?.(q)} className="group scroll-mt-28 py-1">
             <summary className="flex cursor-pointer list-none items-center gap-4 py-4 text-left [&::-webkit-details-marker]:hidden">
               <span className="flex-1 text-[17px] font-medium tracking-[-0.01em] text-fg">{q}</span>
               <span aria-hidden className="relative size-6 shrink-0">

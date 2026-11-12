@@ -10,9 +10,19 @@ import { toneClass, type Tone } from "../../../lib/tones";
 import { isLive } from "../../../lib/logos";
 import { ALL_INTEGRATIONS } from "../content";
 import { Logo } from "../Logo";
-import { INTEGRATIONS_DISCLAIMER } from "./disclaimer";
+import NoteRef from "../NoteRef";
 
-type Chapter = { apps?: boolean; key: string; tone: Tone; kicker: string; title: string; lead: string; points: readonly string[]; src: string; alt: string };
+type Chapter = {
+  apps?: boolean;
+  key: string;
+  tone: Tone;
+  kicker: string;
+  title: string;
+  lead: string;
+  points: readonly string[];
+  src: string;
+  alt: string;
+};
 
 const CHAPTERS: readonly Chapter[] = [
   {
@@ -115,7 +125,11 @@ function AppChips() {
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-[12.5px] leading-relaxed text-fg-faint">{INTEGRATIONS_DISCLAIMER}</p>
+      <p className="mt-3 text-[12.5px] leading-relaxed text-fg-faint">
+        Names and logos belong to their owners.
+        <NoteRef n={1} /> Apps marked Soon are not available yet.
+        <NoteRef n={2} />
+      </p>
     </div>
   );
 }
@@ -148,7 +162,12 @@ export default function Story() {
         kicker="A tour of the app"
         title="Everything you keep,"
         quiet="in one place."
-        lead="Write it, plan it, say it out loud or ask for it. It all lands in the same place, on the web and on your phone."
+        lead={
+          <>
+            Write it, plan it, say it out loud or ask for it. It all lands in the same place, on the web and on your phone.
+            <NoteRef n={3} />
+          </>
+        }
       />
 
       <div className="mt-[clamp(32px,5vw,64px)] hidden items-start gap-[clamp(32px,6vw,96px)] lg:grid lg:grid-cols-2">
@@ -163,7 +182,9 @@ export default function Story() {
               className={`flex min-h-[88vh] flex-col justify-center gap-4 transition-[opacity,transform] duration-700 ease-site ${i === active ? "translate-x-0 opacity-100" : "translate-x-3 opacity-30"}`}
             >
               <p className="text-[13px] font-semibold tracking-[0.08em] text-green-fg uppercase">{c.kicker}</p>
-              <h3 className="max-w-[460px] font-serif font-semibold text-[clamp(34px,4vw,54px)] leading-[1.04] tracking-[-0.03em]">{c.title}</h3>
+              <h3 className="max-w-[460px] font-serif font-semibold text-[clamp(34px,4vw,54px)] leading-[1.04] tracking-[-0.03em]">
+                {c.title}
+              </h3>
               <p className="max-w-[440px] text-[18px] leading-relaxed text-fg-muted">{c.lead}</p>
               {c.apps ? <AppChips /> : null}
               <ul className="mt-2 flex flex-col gap-2.5">
@@ -214,7 +235,9 @@ export default function Story() {
       <Reveal stagger={0.1} className="mt-10 grid gap-4 sm:grid-cols-2 lg:hidden">
         {CHAPTERS.map((c) => (
           <R key={c.key}>
-            <div className={`${toneClass(c.tone)} tint relative flex h-full min-h-[480px] flex-col items-center overflow-hidden rounded-r5 px-6 pt-9 text-center`}>
+            <div
+              className={`${toneClass(c.tone)} tint relative flex h-full min-h-[480px] flex-col items-center overflow-hidden rounded-r5 px-6 pt-9 text-center`}
+            >
               <p className="text-[12.5px] font-semibold tracking-[0.08em] text-green-fg uppercase">{c.kicker}</p>
               <h3 className="mt-2 max-w-[340px] font-serif font-semibold text-[30px] leading-[1.08] tracking-[-0.025em]">{c.title}</h3>
               <p className="mt-3 max-w-[340px] text-[15.5px] leading-relaxed text-fg-muted">{c.lead}</p>

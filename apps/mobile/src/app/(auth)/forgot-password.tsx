@@ -1,5 +1,6 @@
 import type { TextInputHandle } from "@/types/native";
 import { useRef, useState } from "react";
+import { router } from "expo-router";
 import { View } from "react-native";
 
 import { AuthLink, AuthShell } from "@/features/auth/AuthShell";
@@ -8,7 +9,7 @@ import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { TextField } from "@/components/ui/TextField";
-import { Palette } from "@/constants/theme";
+import { Palette, themedStyles } from "@/constants/theme";
 import { useAuth } from "@/providers/AppState";
 import { firstError, forgotPasswordSchema, friendlyAuthError, resetPasswordSchema } from "@untitled/validation";
 
@@ -85,10 +86,10 @@ export default function ForgotPasswordScreen() {
   if (step === "done")
     return (
       <AuthShell eyebrow="All set" title="Password" quiet="updated." sub="You can now log in with your new password.">
-        <View style={{ alignItems: "flex-start" }}>
-          <Icon name="circle-check" size={34} color={Palette.greenFg} />
+        <View style={styles.done} accessible accessibilityLabel="Password updated">
+          <Icon name="check" size={30} color={Palette.onBrandContainer} />
         </View>
-        <AuthLink label="Back to log in" href="/login" />
+        <Button title="Back to log in" onPress={() => router.replace("/login")} />
       </AuthShell>
     );
 
@@ -171,3 +172,8 @@ export default function ForgotPasswordScreen() {
     </AuthShell>
   );
 }
+
+const styles = themedStyles(() => ({
+  // Material 3 style success mark: a round brand-green tonal container holding the check.
+  done: { width: 72, height: 72, borderRadius: 36, backgroundColor: Palette.brandContainer, alignItems: "center", justifyContent: "center", marginVertical: 4 },
+}));

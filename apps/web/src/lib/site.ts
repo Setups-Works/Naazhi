@@ -1,5 +1,6 @@
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
+  faListCheck,
   faMagnifyingGlass,
   faCircleNodes,
   faNewspaper,
@@ -69,9 +70,11 @@ export const FOOTER_COLS: { title: string; links: [string, string][] }[] = [
   {
     title: "Workspace",
     links: [
-      ["Notes, tasks and journal", "/#workspace"],
+      ["Notes", "/features/notes"],
+      ["Tasks", "/features/tasks"],
+      ["Journal", "/features/journal"],
       ["A tour of the app", "/#tour"],
-      ["Integrations", "/#integrations"],
+      ["Integrations", "/integrations"],
       ["Get the Android app", "/download"],
     ],
   },
@@ -82,12 +85,25 @@ export const FOOTER_COLS: { title: string; links: [string, string][] }[] = [
       ["Terms & Conditions", "/terms"],
       ["Refund & Cancellation", "/refund-policy"],
       ["Contact", "/contact"],
-      ["FAQ", "/#faq"],
+      ["FAQ", "/faq"],
     ],
   },
 ];
 
-export type MegaItem = { href: string; t: string; d: string; icon: IconDefinition; tone?: string; kind?: string; tags?: string[] };
+export type MegaItem = {
+  href: string;
+  t: string;
+  d: string;
+  icon: IconDefinition;
+  tone?: string;
+  kind?: string;
+  tags?: string[];
+  /** The app screen shown in the menu's picture column while this item is hovered (a file under /public/mobile). */
+  shot?: string;
+};
+
+/** The screen the menu's picture column shows before anything is hovered, and for items without a screen of their own. */
+export const MEGA_DEFAULT_SHOT = "/mobile/home-2.png";
 
 /** Content of the "Features" mega menu */
 export const MEGA: { featured: MegaItem[]; workspace: MegaItem[]; explore: MegaItem[] } = {
@@ -121,12 +137,13 @@ export const MEGA: { featured: MegaItem[]; workspace: MegaItem[]; explore: MegaI
     },
   ],
   workspace: [
-    { href: "/#workspace", t: "Journal", d: "A private record of your days", icon: faBookOpen },
-    { href: "/#workspace", t: "Notes", d: "Think, write and organize", icon: faPenToSquare },
+    { href: "/features/journal", t: "Journal", d: "A private record of your days", icon: faBookOpen, shot: "/mobile/journal-2.png" },
+    { href: "/features/notes", t: "Notes", d: "Think, write and organize", icon: faPenToSquare, shot: "/mobile/notes-2.png" },
+    { href: "/features/tasks", t: "Tasks", d: "Plan your day, then do it", icon: faListCheck, shot: "/mobile/todo-2.png" },
     { href: "/#workspace", t: "Email", d: "Gmail in the workspace, on the way", icon: faEnvelope },
-    { href: "/#workspace", t: "Calendar", d: "One view of your time", icon: faCalendarDays },
+    { href: "/#workspace", t: "Calendar", d: "One view of your time", icon: faCalendarDays, shot: "/mobile/calendar.png" },
     { href: "/#workspace", t: "Meetings", d: "Capture, transcribe, follow through, on the way", icon: faMicrophone },
-    { href: "/#integrations", t: "Integrations", d: "Connect the tools you use", icon: faPlug },
+    { href: "/integrations", t: "Integrations", d: "Connect the tools you use", icon: faPlug, shot: "/mobile/connect.png" },
   ],
   explore: [
     { href: "/how-it-works", t: "How it works", d: "", icon: faRoute },

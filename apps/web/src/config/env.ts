@@ -20,6 +20,13 @@ export const publicEnv = {
   bingSiteVerification: process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION?.trim() || undefined,
 } as const;
 
+/**
+ * The address the website is known by when NEXT_PUBLIC_SITE_URL is not set, so the sitemap, robots.txt and the schema.org documents are
+ * never empty: the real site in a production build, the local dev server otherwise. Set NEXT_PUBLIC_SITE_URL for any other host
+ * (a staging site must not describe itself as production). Only the SEO files read this; routing still follows `publicEnv`.
+ */
+export const defaultSiteOrigin = process.env.NODE_ENV === "production" ? "https://naazhi.app" : "http://localhost:3000";
+
 /** `API_DOCS=off` hides the Swagger UI and openapi.json (for environments where they must not be public). Read per request. */
 export const apiDocsEnabled = () => process.env.API_DOCS?.trim().toLowerCase() !== "off";
 

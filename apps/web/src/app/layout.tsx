@@ -7,10 +7,11 @@ import { publicEnv } from "../config/env";
 import HideInApp from "../components/HideInApp";
 import Footer from "../components/site/Footer";
 import Header from "../components/site/Header";
+import NoImageDrag from "../components/site/NoImageDrag";
 import Refresh from "../components/site/Refresh";
 import ContextMenu from "../components/app/ContextMenu";
 import JsonLd from "../components/site/JsonLd";
-import { KEYWORDS, organizationSchema, setupsWorksSchema, siteNavigationSchema, websiteSchema } from "../lib/seo";
+import { KEYWORDS, organizationSchema, siteOrigin, setupsWorksSchema, siteNavigationSchema, websiteSchema } from "../lib/seo";
 import { lookBootScript } from "../lib/look";
 
 config.autoAddCss = false;
@@ -43,7 +44,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   // Relative picture addresses (the share image) need to know where the site lives: set NEXT_PUBLIC_SITE_URL (see .env.example).
-  ...(publicEnv.siteUrl ? { metadataBase: new URL(publicEnv.siteUrl) } : {}),
+  metadataBase: new URL(siteOrigin()),
   applicationName: "Naazhi",
   title: "Naazhi — one workspace, any AI",
   description: DESCRIPTION,
@@ -64,8 +65,9 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // globals.css sets `scroll-behavior: smooth`; in Next 16 `data-scroll-behavior` makes it step aside during page changes, so a new page opens at the top.
   return (
-    <html lang="en" suppressHydrationWarning className={`${geist.variable} ${mono.variable} ${serif.variable} ${tamil.variable}`}>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning className={`${geist.variable} ${mono.variable} ${serif.variable} ${tamil.variable}`}>
       <body>
         {/* App pages paint the person's colour scheme before the first frame (see lib/look.ts). */}
         <script dangerouslySetInnerHTML={{ __html: lookBootScript(publicEnv.appUrl ? new URL(publicEnv.appUrl).host : null) }} />
@@ -80,6 +82,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {/* The public site sits on plain white; the app inside keeps its own cream canvas. */}
             <div aria-hidden className="fixed inset-0 -z-20 bg-surface" />
             <Refresh />
+            <NoImageDrag />
             <Header />
           </HideInApp>
           {children}

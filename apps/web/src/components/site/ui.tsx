@@ -60,6 +60,7 @@ export function SectionHead({
   lead,
   align = "center",
   dark = false,
+  heart = false,
 }: {
   kicker?: string;
   title: string;
@@ -67,6 +68,8 @@ export function SectionHead({
   lead?: ReactNode;
   align?: "center" | "left";
   dark?: boolean;
+  /** The pink heart after the heading's `quiet` words. */
+  heart?: boolean;
 }) {
   const centre = align === "center";
   return (
@@ -76,7 +79,7 @@ export function SectionHead({
           <Kicker dark={dark}>{kicker}</Kicker>
         </Reveal>
       )}
-      <Heading quiet={quiet} dark={dark} className="max-w-[820px]">
+      <Heading quiet={quiet} dark={dark} heart={heart} className="max-w-[820px]">
         {title}
       </Heading>
       {lead && (

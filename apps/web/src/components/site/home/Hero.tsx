@@ -5,7 +5,6 @@ import { Heading } from "../Heading";
 import { showNow, useMotion } from "../motion";
 import HeroDots from "./HeroDots";
 import Phone from "../Phone";
-import StoreBadges from "../StoreBadges";
 import { buttonClass, Kicker, Lead, TextLink, WRAP } from "../ui";
 
 const SCREENS = [
@@ -93,10 +92,6 @@ export default function Hero() {
           <div data-copy data-reveal className={`mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 ${hidden}`}>
             <AuthLink arrow className={buttonClass("primary")} />
             <TextLink href="/demo">Watch the product demo</TextLink>
-          </div>
-
-          <div data-copy data-reveal className={`mt-6 flex justify-center ${hidden}`}>
-            <StoreBadges className="justify-center" />
           </div>
         </div>
 

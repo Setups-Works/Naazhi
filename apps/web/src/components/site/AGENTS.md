@@ -18,8 +18,7 @@ The building blocks are in `ui.tsx`: `Section` (`band="plain" | "soft" | "ink"`)
 - `Header.tsx` — one slim frosted bar (the frost is its own layer, because a backdrop filter on the header would make the full-screen
   mobile menu size to the bar), a Features menu, plain links, a full-screen menu on a phone. `Footer.tsx` — name, link columns, store
   badges, the Setups Works credit.
-- `Phone.tsx` — the iPhone mockup (`Phone`, `PhoneHalf`, `PhoneRow`). `StoreBadges.tsx` — Google Play (links to the APK) and App Store
-  (coming soon), drawn from `public/store/*.png` as a brand-green stencil.
+- `Phone.tsx` — the iPhone mockup (`Phone`, `PhoneHalf`, `PhoneRow`). There are no store badges on the site (they were removed); the Android app links to the GitHub release, and `public/store/*` keeps the store-listing pictures.
 - `home/` — the sections of the home page, composed in `app/page.tsx`: `Hero` (three whole phones that fan out on load and drift), `Story`
   (sticky phone panel whose colour changes per chapter; tiles on a phone), `Capabilities` (swipeable carousel), `Integrations`, `Shortcuts`,
   `Ai`, `Trust`, `Pro`.

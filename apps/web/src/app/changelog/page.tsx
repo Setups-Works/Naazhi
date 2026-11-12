@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import ClientOnly from "../../components/app/ClientOnly";
 import JsonLd from "../../components/site/JsonLd";
 import { CtaPanel, PageHero } from "../../components/site/kit";
-import { pageMeta, pageSchemas } from "../../lib/seo";
+import { RELEASES } from "../../features/changelog/releases";
+import { pageMeta, pageSchemas, releasesSchema } from "../../lib/seo";
 import { Section } from "../../components/site/ui";
 import Changelog from "../../features/changelog/Changelog";
 
@@ -17,7 +18,7 @@ export const metadata: Metadata = pageMeta(SEO);
 export default function Page() {
   return (
     <main>
-      <JsonLd data={pageSchemas(SEO)} />
+      <JsonLd data={[...pageSchemas({ ...SEO, dateModified: RELEASES[0]?.date }), releasesSchema(RELEASES)]} />
       <PageHero
         eyebrow="Changelog"
         title="What’s new,"

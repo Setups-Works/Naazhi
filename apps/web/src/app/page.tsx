@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
-import { FAQS } from "../components/site/content";
+import { CAPABILITIES, FAQS } from "../components/site/content";
+import Link from "next/link";
 import JsonLd from "../components/site/JsonLd";
 import { RELEASES } from "../features/changelog/releases";
-import { faqSchema, SITE_DESCRIPTION, softwareSchema, webPageSchema } from "../lib/seo";
+import { faqSchema, itemListSchema, SITE_DESCRIPTION, softwareSchema, webPageSchema } from "../lib/seo";
 import { FaqList } from "../components/site/Faq";
 import { Heading } from "../components/site/Heading";
 import { CtaPanel } from "../components/site/kit";
 import { Reveal } from "../components/site/Reveal";
 import Ai from "../components/site/home/Ai";
+import Collaboration from "../components/site/home/Collaboration";
 import Capabilities from "../components/site/home/Capabilities";
 import HealthConnect from "../components/site/home/HealthConnect";
 import Hero from "../components/site/home/Hero";
@@ -21,6 +23,12 @@ import WhatsNew from "../components/site/home/WhatsNew";
 import AuthLink from "../components/auth/AuthLink";
 import { buttonClass, Kicker, Lead, Section } from "../components/site/ui";
 
+// The first few answers; the rest live on /faq, so the page stays short and the FAQ markup matches what is shown.
+const HOME_FAQS = FAQS.slice(0, 6);
+
+// Only what ships today, straight from the capability list (its `status` is kept honest by a test).
+const LIVE_FEATURES = CAPABILITIES.filter((c) => c.status === "live").map((c) => c.t);
+
 const APP_VERSION = RELEASES.find((r) => r.appVersion)?.appVersion;
 
 export const metadata: Metadata = {
@@ -31,15 +39,42 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <main>
-      <JsonLd data={[softwareSchema({ version: APP_VERSION }), faqSchema(FAQS), webPageSchema({ name: "Naazhi — one workspace, any AI", description: SITE_DESCRIPTION, path: "/" })]} />
+      <JsonLd
+        data={[
+          softwareSchema({
+            version: APP_VERSION,
+            features: LIVE_FEATURES,
+            screenshots: [
+              "/mobile/home-2.png",
+              "/mobile/notes-2.png",
+              "/mobile/todo-2.png",
+              "/mobile/journal-2.png",
+              "/mobile/ipad-screen.png",
+            ],
+          }),
+          itemListSchema({
+            name: "What Naazhi does today",
+            path: "/",
+            items: CAPABILITIES.filter((c) => c.status === "live").map((c) => ({ name: c.t, description: c.d })),
+          }),
+          faqSchema(HOME_FAQS),
+          webPageSchema({
+            name: "Naazhi — one workspace, any AI",
+            description: SITE_DESCRIPTION,
+            path: "/",
+            dateModified: RELEASES[0]?.date,
+          }),
+        ]}
+      />
       <Hero />
       <IntegrationsTicker />
       <Story />
+      <Collaboration />
       <HealthConnect />
       <Capabilities />
       <Upcoming />
-      <WhatsNew />
       <Integrations />
+      <WhatsNew />
       <Shortcuts />
       <Ai />
       <Trust />
@@ -59,7 +94,14 @@ export default function Page() {
               <AuthLink arrow className={buttonClass("primary")} />
             </Reveal>
           </div>
-          <FaqList items={FAQS} />
+          <div>
+            <FaqList items={HOME_FAQS} />
+            <Reveal className="mt-6">
+              <Link href="/faq" className={buttonClass("secondary")}>
+                See all {FAQS.length} questions
+              </Link>
+            </Reveal>
+          </div>
         </div>
       </Section>
 

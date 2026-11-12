@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BrandMark } from "../BrandMark";
 import AuthLink from "../auth/AuthLink";
 import { FOOTER_COLS, GITHUB_REPO } from "../../lib/site";
-import StoreBadges from "./StoreBadges";
+import { DISCLAIMERS } from "./disclaimers";
 import { buttonClass, TextLink, WRAP } from "./ui";
 
 /**
@@ -29,7 +29,6 @@ export default function Footer() {
                 Get the Android app
               </TextLink>
             </div>
-            <StoreBadges />
           </div>
           <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4">
             {FOOTER_COLS.map((c) => (
@@ -48,7 +47,20 @@ export default function Footer() {
             ))}
           </div>
         </div>
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5 text-[12.5px] text-fg-subtle">
+        <section id="notes" aria-labelledby="notes-title" className="mt-10 border-t border-line pt-6">
+          <h2 id="notes-title" className="m-0 mb-3 text-[12px] font-semibold text-fg">
+            Notes
+          </h2>
+          <ol className="m-0 grid list-none gap-2 p-0 text-[12.5px] leading-relaxed text-fg-subtle sm:grid-cols-2">
+            {DISCLAIMERS.map((text, i) => (
+              <li key={text} id={`note-${i + 1}`} className="flex scroll-mt-24 gap-2 rounded-r1 target:bg-surface-sunken target:text-fg">
+                <span className="shrink-0 font-medium tabular-nums">{i + 1}.</span>
+                <span>{text}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5 text-[12.5px] text-fg-subtle">
           <span>© {new Date().getFullYear()} Naazhi. All rights reserved.</span>
           <span className="flex items-center gap-3">
             Backed by

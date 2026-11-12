@@ -19,7 +19,7 @@ import { useDraftFiles, useDraftText } from "../../../hooks/useDraft";
 import { clearDraft } from "../../../lib/drafts";
 import { useSkills } from "../../../features/settings/useSkills";
 import { useZohoStatus } from "../../../features/integrations/zoho";
-import { matchConnectors, mentionAt, zohoConnectors } from "../../../lib/connectors";
+import { ALL_MENTIONS, matchConnectors, mentionAt, zohoConnectors } from "../../../lib/connectors";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -56,7 +56,7 @@ export default function Composer({
   const slash = /^\/([a-z0-9-]*)$/i.exec(text);
   const skillMatches = slash ? skills.filter((s) => s.name.startsWith(slash[1].toLowerCase())) : [];
   // Typing "@" lists the apps the person connected (each with its logo); picking one puts "@Zoho Books" in the message, and the
-  // assistant uses that app for the request. The name appears once, in the box (no separate chip), so it is not shown twice.
+  // assistant uses that app for the request. A small chip shows the app; the name is not repeated in the box.
   const zoho = useZohoStatus();
   const connectors = zohoConnectors(zoho.data?.connected ? zoho.data.services : []);
   const mention = mentionAt(text);
@@ -64,9 +64,13 @@ export default function Composer({
   const [closedFor, setClosedFor] = useState("");
   const atMatches = mention && closedFor !== text ? matchConnectors(connectors, mention.query) : [];
   const showAt = !!mention && closedFor !== text && (connectors.length > 0 || zoho.isFetched);
+  // A picked app becomes a small chip and the "@word" typed to find it is taken out of the box, so the name is shown once. It is put
+  // back in front of the message when sending, which is how the assistant knows which app to use.
+  const [picked, setPicked] = useState<string[]>([]);
   const pickConnector = (label: string) => {
     if (!mention) return;
-    setText(`${text.slice(0, mention.start)}@${label} `);
+    setText(text.slice(0, mention.start));
+    setPicked((p) => (p.includes(label) ? p : [...p, label]));
     setActive(0);
     ta.current?.focus();
   };
@@ -94,6 +98,7 @@ export default function Composer({
   };
 
   const canSend = (text.trim() || files.length) && !busy;
+  const withMentions = (t: string) => [...picked.map((l) => `@${l}`), t.trim()].filter(Boolean).join(" ");
   /**
    * Called by the chat as soon as the message is saved. The input is emptied then (not after the AI has answered), and the
    * saved draft is erased explicitly: sending the first message of a new chat swaps this input for a new one, so a draft
@@ -103,12 +108,13 @@ export default function Composer({
     void clearDraft(draftKey);
     setText("");
     setFiles([]);
+    setPicked([]);
     if (ta.current) ta.current.style.height = "";
   }
 
   async function submit() {
     if (!canSend) return;
-    const done = await onSend(text.trim(), files, sent);
+    const done = await onSend(withMentions(text), files, sent);
     if (done) sent();
   }
 
@@ -155,6 +161,18 @@ export default function Composer({
               ))
             )}
           </ul>
+        )}
+        {picked.length > 0 && (
+          <p className="m-0 flex flex-wrap items-center gap-1.5" aria-label="Apps used in this message">
+            {picked.map((label) => (
+              <ChatComposerTokenElement key={label} onRemove={() => setPicked((p) => p.filter((x) => x !== label))} removeLabel={`Remove ${label}`}>
+                <span className="inline-flex items-center gap-1.5 text-[12.5px]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={ALL_MENTIONS.find((c) => c.label === label)?.logo ?? ""} alt="" width={13} height={13} className="object-contain" />@{label}
+                </span>
+              </ChatComposerTokenElement>
+            ))}
+          </p>
         )}
         {restored && !starter && (
           <p className="m-0 flex items-center gap-2 text-[12.5px] text-fg-subtle" role="status">

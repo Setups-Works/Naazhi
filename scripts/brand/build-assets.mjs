@@ -106,38 +106,57 @@ async function mark({ size, margin, color, bg = null, from = cropAlpha }) {
 }
 
 const WHITE = [255, 255, 255];
+// The icons and the launch screen are white with the mark in the theme's black (the light theme's ink, #242424), as the app looks. The
+// transparent marks used inside the UI (naazhi-mark*.png) keep the brand green.
+const BLACK = [36, 36, 36];
 const out = (...p) => join(root, ...p);
 for (const dir of ["apps/web/public/brand", "apps/web/src/app", "apps/mobile/assets/images", "brand/exports"]) mkdirSync(out(dir), { recursive: true });
+
+// The alternate app icons the person can pick in Settings → Appearance (iOS: a full-bleed square; Android: a foreground mark over a
+// plain colour, which the plugin in app.json writes). The default (white, black mark) is icon.png.
+const CLAY = [185, 97, 79];
+export const ALT_ICONS = [
+  { name: "night", bg: [36, 36, 36], fg: WHITE },
+  { name: "original", bg: BG, fg: INK },
+  { name: "forest", bg: INK, fg: BG },
+  { name: "clay", bg: CLAY, fg: WHITE },
+];
+const altJobs = ALT_ICONS.flatMap((i) => [
+  [`apps/mobile/assets/icons/${i.name}.png`, { size: 1024, margin: 0.17, color: i.fg, bg: i.bg }],
+  [`apps/mobile/assets/icons/${i.name}-foreground.png`, { size: 1024, margin: 0.24, color: i.fg }],
+]);
+mkdirSync(out("apps/mobile/assets/icons"), { recursive: true });
+console.log("alt icon backgrounds", ALT_ICONS.map((i) => `${i.name} ${hex(i.bg)}`).join(", "));
 
 const jobs = [
   // Web: the mark for headers (ink on transparent, and cream for dark backgrounds), the favicon and the Apple touch icon.
   ["apps/web/public/brand/naazhi-mark.png", { size: 1024, margin: 0.06, color: INK }],
   ["apps/web/public/brand/naazhi-mark-light.png", { size: 1024, margin: 0.06, color: BG }],
-  ["apps/web/src/app/icon.png", { size: 512, margin: 0.14, color: INK, bg: BG }],
-  ["apps/web/src/app/apple-icon.png", { size: 180, margin: 0.16, color: INK, bg: BG }],
+  ["apps/web/src/app/icon.png", { size: 512, margin: 0.14, color: BLACK, bg: WHITE }],
+  ["apps/web/src/app/apple-icon.png", { size: 180, margin: 0.16, color: BLACK, bg: WHITE }],
   // The web manifest's icons (installing the site as an app).
-  ["apps/web/public/brand/icon-192.png", { size: 192, margin: 0.16, color: INK, bg: BG }],
-  ["apps/web/public/brand/icon-512.png", { size: 512, margin: 0.16, color: INK, bg: BG }],
+  ["apps/web/public/brand/icon-192.png", { size: 192, margin: 0.16, color: BLACK, bg: WHITE }],
+  ["apps/web/public/brand/icon-512.png", { size: 512, margin: 0.16, color: BLACK, bg: WHITE }],
   // App: iOS icon (no transparency), Android adaptive icon (foreground inside the safe zone, background, one-colour version),
   // the splash image and the web favicon of the Expo web build.
-  ["apps/mobile/assets/images/icon.png", { size: 1024, margin: 0.17, color: INK, bg: BG }],
-  ["apps/mobile/assets/images/android-icon-foreground.png", { size: 1024, margin: 0.24, color: INK }],
-  // A plain cream square: the "mark" is drawn in the background colour so nothing shows.
-  ["apps/mobile/assets/images/android-icon-background.png", { size: 1024, margin: 0.4, color: BG, bg: BG }],
+  ["apps/mobile/assets/images/icon.png", { size: 1024, margin: 0.17, color: BLACK, bg: WHITE }],
+  ["apps/mobile/assets/images/android-icon-foreground.png", { size: 1024, margin: 0.24, color: BLACK }],
+  // A plain white square: the "mark" is drawn in the background colour so nothing shows.
+  ["apps/mobile/assets/images/android-icon-background.png", { size: 1024, margin: 0.4, color: WHITE, bg: WHITE }],
   ["apps/mobile/assets/images/android-icon-monochrome.png", { size: 1024, margin: 0.24, color: WHITE }],
-  ["apps/mobile/assets/images/splash-icon.png", { size: 1024, margin: SPLASH_MARGIN, color: INK }],
+  ["apps/mobile/assets/images/splash-icon.png", { size: 1024, margin: SPLASH_MARGIN, color: BLACK }],
   // The launch animation's layers: same square and position as splash-icon.png, so they overlay exactly.
-  ["apps/mobile/assets/images/splash-mark-body.png", { size: 1024, margin: SPLASH_MARGIN, color: INK, from: bodyAlpha }],
-  ["apps/mobile/assets/images/splash-mark-star.png", { size: 1024, margin: SPLASH_MARGIN, color: INK, from: starAlpha }],
-  ["apps/mobile/assets/images/splash-mark-lines.png", { size: 1024, margin: SPLASH_MARGIN, color: INK, from: linesAlpha }],
-  ["apps/mobile/assets/images/favicon.png", { size: 48, margin: 0.08, color: INK, bg: BG }],
+  ["apps/mobile/assets/images/splash-mark-body.png", { size: 1024, margin: SPLASH_MARGIN, color: BLACK, from: bodyAlpha }],
+  ["apps/mobile/assets/images/splash-mark-star.png", { size: 1024, margin: SPLASH_MARGIN, color: BLACK, from: starAlpha }],
+  ["apps/mobile/assets/images/splash-mark-lines.png", { size: 1024, margin: SPLASH_MARGIN, color: BLACK, from: linesAlpha }],
+  ["apps/mobile/assets/images/favicon.png", { size: 48, margin: 0.08, color: BLACK, bg: WHITE }],
   // Print and design-tool exports.
   ["brand/exports/naazhi-mark-3000.png", { size: 3000, margin: 0.05, color: INK }],
   ["brand/exports/naazhi-mark-cream-3000.png", { size: 3000, margin: 0.05, color: BG }],
-  ["brand/exports/naazhi-mark-on-cream-3000.png", { size: 3000, margin: 0.12, color: INK, bg: BG }],
-  ["brand/exports/naazhi-app-icon-1024.png", { size: 1024, margin: 0.17, color: INK, bg: BG }],
+  ["brand/exports/naazhi-mark-on-white-3000.png", { size: 3000, margin: 0.12, color: BLACK, bg: WHITE }],
+  ["brand/exports/naazhi-app-icon-1024.png", { size: 1024, margin: 0.17, color: BLACK, bg: WHITE }],
 ];
-for (const [file, spec] of jobs) {
+for (const [file, spec] of [...jobs, ...altJobs]) {
   await (await mark(spec)).toFile(out(file));
   console.log("wrote", file);
 }

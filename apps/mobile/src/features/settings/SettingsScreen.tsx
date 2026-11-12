@@ -357,6 +357,16 @@ export function SettingsScreen() {
     });
   }
 
+  /** Signs out of this phone only (the Security page has the other-device options). The route guard then shows the sign-in screen. */
+  async function signOutHere() {
+    setBusy("signout");
+    try {
+      await signOut();
+    } finally {
+      setBusy("");
+    }
+  }
+
   const current = SETTINGS_SECTIONS.find((s) => s.key === section) ?? null;
 
   // The home: sections in the web's groups, each a hairline row with an icon tile, a label and a one-line description.
@@ -394,6 +404,7 @@ export function SettingsScreen() {
           </View>
         </View>
       ))}
+      <Button title="Sign out" kind="secondary" icon="right-from-bracket" loading={busy === "signout"} onPress={() => void signOutHere()} />
     </View>
   );
 

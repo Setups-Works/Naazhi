@@ -23,6 +23,22 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-12",
+    title: "Version 6.2.1: a new icon, a livelier launch, and your choice of app icon",
+    summary: "The Naazhi icon is now black on white, the app opens with a livelier animation, and you can pick one of five home-screen icons in Settings. The app also gets a Sign out button.",
+    tone: "gold",
+    appVersion: "v6.2.1",
+    changes: [
+      { kind: "improved", platform: "web", text: "A new site icon: the Naazhi mark in black on white, on browser tabs, home screens and installed copies." },
+      { kind: "improved", platform: "web", text: "Choosing an app with @ now closes the list and shows a small chip with the app’s logo above the box, instead of repeating its name in the box." },
+      { kind: "improved", platform: "app", text: "A new app icon: the Naazhi mark in black on white." },
+      { kind: "new", platform: "app", text: "A livelier launch screen: the mark draws in with ripples behind it, and “from ♥ Setups Works” with their logo rises in underneath." },
+      { kind: "new", platform: "app", text: "Pick your home-screen icon in Settings → Appearance → App icon: Classic, Night, Original, Forest or Clay." },
+      { kind: "new", platform: "app", text: "A Sign out button on the main Settings page." },
+      { kind: "improved", platform: "app", text: "Choosing an app with @ shows a small chip with its logo, and the box no longer repeats the name." },
+    ],
+  },
+  {
+    date: "2026-11-12",
     title: "Version 6.2.0: invoices and emails for subscriptions, set-up in the app",
     summary: "A new subscription now gets its invoice and receipt email straight away. The Android app gets set-up after sign-up, the model picker with your own API keys, and a keyboard that no longer covers the chat box.",
     tone: "mint",

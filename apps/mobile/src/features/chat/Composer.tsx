@@ -48,9 +48,15 @@ export function Composer({ busy, providers, provider, onProvider, onSend, onErro
   const connectors = useConnectors();
   const mention = mentionAt(text);
   const atMatches = mention ? matchConnectors(connectors, mention.query) : [];
+  // A picked app becomes a small chip and the "@word" typed to find it is taken out of the box, so the name is shown once. It is put
+  // back in front of the message when sending, which is how the assistant knows which app to use.
+  const [picked, setPicked] = useState<string[]>([]);
   const pickConnector = (label: string) => {
-    if (mention) setText(`${text.slice(0, mention.start)}@${label} `);
+    if (!mention) return;
+    setText(text.slice(0, mention.start));
+    setPicked((p) => (p.includes(label) ? p : [...p, label]));
   };
+  const withMentions = (t: string) => [...picked.map((l) => `@${l}`), t.trim()].filter(Boolean).join(" ");
 
   async function attach() {
     try {
@@ -65,11 +71,12 @@ export function Composer({ busy, providers, provider, onProvider, onSend, onErro
   function saved() {
     setText("");
     setFiles([]);
+    setPicked([]);
   }
 
   async function submit() {
     if (!canSend) return;
-    const ok = await onSend(text.trim(), files, saved);
+    const ok = await onSend(withMentions(text), files, saved);
     if (ok) saved();
   }
 
@@ -97,6 +104,24 @@ export function Composer({ busy, providers, provider, onProvider, onSend, onErro
                   </Pressable>
                 ))
               )}
+            </View>
+          ) : null}
+          {picked.length ? (
+            <View style={styles.chips}>
+              {picked.map((label) => {
+                const logo = connectors.find((c) => c.label === label)?.logo;
+                return (
+                  <View key={label} style={styles.chip}>
+                    {logo ? <AppLogo name={logo} size={18} /> : null}
+                    <AppText variant="small" color={Palette.fgMuted}>
+                      @{label}
+                    </AppText>
+                    <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${label}`} hitSlop={8} onPress={() => setPicked((p) => p.filter((x) => x !== label))}>
+                      <Icon name="xmark" size={10} color={Palette.fgSubtle} />
+                    </Pressable>
+                  </View>
+                );
+              })}
             </View>
           ) : null}
         </ChatComposerDrawer>
@@ -147,4 +172,6 @@ const styles = themedStyles(() => ({
   menuRowOn: { backgroundColor: Palette.surfaceMuted },
   menuText: { flex: 1 },
   none: { padding: 10 },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  chip: { flexDirection: "row", alignItems: "center", gap: 6, paddingLeft: 4, paddingRight: 9, minHeight: 26, borderRadius: Radius.pill, backgroundColor: Palette.surfaceMuted },
 }));

@@ -220,6 +220,9 @@ importers:
       expo:
         specifier: ~58.0.23
         version: 58.0.23(f7e1ea2308612ba4368af05ffbbfc729)
+      expo-alternate-app-icons:
+        specifier: ^11.0.0
+        version: 11.0.0(expo@58.0.23)(react-native@0.88.1(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.87.1(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.18)(react@19.3.0)(supports-color@8.1.1))(react@19.3.0)
       expo-application:
         specifier: ~58.1.2
         version: 58.1.2(expo@58.0.23)
@@ -4379,6 +4382,13 @@ packages:
   expect-type@1.4.0:
     resolution: {integrity: sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==}
     engines: {node: '>=12.0.0'}
+
+  expo-alternate-app-icons@11.0.0:
+    resolution: {integrity: sha512-9k25v/LIaX52FSOwKTZcCvh/VrpuITEtn9ini4Rs8k08YGDA26LIx7Jum6tngWfRQn9RbQD3uGA7vDTUEGUWFg==}
+    peerDependencies:
+      expo: '>=53'
+      react: '*'
+      react-native: '*'
 
   expo-application@58.1.2:
     resolution: {integrity: sha512-WYFdNHGaxe/j69oYREhK0cKsKYszuIuz399WXYCP+M1grfO+FCWB/RbuMgaXJsLWlzqhNjA/zLgfJ+33FwrQvw==}
@@ -11811,6 +11821,12 @@ snapshots:
   events@3.3.0: {}
 
   expect-type@1.4.0: {}
+
+  expo-alternate-app-icons@11.0.0(expo@58.0.23)(react-native@0.88.1(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.87.1(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.18)(react@19.3.0)(supports-color@8.1.1))(react@19.3.0):
+    dependencies:
+      expo: 58.0.23(f7e1ea2308612ba4368af05ffbbfc729)
+      react: 19.3.0
+      react-native: 0.88.1(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.87.1(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.18)(react@19.3.0)(supports-color@8.1.1)
 
   expo-application@58.1.2(expo@58.0.23):
     dependencies:

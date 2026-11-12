@@ -350,8 +350,9 @@ const LINE: Record<string, LucideIcon> = {
   xmark: X,
 };
 
-export function Icon({ name, size = 18, color = Palette.fg }: { name: IconName; size?: number; color?: string }) {
+/** `fill` solid-fills a line icon (a heart, a star); most icons stay outlines. */
+export function Icon({ name, size = 18, color = Palette.fg, fill }: { name: IconName; size?: number; color?: string; fill?: string }) {
   const Line = LINE[name];
   if (!Line) return <FontAwesome6 name={name} size={size} color={color} solid />;
-  return <Line size={size} color={color} strokeWidth={1.75} />;
+  return <Line size={size} color={color} strokeWidth={1.75} fill={fill} />;
 }

@@ -1,6 +1,7 @@
+import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Switch, View } from "react-native";
+import { Pressable, Switch, View } from "react-native";
 
 import { ACCENT_SWATCH, ACCENTS, Palette, Radius, SCHEMES, type Accent, type Scheme, themedStyles } from "@/constants/theme";
 import { AppText } from "@/components/ui/AppText";
@@ -10,12 +11,53 @@ import { TextField } from "@/components/ui/TextField";
 import { Empty, Group, Panel, Pills, Row, SaveError } from "./ui";
 import { usePrefsSave } from "../usePrefsSave";
 import { WRITE_TONES } from "@/lib/preferences";
+import { APP_ICONS, appIconsSupported, chooseAppIcon, currentAppIcon } from "../appIcon";
 
 function Toggle({ value, onChange, label }: { value: boolean; onChange: (v: boolean) => void; label: string }) {
   return <Switch accessibilityLabel={label} value={value} onValueChange={onChange} trackColor={{ false: Palette.lineStrong, true: Palette.fillDark }} thumbColor={Palette.surface} />;
 }
 
 const SCHEME_LABEL: Record<Scheme, string> = { system: "Device", light: "Light", cream: "Cream", dark: "Dark" };
+
+/** The home-screen icon: five to choose from. The change is made by the phone itself, so the launcher may take a moment to show it. */
+function AppIconPicker() {
+  const [current, setCurrent] = useState<string | null>(() => currentAppIcon());
+  const [error, setError] = useState("");
+  if (!appIconsSupported()) return null;
+  async function pick(key: string | null) {
+    setError("");
+    try {
+      await chooseAppIcon(key);
+      setCurrent(key);
+    } catch {
+      setError("Couldn’t change the icon. Try again.");
+    }
+  }
+  return (
+    <Group title="App icon">
+      <Row title="Home-screen icon" description="Pick the look of Naazhi on your phone. It can take a few seconds to change." stacked last>
+        <View style={styles.icons} accessibilityRole="radiogroup" accessibilityLabel="App icon">
+          {APP_ICONS.map((i) => {
+            const on = current === i.key;
+            return (
+              <Pressable key={i.label} accessibilityRole="radio" accessibilityLabel={i.label} accessibilityState={{ checked: on }} onPress={() => void pick(i.key)} style={styles.iconItem}>
+                <Image source={i.image} style={[styles.iconImg, on ? styles.iconOn : null]} contentFit="cover" />
+                <AppText variant="small" color={on ? Palette.fg : Palette.fgSubtle}>
+                  {i.label}
+                </AppText>
+              </Pressable>
+            );
+          })}
+        </View>
+        {error ? (
+          <AppText variant="small" color={Palette.clayFg} accessibilityRole="alert">
+            {error}
+          </AppText>
+        ) : null}
+      </Row>
+    </Group>
+  );
+}
 
 /** Colour scheme, accent, density and motion: the web's Appearance page. A change shows straight away. */
 export function AppearancePrefs() {
@@ -53,6 +95,7 @@ export function AppearancePrefs() {
           <Toggle label="Reduce motion" value={prefs.reduceMotion} onChange={(reduceMotion) => void change({ reduceMotion })} />
         </Row>
       </Group>
+      <AppIconPicker />
     </>
   );
 }
@@ -221,6 +264,10 @@ export function HealthPrefs() {
 const styles = themedStyles(() => ({
   pad: { gap: 12 },
   swatches: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+  icons: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+  iconItem: { alignItems: "center", gap: 6 },
+  iconImg: { width: 56, height: 56, borderRadius: Radius.r2, borderWidth: 1, borderColor: Palette.line },
+  iconOn: { borderWidth: 2, borderColor: Palette.fg },
   swatchWrap: { padding: 2 },
   swatch: { width: 34, height: 34, borderRadius: Radius.pill, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: Palette.line },
   swatchOn: { borderWidth: 2, borderColor: Palette.surface, shadowColor: Palette.shadow, shadowOpacity: 0.3, shadowRadius: 3, shadowOffset: { width: 0, height: 1 }, elevation: 3 },

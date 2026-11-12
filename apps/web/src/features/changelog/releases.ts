@@ -23,6 +23,16 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-12",
+    title: "Clearer messages when the server is unreachable",
+    summary: "If Naazhi can’t reach the server, you now get a plain message instead of setup instructions.",
+    tone: "sand",
+    changes: [
+      { kind: "improved", platform: "web", text: "Sign-in, the dashboard and the admin panel show a short “try again in a moment” message when the server can’t be reached." },
+      { kind: "improved", platform: "app", text: "The welcome screens and sign-in use the same plain wording." },
+    ],
+  },
+  {
+    date: "2026-11-12",
     title: "Version 6.8.0: shared journals in the app, like your own",
     summary: "A shared journal in the app now works the way your own Journal does.",
     tone: "violet",

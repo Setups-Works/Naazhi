@@ -16,6 +16,5 @@ export const FEATURES: Feature[] = [
 
 export const PRIVACY_POINTS: { icon: IconName; text: string }[] = [
   { icon: "lock", text: "Journal entries are visible only to you." },
-  { icon: "server", text: "Runs on your own self-hosted stack." },
   { icon: "robot", text: "AI is optional, swappable, and never acts without asking." },
 ];

@@ -136,7 +136,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     if (mode === "signup" && !name) return setErr("Please tell us your name.");
     if (mode === "signup" && !USERNAME_RE.test(username))
       return setErr("Choose a username with 3–30 letters, numbers, dots or underscores.");
-    if (cfg && !cfg.configured) return setErr("The server isn’t configured yet. Start Docker and copy .env.example to .env.local.");
+    if (cfg && !cfg.configured) return setErr("We can’t reach the server right now. Please try again in a moment.");
 
     setBusy(true);
     try {
@@ -287,8 +287,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         <p className="at-amber tint m-0 flex items-start gap-2.5 rounded-r2 p-3.5 text-[13px] leading-relaxed" role="note">
           <FA icon={faTriangleExclamation} className="mt-0.5" />
           <span>
-            The server isn’t connected yet. Run <code className="font-mono text-[12px]">docker compose up -d</code>, then copy{" "}
-            <code className="font-mono text-[12px]">.env.example</code> to <code className="font-mono text-[12px]">.env.local</code>.
+            We can’t reach the server right now. Please try again in a moment.
           </span>
         </p>
       )}

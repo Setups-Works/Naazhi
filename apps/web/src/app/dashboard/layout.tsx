@@ -26,8 +26,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
             <p className="au-note">
               <FA icon={faTriangleExclamation} />{" "}
               <span>
-                The server isn’t connected yet. Run <code>docker compose up -d</code>, copy <code>.env.example</code> to{" "}
-                <code>.env.local</code> and restart.
+                We can’t reach the server right now. Please try again in a moment.
               </span>
             </p>
           </div>

@@ -72,7 +72,7 @@ export default function LoginScreen() {
   return (
     <AuthShell eyebrow="Welcome back" title="Log in to your" quiet="workspace." sub="Pick up where you left off.">
       {config.data && !config.data.configured ? (
-        <Banner kind="info">The server isn’t connected yet. Start Docker and the web app, then try again.</Banner>
+        <Banner kind="info">We can’t reach the server right now. Please try again in a moment.</Banner>
       ) : null}
       {config.isError ? <Banner kind="info">Can’t reach the server. Check EXPO_PUBLIC_API_URL and your connection.</Banner> : null}
 

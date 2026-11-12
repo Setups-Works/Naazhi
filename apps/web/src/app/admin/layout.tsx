@@ -18,8 +18,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
         <div className="container" style={{ maxWidth: 640 }}>
           <div className="panel">
             <p className="body">
-              The server isn’t connected yet. Run <code>docker compose up -d</code> and copy <code>.env.example</code> to{" "}
-              <code>.env.local</code>.
+              We can’t reach the server right now. Please try again in a moment.
             </p>
           </div>
         </div>

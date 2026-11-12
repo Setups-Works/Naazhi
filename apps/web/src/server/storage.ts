@@ -33,7 +33,7 @@ function s3() {
     const e = serverEnv().s3;
     g.__s3 = new S3Client({
       region: e.region,
-      endpoint: requireEnv("S3_ENDPOINT", "Run `docker compose up -d` and copy .env.example to .env.local."),
+      endpoint: requireEnv("S3_ENDPOINT", "Set it in the server environment (see .env.example)."),
       forcePathStyle: true,
       credentials: { accessKeyId: e.accessKey ?? "", secretAccessKey: e.secretKey ?? "" },
     });

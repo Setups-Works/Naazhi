@@ -20,7 +20,7 @@ const g = globalThis as unknown as { __pgPool?: pg.Pool };
 export function pool() {
   if (!g.__pgPool) {
     g.__pgPool = new pg.Pool({
-      connectionString: requireEnv("DATABASE_URL", "Run `docker compose up -d` and copy .env.example to .env.local."),
+      connectionString: requireEnv("DATABASE_URL", "Set it in the server environment (see .env.example)."),
       max: Number(process.env.PG_POOL_MAX ?? 10),
       idleTimeoutMillis: 30_000,
       statement_timeout: 15_000,

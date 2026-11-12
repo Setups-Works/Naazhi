@@ -1,46 +1,67 @@
+<p align="center">
+  <img src="docs/assets/naazhi-feature-graphic.png" alt="Naazhi — One workspace, any AI. Notes, to-dos, journal and chat." width="100%" />
+</p>
+
 # Naazhi
 
-One workspace for **notes, tasks, journal, chat, calendar, email, meetings and automations** — with an AI layer you can swap, bring your own account to, or switch off entirely.
+Naazhi is a SaaS workspace for **notes, tasks, journal, chat, calendar, email, meetings and automations** — with an AI layer you can swap, bring your own account to, or switch off entirely. It runs as a hosted service on the web and as an iOS and Android app.
 
-This pnpm/Turborepo monorepo contains the Next.js 16 web app (`apps/web`), Expo/React Native mobile app (`apps/mobile`), and shared API transport (`packages/api-client`). The web app includes the marketing site, signed-in workspace and admin panel. The backend uses PostgreSQL, Better Auth, S3 storage and Redis, self-hosted in Docker.
+- Web app and website: https://dashboard.naazhi.app
+- Mobile: Expo / React Native, same account and data as the web app
 
 > **Working on this project?** Read [`AGENTS.md`](AGENTS.md) (rules for humans _and_ AI agents), then [`docs/ONBOARDING.md`](docs/ONBOARDING.md). Plan and tasks live in Jira: https://setups-works.atlassian.net/jira/software/projects/UNT/boards
 
-## What's built
+## What's in the product
 
-- **Marketing site** — home, how it works, product demo, pricing, early users, privacy & security, feature pages with interactive demos.
-- **Accounts** — email + password, Google sign-in, forgot/reset password, email verification (Better Auth).
-- **App** — Home, **Journal** (many timestamped entries per day, calendar, voice, attachments), **Notes** (colour cards, editor, slash commands, voice, attachments, history), **To-do** (lists, priorities, repeat, Inbox/Today/Upcoming/Filters, board and calendar layouts, shortcuts), **Chat** (folders, pin, unread, share links — AI replies come in Phase 4), **universal search** (Ctrl/⌘+K), **settings** popup, personality insights computed from your own data.
-- **Admin panel** — overview, users (invite, plan, ban, delete), usage, announcements, audit log.
+- **Journal** — many timestamped entries per day, calendar, voice, attachments, and shared journals you write together with other people.
+- **Notes** — colour cards, editor, slash commands, voice, attachments and history.
+- **To-do** — lists, priorities, repeat, Inbox / Today / Upcoming / Filters, board and calendar layouts.
+- **Chat** — folders, pin, unread and share links, with AI replies that can save things straight to your To-do.
+- **Search** — universal search with Ctrl/⌘+K.
+- **Accounts and plans** — email + password, Google sign-in, passkeys, and pay-as-you-go billing.
+- **Admin panel** — users, usage, announcements and an audit log.
+- **Marketing site** — home, how it works, pricing, privacy & security, feature pages and a changelog.
 
-What's planned (workspaces, Calendar, Email, AI, Meetings, Automations, billing…) is in [`docs/PHASES.md`](docs/PHASES.md) and the Jira board.
+What's planned is in [`docs/PHASES.md`](docs/PHASES.md) and the Jira board.
 
-## Getting started
+## Repository layout
 
-Requires **Node.js 22.13+**, Corepack/pnpm, and **Docker**. PostgreSQL, Redis, S3-compatible object storage and a local mail catcher run in Docker. There is no third-party backend service.
+A pnpm/Turborepo monorepo:
+
+```
+apps/web/             Next.js 16 app: marketing site, signed-in workspace, admin panel, API
+apps/mobile/          Expo Router / React Native app
+packages/api-client/  Shared API transport for web and mobile
+db/migrations/        SQL migrations (append-only)
+docs/                 Architecture, phases, workflow, data model, security, Jira guide
+```
+
+The backend uses PostgreSQL, Better Auth, S3-compatible object storage and Redis. Every folder has an `AGENTS.md` explaining its purpose and rules; [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md) maps what is where.
+
+## Local development
+
+Requires **Node.js 22.13+**, Corepack/pnpm and Docker (Docker is only used to run the local database, cache, storage and mail catcher).
 
 ```bash
 corepack pnpm install
-cp .env.selfhost.example .env.selfhost     # set the passwords (openssl rand -hex 16)
-cp .env.example apps/web/.env.local       # app settings
-corepack pnpm docker:up                            # PostgreSQL, Redis, storage, Mailpit
-corepack pnpm db:migrate                           # create the tables
-corepack pnpm dev:web                              # http://localhost:3000   (emails: http://localhost:8025)
+cp .env.selfhost.example .env.selfhost     # local service passwords (openssl rand -hex 16)
+cp .env.example apps/web/.env.local        # app settings
+corepack pnpm docker:up                    # PostgreSQL, Redis, storage, Mailpit
+corepack pnpm db:migrate                   # create the tables
+corepack pnpm dev:web                      # http://localhost:3000 (emails: http://localhost:8025)
 ```
 
 For Expo, set `EXPO_PUBLIC_API_URL` in `apps/mobile/.env.local` (Android emulator: `http://10.0.2.2:3000`; iOS simulator: `http://localhost:3000`; physical devices: your computer's LAN address), then run `corepack pnpm dev:mobile`. `corepack pnpm dev` starts both apps.
 
-Or run the whole thing, app included, in Docker: `docker compose --env-file .env.selfhost --profile app up -d --build`. Full guide (backups, production, Google sign-in, moving data from Supabase): [`docs/SELF_HOSTING.md`](docs/SELF_HOSTING.md).
-
-| Command              | Purpose                                       |
-| -------------------- | --------------------------------------------- |
-| `corepack pnpm dev`        | Start web and Expo development servers         |
-| `corepack pnpm dev:web`    | Start Next.js at localhost:3000                |
-| `corepack pnpm dev:mobile` | Start the Expo development server              |
-| `corepack pnpm docker:up`  | Start the data services                        |
-| `corepack pnpm db:migrate` | Apply SQL migrations from `db/migrations`      |
-| `corepack pnpm typecheck`  | Typecheck every workspace                      |
-| `corepack pnpm build`      | Build web and mobile apps                      |
+| Command                    | Purpose                                   |
+| -------------------------- | ----------------------------------------- |
+| `corepack pnpm dev`        | Start web and Expo development servers    |
+| `corepack pnpm dev:web`    | Start Next.js at localhost:3000           |
+| `corepack pnpm dev:mobile` | Start the Expo development server         |
+| `corepack pnpm docker:up`  | Start the local data services             |
+| `corepack pnpm db:migrate` | Apply SQL migrations from `db/migrations` |
+| `corepack pnpm typecheck`  | Typecheck every workspace                 |
+| `corepack pnpm build`      | Build web and mobile apps                 |
 
 > Don't run `corepack pnpm build:web` while the web dev server is running; both write to `apps/web/.next`.
 
@@ -50,29 +71,13 @@ See [`.env.example`](.env.example). Never commit `.env*` files; never prefix a s
 
 | Variable                                                               | Needed for                                              |
 | ---------------------------------------------------------------------- | ------------------------------------------------------- |
-| `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`                | Everything signed-in (without them pages show a notice) |
+| `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`                | Everything signed-in                                    |
 | `REDIS_URL`                                                            | Cache and rate limits (optional; the app runs without)  |
 | `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`                        | Avatars, note/journal/chat attachments                  |
 | `SMTP_URL`, `MAIL_FROM`                                                | Verification, password reset and invitation emails      |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`                             | Optional "Continue with Google"                         |
 | `ADMIN_EMAILS`                                                         | Comma-separated emails that are always admins           |
-| `GROQ_API_KEY`, `COMPOSIO_API_KEY`, `CRON_SECRET`, Sentry/PostHog keys | Later phases                                            |
-
-## Project structure
-
-```
-apps/web/
-  src/           Next.js routes, components, features and server code
-  public/        Web assets
-  tests/         Vitest unit and database tests
-  e2e/           Playwright end-to-end tests
-apps/mobile/     Expo Router / React Native app
-packages/api-client/  Shared API transport
-db/             SQL migrations (append-only)
-docs/           Architecture, phases, workflow, model, security and Jira guide
-```
-
-Every folder has an `AGENTS.md` explaining its purpose and rules. Today part of the code still lives in the legacy locations (`apps/web/src/components/app/*`, `apps/web/src/lib/*`); [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md) maps what is where.
+| `GROQ_API_KEY`, `COMPOSIO_API_KEY`, `CRON_SECRET`, Sentry/PostHog keys | AI, integrations, scheduled jobs and monitoring         |
 
 ## Documentation
 
@@ -80,11 +85,11 @@ Every folder has an `AGENTS.md` explaining its purpose and rules. Today part of 
 
 ## Design system
 
-Tokens are at the top of `apps/web/src/app/globals.css`: canvas `#f5f4eb`, ink `#1b1c14`, forest-green accent `#1f5d49`; categorisation tints (violet, blue, green, amber, clay, sand, mint, gold) applied with `at-<tint>` classes. Type: Instrument Serif (display), Geist (UI), Geist Mono. Pill buttons, hairline inset rings, slow ambient motion that respects `prefers-reduced-motion`.
+Tokens are at the top of `apps/web/src/app/globals.css`; the rules are in [`docs/DESIGN_LANGUAGE.md`](docs/DESIGN_LANGUAGE.md) and the brand in [`docs/BRAND.md`](docs/BRAND.md).
 
-## Deploying
+## Deployment
 
-Docker Compose on any server (see [`docs/SELF_HOSTING.md`](docs/SELF_HOSTING.md)): put a TLS proxy (Caddy/Traefik/Cloudflare) in front of the `web` service, use real SMTP, strong passwords, and set `BETTER_AUTH_URL` to the public address. Back up PostgreSQL and the storage volume.
+Naazhi is deployed to Azure as a container by GitHub Actions (`.github/workflows/deploy-azure-docker.yml`). Releases follow [`docs/RELEASE_FOR_AGENTS.md`](docs/RELEASE_FOR_AGENTS.md): apply migrations first, then ship the app.
 
 ## Logos & trademarks
 

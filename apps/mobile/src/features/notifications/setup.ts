@@ -1,3 +1,4 @@
+/* eslint-disable import/namespace -- on the CI runner (Node 22) the rule cannot see expo-notifications’ enums (AndroidImportance); TypeScript checks them, and it passes locally. */
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 

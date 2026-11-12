@@ -2,7 +2,7 @@
   "expo": {
     "name": "Naazhi",
     "slug": "untitled-project-mobile",
-    "version": "6.8.3",
+    "version": "6.8.4",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "untitled",
@@ -19,8 +19,7 @@
         "android.permission.health.READ_ACTIVE_CALORIES_BURNED",
         "android.permission.health.READ_HEART_RATE",
         "android.permission.health.READ_RESTING_HEART_RATE",
-        "android.permission.health.READ_SLEEP",
-        "android.permission.REQUEST_INSTALL_PACKAGES"
+        "android.permission.health.READ_SLEEP"
       ],
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
@@ -68,7 +67,9 @@
         "expo-build-properties",
         {
           "android": {
-            "minSdkVersion": 26
+            "minSdkVersion": 26,
+            "compileSdkVersion": 37,
+            "targetSdkVersion": 36
           }
         }
       ],

@@ -583,7 +583,7 @@ export function SettingsScreen() {
                   onPress={() => void update.check()}
                 />
                 {update.state.phase === "upToDate" ? <Banner kind="success">You’re on the latest version.</Banner> : null}
-                {update.state.phase === "error" && !update.state.release ? <Banner kind="error">{update.state.message}</Banner> : null}
+                {update.state.phase === "error" ?<Banner kind="error">{update.state.message}</Banner> : null}
               </>
             ) : (
               <AppText variant="small" color={Palette.fgSubtle}>Updates for this app come from the store on your phone.</AppText>

@@ -22,6 +22,18 @@ export type Release = {
  */
 export const RELEASES: Release[] = [
   {
+    date: "2026-11-13",
+    title: "Version 6.8.4: updates through Google Play",
+    summary: "The Android app now updates through Google Play, and an update is required to keep going.",
+    tone: "blue",
+    appVersion: "v6.8.4",
+    changes: [
+      { kind: "improved", platform: "app", text: "The app now updates through Google Play. When a new version is out, you update in one step and the app restarts on it." },
+      { kind: "improved", platform: "app", text: "Updates are required: an “Update required” screen stays until the new version is installed." },
+      { kind: "improved", platform: "app", text: "The app no longer downloads or installs updates from GitHub, and no longer asks for permission to install apps." },
+    ],
+  },
+  {
     date: "2026-11-12",
     title: "Version 6.8.3: app bundle ready for Google Play",
     summary: "The Android app bundle now carries a single signature, so it can be uploaded to Google Play.",

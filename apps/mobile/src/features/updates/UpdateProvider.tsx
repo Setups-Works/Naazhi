@@ -1,12 +1,10 @@
-import { isNewerVersion, type AppRelease } from "@untitled/logic";
 import * as Application from "expo-application";
+import * as InAppUpdates from "expo-in-app-updates";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Linking, Platform } from "react-native";
+import { AppState, Platform } from "react-native";
 
-import { downloadApk, installApk, type ApkDownload } from "./download";
 import { APP_VERSION } from "@/config/version";
-import { fetchLatestRelease } from "./github";
-import { UpdateSheet } from "./UpdateSheet";
+import { UpdateRequired } from "./UpdateRequired";
 
 /** The Expo Go app's id: running inside it there is no app of ours to update. */
 const EXPO_GO_ID = "host.exp.exponent";
@@ -15,18 +13,19 @@ export type UpdateState =
   | { phase: "idle" }
   | { phase: "checking" }
   | { phase: "upToDate" }
-  | { phase: "available"; release: AppRelease }
-  | { phase: "downloading"; release: AppRelease; ratio: number }
-  | { phase: "installing"; release: AppRelease }
-  | { phase: "error"; release: AppRelease | null; message: string };
+  /** A newer version is on Google Play. The app stays blocked behind the update screen until it is installed. */
+  | { phase: "required" }
+  /** Google Play's own update screen is open. */
+  | { phase: "updating" }
+  | { phase: "error"; message: string };
 
 type Update = {
   state: UpdateState;
-  /** The version of this app (from app.json, bundled with the code), shown in Settings and compared with the latest release. */
+  /** The version of this app (from app.json, bundled with the code), shown in Settings. */
   version: string;
-  /** Updates are offered on Android (APK from GitHub); iOS updates come from the store. */
+  /** Updates are handled here on Android builds from Google Play; iOS updates come from the store. */
   supported: boolean;
-  /** Asks GitHub for a newer version and reports "up to date" or a failure. */
+  /** Asks Google Play for a newer version and reports "up to date" or a failure. */
   check: () => Promise<void>;
 };
 
@@ -39,70 +38,80 @@ export function useUpdate() {
 }
 
 /**
- * Looks for a newer release once per launch (Android) and on request, and drives the update: ask → download inside the app with progress →
- * hand the APK to Android's installer. It renders the update sheet over whatever screen is open. Same signing key and a higher
- * versionCode are what let the phone install it over this app (see docs/RELEASING.md).
+ * Google Play in-app updates (Play Core), mandatory: when Play has a newer version of this app, an immediate update starts and the app
+ * stays behind a full-screen "Update required" screen until it is installed (Play restarts the app on the new version). Checks on launch
+ * and whenever the app comes back to the foreground. Play only answers for builds installed from Google Play, so a sideloaded or debug
+ * build simply reports "up to date".
  */
 export function UpdateProvider({ children }: { children: ReactNode }) {
   const version = APP_VERSION;
-  // Updates are offered on Android builds; Expo Go is the host app there and has nothing of ours to replace.
+  // Expo Go is the host app there and has nothing of ours to replace.
   const supported = Platform.OS === "android" && Application.applicationId !== EXPO_GO_ID;
   const [state, setState] = useState<UpdateState>({ phase: "idle" });
-  const download = useRef<ApkDownload | null>(null);
+  const busy = useRef(false);
 
-  /** The person asked: also says "up to date" and reports a failed check. */
-  const check = useCallback(async () => {
-    if (!supported) return;
-    setState({ phase: "checking" });
-    const latest = await fetchLatestRelease();
-    if (latest && isNewerVersion(latest.version, version)) setState({ phase: "available", release: latest });
-    else
-      setState(
-        latest ? { phase: "upToDate" } : { phase: "error", release: null, message: "Couldn’t reach GitHub. Try again in a moment." },
-      );
-  }, [supported, version]);
+  /** Starts Play's immediate update. Resolves false when Play could not open it (the blocking screen offers a retry). */
+  const install = useCallback(async () => {
+    setState({ phase: "updating" });
+    try {
+      const started = await InAppUpdates.startUpdate(true);
+      if (!started) setState({ phase: "required" });
+      return started;
+    } catch {
+      setState({ phase: "required" });
+      return false;
+    }
+  }, []);
 
-  // Once per launch, quietly: only a newer version shows anything.
+  /** `quiet` is the automatic check: it never shows "up to date" or a failure, only a required update. */
+  const run = useCallback(
+    async (quiet: boolean) => {
+      if (!supported || busy.current) return;
+      busy.current = true;
+      if (!quiet) setState({ phase: "checking" });
+      try {
+        const info = await InAppUpdates.checkForUpdate();
+        if (info.updateAvailable || info.updateInProgress) {
+          setState({ phase: "required" });
+          // Also resumes an immediate update that was interrupted (the app was closed or backgrounded mid-update).
+          await install();
+        } else if (!quiet) setState({ phase: "upToDate" });
+        else setState((s) => (s.phase === "checking" ? { phase: "idle" } : s));
+      } catch {
+        if (!quiet) setState({ phase: "error", message: "Couldn’t reach Google Play. Try again in a moment." });
+      } finally {
+        busy.current = false;
+      }
+    },
+    [supported, install],
+  );
+
+  const check = useCallback(() => run(false), [run]);
+
+  // On launch, and every time the app returns to the foreground (including coming back from a cancelled Play screen).
   useEffect(() => {
     if (!supported) return;
-    let live = true;
-    void fetchLatestRelease().then((latest) => {
-      if (live && latest && isNewerVersion(latest.version, version)) setState({ phase: "available", release: latest });
+    // Deferred a tick so the first check is not a state change inside the effect body.
+    const first = setTimeout(() => void run(true), 0);
+    const sub = AppState.addEventListener("change", (next) => {
+      if (next === "active") void run(true);
     });
+    const cancelled = InAppUpdates.addUpdateListener("updateCancelled", () => setState({ phase: "required" }));
+    const completed = InAppUpdates.addUpdateListener("updateCompleted", () => setState({ phase: "idle" }));
     return () => {
-      live = false;
+      clearTimeout(first);
+      sub.remove();
+      cancelled();
+      completed();
     };
-  }, [supported, version]);
-
-  async function start(release: AppRelease) {
-    setState({ phase: "downloading", release, ratio: 0 });
-    try {
-      download.current = downloadApk(release.apkUrl, (ratio) => setState((s) => (s.phase === "downloading" ? { ...s, ratio } : s)));
-      const uri = await download.current.done;
-      if (!uri) return setState({ phase: "available", release });
-      setState({ phase: "installing", release });
-      await installApk(uri);
-    } catch (e) {
-      setState({ phase: "error", release, message: e instanceof Error && e.message ? e.message : "Couldn’t update the app." });
-    } finally {
-      download.current = null;
-    }
-  }
+  }, [supported, run]);
 
   const value = useMemo<Update>(() => ({ state, version, supported, check }), [state, version, supported, check]);
-  const release = "release" in state ? state.release : null;
 
   return (
     <UpdateContext.Provider value={value}>
       {children}
-      <UpdateSheet
-        state={state}
-        current={version}
-        onUpdate={() => release && void start(release)}
-        onCancel={() => void download.current?.cancel()}
-        onBrowser={() => release && void Linking.openURL(release.apkUrl)}
-        onClose={() => setState({ phase: "idle" })}
-      />
+      <UpdateRequired visible={state.phase === "required" || state.phase === "updating"} updating={state.phase === "updating"} onUpdate={() => void install()} />
     </UpdateContext.Provider>
   );
 }

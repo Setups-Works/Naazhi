@@ -34,6 +34,7 @@ export const RELEASES: Release[] = [
       { kind: "fixed", platform: "web", text: "The Journal month calendar in the sidebar is no longer cut off, and the Journal tabs no longer sit under the streak squares." },
       { kind: "new", platform: "app", text: "On an iPad or tablet the app shows the website’s sidebar: Search, every section, the number of tasks due, and theme, settings, notifications, your plan and your picture in one row. Collapse it to icons when you want more room." },
       { kind: "improved", platform: "app", text: "Every page uses the room beside the sidebar, including the swipeable Journal and Plan pages, Health and Reader. Phones keep the floating bar." },
+      { kind: "improved", platform: "app", text: "Health shows the pink heart everywhere, in the menu, the sidebar and Settings, on Android as well as iPhone. The Resting heart rate tile no longer carries a logo." },
     ],
   },
   {

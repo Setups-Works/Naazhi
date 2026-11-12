@@ -217,7 +217,7 @@ export function HealthScreen({ edges }: { edges?: ScreenEdges }) {
                     />
                     <Tile
                       tone="blue"
-                      icon="heart-pulse"
+                      icon="pulse-line"
                       label={multi ? "Resting heart rate, average" : "Resting heart rate"}
                       value={sum.restingAvg === null ? null : `${sum.restingAvg} bpm`}
                       onPress={() => openMetric("resting")}

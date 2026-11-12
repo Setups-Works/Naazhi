@@ -31,6 +31,7 @@ import { AppText } from "@/components/ui/AppText";
 import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { AppLogo, type LogoName } from "@/components/ui/AppLogo";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Screen, type ScreenEdges } from "@/components/ui/Screen";
@@ -107,7 +108,7 @@ export function HealthScreen({ edges }: { edges?: ScreenEdges }) {
           }
         />
       ) : !hasData && conn.status === "setup" ? (
-        <SetupCard onConnect={() => void conn.connect()} name={healthSource?.name ?? "Health"} />
+        <SetupCard onConnect={() => void conn.connect()} name={healthSource?.name ?? "Health"} logo={healthSource ? (healthSource.id === "healthkit" ? "apple-health" : "health-connect") : null} />
       ) : daysQ.isError && !hasData ? (
         <ErrorState message={errorMessage(daysQ.error)} onRetry={() => void daysQ.refetch()} />
       ) : (
@@ -286,13 +287,17 @@ function SyncToggle({ on, unsupported, name, onChange }: { on: boolean; unsuppor
   );
 }
 
-function SetupCard({ onConnect, name }: { onConnect: () => void; name: string }) {
+function SetupCard({ onConnect, name, logo }: { onConnect: () => void; name: string; logo: LogoName | null }) {
   return (
     <Card tone="green">
       <View style={styles.setupHead}>
-        <View style={styles.badge}>
-          <Icon name="heart-pulse" size={20} color={Tints.green.fg} />
-        </View>
+        {logo ? (
+          <AppLogo name={logo} size={40} />
+        ) : (
+          <View style={styles.badge}>
+            <Icon name="heart-pulse" size={20} color={Tints.green.fg} />
+          </View>
+        )}
         <AppText variant="heading" style={styles.flex}>
           Connect {name}
         </AppText>

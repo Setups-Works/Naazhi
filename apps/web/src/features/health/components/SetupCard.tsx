@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Icon as FA } from "@/components/ui/Icon";
-import { faHeartPulse, faLock } from "@fortawesome/free-solid-svg-icons";
+import { faLock } from "@fortawesome/free-solid-svg-icons";
+import { Logo } from "../../../components/site/Logo";
 import HealthSources from "./HealthSources";
 
 /** The not-connected screen: shown while no health data has reached the account (the phone was never set up, or access wasn't allowed). */
@@ -8,8 +9,13 @@ export default function SetupCard() {
   return (
     <section className="mx-auto flex max-w-[760px] flex-col gap-6" aria-labelledby="health-setup">
       <div className="flex flex-col items-center gap-3 rounded-r4 border bg-paper px-6 py-10 text-center">
-        <span className="grid size-12 place-items-center rounded-r3 border text-[20px] text-ink-2">
-          <FA icon={faHeartPulse} />
+        <span aria-hidden className="flex items-center gap-3">
+          <span className="grid size-12 place-items-center rounded-r3 border">
+            <Logo name="Apple Health" size={30} />
+          </span>
+          <span className="grid size-12 place-items-center rounded-r3 border">
+            <Logo name="Google Health Connect" size={30} />
+          </span>
         </span>
         <h2 id="health-setup" className="m-0 text-[20px] font-semibold tracking-[-0.01em]">
           Connect your health data

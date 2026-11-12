@@ -1,4 +1,5 @@
 import type { ComponentProps } from "react";
+import HealthIcon from "./HealthIcon";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -50,7 +51,11 @@ const LINE: Record<string, LucideIcon> = {
 
 type Props = Omit<ComponentProps<typeof FontAwesomeIcon>, "icon"> & { icon: IconDefinition };
 
+/** Health is drawn as a full-colour picture that follows the device (see HealthIcon): Google's on Android, Apple's on iPhone and Mac, our heart elsewhere. */
+const HEALTH_ICON = "heart-pulse";
+
 export function Icon({ icon, className, spin, fixedWidth, ...rest }: Props) {
+  if (icon.iconName === HEALTH_ICON) return <HealthIcon className={className} fixedWidth={fixedWidth} />;
   const Line = LINE[icon.iconName];
   if (!Line) return <FontAwesomeIcon icon={icon} className={className} spin={spin} fixedWidth={fixedWidth} {...rest} />;
   const cls = ["inline-block shrink-0 align-[-0.125em]", fixedWidth ? "w-[1.25em]" : "", spin ? "animate-spin motion-reduce:animate-none" : "", className ?? ""]

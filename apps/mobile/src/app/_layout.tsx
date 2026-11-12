@@ -106,6 +106,8 @@ function Routes({ fresh }: { fresh: boolean }) {
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: Palette.page } }}>
       <Stack.Screen name="index" />
+      {/* A shared chat opens for anyone, signed in or not (the link is the key). */}
+      <Stack.Screen name="share/[token]" />
       <Stack.Protected guard={!onboardingDone}>
         <Stack.Screen name="(onboarding)" />
       </Stack.Protected>

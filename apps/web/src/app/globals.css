@@ -5223,61 +5223,50 @@
   }
 
   /* ===== product demo app ===== */
+  /* The dashboard is monochrome (white, greys, ink), so inside the preview every tint is a grey: the colours the rest of the site
+     uses for tints are redefined here, and the tint classes on the cards are overridden below. */
   .da {
+    --blue-bg: var(--hover);
+    --blue-fg: var(--fg-muted);
+    --blue-line: var(--line-strong);
+    --amber-bg: var(--hover);
+    --amber-fg: var(--fg-muted);
+    --amber-line: var(--line-strong);
+    --clay-bg: var(--hover);
+    --clay-fg: var(--fg-muted);
+    --clay-line: var(--line-strong);
+    --green-bg: var(--hover);
+    --green-fg: var(--fg-muted);
+    --green-line: var(--line-strong);
+    --violet-bg: var(--hover);
+    --violet-fg: var(--fg-muted);
+    --violet-line: var(--line-strong);
+    --pink-bg: var(--hover);
+    --pink-fg: var(--fg-muted);
+    --pink-line: var(--line-strong);
+    --gold-bg: var(--hover);
+    --gold-fg: var(--fg-muted);
+    --gold-line: var(--line-strong);
+    --mint-bg: var(--hover);
+    --mint-fg: var(--fg-muted);
+    --mint-line: var(--line-strong);
+    --sand-bg: var(--hover);
+    --sand-fg: var(--fg-muted);
+    --sand-line: var(--line-strong);
+    --slate-bg: var(--hover);
+    --slate-fg: var(--fg-muted);
+    --slate-line: var(--line-strong);
+    --teal-bg: var(--hover);
+    --teal-fg: var(--fg-muted);
+    --teal-line: var(--line-strong);
     position: relative;
-    border-radius: var(--r5);
-    background: var(--surface-muted);
-    box-shadow: inset 0 0 0 1px var(--line);
-    padding: 12px;
-    text-align: left;
-  }
-  .da-bar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 2px 6px 12px;
-    flex-wrap: wrap;
-  }
-  .da-dots {
-    display: flex;
-    gap: 6px;
-  }
-  .da-dots i {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    display: block;
-  }
-  .da-dots i:nth-child(1) {
-    background: color-mix(in srgb, var(--clay-fg) 26%, transparent);
-  }
-  .da-dots i:nth-child(2) {
-    background: color-mix(in srgb, var(--amber-fg) 26%, transparent);
-  }
-  .da-dots i:nth-child(3) {
-    background: color-mix(in srgb, var(--accent-color) 26%, transparent);
-  }
-  .da-search {
-    flex: 1;
-    min-width: 180px;
-    max-width: 420px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    height: 38px;
-    padding: 0 14px;
-    border-radius: 99px;
+    border-radius: var(--r4);
     background: var(--raised);
-    box-shadow: inset 0 0 0 1px var(--line);
-    color: var(--fg-subtle);
-    font-size: 14px;
+    box-shadow:
+      inset 0 0 0 1px var(--line),
+      var(--e2);
+    overflow: hidden;
     text-align: left;
-  }
-  .da-search:hover {
-    box-shadow: inset 0 0 0 1px var(--line-strong);
-  }
-  .da-search span {
-    flex: 1;
   }
   kbd {
     font: 500 11px/1 var(--mono);
@@ -5286,25 +5275,141 @@
     background: var(--surface-sunken);
     color: var(--fg-subtle);
   }
-  .da-ai {
+  /* The window is laid out like the app: a quiet sidebar, the page, and a slim column on the right. */
+  .da [class*="at-"] {
+    --ab: var(--side);
+    --abl: var(--line);
+    --abf: var(--fg);
+  }
+  .da-body {
+    display: grid;
+    grid-template-columns: 232px 1fr 288px;
+    height: 640px;
+  }
+  .da-side {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px 12px 12px;
+    background: var(--side);
+    border-right: 1px solid var(--line);
+    overflow: auto;
+    scrollbar-width: thin;
+  }
+  .da-brand {
     display: flex;
     align-items: center;
+    gap: 9px;
+    padding: 2px 8px 10px;
+    font-family: var(--brand, var(--serif));
+    font-size: 21px;
+    letter-spacing: -0.02em;
+    color: var(--fg);
+  }
+  .da-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 38px;
+    padding: 0 10px;
+    border-radius: var(--r2);
+    color: var(--fg-muted);
+    font-size: 14px;
+    text-align: left;
+    margin-bottom: 6px;
+  }
+  .da-search:hover {
+    background: var(--hover);
+    color: var(--fg);
+  }
+  .da-search svg {
+    width: 15px;
+    color: var(--fg-subtle);
+  }
+  .da-search span {
+    flex: 1;
+  }
+  .da-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .da-nav > button {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    height: 38px;
+    padding: 0 10px;
+    border-radius: var(--r2);
+    font-size: 14.5px;
+    color: var(--fg-muted);
+    text-align: left;
+    transition:
+      background 0.16s,
+      color 0.16s;
+  }
+  .da-nav > button svg {
+    width: 15px;
+    color: var(--fg-subtle);
+  }
+  .da-nav > button span {
+    flex: 1;
+  }
+  .da-nav > button:hover {
+    background: var(--hover);
+    color: var(--fg);
+  }
+  .da-nav > button.on {
+    background: var(--hover);
+    color: var(--fg);
+    font-weight: 500;
+  }
+  .da-nav > button.on svg {
+    color: var(--fg);
+  }
+  .da-nav em {
+    font-style: normal;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 99px;
+    background: var(--surface-sunken);
+    color: var(--fg-muted);
+  }
+  .da-foot {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+  .da-ai {
+    display: flex;
+    flex-direction: column;
     gap: 8px;
-    margin-left: auto;
   }
   .da-switch {
     display: flex;
     align-items: center;
-    gap: 8px;
-    height: 38px;
-    padding: 0 6px 0 14px;
-    border-radius: 99px;
-    background: var(--raised);
-    box-shadow: inset 0 0 0 1px var(--line);
+    gap: 9px;
+    height: 36px;
+    padding: 0 6px 0 10px;
+    border-radius: var(--r2);
     font-size: 13.5px;
+    color: var(--fg-muted);
+    white-space: nowrap;
+  }
+  .da-switch:hover {
+    background: var(--hover);
   }
   .da-switch svg {
-    color: var(--amber-fg);
+    width: 14px;
+    color: var(--fg-subtle);
+  }
+  .da-switch span {
+    flex: 1;
+    text-align: left;
   }
   .da-switch i {
     position: relative;
@@ -5327,118 +5432,67 @@
     transition: transform 0.25s var(--ease);
   }
   .da-switch i[data-on="true"] {
-    background: var(--green-fg);
+    background: var(--fill-dark);
     box-shadow: none;
   }
   .da-switch i[data-on="true"] b {
     transform: translateX(14px);
   }
   .da-ai select {
-    height: 38px;
-    padding: 0 12px;
-    border-radius: 99px;
+    height: 36px;
+    min-width: 0;
+    padding: 0 10px;
+    border-radius: var(--r2);
     border: 0;
     background: var(--raised);
     box-shadow: inset 0 0 0 1px var(--line);
     font: inherit;
     font-size: 13px;
-  }
-  .da-reset {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: var(--raised);
-    box-shadow: inset 0 0 0 1px var(--line);
-    color: var(--fg-subtle);
-  }
-  .da-reset:hover {
-    color: var(--fg);
-  }
-
-  .da-body {
-    display: grid;
-    grid-template-columns: 200px 1fr 290px;
-    gap: 12px;
-    height: 600px;
-  }
-  .da-side,
-  .da-main,
-  .da-rail {
-    background: var(--raised);
-    border-radius: var(--r3);
-    box-shadow: inset 0 0 0 1px var(--line);
-    padding: 14px;
-    overflow: auto;
-    scrollbar-width: thin;
-  }
-  .da-side {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .da-side > button {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    padding: 10px 12px;
-    border-radius: var(--r1);
-    font-size: 14px;
-    color: var(--fg-muted);
-    text-align: left;
-    transition:
-      background 0.16s,
-      color 0.16s;
-  }
-  .da-side > button svg {
-    width: 15px;
-    color: var(--fg-subtle);
-  }
-  .da-side > button span {
-    flex: 1;
-  }
-  .da-side > button:hover {
-    background: var(--surface-muted);
-    color: var(--fg);
-  }
-  .da-side > button.on {
-    background: var(--green-bg);
-    color: var(--green-fg);
-    font-weight: 500;
-  }
-  .da-side > button.on svg {
-    color: var(--green-fg);
-  }
-  .da-side em {
-    font-style: normal;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2px 7px;
-    border-radius: 99px;
-    background: var(--surface-sunken);
-    color: var(--fg-muted);
+    text-overflow: ellipsis;
   }
   .da-priv {
-    margin-top: auto;
-    padding: 12px;
+    padding: 10px 12px;
     border-radius: var(--r2);
-    background: var(--green-bg);
-    color: var(--green-fg);
+    background: var(--hover);
+    color: var(--fg-muted);
     font-size: 12px;
-    line-height: 1.4;
+    line-height: 1.45;
   }
   .da-priv svg {
     margin-right: 6px;
+    color: var(--fg-subtle);
+  }
+  .da-reset {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: var(--r2);
+    font-size: 13px;
+    color: var(--fg-subtle);
+    text-align: left;
+  }
+  .da-reset:hover {
+    background: var(--hover);
+    color: var(--fg);
+  }
+  .da-reset svg {
+    width: 14px;
   }
   .da-main {
-    padding: 22px 24px;
+    padding: 26px 30px;
+    background: var(--raised);
+    overflow: auto;
+    scrollbar-width: thin;
     animation: appIn 0.3s var(--ease);
   }
   .da-main h4 {
-    font-family: var(--serif);
-    font-weight: 400;
+    font-family: var(--sans);
+    font-weight: 600;
     font-size: clamp(26px, 3vw, 34px);
-    letter-spacing: -0.025em;
-    margin: 8px 0 14px;
+    letter-spacing: -0.03em;
+    margin: 8px 0 16px;
     line-height: 1.1;
   }
   .da-head {
@@ -5452,7 +5506,7 @@
     width: 54px;
     height: 54px;
     border-radius: 50%;
-    background: conic-gradient(var(--green-fg) calc(var(--p) * 1%), var(--surface-sunken) 0);
+    background: conic-gradient(var(--fill-dark) calc(var(--p) * 1%), var(--surface-sunken) 0);
     display: grid;
     place-items: center;
     flex: none;
@@ -5489,11 +5543,11 @@
     transform: translateY(-2px);
   }
   .da-stats b {
-    font-family: var(--serif);
-    font-weight: 400;
-    font-size: 40px;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 36px;
     line-height: 1;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.035em;
   }
   .da-stats span {
     font-size: 12.5px;
@@ -5541,7 +5595,7 @@
     outline: 0;
   }
   .da-add input:focus {
-    box-shadow: inset 0 0 0 2px var(--green-fg);
+    box-shadow: inset 0 0 0 2px var(--fill-dark);
   }
   .da-add.pop {
     animation: appIn 0.25s var(--ease);
@@ -5568,7 +5622,7 @@
     box-shadow: inset 0 0 0 1px var(--line-strong);
   }
   .da-chips button[data-on="true"] {
-    background: var(--green-fg);
+    background: var(--fill-dark);
     color: var(--on-dark);
     box-shadow: none;
   }
@@ -5597,7 +5651,7 @@
     margin-bottom: 10px;
   }
   .da-text:focus {
-    box-shadow: inset 0 0 0 2px var(--green-fg);
+    box-shadow: inset 0 0 0 2px var(--fill-dark);
   }
   .da-text.note {
     font-family: var(--sans);
@@ -5643,7 +5697,7 @@
   }
   .da-entry button {
     font-size: 12.5px;
-    color: var(--green-fg);
+    color: var(--fg);
     text-decoration: underline;
     margin-top: 4px;
   }
@@ -5682,10 +5736,10 @@
     transition: all 0.2s var(--ease);
   }
   .da-check:hover {
-    box-shadow: inset 0 0 0 1.5px var(--green-fg);
+    box-shadow: inset 0 0 0 1.5px var(--fill-dark);
   }
   .da-task.done .da-check {
-    background: var(--green-fg);
+    background: var(--fill-dark);
     box-shadow: none;
   }
   .da-line {
@@ -5719,7 +5773,7 @@
     transition: background 0.3s;
   }
   .da-wave[data-on="true"] i {
-    background: var(--green-fg);
+    background: var(--fill-dark);
     animation: wave 1s ease-in-out infinite alternate;
   }
   .da-rule {
@@ -5770,8 +5824,8 @@
     box-shadow: inset 0 0 0 1px var(--line-strong);
   }
   .da-mlist > button.on {
-    background: var(--green-bg);
-    box-shadow: inset 0 0 0 1px var(--green-line);
+    background: var(--hover);
+    box-shadow: inset 0 0 0 1px var(--line-strong);
   }
   .da-mlist b {
     font-size: 13.5px;
@@ -5791,7 +5845,7 @@
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: var(--green-fg);
+    background: var(--fill-dark);
   }
   .da-mview {
     display: flex;
@@ -5813,7 +5867,7 @@
     max-width: 92%;
   }
   .da-thread > div.me {
-    background: var(--green-bg);
+    background: var(--hover);
     align-self: flex-end;
   }
   .da-thread small {
@@ -5839,8 +5893,8 @@
     border-radius: 8px;
   }
   .da-cal > b.today {
-    background: var(--green-bg);
-    color: var(--green-fg);
+    background: var(--hover);
+    color: var(--fg);
   }
   .da-cal small {
     display: flex;
@@ -5883,14 +5937,19 @@
     transition: all 0.15s;
   }
   .slot:hover {
-    color: var(--green-fg);
-    background: var(--green-bg);
+    color: var(--fg);
+    background: var(--hover);
     box-shadow: none;
   }
   .da-rail {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 16px;
+    padding: 22px 18px;
+    background: var(--raised);
+    border-left: 1px solid var(--line);
+    overflow: auto;
+    scrollbar-width: thin;
   }
   .da-agenda {
     display: flex;
@@ -5912,8 +5971,9 @@
   .da-tour {
     margin-top: auto;
     padding: 14px;
-    border-radius: var(--r2);
-    background: var(--surface-muted);
+    border-radius: var(--r3);
+    background: var(--side);
+    box-shadow: inset 0 0 0 1px var(--line);
   }
   .da-tour-h {
     display: flex;
@@ -5922,7 +5982,7 @@
   }
   .da-tour-h b {
     font-size: 13px;
-    color: var(--green-fg);
+    color: var(--fg);
   }
   .da-prog {
     height: 6px;
@@ -5934,7 +5994,7 @@
   .da-prog i {
     display: block;
     height: 100%;
-    background: var(--green-fg);
+    background: var(--fill-dark);
     border-radius: 99px;
     transition: width 0.4s var(--ease);
   }
@@ -5975,13 +6035,13 @@
     text-decoration: line-through;
   }
   .da-tour li button[data-done="true"] span {
-    background: var(--green-fg);
+    background: var(--fill-dark);
     box-shadow: none;
   }
   .da-win {
     margin-top: 10px;
     font-size: 12.5px;
-    color: var(--green-fg);
+    color: var(--fg);
     font-weight: 500;
   }
   .da-toast {
@@ -6057,7 +6117,7 @@
     text-align: left;
   }
   .da-pal li button[data-on="true"] {
-    background: var(--green-bg);
+    background: var(--hover);
   }
   .da-pal li em {
     font: 600 10.5px/1 var(--sans);
@@ -6091,7 +6151,7 @@
   }
   @media (max-width: 1100px) {
     .da-body {
-      grid-template-columns: 180px 1fr;
+      grid-template-columns: 208px 1fr;
       height: auto;
     }
     .da-main {
@@ -6114,33 +6174,57 @@
       grid-template-columns: 1fr;
     }
     .da-side {
+      border-right: 0;
+      border-bottom: 1px solid var(--line);
+      padding: 12px;
+    }
+    .da-brand {
+      display: none;
+    }
+    .da-nav {
       flex-direction: row;
       overflow-x: auto;
-      padding: 8px;
       gap: 6px;
       scrollbar-width: none;
     }
-    .da-side::-webkit-scrollbar {
+    .da-nav::-webkit-scrollbar {
       display: none;
     }
-    .da-side > button {
+    .da-nav > button {
       white-space: nowrap;
-      padding: 9px 14px;
+      padding: 0 14px;
       border-radius: 99px;
       box-shadow: inset 0 0 0 1px var(--line);
     }
-    .da-side > button.on {
+    .da-nav > button span {
+      flex: none;
+    }
+    .da-nav > button.on {
+      background: var(--fill-dark);
+      color: var(--on-dark);
       box-shadow: none;
     }
-    .da-side > button span {
-      flex: none;
+    .da-nav > button.on svg {
+      color: var(--on-dark);
+    }
+    .da-foot {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      border-top: 0;
+      padding-top: 0;
+    }
+    .da-ai {
+      flex-direction: row;
+      align-items: center;
+      flex: 1;
     }
     .da-priv {
       display: none;
     }
-    .da-ai {
-      margin-left: 0;
-      width: 100%;
+    .da-rail {
+      border-left: 0;
+      border-top: 1px solid var(--line);
     }
     .da-mail {
       grid-template-columns: 1fr;
@@ -6168,34 +6252,6 @@
       animation: none !important;
     }
   }
-  .da-switch {
-    white-space: nowrap;
-    flex: none;
-  }
-  .da-ai select {
-    min-width: 0;
-    max-width: 210px;
-    text-overflow: ellipsis;
-  }
-  @media (max-width: 800px) {
-    .da-bar {
-      gap: 8px;
-    }
-    .da-ai {
-      flex: 1;
-      margin-left: 0;
-      width: auto;
-      min-width: 0;
-    }
-    .da-search {
-      max-width: none;
-    }
-    .da-ai select {
-      flex: 1;
-      max-width: none;
-    }
-  }
-
   /* ===== auth pages ===== */
   .nav-login {
     font-size: 14.5px;

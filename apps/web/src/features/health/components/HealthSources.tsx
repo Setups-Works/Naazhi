@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import type { HealthDay } from "@untitled/types";
-import { Icon as FA } from "@/components/ui/Icon";
+import { Logo } from "../../../components/site/Logo";
 import { Button } from "@/components/ui/button";
 import { AppRow, Tag } from "../../settings/ui";
 import { HEALTH_SOURCES, type HealthSource } from "../sources";
@@ -23,8 +23,8 @@ export default function HealthSources({ days }: { days: HealthDay[] }) {
               name={s.name}
               description={s.description}
               logo={
-                <span aria-hidden className={`grid size-10 shrink-0 place-items-center rounded-r2 border bg-paper text-[18px] ${s.tone}`}>
-                  <FA icon={s.icon} />
+                <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-r2 border bg-paper">
+                  <Logo name={s.name} size={34} />
                 </span>
               }
               extra={at ? <p className="m-0 mt-0.5 text-[13px] text-ink-3">Last synced {when(at)}</p> : undefined}

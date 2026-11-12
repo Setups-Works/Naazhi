@@ -21,20 +21,25 @@ import { Palette, themedStyles } from "@/constants/theme";
  */
 export function ChatScreen() {
   const chatsQ = useChats();
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const { ask, n, chat } = useLocalSearchParams<{ ask?: string; n?: string; chat?: string }>();
+  const [pickedId, setActiveId] = useState<string | null>(null);
+  // A chat named by the route (?chat=<id>, from "Continue the conversation" on a shared chat) opens once, until the person picks another.
+  const [usedChat, setUsedChat] = useState("");
+  const routed = chat && chat !== usedChat ? chat : null;
+  const activeId = routed ?? pickedId;
   const [run, setRun] = useState(0);
   const [drawer, setDrawer] = useState(false);
   const [sharing, setSharing] = useState(false);
 
   // A message handed over from another screen (the Health actions, see askChat): it starts a new chat once. `consumed` remembers which
   // hand-off was already used, so picking another chat or tapping "new chat" afterwards never sends it again.
-  const { ask, n } = useLocalSearchParams<{ ask?: string; n?: string }>();
   const handoff = ask ? `${n ?? ""}|${ask}` : "";
   const [consumed, setConsumed] = useState("");
   const seed = handoff && handoff !== consumed ? ask?.slice(0, 500) : undefined;
 
   const open = (id: string | null) => {
     setActiveId(id);
+    setUsedChat(chat ?? "");
     setConsumed(handoff);
     setRun((r) => r + 1);
     setDrawer(false);
@@ -67,7 +72,7 @@ export function ChatScreen() {
       </View>
 
       <Conversation
-        key={`${run}:${handoff}`}
+        key={`${run}:${handoff}:${routed ?? ""}`}
         chatId={seed ? null : activeId}
         seed={seed}
         onSeeded={() => setConsumed(handoff)}

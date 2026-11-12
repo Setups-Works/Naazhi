@@ -34,6 +34,8 @@ const FILE: Record<string, string> = {
   Linear: "linear.svg",
   Cloudflare: "cloudflare.svg",
   Eventbrite: "eventbrite.png",
+  "Google Health Connect": "health-connect.png",
+  "Apple Health": "apple-health.png",
 };
 
 /** True when `Logo` has a real logo for this name (otherwise it would draw the initial). */

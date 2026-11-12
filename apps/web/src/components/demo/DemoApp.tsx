@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
+import { BrandMark } from "@/components/BrandMark";
 import {
   faHouse,
   faBookOpen,
@@ -189,67 +190,67 @@ export default function DemoApp() {
 
   return (
     <div className="da">
-      <div className="da-bar">
-        <span className="da-dots">
-          <i />
-          <i />
-          <i />
-        </span>
-        <button className="da-search" onClick={() => setPalette(true)} aria-label="Search everything">
-          <FA icon={faMagnifyingGlass} /> <span>Search everything</span> <kbd>⌘K</kbd>
-        </button>
-        <div className="da-ai">
-          <button
-            role="switch"
-            aria-checked={ai}
-            className="da-switch"
-            onClick={() => {
-              setAi(!ai);
-              if (ai) {
-                mark("ai");
-                say("AI is off — the workspace works the same");
-              } else say("AI is on");
-            }}
-          >
-            <FA icon={ai ? faWandMagicSparkles : faBan} /> AI {ai ? "on" : "off"}
-            <i data-on={ai}>
-              <b />
-            </i>
-          </button>
-          {ai && (
-            <select
-              aria-label="AI provider"
-              value={provider}
-              onChange={(e) => {
-                setProvider(e.target.value);
-                say("Provider changed — your content didn’t move");
-              }}
-            >
-              {PROVIDERS.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.t}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-        <button className="da-reset" onClick={reset} aria-label="Reset demo">
-          <FA icon={faRotateRight} />
-        </button>
-      </div>
-
       <div className="da-body">
         <nav className="da-side" aria-label="Demo navigation">
-          {NAV.map((n) => (
-            <button key={n.id} className={view === n.id ? "on" : ""} aria-pressed={view === n.id} onClick={() => setView(n.id)}>
-              <FA icon={n.i} />
-              <span>{n.t}</span>
-              {n.id === "email" && unread > 0 && <em>{unread}</em>}
-              {n.id === "todo" && openTasks > 0 && <em>{openTasks}</em>}
+          <div className="da-brand">
+            <BrandMark size={22} />
+            <span>Naazhi</span>
+          </div>
+          <button className="da-search" onClick={() => setPalette(true)} aria-label="Search everything">
+            <FA icon={faMagnifyingGlass} /> <span>Search</span> <kbd>⌘K</kbd>
+          </button>
+          <div className="da-nav">
+            {NAV.map((n) => (
+              <button key={n.id} className={view === n.id ? "on" : ""} aria-pressed={view === n.id} onClick={() => setView(n.id)}>
+                <FA icon={n.i} />
+                <span>{n.t}</span>
+                {n.id === "email" && unread > 0 && <em>{unread}</em>}
+                {n.id === "todo" && openTasks > 0 && <em>{openTasks}</em>}
+              </button>
+            ))}
+          </div>
+          <div className="da-foot">
+            <div className="da-ai">
+              <button
+                role="switch"
+                aria-checked={ai}
+                className="da-switch"
+                onClick={() => {
+                  setAi(!ai);
+                  if (ai) {
+                    mark("ai");
+                    say("AI is off — the workspace works the same");
+                  } else say("AI is on");
+                }}
+              >
+                <FA icon={ai ? faWandMagicSparkles : faBan} /> <span>AI {ai ? "on" : "off"}</span>
+                <i data-on={ai}>
+                  <b />
+                </i>
+              </button>
+              {ai && (
+                <select
+                  aria-label="AI provider"
+                  value={provider}
+                  onChange={(e) => {
+                    setProvider(e.target.value);
+                    say("Provider changed — your content didn’t move");
+                  }}
+                >
+                  {PROVIDERS.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.t}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+            <div className="da-priv">
+              <FA icon={faShieldHalved} /> Your workspace stays put, whichever AI you pick.
+            </div>
+            <button className="da-reset" onClick={reset} aria-label="Reset demo">
+              <FA icon={faRotateRight} /> Reset demo
             </button>
-          ))}
-          <div className="da-priv">
-            <FA icon={faShieldHalved} /> Your workspace stays put, whichever AI you pick.
           </div>
         </nav>
 

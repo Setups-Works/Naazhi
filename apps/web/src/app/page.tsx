@@ -9,6 +9,7 @@ import { CtaPanel } from "../components/site/kit";
 import { Reveal } from "../components/site/Reveal";
 import Ai from "../components/site/home/Ai";
 import Capabilities from "../components/site/home/Capabilities";
+import HealthConnect from "../components/site/home/HealthConnect";
 import Hero from "../components/site/home/Hero";
 import Integrations, { IntegrationsTicker } from "../components/site/home/Integrations";
 import Pro from "../components/site/home/Pro";
@@ -33,6 +34,7 @@ export default function Page() {
       <Hero />
       <IntegrationsTicker />
       <Story />
+      <HealthConnect />
       <Capabilities />
       <WhatsNew />
       <Integrations />

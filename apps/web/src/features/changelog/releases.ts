@@ -23,6 +23,23 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-12",
+    title: "Version 6.2.2: open shared chats in the app, a new demo, and Health logos",
+    summary: "Shared chat links open in the app and can be continued as your own chat. The product demo is rebuilt to look like your dashboard, and Health shows the Apple and Google logos. The app’s icons are fixed.",
+    tone: "sand",
+    appVersion: "v6.2.2",
+    changes: [
+      { kind: "new", platform: "web", text: "A shared chat page now has “Continue the conversation”, which copies the chat into your own chats so you can carry on." },
+      { kind: "new", platform: "app", text: "Shared chat links open in the app, and “Continue the conversation” copies the chat into your chats and opens it." },
+      { kind: "improved", platform: "web", text: "The product demo is rebuilt: the preview now looks like the dashboard, in black and white, with a guided tour, an area-by-area guide, a day with Naazhi and answers to common questions." },
+      { kind: "new", platform: "web", text: "The home page has a new Health section before “The workspace”, showing Apple Health and Google Health Connect." },
+      { kind: "improved", platform: "web", text: "Health shows your device’s own logo: Google Health Connect on Android and Apple’s heart on iPhone and Mac. Settings → Health lists both sources with their logos." },
+      { kind: "improved", platform: "app", text: "Health shows the Google Health Connect logo on Android and Apple’s heart on iPhone, in Settings and on the Health screen." },
+      { kind: "fixed", platform: "app", text: "Icons are thin outlines again. In 6.2.1 many of them came out as solid black shapes." },
+      { kind: "fixed", platform: "app", text: "The keyboard no longer pushes the chat box too high or hides the top bar on Android." },
+    ],
+  },
+  {
+    date: "2026-11-12",
     title: "Version 6.2.1: a new icon, a livelier launch, and your choice of app icon",
     summary: "The Naazhi icon is now black on white, the app opens with a livelier animation, and you can pick one of five home-screen icons in Settings. The app also gets a Sign out button.",
     tone: "gold",

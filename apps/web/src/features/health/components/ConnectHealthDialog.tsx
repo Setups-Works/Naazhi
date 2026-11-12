@@ -2,6 +2,7 @@
 import { Icon as FA } from "@/components/ui/Icon";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../../../components/ui/Modal";
+import { Logo } from "../../../components/site/Logo";
 import type { HealthSource } from "../sources";
 
 /** The connect screen: numbered steps to run on the phone for one source. Connecting can't happen on the web. */
@@ -10,7 +11,9 @@ export default function ConnectHealthDialog({ source, onClose }: { source: Healt
     <Modal label={`Connect ${source.name}`} onClose={onClose} size="md">
       <div className="td">
         <div className="td-head">
-          <h2 className="h3">Connect {source.name}</h2>
+          <h2 className="h3 flex items-center gap-2.5">
+            <Logo name={source.name} size={26} /> Connect {source.name}
+          </h2>
           <button type="button" className="ne-btn" aria-label="Close" onClick={onClose}>
             <FA icon={faXmark} />
           </button>

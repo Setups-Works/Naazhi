@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Pressable, Switch, View } from "react-native";
 
 import { ACCENT_SWATCH, ACCENTS, Palette, Radius, SCHEMES, type Accent, type Scheme, themedStyles } from "@/constants/theme";
+import { AppLogo } from "@/components/ui/AppLogo";
 import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
@@ -245,6 +246,10 @@ export function HealthPrefs() {
       <SaveError error={error} />
       <Group title="Sources" note="Read on this phone">
         <Row title="Apple Health / Health Connect" description="Steps, sleep and heart data are read from your phone and synced from the Health page." last>
+          <View style={styles.sourceLogos}>
+            <AppLogo name="apple-health" size={32} />
+            <AppLogo name="health-connect" size={32} />
+          </View>
           <Button title="Open Health" kind="secondary" onPress={() => router.navigate({ pathname: "/todo", params: { view: "health" } })} />
         </Row>
       </Group>
@@ -264,6 +269,7 @@ export function HealthPrefs() {
 const styles = themedStyles(() => ({
   pad: { gap: 12 },
   swatches: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+  sourceLogos: { flexDirection: "row", gap: 6 },
   icons: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   iconItem: { alignItems: "center", gap: 6 },
   iconImg: { width: 56, height: 56, borderRadius: Radius.r2, borderWidth: 1, borderColor: Palette.line },

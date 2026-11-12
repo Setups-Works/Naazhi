@@ -9,6 +9,8 @@ const FILES = {
   "ai-openrouter": require("../../../assets/logos/ai-openrouter.svg") as number,
   "cloudflare": require("../../../assets/logos/cloudflare.svg") as number,
   "github": require("../../../assets/logos/github.svg") as number,
+  "apple-health": require("../../../assets/logos/apple-health.png") as number,
+  "health-connect": require("../../../assets/logos/health-connect.png") as number,
   "gmail": require("../../../assets/logos/gmail.svg") as number,
   "google-calendar": require("../../../assets/logos/google-calendar.svg") as number,
   "google-drive": require("../../../assets/logos/google-drive.svg") as number,

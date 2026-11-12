@@ -1,4 +1,5 @@
 import { FontAwesome6 } from "@expo/vector-icons";
+import { Image as Picture } from "expo-image";
 import {
   AlignLeft,
   Archive,
@@ -166,6 +167,7 @@ import {
   type LucideIcon,
 } from "lucide-react-native";
 import type { ComponentProps } from "react";
+import { Platform } from "react-native";
 
 import { Palette } from "@/constants/theme";
 
@@ -351,8 +353,19 @@ const LINE: Record<string, LucideIcon> = {
 };
 
 /** `fill` solid-fills a line icon (a heart, a star); most icons stay outlines. */
+/** Health follows the phone: Google Health Connect's logo on Android, Apple's heart on iPhone, our own heart anywhere else (the web build). */
+const HEALTH_PICTURE =
+  Platform.OS === "android"
+    ? (require("../../../assets/images/health-google.png") as number)
+    : Platform.OS === "ios"
+      ? (require("../../../assets/images/health-apple.png") as number)
+      : (require("../../../assets/images/health-heart.png") as number);
+
 export function Icon({ name, size = 18, color = Palette.fg, fill }: { name: IconName; size?: number; color?: string; fill?: string }) {
+  // Health is drawn as its own full-colour heart wherever the app shows a Health icon.
+  if (name === "heart-pulse") return <Picture source={HEALTH_PICTURE} style={{ width: size, height: size }} contentFit="contain" accessibilityElementsHidden />;
   const Line = LINE[name];
   if (!Line) return <FontAwesome6 name={name} size={size} color={color} solid />;
-  return <Line size={size} color={color} strokeWidth={1.75} fill={fill} />;
+  // An outline icon must say "none" itself: handing the library an undefined fill replaces its default and paints every icon solid.
+  return <Line size={size} color={color} strokeWidth={1.75} fill={fill ?? "none"} />;
 }

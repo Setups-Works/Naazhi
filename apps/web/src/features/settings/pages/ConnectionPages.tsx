@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import Modal from "../../../components/ui/Modal";
 import { useHealthDays } from "../../health/queries";
 import { HEALTH_SOURCES, type HealthSource } from "../../health/sources";
+import { Logo } from "../../../components/site/Logo";
 import ConnectHealthDialog from "../../health/components/ConnectHealthDialog";
 import { fromFileList, importSummary, importVault } from "../importVault";
 import { AppRow, LogoTile, SettingsEmpty, SettingsNotice, SettingsRow, SettingsSection, Tag } from "../ui";
@@ -83,8 +84,8 @@ export function HealthPage({ prefs: initial }: { prefs: Prefs }) {
               name={s.name}
               description={s.description}
               logo={
-                <span aria-hidden className={`grid size-10 shrink-0 place-items-center rounded-r2 border bg-raised text-[18px] ${s.tone}`}>
-                  <FA icon={s.icon} />
+                <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-r2 border bg-raised">
+                  <Logo name={s.name} size={34} />
                 </span>
               }
               extra={at ? <p className="m-0 mt-0.5 text-[13px] text-ink-3">Last synced {new Date(at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</p> : undefined}

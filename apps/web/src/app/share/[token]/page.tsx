@@ -7,6 +7,7 @@ import { objectUrl, ownsKey, validKey } from "../../../server/storage";
 import { prettyTitle } from "../../../lib/chat";
 import type { Attachment } from "../../../lib/workspace";
 import AuthLink from "../../../components/auth/AuthLink";
+import ContinueChat from "../../../components/share/ContinueChat";
 import AttachmentImage from "../../../components/ui/AttachmentImage";
 import AudioWave from "../../../components/ui/AudioWave";
 import Markdown from "../../../components/app/Markdown";
@@ -90,6 +91,10 @@ export default async function Page({ params }: { params: Promise<{ token: string
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="my-6">
+          <ContinueChat token={token} />
         </div>
 
         <aside className="sh-cta">

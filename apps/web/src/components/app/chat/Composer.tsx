@@ -19,7 +19,7 @@ import { useDraftFiles, useDraftText } from "../../../hooks/useDraft";
 import { clearDraft } from "../../../lib/drafts";
 import { useSkills } from "../../../features/settings/useSkills";
 import { useZohoStatus } from "../../../features/integrations/zoho";
-import { matchConnectors, mentionAt, mentionedConnectors, zohoConnectors } from "../../../lib/connectors";
+import { matchConnectors, mentionAt, zohoConnectors } from "../../../lib/connectors";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -56,7 +56,7 @@ export default function Composer({
   const slash = /^\/([a-z0-9-]*)$/i.exec(text);
   const skillMatches = slash ? skills.filter((s) => s.name.startsWith(slash[1].toLowerCase())) : [];
   // Typing "@" lists the apps the person connected (each with its logo); picking one puts "@Zoho Books" in the message, and the
-  // assistant uses that app for the request. A chip with the logo shows above the box for every app the message names.
+  // assistant uses that app for the request. The name appears once, in the box (no separate chip), so it is not shown twice.
   const zoho = useZohoStatus();
   const connectors = zohoConnectors(zoho.data?.connected ? zoho.data.services : []);
   const mention = mentionAt(text);
@@ -64,7 +64,6 @@ export default function Composer({
   const [closedFor, setClosedFor] = useState("");
   const atMatches = mention && closedFor !== text ? matchConnectors(connectors, mention.query) : [];
   const showAt = !!mention && closedFor !== text && (connectors.length > 0 || zoho.isFetched);
-  const named = mentionedConnectors(connectors, text);
   const pickConnector = (label: string) => {
     if (!mention) return;
     setText(`${text.slice(0, mention.start)}@${label} `);
@@ -156,18 +155,6 @@ export default function Composer({
               ))
             )}
           </ul>
-        )}
-        {named.length > 0 && (
-          <p className="m-0 flex flex-wrap items-center gap-1.5" aria-label="Connected apps in this message">
-            {named.map((c) => (
-              <ChatComposerTokenElement key={c.id} onRemove={() => setText(text.replace(`@${c.label} `, "").replace(`@${c.label}`, ""))} removeLabel={`Remove ${c.label}`}>
-                <span className="inline-flex items-center gap-1.5">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={c.logo} alt="" width={14} height={14} className="object-contain" />@{c.label}
-                </span>
-              </ChatComposerTokenElement>
-            ))}
-          </p>
         )}
         {restored && !starter && (
           <p className="m-0 flex items-center gap-2 text-[12.5px] text-fg-subtle" role="status">

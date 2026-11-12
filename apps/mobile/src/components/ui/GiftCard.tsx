@@ -8,15 +8,18 @@ import {
   GIFT_TEXT,
   GIFT_W,
   filmStops,
+  giftBrandX,
+  giftMarkBox,
   giftNameSizeFor,
   giftNameSpacing,
   gradientLine,
   type GiftStop,
 } from "@untitled/logic";
 import { forwardRef } from "react";
+import { Image } from "expo-image";
 import { View } from "react-native";
 import { captureRef } from "react-native-view-shot";
-import Svg, { ClipPath, Defs, LinearGradient, RadialGradient, Rect, Stop, Text as SvgText, Circle } from "react-native-svg";
+import Svg, { ClipPath, Defs, LinearGradient, RadialGradient, Rect, Stop, Text as SvgText } from "react-native-svg";
 
 import { Font } from "@/constants/theme";
 
@@ -48,8 +51,12 @@ function Linear({ id, angle, stops }: { id: string; angle: number; stops: GiftSt
  * The welcome gift card: the same layers, wording and numbers as the web card (packages/logic/src/giftCard.ts), drawn as one
  * SVG in the card's own 1712 × 1080 space. The ref is the Svg, so the share action can turn exactly what is on screen into a PNG.
  */
+/** The ink mark: the card is light, so it takes the dark mark in every colour scheme. */
+const MARK = require("../../../assets/images/naazhi-mark.png") as number;
+
 export const GiftCard = forwardRef<ViewHandle, { name: string }>(function GiftCard({ name }, ref) {
   const L = GIFT_LAYERS;
+  const mark = giftMarkBox();
   const F = GIFT_FACE;
   const label = name.trim().toUpperCase() || "WELCOME";
   const size = giftNameSizeFor(label);
@@ -94,8 +101,7 @@ export const GiftCard = forwardRef<ViewHandle, { name: string }>(function GiftCa
         <Rect width={GIFT_W} height={GIFT_H} clipPath="url(#card)" fill="url(#sheen)" />
         <Rect width={GIFT_W} height={GIFT_H} clipPath="url(#card)" fill="url(#glare)" />
 
-        <Circle cx={F.padX + 22} cy={F.top - 18} r={22} fill={F.dot} />
-        <SvgText x={F.padX + 66} y={F.top} fill={F.ink} fontFamily={serif} fontSize={F.brandSize} letterSpacing={F.brandSpacing}>
+        <SvgText x={giftBrandX()} y={F.top} fill={F.ink} fontFamily={serif} fontSize={F.brandSize} letterSpacing={F.brandSpacing}>
           {GIFT_TEXT.brand}
         </SvgText>
         <SvgText
@@ -143,6 +149,14 @@ export const GiftCard = forwardRef<ViewHandle, { name: string }>(function GiftCa
           strokeWidth={3}
         />
       </Svg>
+      {/* The mark is a picture, drawn over the SVG in the same proportions; it is part of the view, so the shared PNG has it too. */}
+      <Image
+        source={MARK}
+        contentFit="contain"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={{ position: "absolute", left: `${(mark.x / GIFT_W) * 100}%`, top: `${(mark.y / GIFT_H) * 100}%`, width: `${(mark.size / GIFT_W) * 100}%`, aspectRatio: 1 }}
+      />
     </View>
   );
 });

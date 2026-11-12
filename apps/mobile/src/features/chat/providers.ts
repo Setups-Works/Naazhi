@@ -2,6 +2,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 
+import { chatgptChoice, ownChoice } from "@untitled/logic/aiConnections";
+
+import { useAiCatalog } from "./connections";
 import type { AiProvider } from "./types";
 import { api } from "@/lib/api";
 
@@ -27,7 +30,24 @@ export function useAiProviders() {
     retry: 3, // the list decides what the picker offers; ride out a one-off failed request
     queryFn: async () => (await api.get<{ providers: AiProvider[] }>("/api/v1/ai/status")).providers,
   });
-  const providers = useMemo<AiProvider[]>(() => [NO_AI, ...(q.data ?? [])], [q.data]);
+  // Models the person connected themselves (their own keys, their ChatGPT sign-in) are choices too, once connected.
+  const catalog = useAiCatalog().data;
+  const mine = useMemo<AiProvider[]>(
+    () =>
+      (catalog?.groups ?? [])
+        .filter((g) => g.connected)
+        .flatMap((g) =>
+          g.models.map((m) => ({
+            id: g.kind === "chatgpt" ? chatgptChoice(m.id) : ownChoice(g.id, m.id),
+            label: m.label,
+            note: g.label,
+            available: true,
+            runtime: "server" as const,
+          })),
+        ),
+    [catalog],
+  );
+  const providers = useMemo<AiProvider[]>(() => [NO_AI, ...(q.data ?? []), ...mine], [q.data, mine]);
   const [chosen, setChosen] = useState<string | null>(null);
 
   useEffect(() => {

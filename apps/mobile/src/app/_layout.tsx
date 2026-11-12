@@ -80,7 +80,7 @@ const TAB_PATHS = ["/home", "/journal", "/chat", "/todo", "/library", "/workspac
 function Routes({ fresh }: { fresh: boolean }) {
   // Read while rendering, before the root effect overwrites it with the post-remount path.
   const [resume] = useState<Resume | null>(() => (fresh ? lastRoute : null));
-  const { ready, onboardingDone, signedIn, user } = useAppState();
+  const { ready, onboardingDone, signedIn, needsSetup, user } = useAppState();
   // Keeps the home-screen widgets in step with the app (and wipes them on sign-out).
   useWidgetSync(signedIn);
   // Notifications: reminders planned on the phone, push registration, and opening the right screen when one is tapped.
@@ -112,8 +112,13 @@ function Routes({ fresh }: { fresh: boolean }) {
       <Stack.Protected guard={onboardingDone && !signedIn}>
         <Stack.Screen name="(auth)" />
       </Stack.Protected>
-      <Stack.Protected guard={signedIn}>
+      <Stack.Protected guard={signedIn && needsSetup}>
+        <Stack.Screen name="(setup)" />
+      </Stack.Protected>
+      <Stack.Protected guard={signedIn && !needsSetup}>
         <Stack.Screen name="(tabs)" />
+      </Stack.Protected>
+      <Stack.Protected guard={signedIn}>
         <Stack.Screen
           name="note/[id]"
           options={{

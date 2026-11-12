@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 import styles from "./GiftCard.module.css";
+import { BrandMark } from "@/components/BrandMark";
 import { GIFT_FILE_NAME, giftShareText } from "@untitled/logic";
 import { downloadGiftCard, giftCardBlob } from "./giftCardImage";
 
@@ -103,7 +104,7 @@ export default function GiftCard({ name }: { name: string }) {
       <span aria-hidden className={styles.pearl} />
       <div className={styles.content} aria-hidden>
         <div className={styles.brand}>
-          <span className={styles.dot} />
+          <BrandMark size={26} />
           Naazhi
           <span className={styles.tag}>Welcome gift</span>
         </div>

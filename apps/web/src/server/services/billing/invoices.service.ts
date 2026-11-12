@@ -55,7 +55,8 @@ export async function issueInvoice(p: {
         url: appLink(`/invoice/${inv.id}`),
         invoice: { number: inv.number, description: inv.description, amountCents: inv.amount_cents, currency: inv.currency, issuedAt: inv.issued_at, periodStart: inv.period_start, periodEnd: inv.period_end },
       }),
-    ).catch(() => undefined);
+    ).catch(() => undefined); // sendEmail logs why; a receipt that can't be mailed is still in Settings → Plans & billing
+  else if (inv) console.warn("[mail] invoice made but the account has no email address to send it to.");
   return inv;
 }
 

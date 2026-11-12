@@ -17,12 +17,15 @@ import { CHAT_PROMPT, personaLine, zohoLine } from "./prompts/chat";
 /** Limits live here (not in routes) so every caller gets the same behaviour. */
 const LIMITS = { historyMessages: 20, charsPerMessage: 6000, repliesPerMinute: 20, savedChars: 19000 } as const;
 
+/** The field of each draft kind that holds its text, where {{reply}} and {{previous}} may stand in for it. */
+const TEXT_FIELD: Record<string, string> = { note: "body", zoho_mail: "body", zoho_cliq: "text" };
+
 const DRAFT_BLOCK = /<create-item>([\s\S]*?)<\/create-item>/g;
 
 /**
  * Tidies the draft blocks of a finished reply, in a way that doesn't depend on the language or topic of the conversation:
  * - a block whose JSON is broken (code pasted into a JSON string almost always breaks it) is dropped, so it can't surface as an empty draft;
- * - a note whose body is the placeholder `{{reply}}` gets the reply text itself, so whatever the assistant wrote (code, a plan,
+ * - a note, email or chat-message draft whose text is the placeholder `{{reply}}` or `{{previous}}` gets the reply text itself, so whatever the assistant wrote (code, a plan,
  *   a recipe) is saved exactly as shown, without being squeezed through JSON.
  */
 export function settleBlocks(full: string, previous: string): string {
@@ -61,14 +64,18 @@ export function settleBlocks(full: string, previous: string): string {
     return text ? `<create-item>${JSON.stringify({ kind: "note", title, body: text })}</create-item>` : "";
   };
   const tidy = full.replace(DRAFT_BLOCK, (all, json: string) => {
-    let a: { kind?: string; body?: unknown };
+    let a: { kind?: string } & Record<string, unknown>;
     try {
       a = JSON.parse(json) as typeof a;
     } catch {
       return rescue(json);
     }
-    const text = a.kind === "note" && typeof a.body === "string" ? body[a.body.trim()] : undefined;
-    return text ? `<create-item>${JSON.stringify({ ...a, body: text })}</create-item>` : all;
+    // The placeholders stand for text, wherever the draft keeps its text: a note's body, an email's body, a chat message's text.
+    // Without this an email draft showed a literal {{previous}} as its body.
+    const field = a.kind ? TEXT_FIELD[a.kind] : undefined;
+    const raw = field ? a[field] : undefined;
+    const text = field && typeof raw === "string" ? body[raw.trim()] : undefined;
+    return text && field ? `<create-item>${JSON.stringify({ ...a, [field]: text })}</create-item>` : all;
   });
   const open = tidy.lastIndexOf("<create-item>");
   return open < 0 || tidy.includes("</create-item>", open)

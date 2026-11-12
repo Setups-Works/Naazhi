@@ -3,6 +3,7 @@ import { unregisterPush } from "@/features/notifications";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 
 import { readOnboardingDone, writeOnboardingDone } from "@/features/onboarding/storage";
+import { loadSetup, saveSetup, setupNeeded, type SetupState } from "@/features/onboarding/setup/state";
 import { cleanSettingsPrefs, DEFAULT_SETTINGS_PREFS, updateRuntimePrefs, type SettingsPrefs } from "@/lib/preferences";
 import { api } from "@/lib/api";
 import { authClient, type MobileAuthClient } from "@/lib/auth-client";
@@ -19,6 +20,11 @@ type AppStateValue = {
   preferencesReady: boolean;
   setPreferences: Dispatch<SetStateAction<SettingsPrefs>>;
   completeOnboarding: () => Promise<void>;
+  /** The after-sign-up setup (profile, preferences, a first chat, a tour): true until it is finished or snoozed. */
+  needsSetup: boolean;
+  setupState: SetupState | null;
+  /** Saves setup progress to the account; resolves false if it could not. */
+  updateSetup: (next: SetupState) => Promise<boolean>;
   signOut: () => Promise<void>;
 };
 
@@ -71,6 +77,28 @@ function Inner({ client, children }: { client: MobileAuthClient; children: React
     return () => { active = false; };
   }, [userId]);
 
+  const [setup, setSetup] = useState<{ userId: string; state: SetupState } | null>(null);
+  useEffect(() => {
+    let active = true;
+    if (!userId) return () => { active = false; };
+    void loadSetup(userId).then((state) => {
+      if (active) setSetup({ userId, state });
+    });
+    return () => { active = false; };
+  }, [userId]);
+  const setupReady = !userId || setup?.userId === userId;
+  const setupState = userId && setup?.userId === userId ? setup.state : null;
+  const needsSetup = !!setupState && setupNeeded(setupState);
+  const updateSetup = useCallback(
+    async (next: SetupState) => {
+      if (!userId) return false;
+      const ok = await saveSetup(userId, next);
+      if (ok) setSetup({ userId, state: next });
+      return ok;
+    },
+    [userId],
+  );
+
   const preferencesReady = !userId || preferencesUserId === userId;
   const activePreferences = userId && preferencesUserId === userId ? preferences : DEFAULT_SETTINGS_PREFS;
   useEffect(() => updateRuntimePrefs(activePreferences), [activePreferences]);
@@ -93,7 +121,7 @@ function Inner({ client, children }: { client: MobileAuthClient; children: React
 
   const value = useMemo<AppStateValue>(
     () => ({
-      ready: !isPending && onboardingLoaded,
+      ready: !isPending && onboardingLoaded && setupReady,
       onboardingDone,
       signedIn: Boolean(data?.user),
       user: data?.user
@@ -109,9 +137,12 @@ function Inner({ client, children }: { client: MobileAuthClient; children: React
       preferencesReady,
       setPreferences,
       completeOnboarding,
+      needsSetup,
+      setupState,
+      updateSetup,
       signOut,
     }),
-    [isPending, onboardingLoaded, onboardingDone, data, activePreferences, preferencesReady, completeOnboarding, signOut],
+    [isPending, onboardingLoaded, setupReady, onboardingDone, data, activePreferences, preferencesReady, completeOnboarding, needsSetup, setupState, updateSetup, signOut],
   );
 
   return (

@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { matchConnectors, mentionAt, mentionedConnectors, useConnectors } from "./connectors";
+import { matchConnectors, mentionAt, useConnectors } from "./connectors";
 import { AppLogo } from "@/components/ui/AppLogo";
 import { Pressable, View } from "react-native";
 
 import { pickFiles, type PendingFile } from "./files";
 import type { AiProvider } from "./types";
 import { useRecorder } from "./useRecorder";
+import { ModelPickerSheet } from "./ModelPickerSheet";
 import { AppText } from "@/components/ui/AppText";
 import { FilePreviewList } from "@/components/ui/FilePreviewList";
 import { Icon } from "@/components/ui/Icon";
-import { Sheet } from "@/components/ui/Sheet";
 import {
   ChatComposer,
   ChatComposerDrawer,
@@ -44,11 +44,10 @@ export function Composer({ busy, providers, provider, onProvider, onSend, onErro
   const canSend = (text.trim().length > 0 || files.length > 0) && !busy;
 
   // Typing "@" lists the apps the person connected, each with its logo; picking one puts "@Zoho Books" in the message and the assistant
-  // uses that app for the request. A chip with the logo shows above the box for every app the message names.
+  // uses that app for the request. The name appears once, in the box (no separate chip), so it is not shown twice.
   const connectors = useConnectors();
   const mention = mentionAt(text);
   const atMatches = mention ? matchConnectors(connectors, mention.query) : [];
-  const named = mentionedConnectors(connectors, text);
   const pickConnector = (label: string) => {
     if (mention) setText(`${text.slice(0, mention.start)}@${label} `);
   };
@@ -100,21 +99,6 @@ export function Composer({ busy, providers, provider, onProvider, onSend, onErro
               )}
             </View>
           ) : null}
-          {named.length ? (
-            <View style={styles.chips}>
-              {named.map((c) => (
-                <View key={c.id} style={styles.chip}>
-                  <AppLogo name={c.logo} size={22} />
-                  <AppText variant="small" color={Palette.fgMuted}>
-                    @{c.label}
-                  </AppText>
-                  <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${c.label}`} hitSlop={8} onPress={() => setText(text.replace(`@${c.label} `, "").replace(`@${c.label}`, ""))}>
-                    <Icon name="xmark" size={11} color={Palette.fgSubtle} />
-                  </Pressable>
-                </View>
-              ))}
-            </View>
-          ) : null}
         </ChatComposerDrawer>
 
         <ChatComposerInput value={text} onChange={setText} />
@@ -149,30 +133,7 @@ export function Composer({ busy, providers, provider, onProvider, onSend, onErro
         </ChatComposerToolbar>
       </ChatComposer>
 
-      <Sheet visible={menu} onClose={() => setMenu(false)} title="AI model" scroll>
-        {providers.map((p) => {
-          const on = p.id === provider;
-          return (
-            <Pressable
-              key={p.id}
-              accessibilityRole="radio"
-              accessibilityState={{ selected: on, disabled: !p.available }}
-              disabled={!p.available}
-              onPress={() => {
-                onProvider(p.id);
-                setMenu(false);
-              }}
-              style={[styles.option, on ? { backgroundColor: Palette.greenBg } : null, { opacity: p.available ? 1 : 0.5 }]}
-            >
-              <View style={styles.optionText}>
-                <AppText variant="bodyStrong">{p.label}</AppText>
-                <AppText variant="small">{p.available ? p.note : "Not connected yet"}</AppText>
-              </View>
-              {on ? <Icon name="check" size={14} color={Palette.greenFg} /> : null}
-            </Pressable>
-          );
-        })}
-      </Sheet>
+      <ModelPickerSheet visible={menu} onClose={() => setMenu(false)} providers={providers} current={provider} onSelect={onProvider} />
     </>
   );
 }
@@ -186,8 +147,4 @@ const styles = themedStyles(() => ({
   menuRowOn: { backgroundColor: Palette.surfaceMuted },
   menuText: { flex: 1 },
   none: { padding: 10 },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  chip: { flexDirection: "row", alignItems: "center", gap: 6, paddingLeft: 4, paddingRight: 10, minHeight: 30, borderRadius: Radius.pill, backgroundColor: Palette.surface, borderWidth: 1, borderColor: Palette.line },
-  option: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 56, paddingHorizontal: 14, borderRadius: Radius.r2 },
-  optionText: { flex: 1, gap: 2 },
 }));

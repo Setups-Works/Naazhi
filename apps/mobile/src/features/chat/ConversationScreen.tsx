@@ -33,7 +33,10 @@ export function Conversation({
   seed,
   onSeeded,
   onCreated,
+  embedded = false,
 }: {
+  /** Shown inside another screen (the setup), where no tab bar floats over the bottom. */
+  embedded?: boolean;
   chatId: string | null;
   /** A first message to send by itself when this opens a new chat. */
   seed?: string;
@@ -61,7 +64,7 @@ export function Conversation({
     };
   }, []);
   // The floating tab bar covers the bottom of the screen when keyboard is not visible.
-  const lift = !keyboard ? insets.bottom + 78 : 8;
+  const lift = !keyboard && !embedded ? insets.bottom + 78 : 8;
 
   // Leaving the screen stops any reply still streaming.
   useEffect(() => () => abort.current?.abort(), []);

@@ -1,7 +1,7 @@
 // design-ok-file: flattens the art-directed foil card (same literal gradients as GiftCard.module.css) to a PNG — a canvas, not UI chrome.
 /** Draws the welcome card to a PNG (same layers as GiftCard, flattened) and saves it. Browser only. */
 
-import { GIFT_FACE, GIFT_FILE_NAME, GIFT_H, GIFT_LAYERS, GIFT_RADIUS, GIFT_TEXT, GIFT_W, filmStops, giftNameSpacing, gradientLine, type GiftStop } from "@untitled/logic";
+import { GIFT_FACE, GIFT_FILE_NAME, GIFT_H, GIFT_LAYERS, GIFT_RADIUS, GIFT_TEXT, GIFT_W, filmStops, giftBrandX, giftMarkBox, giftNameSpacing, gradientLine, type GiftStop } from "@untitled/logic";
 
 const W = GIFT_W;
 const H = GIFT_H;
@@ -58,6 +58,16 @@ function spacedWidth(ctx: CanvasRenderingContext2D, text: string, spacing: numbe
   return w - spacing;
 }
 
+/** The brand mark (ink version, the card is light). A card without it is better than none, so a failed load is not an error. */
+function loadMark(): Promise<HTMLImageElement | null> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = "/brand/naazhi-mark.png";
+  });
+}
+
 /** Draws the card (layers from @untitled/logic) onto a canvas and returns it. */
 export async function renderGiftCard(name: string, fonts: { serif: string; mono: string }) {
   await document.fonts?.ready;
@@ -100,14 +110,15 @@ export async function renderGiftCard(name: string, fonts: { serif: string; mono:
   ctx.shadowColor = "rgba(255,255,255,0.7)";
   ctx.shadowOffsetY = 4;
   ctx.shadowBlur = 0;
-  ctx.fillStyle = F.dot;
-  ctx.beginPath();
-  ctx.arc(F.padX + 22, F.top - 18, 22, 0, Math.PI * 2);
-  ctx.fill();
+  const mark = await loadMark();
+  if (mark) {
+    const m = giftMarkBox();
+    ctx.drawImage(mark, m.x, m.y, m.size, m.size);
+  }
   ctx.fillStyle = F.ink;
   ctx.font = `${F.brandSize}px ${fonts.serif}`;
   ctx.letterSpacing = `${F.brandSpacing}px`;
-  ctx.fillText(GIFT_TEXT.brand, F.padX + 66, F.top);
+  ctx.fillText(GIFT_TEXT.brand, giftBrandX(), F.top);
   ctx.letterSpacing = "0px";
 
   ctx.fillStyle = F.inkSoft;

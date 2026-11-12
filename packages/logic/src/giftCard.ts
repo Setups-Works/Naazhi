@@ -133,9 +133,15 @@ export const GIFT_FACE = {
   engrave: { light: "rgba(255,255,255,0.85)", dark: "rgba(0,0,0,0.3)", core: "rgba(36,46,58,0.66)", offset: 4 },
   ink: "rgba(27,28,20,0.78)",
   inkSoft: "rgba(27,28,20,0.45)",
-  dot: "#1f6b4a",
+  /** The Naazhi mark before the wordmark (docs/BRAND.md: mark height 1.3 × the wordmark size, gap 0.35 ×), centred on the wordmark's x-height. */
+  markSize: 117,
+  markGap: 32,
   rim: "rgba(255,255,255,0.5)",
 } as const;
+
+/** Where the mark and the wordmark start on the card face. */
+export const giftMarkBox = () => ({ x: GIFT_FACE.padX, y: GIFT_FACE.top - 36 - GIFT_FACE.markSize / 2, size: GIFT_FACE.markSize });
+export const giftBrandX = () => GIFT_FACE.padX + GIFT_FACE.markSize + GIFT_FACE.markGap;
 
 /** The name's letter spacing for a font size. */
 export const giftNameSpacing = (size: number) => size * 0.06;

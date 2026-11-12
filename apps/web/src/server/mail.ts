@@ -26,14 +26,22 @@ export async function sendEmail(to: string, content: EmailContent) {
   }
   g.__mailer ??= nodemailer.createTransport(url);
   const { subject, html, text } = renderEmail(content);
-  await g.__mailer.sendMail({
-    // Most SMTP servers only accept a sender they own, so default to the SMTP login when it is an address.
-    from: process.env.MAIL_FROM?.trim() || `Naazhi <${smtpUser(url) ?? "no-reply@localhost"}>`,
-    to,
-    subject,
-    text,
-    html,
-  });
+  try {
+    await g.__mailer.sendMail({
+      // Most SMTP servers only accept a sender they own, so default to the SMTP login when it is an address.
+      from: process.env.MAIL_FROM?.trim() || `Naazhi <${smtpUser(url) ?? "no-reply@localhost"}>`,
+      to,
+      subject,
+      text,
+      html,
+    });
+  } catch (e) {
+    // Callers swallow mail errors so a payment or a sign-up never fails over an email; this line is how an operator finds out why
+    // none arrive (wrong login, a sender the server refuses, a blocked port). Only the codes: messages can quote the address.
+    const err = e as { code?: string; responseCode?: number; command?: string };
+    console.error("[mail] send failed", { code: err.code ?? null, responseCode: err.responseCode ?? null, command: err.command ?? null });
+    throw e;
+  }
 }
 
 /** The older, simpler form: a subject, a paragraph and an optional button. New emails should be templates. */

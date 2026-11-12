@@ -55,4 +55,15 @@ describe("settleBlocks (tidying the assistant's draft blocks)", () => {
     const valid = block({ kind: "task", ref: "t1", title: "Call Sam", description: "", due_date: "2026-10-09" });
     expect(settleBlocks(`Here.\n${valid}`, "earlier")).toContain(valid);
   });
+
+  it("fills the placeholders in an email or chat message draft too, not only in notes", () => {
+    const earlier = "Here are the iPhone 15 vs 16 notes:\n- Camera\n- Battery\n- Price and more words to make this long enough to count as content";
+    const mail = `Here is the draft.\n${block({ kind: "zoho_mail", to: "a@b.com", subject: "Notes", body: "{{previous}}" })}`;
+    const out = JSON.parse(/<create-item>([\s\S]*?)<\/create-item>/.exec(settleBlocks(mail, earlier))![1]) as { body: string };
+    expect(out.body).toContain("Camera");
+    expect(out.body).not.toContain("{{");
+    const cliq = `Posting.\n${block({ kind: "zoho_cliq", channel: "general", text: "{{previous}}" })}`;
+    const c = JSON.parse(/<create-item>([\s\S]*?)<\/create-item>/.exec(settleBlocks(cliq, earlier))![1]) as { text: string };
+    expect(c.text).toContain("Battery");
+  });
 });

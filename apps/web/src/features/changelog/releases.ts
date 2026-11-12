@@ -23,6 +23,24 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-12",
+    title: "Version 6.2.0: invoices and emails for subscriptions, set-up in the app",
+    summary: "A new subscription now gets its invoice and receipt email straight away. The Android app gets set-up after sign-up, the model picker with your own API keys, and a keyboard that no longer covers the chat box.",
+    tone: "mint",
+    appVersion: "v6.2.0",
+    changes: [
+      { kind: "fixed", platform: "web", text: "A new subscription now gets its invoice the moment you pay, and the receipt is emailed, instead of waiting for a payment notice that sometimes never arrived." },
+      { kind: "fixed", platform: "web", text: "Drafted emails and chat messages no longer show “{{previous}}” as their text, and the assistant asks you to paste what it cannot see instead of guessing." },
+      { kind: "fixed", platform: "web", text: "Choosing an app with @ now shows its name once, in the message box, not a second time as a chip above it." },
+      { kind: "improved", platform: "web", text: "The welcome gift card now carries the Naazhi mark, on screen and in the saved or shared picture." },
+      { kind: "new", platform: "app", text: "After you sign up, the app walks you through set-up: your name and role, preferences, a first chat and task, a tour of Journal, Notes and To-do, plans, and your welcome card. Finish it on the web or the app." },
+      { kind: "new", platform: "app", text: "The AI model picker is now a drawer like the website’s. Connect your ChatGPT plan or add your own API keys and pick those models in chat." },
+      { kind: "fixed", platform: "app", text: "The keyboard no longer covers the chat box or the fields in pop-up sheets on Android." },
+      { kind: "fixed", platform: "app", text: "Choosing an app with @ shows its name once, not twice." },
+      { kind: "improved", platform: "app", text: "The welcome gift card now carries the Naazhi mark." },
+    ],
+  },
+  {
+    date: "2026-11-12",
     title: "Version 6.1.0: use your apps in chat with @",
     summary: "Type @ in chat to pick a connected app like Zoho Books, watch what it is doing, and open a single invoice in full. The Android app gets the same, plus the website’s thin line icons.",
     tone: "clay",

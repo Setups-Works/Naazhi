@@ -246,6 +246,25 @@ async function applySubscription(userId: string, sub: RazorpaySubscription) {
   await repo.saveUserBilling(userId, { ...row, provider_status: sub.status });
 }
 
+/**
+ * The invoice (and emailed receipt) for one subscription charge. Made from two places, whichever comes first: the browser's "payment
+ * done" call and Razorpay's `subscription.charged` webhook. An invoice is unique per payment, so the second caller changes nothing and
+ * the person gets one receipt. Without the first path, a webhook that was never set up or never delivered meant no invoice and no email.
+ */
+async function issueSubscriptionInvoice(userId: string, sub: RazorpaySubscription, paymentId: string, amountCents: number) {
+  const plan = await repo.getPlan("subscription");
+  await issueInvoice({
+    userId,
+    kind: "subscription",
+    description: `${plan?.name ?? "Subscription"}, ${plan?.interval === "year" ? "yearly" : "monthly"}`,
+    amountCents,
+    paymentId,
+    ref: sub.id,
+    periodStart: iso(sub.current_start),
+    periodEnd: iso(sub.current_end),
+  });
+}
+
 /** Step 2: the checkout window finished. Checks Razorpay's signature and asks Razorpay itself, so a forged call can't grant a plan. */
 export async function confirmCheckout(userId: string, input: { paymentId: string; subscriptionId: string; signature: string }): Promise<MyBilling> {
   if (!razorpay.verifyCheckoutSignature(input.paymentId, input.subscriptionId, input.signature)) throw new ForbiddenError("We couldn’t verify that payment.");
@@ -259,6 +278,14 @@ export async function confirmCheckout(userId: string, input: { paymentId: string
   if (owner !== userId) throw new ForbiddenError("We couldn’t verify that payment.");
   const old = await repo.getUserBilling(userId);
   await applySubscription(userId, sub);
+  // The first charge has just been taken: invoice it now instead of waiting for the webhook. Razorpay itself says what was paid; a
+  // payment that isn't captured yet is invoiced later by the webhook.
+  try {
+    const pay = await razorpay.fetchPayment(input.paymentId);
+    if (pay.status === "captured" && pay.currency === "INR" && Number.isInteger(pay.amount) && pay.amount > 0) await issueSubscriptionInvoice(userId, sub, pay.id, pay.amount);
+  } catch {
+    /* the webhook will invoice it; a receipt problem must never fail a payment that went through */
+  }
   // Moving from an earlier paid subscription: stop the old one so the person isn't charged twice.
   if (old?.provider_subscription_id && old.provider_subscription_id !== sub.id && old.status === "active")
     await razorpay.cancelSubscription(old.provider_subscription_id, false).catch(() => undefined);
@@ -322,17 +349,7 @@ export async function handleWebhook(eventId: string, event: WebhookEvent) {
     // A charge was taken (the first one and every renewal): that is what the invoice is for.
     const pay = event.payload?.payment?.entity;
     if (type === "subscription.charged" && sub && pay?.id && typeof pay.amount === "number" && pay.amount > 0) {
-      const plan = await repo.getPlan("subscription");
-      await issueInvoice({
-        userId,
-        kind: "subscription",
-        description: `${plan?.name ?? "Subscription"}, ${plan?.interval === "year" ? "yearly" : "monthly"}`,
-        amountCents: pay.amount,
-        paymentId: pay.id,
-        ref: sub.id,
-        periodStart: iso(sub.current_start),
-        periodEnd: iso(sub.current_end),
-      }).catch(() => undefined);
+      await issueSubscriptionInvoice(userId, sub, pay.id, pay.amount).catch(() => undefined);
     }
     // The subscription is over (cancelled, ran its course, or stopped after failed payments).
     if (type === "subscription.cancelled" || type === "subscription.completed" || type === "subscription.expired" || type === "subscription.halted") {

@@ -4,7 +4,7 @@ import { RSS, rssFeedName } from "@untitled/logic";
 import type { RssFilter } from "@untitled/types";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AppState, FlatList, RefreshControl, TextInput, View, useWindowDimensions } from "react-native";
+import { AppState, FlatList, RefreshControl, TextInput, View } from "react-native";
 
 import { AddFeedSheet } from "./AddFeedSheet";
 import { ArticleRow } from "./ArticleRow";
@@ -23,6 +23,7 @@ import { Font, Palette, Radius, Space, themedStyles } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { qk } from "@/lib/queryKeys";
 import { GlassPill } from "@/components/ui/GlassPill";
+import { useLayout } from "@/lib/layout";
 
 const SEARCH_DELAY_MS = 250;
 /** Width at which the sidebar stays open beside the articles (a tablet, or the app running in a desktop browser). */
@@ -32,7 +33,7 @@ const VIEW_TITLE: Record<RssFilter, string> = { all: "All articles", unread: "Un
 
 /** Follow feeds and read them: a sidebar (drawer on phones), search, refresh and add. Same shape as the web Reader. */
 export function ReaderScreen() {
-  const { width } = useWindowDimensions();
+  const { width } = useLayout();
   const wide = width >= WIDE;
   const qc = useQueryClient();
   useAutoRefresh();

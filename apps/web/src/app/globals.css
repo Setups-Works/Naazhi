@@ -7027,9 +7027,24 @@
     background: var(--page);
     transition: padding-left 0.2s var(--ease);
   }
-  @media (min-width: 1200px) {
+  /* Tablets (iPad portrait and up) get the same persistent sidebar as the web; it pushes the page instead of covering it. */
+  @media (min-width: 768px) {
     .ap:has(.sb[data-expanded="true"]) {
       padding-left: var(--sidebar);
+    }
+  }
+  /* A slightly narrower panel on iPad portrait so the page keeps room; wider from landscape up. */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    :root {
+      --sidebar: 240px;
+    }
+  }
+  /* Touch screens (iPad, phones): comfortable 44px rows in the sidebar and a bigger top-bar button. */
+  @media (pointer: coarse) {
+    .sb .sb-toggle,
+    .ap-icon {
+      width: 40px;
+      height: 40px;
     }
   }
   .ap-top {
@@ -7083,8 +7098,8 @@
     width: var(--sidebar);
     padding: 8px 10px;
   }
-  /* Below 1200px the expanded panel floats over the page instead of pushing it. */
-  @media (max-width: 1199px) {
+  /* Below 768px the panel is a drawer that floats over the page. */
+  @media (max-width: 767px) {
     .sb[data-expanded="true"] {
       box-shadow:
         inset -1px 0 0 var(--line),
@@ -16186,3 +16201,32 @@
     background: var(--paper);
     box-shadow: none;
   }
+
+/* ===== tablet (iPad) layouts inside the dashboard =====
+   From 768px the app sidebar takes 240–280px, so each page has less room than the viewport suggests. Pages with their own
+   side list (Chat, To-do, Journal) keep two panes in landscape with a slimmer list, and where that list becomes a sheet in
+   portrait it slides in beside the app sidebar instead of covering it. */
+@media (min-width: 901px) and (max-width: 1199px) {
+  .cx:not([data-side="false"]) {
+    grid-template-columns: 236px minmax(0, 1fr);
+  }
+  .tdo:not([data-side="false"]) {
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 14px;
+  }
+  .jr:not([data-side="false"]) {
+    grid-template-columns: 236px minmax(0, 1fr);
+  }
+  .ap-body {
+    padding-inline: clamp(16px, 3vw, 32px);
+  }
+}
+@media (min-width: 768px) and (max-width: 900px) {
+  .cx-sidewrap,
+  .cx[data-side="false"] .cx-sidewrap,
+  .tdo-sidewrap,
+  .tdo[data-side="false"] .tdo-sidewrap {
+    left: var(--sb-w, 0px);
+    box-shadow: inset 1px 0 0 var(--line), var(--shadow-pop);
+  }
+}

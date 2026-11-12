@@ -96,7 +96,7 @@ const isHere = (item: NavItem, path: string) =>
 
 /** Row in the sidebar: an icon square in the rail, icon + label when expanded. */
 const ROW =
-  "group/row flex h-9 w-full items-center gap-3 rounded-ctl px-[9px] text-[14.5px] text-fg-muted transition-colors duration-150 hover:bg-hover hover:text-fg aria-[current=page]:bg-press aria-[current=page]:text-fg";
+  "group/row flex h-9 pointer-coarse:h-11 w-full items-center gap-3 rounded-ctl px-[9px] text-[14.5px] text-fg-muted transition-colors duration-150 hover:bg-hover hover:text-fg aria-[current=page]:bg-press aria-[current=page]:text-fg";
 
 export default function AppNav({
   name,
@@ -118,13 +118,13 @@ export default function AppNav({
   const [menu, setMenu] = useState(false);
   const [drawer, setDrawer] = useState(false);
   // The sidebar is open by default (icons and labels) and the toggle collapses it to the slim icon rail; the choice is remembered on this
-  // device. Below 1200px an open sidebar floats over the page instead of pushing it, so with no saved choice it starts as the rail there.
+  // device. Below 768px (phones) the sidebar is a drawer, so with no saved choice it starts closed there; tablets and up start open.
   const [expanded, setExpanded] = useState(true);
   useEffect(() => {
     try {
       const saved = localStorage.getItem("sb-expanded");
       if (saved === "0") setExpanded(false);
-      else if (saved === null && window.innerWidth < 1200) setExpanded(false);
+      else if (saved === null && window.innerWidth < 768) setExpanded(false);
     } catch {
       /* storage blocked: stay open */
     }

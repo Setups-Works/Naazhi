@@ -384,14 +384,14 @@ export default function JournalView() {
                 </button>
               </span>
             </div>
-            <div className="grid grid-cols-7 px-1 text-center text-[12px] text-ink-3" aria-hidden>
+            <div className="grid grid-cols-[repeat(7,minmax(0,1fr))] px-1 text-center text-[12px] text-ink-3" aria-hidden>
               {["M", "T", "W", "T", "F", "S", "S"].map((w, i) => (
                 <span key={i} className="py-1">
                   {w}
                 </span>
               ))}
             </div>
-            <div className="grid grid-cols-7 gap-y-0.5 px-1 text-center text-[13px]">
+            <div className="grid grid-cols-[repeat(7,minmax(0,1fr))] gap-y-0.5 px-1 text-center text-[13px]">
               {sideGrid.map((iso) => (
                 <button
                   key={iso}
@@ -399,7 +399,7 @@ export default function JournalView() {
                   disabled={iso > today}
                   aria-label={`${parse(iso).toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}${counts[iso] ? `, ${counts[iso]} ${counts[iso] === 1 ? "entry" : "entries"}` : ""}`}
                   aria-current={iso === date ? "date" : undefined}
-                  className={`relative mx-auto grid size-8 place-items-center rounded-ctl hover:bg-hover disabled:cursor-default disabled:hover:bg-transparent aria-[current=date]:bg-ink aria-[current=date]:text-paper aria-[current=date]:hover:bg-ink ${iso.startsWith(sideMonth) ? (iso > today ? "text-ink-3" : "text-ink") : "text-ink-4"}`}
+                  className={`relative mx-auto grid size-8 max-w-full place-items-center rounded-ctl hover:bg-hover disabled:cursor-default disabled:hover:bg-transparent aria-[current=date]:bg-ink aria-[current=date]:text-paper aria-[current=date]:hover:bg-ink ${iso.startsWith(sideMonth) ? (iso > today ? "text-ink-3" : "text-ink") : "text-ink-4"}`}
                   onClick={() => {
                     setDate(iso);
                     setView("day");
@@ -492,12 +492,12 @@ export default function JournalView() {
             ))}
           </div>
           <div className="tdo-tools" aria-label={`${streak} day streak`}>
-            <span className="flex gap-[3px]" aria-hidden>
+            <span className="flex gap-[3px] max-[1000px]:hidden" aria-hidden>
               {last14.map((iso) => (
                 <i key={iso} className={`size-2.5 rounded-[2px] ${counts[iso] > 0 ? "bg-ink" : "bg-hover"}`} />
               ))}
             </span>
-            <span className="text-[13px] text-fg-subtle">{streak > 0 ? `${streak} day streak` : "No streak yet"}</span>
+            <span className="whitespace-nowrap text-[13px] text-fg-subtle">{streak > 0 ? `${streak} day streak` : "No streak yet"}</span>
           </div>
         </div>
 

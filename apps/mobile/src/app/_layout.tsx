@@ -7,16 +7,18 @@ import { router, Stack, useGlobalSearchParams, usePathname } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { View, useWindowDimensions } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AnimatedSplash } from "@/components/AnimatedSplash";
+import { AppSidebar } from "@/components/nav/AppSidebar";
 import { AppText } from "@/components/ui/AppText";
 import { Screen } from "@/components/ui/Screen";
 import { WebSheetHost } from "@/components/ui/WebSheetHost";
 import { Palette, themedStyles, useThemeVersion, watchSystemScheme } from "@/constants/theme";
 import { mobileEnv } from "@/config/env";
+import { hasSidebarRoom, readSidebarCollapsed, saveSidebarCollapsed, sidebarWidth, SidebarWidthProvider } from "@/lib/layout";
 import { UpdateProvider } from "@/features/updates/UpdateProvider";
 import { AppStateProvider, useAppState } from "@/providers/AppState";
 
@@ -101,9 +103,22 @@ function Routes({ fresh }: { fresh: boolean }) {
     return () => clearTimeout(timer);
   }, [resume, ready, signedIn]);
 
+  // Tablets: the web's sidebar stays on the left of every signed-in page and the pages get the rest of the window.
+  const { width, height } = useWindowDimensions();
+  const pathname = usePathname();
+  const { view } = useGlobalSearchParams<{ view?: string }>();
+  const [collapsed, setCollapsed] = useState(readSidebarCollapsed);
+  const toggleSidebar = () =>
+    setCollapsed((c) => {
+      saveSidebarCollapsed(!c);
+      return !c;
+    });
+  const showSidebar = signedIn && !needsSetup && hasSidebarRoom(width, height) && pathname !== "/" && !pathname.startsWith("/share/");
+  const sbWidth = showSidebar ? sidebarWidth(width, collapsed) : 0;
+
   if (!ready) return null;
 
-  return (
+  const stack = (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: Palette.page } }}>
       <Stack.Screen name="index" />
       {/* A shared chat opens for anyone, signed in or not (the link is the key). */}
@@ -153,6 +168,15 @@ function Routes({ fresh }: { fresh: boolean }) {
       </Stack.Protected>
     </Stack>
   );
+
+  return (
+    <View style={styles.shell}>
+      {showSidebar ? <AppSidebar pathname={pathname} view={view} collapsed={collapsed} onToggle={toggleSidebar} /> : null}
+      <View style={styles.flex}>
+        <SidebarWidthProvider value={sbWidth}>{stack}</SidebarWidthProvider>
+      </View>
+    </View>
+  );
 }
 
 function SetupNotice() {
@@ -172,5 +196,7 @@ function SetupNotice() {
 
 const styles = themedStyles(() => ({
   root: { flex: 1, backgroundColor: Palette.page },
+  shell: { flex: 1, flexDirection: "row", backgroundColor: Palette.page },
+  flex: { flex: 1 },
   setup: { flex: 1, justifyContent: "center" },
 }));

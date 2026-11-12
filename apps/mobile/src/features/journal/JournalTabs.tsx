@@ -1,6 +1,6 @@
 import type { ScrollViewHandle } from "@/types/native";
 import { useEffect, useRef, useState } from "react";
-import { ScrollView, View, useWindowDimensions, type LayoutChangeEvent } from "react-native";
+import { ScrollView, View, type LayoutChangeEvent } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { JournalScreen } from "./JournalScreen";
@@ -9,6 +9,7 @@ import { useMyInvites } from "@/features/collaboration/queries";
 import { Segmented } from "@/components/ui/Segmented";
 import { Palette, Space } from "@/constants/theme";
 import { useRuntimePrefs } from "@/lib/preferences";
+import { useLayout } from "@/lib/layout";
 
 const PAGES = ["personal", "collaborate"] as const;
 type Page = (typeof PAGES)[number];
@@ -18,7 +19,7 @@ type Page = (typeof PAGES)[number];
  * the top (it also shows how many invitations are waiting). Each page scrolls up and down on its own.
  */
 export function JournalTabs() {
-  const { width } = useWindowDimensions();
+  const { width } = useLayout();
   const insets = useSafeAreaInsets();
   const prefs = useRuntimePrefs();
   const pager = useRef<ScrollViewHandle>(null);

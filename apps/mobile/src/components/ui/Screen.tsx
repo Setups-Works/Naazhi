@@ -26,7 +26,9 @@ export function Screen({ children, scroll = true, onRefresh, refreshing = false,
   // A phone keeps its 640 column. On a tablet a page may use more room, a list stops at a width that is still pleasant to read.
   const maxWidth = wide ? layout.contentWidth : Math.min(layout.contentWidth, ContentWidth.medium);
   const paddingHorizontal = layout.padding;
-  const inner = <View style={[styles.column, fit ? styles.fit : null, { maxWidth, paddingHorizontal }, contentStyle]}>{children}</View>;
+  // The floating navbar hides the bottom of a page, so the column leaves room for it; the sidebar does not.
+  const paddingBottom = layout.sidebar ? Space.xxl : undefined;
+  const inner = <View style={[styles.column, fit ? styles.fit : null, { maxWidth, paddingHorizontal }, paddingBottom !== undefined ? { paddingBottom } : null, contentStyle]}>{children}</View>;
   return (
     <SafeAreaView style={styles.safe} edges={edges}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>

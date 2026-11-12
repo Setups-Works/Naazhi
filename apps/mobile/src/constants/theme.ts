@@ -251,6 +251,9 @@ export const Breakpoint = { medium: 600, expanded: 900 } as const;
 /** How wide the content column may grow in each class; a list never stretches wider than it reads. */
 export const ContentWidth = { compact: MaxContentWidth, medium: 720, expanded: 1040 } as const;
 
+/** Tablets (the window is at least this wide and tall) get the web's sidebar instead of the floating navbar. Widths follow the web: 280 dp, 240 dp on a window under 1024 (an iPad upright), and the collapsed icon rail. */
+export const Sidebar = { minWidth: 700, minShort: 540, width: 280, narrow: 240, narrowBelow: 1024, rail: 56 } as const;
+
 /** Narrower than a full page: sheets, dialogs and the chat's reading column. */
 export const ReadingWidth = 720;
 export const DialogWidth = 560;

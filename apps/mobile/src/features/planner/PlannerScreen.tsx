@@ -2,7 +2,7 @@ import type { ScrollViewHandle } from "@/types/native";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
-import { ScrollView, View, useWindowDimensions } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { HealthScreen } from "@/features/health/HealthScreen";
@@ -12,6 +12,7 @@ import { TodoScreen } from "@/features/tasks/TodoScreen";
 import { PagerLockContext } from "@/components/ui/PagerLock";
 import { Segmented } from "@/components/ui/Segmented";
 import { Palette, Space, themedStyles } from "@/constants/theme";
+import { useLayout } from "@/lib/layout";
 
 type View_ = "todo" | "notes" | "calendar" | "health";
 const VIEWS: { key: View_; label: string }[] = [
@@ -30,7 +31,7 @@ const PAGE_EDGES: ("left" | "right")[] = ["left", "right"];
  */
 export function PlannerScreen() {
   const { view: viewParam } = useLocalSearchParams<{ view?: string }>();
-  const { width } = useWindowDimensions();
+  const { width } = useLayout();
   const pager = useRef<ScrollViewHandle>(null);
   const [view, setView] = useState<View_>(isView(viewParam) ? viewParam : "todo");
   const current = useRef(view);

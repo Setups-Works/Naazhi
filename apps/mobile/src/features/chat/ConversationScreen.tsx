@@ -21,6 +21,7 @@ import { Palette, Radius, themedStyles } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { greeting } from "@/lib/dates";
 import { useAppState } from "@/providers/AppState";
+import { useLayout } from "@/lib/layout";
 
 const titleFrom = (text: string) => prettyTitle((text.split("\n")[0]?.trim() || "New chat").slice(0, 60));
 
@@ -64,7 +65,9 @@ export function Conversation({
     };
   }, []);
   // The floating tab bar covers the bottom of the screen when keyboard is not visible.
-  const lift = !keyboard && !embedded ? insets.bottom + 78 : 8;
+  // The floating navbar sits under the composer on a phone; the tablet sidebar does not.
+  const { sidebar } = useLayout();
+  const lift = !keyboard && !embedded && !sidebar ? insets.bottom + 78 : 8;
 
   // Leaving the screen stops any reply still streaming.
   useEffect(() => () => abort.current?.abort(), []);

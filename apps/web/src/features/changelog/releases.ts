@@ -23,6 +23,21 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-12",
+    title: "Version 6.3.0: made for iPad and tablets",
+    summary: "On an iPad or tablet, Naazhi now shows the same sidebar as the website, beside every page, on the web and in the app.",
+    tone: "blue",
+    appVersion: "v6.3.0",
+    changes: [
+      { kind: "improved", platform: "web", text: "On an iPad or tablet the sidebar stays open beside your page, with every section and its labels, instead of a thin icon strip that floated over the page." },
+      { kind: "improved", platform: "web", text: "Chat, To-do and Journal keep a slimmer list beside the page in landscape, and the list opens next to the sidebar in portrait." },
+      { kind: "improved", platform: "web", text: "Sidebar rows and buttons are larger on touch screens, so they are easy to tap." },
+      { kind: "fixed", platform: "web", text: "The Journal month calendar in the sidebar is no longer cut off, and the Journal tabs no longer sit under the streak squares." },
+      { kind: "new", platform: "app", text: "On an iPad or tablet the app shows the website’s sidebar: Search, every section, the number of tasks due, and theme, settings, notifications, your plan and your picture in one row. Collapse it to icons when you want more room." },
+      { kind: "improved", platform: "app", text: "Every page uses the room beside the sidebar, including the swipeable Journal and Plan pages, Health and Reader. Phones keep the floating bar." },
+    ],
+  },
+  {
+    date: "2026-11-12",
     title: "Version 6.2.2: open shared chats in the app, a new demo, and Health logos",
     summary: "Shared chat links open in the app and can be continued as your own chat. The product demo is rebuilt to look like your dashboard, and Health shows the Apple and Google logos. The app’s icons are fixed.",
     tone: "sand",

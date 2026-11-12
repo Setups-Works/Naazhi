@@ -19,7 +19,7 @@ import {
 import type { Tone } from "@untitled/types";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
-import { Switch, View, useWindowDimensions } from "react-native";
+import { Switch, View } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 
 import { askChat } from "../chat/handoff";
@@ -39,6 +39,7 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/ui/States";
 import { Palette, Radius, Space, Tints, themedStyles, Neutral } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { addDays, isoDate } from "@/lib/dates";
+import { useLayout } from "@/lib/layout";
 
 const RING = 200;
 const STROKE = 20;
@@ -53,7 +54,7 @@ const ACTION_ICON: Record<HealthAction, IconName> = { ask: "wand-magic-sparkles"
 export function HealthScreen({ edges }: { edges?: ScreenEdges }) {
   const conn = useHealthConnection();
   const daysQ = useHealthDays();
-  const { width } = useWindowDimensions();
+  const { width } = useLayout();
   const wide = width >= WIDE;
   // `/health?d=YYYY-MM-DD` (the link a health note carries) opens that day, also when the screen is already open.
   const { d } = useLocalSearchParams<{ d?: string }>();

@@ -326,8 +326,9 @@ export function softwareSchema({
     screenshot: screenshots && screenshots.length ? screenshots.map((s) => ({ "@type": "ImageObject", url: absoluteUrl(s) })) : undefined,
     softwareVersion: version?.replace(/^v/, ""),
     datePublished: released,
-    downloadUrl: `${GITHUB_REPO}/releases/latest`,
+    downloadUrl: GOOGLE_PLAY_URL,
     installUrl: GOOGLE_PLAY_URL,
+    sameAs: [GOOGLE_PLAY_URL],
     softwareHelp: absoluteUrl("/help") ? { "@type": "CreativeWork", url: absoluteUrl("/help") } : undefined,
     releaseNotes: absoluteUrl("/changelog"),
     image: absoluteUrl("/opengraph-image"),
@@ -337,6 +338,27 @@ export function softwareSchema({
     creator: setupsWorksRef(),
   });
 }
+
+/** The Android app as its own entity, so a search result can offer "Install" with the Google Play link (schema.org MobileApplication + InstallAction). */
+export const androidAppSchema = (): Json =>
+  drop({
+    "@context": "https://schema.org",
+    "@type": "MobileApplication",
+    "@id": absoluteUrl("/#android-app"),
+    name: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    url: GOOGLE_PLAY_URL,
+    applicationCategory: "ProductivityApplication",
+    operatingSystem: "Android",
+    installUrl: GOOGLE_PLAY_URL,
+    downloadUrl: GOOGLE_PLAY_URL,
+    image: absoluteUrl("/brand/icon-512.png"),
+    isAccessibleForFree: true,
+    offers: { "@type": "Offer", price: "0", priceCurrency: "INR", availability: "https://schema.org/InStock" },
+    isRelatedTo: { "@id": absoluteUrl("/#software") },
+    publisher: { "@id": absoluteUrl("/#organization") },
+    potentialAction: { "@type": "InstallAction", name: "Install Naazhi", target: GOOGLE_PLAY_URL },
+  });
 
 /**
  * The FAQ as schema.org FAQPage. With `page`, each question also gets its own address (`/faq#the-question`) and the page says what it

@@ -7,11 +7,12 @@ import { publicEnv } from "../config/env";
 import HideInApp from "../components/HideInApp";
 import Footer from "../components/site/Footer";
 import Header from "../components/site/Header";
+import InstallAppDrawer from "../components/site/InstallAppDrawer";
 import NoImageDrag from "../components/site/NoImageDrag";
 import Refresh from "../components/site/Refresh";
 import ContextMenu from "../components/app/ContextMenu";
 import JsonLd from "../components/site/JsonLd";
-import { KEYWORDS, organizationSchema, SITE_DESCRIPTION, siteOrigin, setupsWorksSchema, siteNavigationSchema, websiteSchema } from "../lib/seo";
+import { KEYWORDS, androidAppSchema, organizationSchema, SITE_DESCRIPTION, siteOrigin, setupsWorksSchema, siteNavigationSchema, websiteSchema } from "../lib/seo";
 import { lookBootScript } from "../lib/look";
 
 config.autoAddCss = false;
@@ -70,7 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {/* App pages paint the person's colour scheme before the first frame (see lib/look.ts). */}
         <script dangerouslySetInnerHTML={{ __html: lookBootScript(publicEnv.appUrl ? new URL(publicEnv.appUrl).host : null) }} />
-        <JsonLd data={[organizationSchema(), setupsWorksSchema(), websiteSchema(), siteNavigationSchema()]} />
+        <JsonLd data={[organizationSchema(), setupsWorksSchema(), websiteSchema(), siteNavigationSchema(), androidAppSchema()]} />
         {/* Marketing content starts hidden for its entrance animation; without JavaScript it must simply be there. */}
         <noscript>
           <style>{"[data-reveal]{opacity:1!important;transform:none!important}"}</style>
@@ -83,6 +84,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Refresh />
             <NoImageDrag />
             <Header />
+            <InstallAppDrawer />
           </HideInApp>
           {children}
           <HideInApp>

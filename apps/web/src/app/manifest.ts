@@ -1,5 +1,6 @@
 // design-ok-file: a web app manifest can only hold literal colours (no CSS variables); they are the cream `--page` and the Naazhi green of docs/BRAND.md.
 import type { MetadataRoute } from "next";
+import { GOOGLE_PLAY_URL } from "../lib/site";
 
 /** What the browser shows when the site is installed as an app: the name, the icons and the colours of the splash and the title bar. */
 export default function manifest(): MetadataRoute.Manifest {
@@ -11,6 +12,9 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     background_color: "#f5f4eb",
     theme_color: "#235340",
+    // On Android, Chrome and other browsers send "Install app" to Google Play instead of installing the website as an app.
+    related_applications: [{ platform: "play", url: GOOGLE_PLAY_URL, id: "com.setupsworks.naazhi" }],
+    prefer_related_applications: true,
     icons: [
       { src: "/brand/icon-192.png", sizes: "192x192", type: "image/png" },
       { src: "/brand/icon-512.png", sizes: "512x512", type: "image/png" },

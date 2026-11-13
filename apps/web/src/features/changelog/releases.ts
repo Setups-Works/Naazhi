@@ -23,6 +23,18 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-13",
+    title: "Version 7.1.1: install Naazhi from Google Play",
+    summary: "On an Android phone, the website now offers the Google Play app, and browsers point to Google Play instead of installing the site.",
+    tone: "green",
+    appVersion: "v7.1.1",
+    changes: [
+      { kind: "new", platform: "web", text: "On an Android phone, a drawer at the bottom of the website offers the Naazhi app on Google Play. Close it and it stays away for two weeks." },
+      { kind: "improved", platform: "web", text: "When your browser offers to install Naazhi on Android, it now sends you to Google Play instead of installing the website." },
+      { kind: "improved", platform: "web", text: "Search engines can now see that Naazhi is an Android app you can install from Google Play." },
+    ],
+  },
+  {
+    date: "2026-11-13",
     title: "Version 7.1.0: setup with plans, steadier widgets and a calmer look",
     summary: "Choose your plan and connect Zoho while you set up on your phone, with refreshed Android widgets and controls that match the website.",
     tone: "mint",

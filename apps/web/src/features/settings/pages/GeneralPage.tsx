@@ -49,6 +49,15 @@ export default function GeneralPage({ prefs: initial }: { prefs: Prefs }) {
           <Switch checked={prefs.homeAnnouncements} onCheckedChange={(v) => change({ homeAnnouncements: v })} aria-label="Announcements on Home" />
         </SettingsRow>
       </SettingsSection>
+
+      <SettingsSection title="Privacy">
+        <SettingsRow
+          title="Share anonymous usage"
+          description="Which screens and features are used, so we can improve Naazhi. Never your notes, journal, chats or files."
+        >
+          <Switch checked={prefs.analytics} onCheckedChange={(v) => change({ analytics: v })} aria-label="Share anonymous usage" />
+        </SettingsRow>
+      </SettingsSection>
       {error && (
         <p className="form-err" role="alert">
           {error}

@@ -1,7 +1,7 @@
 {
   "name": "@untitled/web",
   "private": true,
-  "version": "7.2.0",
+  "version": "7.3.0",
   "scripts": {
     "dev": "node ../../scripts/web-next.mjs dev",
     "build": "node ../../scripts/web-next.mjs build",
@@ -35,6 +35,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "fast-xml-parser": "^5.11.2",
+    "firebase": "13.3.0",
     "gsap": "^3.15.0",
     "ioredis": "^6.0.0",
     "lucide-react": "^1.71.0",

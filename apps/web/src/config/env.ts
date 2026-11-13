@@ -16,6 +16,16 @@ export const publicEnv = {
   helpUrl: process.env.NEXT_PUBLIC_HELP_URL?.trim() || undefined,
   posthogKey: process.env.NEXT_PUBLIC_POSTHOG_KEY?.trim() || undefined,
   posthogHost: process.env.NEXT_PUBLIC_POSTHOG_HOST?.trim() || "https://eu.i.posthog.com",
+  /** Firebase web app config (Google Analytics). Public by design; analytics stays off until apiKey, appId and measurementId are all set. */
+  firebase: {
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY?.trim() || undefined, // design-ok: Firebase web keys are public by design (access is enforced by Firebase rules)
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN?.trim() || undefined,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID?.trim() || undefined,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET?.trim() || undefined,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID?.trim() || undefined,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID?.trim() || undefined,
+    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID?.trim() || undefined,
+  },
   sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN?.trim() || undefined,
   /** Search-console ownership tokens (public by design: they are printed in the page's <meta> tags). */
   googleSiteVerification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim() || undefined,

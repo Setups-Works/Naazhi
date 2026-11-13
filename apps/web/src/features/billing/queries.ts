@@ -1,4 +1,5 @@
 "use client";
+import { track } from "../../lib/analytics";
 import { createBillingApi, type ByoKeyInput } from "@untitled/api-client";
 import type { MyBilling, PlanId } from "@untitled/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -20,7 +21,14 @@ export function useBillingActions(onError: (message: string) => void) {
     onSuccess: (data: MyBilling) => qc.setQueryData(qk.billing.me, data),
     onError: (e: unknown) => onError(restMessage(e, "Couldn’t update your plan.")),
   };
-  const choose = useMutation({ mutationFn: (planId: PlanId) => billingApi.choosePlan(planId), ...settle });
+  const choose = useMutation({
+    mutationFn: (planId: PlanId) => billingApi.choosePlan(planId),
+    ...settle,
+    onSuccess: (data: MyBilling, planId: PlanId) => {
+      settle.onSuccess(data);
+      void track("select_plan", { plan: planId });
+    },
+  });
   const cancel = useMutation({ mutationFn: () => billingApi.cancel(), ...settle });
   const resume = useMutation({ mutationFn: () => billingApi.resume(), ...settle });
   const saveKey = useMutation({ mutationFn: (input: ByoKeyInput) => billingApi.saveKey(input), ...settle });

@@ -39,6 +39,8 @@ export type Prefs = {
   writeTone: WriteTone;
   /** A browser notification with today's to-dos, once a day, while Naazhi is open (needs the browser's permission). */
   webBrief: boolean;
+  /** Share anonymous usage (which screens and features are used, never note, journal or chat text) to improve the app. */
+  analytics: boolean;
   /** The last few imports, newest first. */
   recentImports: { at: string; source: string; notes: number; folders: number }[];
 };
@@ -75,6 +77,7 @@ export const DEFAULT_PREFS: Prefs = {
   role: "",
   writeTone: "",
   webBrief: false,
+  analytics: true,
 };
 const KEY = "up_prefs";
 
@@ -110,6 +113,7 @@ export function cleanPrefs(v: unknown, categories: readonly string[]): Prefs {
     role: typeof o.role === "string" ? o.role.replace(/\s+/g, " ").trim().slice(0, 80) : "",
     writeTone: WRITE_TONES.includes(o.writeTone as never) ? (o.writeTone as WriteTone) : "",
     webBrief: o.webBrief === true,
+    analytics: o.analytics !== false,
     recentImports: Array.isArray(o.recentImports)
       ? o.recentImports
           .filter((r) => !!r && typeof r.at === "string" && typeof r.source === "string")

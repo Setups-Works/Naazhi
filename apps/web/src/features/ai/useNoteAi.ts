@@ -1,4 +1,5 @@
 "use client";
+import { track } from "../../lib/analytics";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export type NoteAiAction = "improve" | "fix" | "shorter" | "longer" | "summarize" | "actions" | "continue" | "custom";
@@ -33,6 +34,7 @@ export function useNoteAi(provider: string) {
       setBusy(true);
       setResult({ action, text: "", from: range[0], to: range[1] });
       try {
+        void track("ai_note_action", { action });
         const res = await fetch("/api/v1/ai/note", {
           method: "POST",
           headers: { "content-type": "application/json" },

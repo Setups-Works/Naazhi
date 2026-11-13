@@ -117,6 +117,11 @@ export function HomeAssistantPrefs() {
           <Toggle label="Announcements on Home" value={prefs.homeAnnouncements} onChange={(homeAnnouncements) => void change({ homeAnnouncements })} />
         </Row>
       </Group>
+      <Group title="Privacy">
+        <Row title="Share anonymous usage" description="Which screens and features are used, so we can improve Naazhi. Never your notes, journal, chats or files." last>
+          <Toggle label="Share anonymous usage" value={prefs.analytics} onChange={(analytics) => void change({ analytics })} />
+        </Row>
+      </Group>
       <Group title="Assistant">
         <Row title="What you do" description="Optional. Helps Naazhi tell what matters to you." stacked>
           <TextField label="Your role" value={role} onChangeText={setRole} placeholder="Teacher, founder, student…" maxLength={80} onBlur={() => role.trim() !== prefs.role && void change({ role: role.trim() })} />

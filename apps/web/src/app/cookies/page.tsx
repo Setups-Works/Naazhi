@@ -54,7 +54,7 @@ export default function Page() {
         <FeatureCards
           items={[
             { icon: faBan, t: "No advertising cookies", d: "We don’t show ads and we don’t let advertisers set cookies here.", tone: "clay" },
-            { icon: faDatabase, t: "No analytics on this site", d: "We don’t run analytics or tracking scripts on the public pages today.", tone: "blue" },
+            { icon: faDatabase, t: "No analytics on this site", d: "No analytics or tracking scripts on the public pages. Inside the signed-in app, anonymous usage (never your content) can be turned off in Settings → Privacy.", tone: "blue" },
             { icon: faUserLock, t: "Needed to sign in", d: "The one cookie we can’t work without keeps you signed in. The rest are conveniences.", tone: "green" },
           ]}
         />

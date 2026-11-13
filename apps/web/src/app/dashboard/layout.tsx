@@ -10,6 +10,8 @@ import AppNav from "../../components/app/AppNav";
 import { SettingsDataProvider } from "../../components/app/SettingsData";
 import QueryProvider from "../../components/providers/QueryProvider";
 import AnnouncementBanner from "../../components/app/AnnouncementBanner";
+import ImpersonationBanner from "../../components/app/ImpersonationBanner";
+import AnalyticsProvider from "../../components/app/AnalyticsProvider";
 import ChatWidget from "../../components/app/ChatWidget";
 import WebBrief from "../../features/notifications/WebBrief";
 import { cleanOnboarding, shouldShowOnboarding } from "../../lib/onboarding";
@@ -70,6 +72,8 @@ export default async function Layout({ children }: { children: ReactNode }) {
           prefs={prefs}
           account={account}
         />
+        <AnalyticsProvider userId={user.id} />
+        <ImpersonationBanner />
         <AnnouncementBanner items={announcements} />
         <div className="ap-body">{children}</div>
         <WebBrief enabled={prefs.webBrief} />

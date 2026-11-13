@@ -8,6 +8,7 @@
 | ---------------------- | --------------------------------------------------- | ---------------------------------------------------------- |
 | `/admin`               | Overview stats and charts                           | auth admin API, row counts, `profiles`                     |
 | `/admin/users`         | Search/filter/sort/page, CSV, invite, detail drawer | `components/admin/UsersTable.tsx`, actions in `actions.ts` |
+| `/admin/analytics`     | Active people, sign-ups, web vs app sign-ins (from the device on each sign-in), browsers, plans, feature adoption, AI tokens; Users also shows where each person signs in | `server/services/admin/analytics.ts`, `lib/userAgent.ts`; `auth.sessions`, `auth.users`, `ai_usage` (counts only) |
 | `/admin/usage`         | Item counts per user (ids only)                     | scans tables (to move into SQL: UNT-35)                    |
 | `/admin/plans`         | Plans: prices, allowances, token price (per 1M, shown per 100), wording; Razorpay status; AI credit top-up limits (`CreditSettings.tsx`); who is on which plan, their AI credit and an Adjust button | `components/admin/PlansEditor.tsx`, `SubscribersTable.tsx`, actions in `plans/actions.ts`; `billing_plans`, `user_billing`, `ai_usage` (counts and token totals only) — see `docs/BILLING.md` |
 | `/admin/team`          | People on the public Team page: name, role, bio, photo address, profile links, order, show/hide | `components/admin/TeamEditor.tsx`, `app/admin/team/actions.ts`, `server/services/team`, `team_members` |
@@ -26,7 +27,7 @@ Add a section: create `app/admin/<section>/page.tsx` and one line in `components
 
 - `layout.tsx` calls `requireAdmin()` for every page; every server action in `actions.ts` calls `assertAdmin()` first. **Never skip either.**
 - Admin code uses owner-level database access (`adminDb()` from `apps/web/src/server/session.ts`, runs as the database owner) — keep that usage inside this folder and `apps/web/src/server`.
-- **Admins must not see user content** (notes, journal, chat text). Show counts and metadata only.
+- **Admins must not see user content** (notes, journal, chat text) in the admin pages: show counts and metadata only. The one exception is **View as user** (user drawer → Better Auth `admin/impersonate-user`): an explicit, confirmed, audited action, never for protected admins or yourself, with an amber "Stop viewing" banner (`components/app/ImpersonationBanner.tsx`) for as long as it lasts.
 - Every state-changing action writes to `admin_audit` via `audit()`.
 - Better Auth admin APIs use the `admin` role; custom admin actions must retain their server-side `assertAdmin()` checks, protected-account checks, and audit records.
 - Protect against self-harm: no demote/ban/delete of yourself or `ADMIN_EMAILS` accounts (see `guard()`).

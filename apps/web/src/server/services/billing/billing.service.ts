@@ -473,8 +473,9 @@ export type AiAccess = {
 export async function aiAccessFor(userId: string): Promise<AiAccess> {
   const row = await settled(userId);
   const planId = row?.status === "active" ? row.plan_id : null;
-  // Pay as you go is prepaid once payments are live: tokens come off the person's credit and AI pauses when it is gone.
-  const prepaid = planId === "payg" && paymentsLive();
+  // Pay as you go is always prepaid: tokens come off the person's credit and AI pauses when it is gone, whether or not
+  // Razorpay is connected yet (until then an admin adds credit with Adjust).
+  const prepaid = planId === "payg";
   const payg = prepaid ? await repo.getPlan("payg") : null;
   const count = async (usage: { inputTokens: number; outputTokens: number }, provider: string) => {
     await repo.addUsage(userId, planId, provider, usage.inputTokens, usage.outputTokens).catch(() => undefined);
@@ -487,7 +488,11 @@ export async function aiAccessFor(userId: string): Promise<AiAccess> {
     }
   };
   if (prepaid && (await repo.getCredit(userId)) <= 0)
-    throw new ForbiddenError("You’re out of AI credit. Top up in Settings → Plan and billing to keep going.");
+    throw new ForbiddenError(
+      paymentsLive()
+        ? "You’re out of AI credit. Top up in Settings → Plan and billing to keep going."
+        : "You’re out of AI credit. Top-ups aren’t open yet, so ask the team to add credit, or switch plan in Settings → Plan and billing.",
+    );
 
   if (planId === "byo") {
     const key = await repo.getAiKey(userId);

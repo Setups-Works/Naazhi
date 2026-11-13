@@ -1,7 +1,7 @@
 {
   "name": "mobile",
   "main": "index.ts",
-  "version": "7.2.0",
+  "version": "7.3.0",
   "dependencies": {
     "@better-auth/expo": "^1.7.7",
     "@expo-google-fonts/geist": "^0.4.2",
@@ -10,6 +10,8 @@
     "@expo/vector-icons": "^15.0.2",
     "@kingstinct/react-native-healthkit": "^16.2.0",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-firebase/analytics": "27.1.1",
+    "@react-native-firebase/app": "27.1.1",
     "@react-native-google-signin/google-signin": "^17.0.0",
     "@tanstack/react-query": "^5.104.1",
     "@untitled/api-client": "workspace:*",

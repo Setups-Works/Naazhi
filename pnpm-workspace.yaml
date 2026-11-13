@@ -3,6 +3,9 @@ packages:
   - packages/*
 allowBuilds:
   unrs-resolver: true
+  # Firebase's postinstall scripts only prepare optional defaults; the app doesn't need them.
+  '@firebase/util': false
+  protobufjs: false
 minimumReleaseAgeExclude:
   - '@expo/cli@57.0.29'
   - '@expo/fingerprint@0.20.14'

@@ -8,6 +8,7 @@ import {
   faEnvelope,
   faKey,
   faUserPlus,
+  faUserSecret,
   faXmark,
   faMagnifyingGlass,
 } from "@fortawesome/free-solid-svg-icons";
@@ -28,7 +29,11 @@ import {
   type SessionInfo,
 } from "../../app/admin/actions";
 import { useConfirm } from "../ui/Confirm";
+import { authClient } from "../../lib/auth/client";
 import Modal from "../ui/Modal";
+import { CLIENT_LABEL } from "../../lib/userAgent";
+
+const usesText = (r: Row) => (r.clients.length ? r.clients.map((c) => CLIENT_LABEL[c]).join(", ") : "—");
 
 export type Row = {
   id: string;
@@ -43,6 +48,8 @@ export type Row = {
   createdAt: string;
   lastSignIn: string | null;
   avatar: string | null;
+  /** Where they have signed in from: the website, the Android app, the iPhone app. */
+  clients: ("web" | "android" | "ios")[];
 };
 
 type Filter = "all" | "admin" | "banned" | "unconfirmed" | "pro";
@@ -309,6 +316,31 @@ function UserDrawer({ row, onClose }: { row: Row; onClose: () => void }) {
         </div>
 
         <h3 className="ud-h">Access</h3>
+        {!row.protected && (
+          <div className="ud-acts">
+            <button
+              className="btn btn-secondary btn-sm"
+              disabled={pending}
+              onClick={() =>
+                act(
+                  async () => {
+                    const r = await authClient.admin.impersonateUser({ userId: row.id });
+                    if (r.error) return { ok: false, error: r.error.message ?? "Couldn’t start viewing as this person." };
+                    window.location.href = "/dashboard";
+                    return { ok: true };
+                  },
+                  {
+                    title: "View as this user?",
+                    body: <>You will see Naazhi as {row.email} until you press Stop viewing. This is recorded in the audit log.</>,
+                    confirmLabel: "View as user",
+                  },
+                )
+              }
+            >
+              <FA icon={faUserSecret} /> View as user
+            </button>
+          </div>
+        )}
         {row.protected ? (
           <p className="meta">
             This is your own account or a protected admin from <code>ADMIN_EMAILS</code>, so it can’t be demoted, banned or deleted here.
@@ -500,8 +532,8 @@ export default function UsersTable({ rows }: { rows: Row[] }) {
   const open = rows.find((r) => r.id === openId) ?? null;
 
   function exportCsv() {
-    const cols = ["name", "email", "provider", "plan", "confirmed", "admin", "banned", "createdAt", "lastSignIn"] as const;
-    const text = [cols.join(","), ...list.map((r) => cols.map((c) => csv(r[c])).join(","))].join("\n");
+    const cols = ["name", "email", "provider", "uses", "plan", "confirmed", "admin", "banned", "createdAt", "lastSignIn"] as const;
+    const text = [cols.join(","), ...list.map((r) => cols.map((c) => csv(c === "uses" ? usesText(r) : r[c])).join(","))].join("\n");
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([text], { type: "text/csv" }));
     a.download = "users.csv";
@@ -564,6 +596,7 @@ export default function UsersTable({ rows }: { rows: Row[] }) {
             <tr>
               <th>User</th>
               <th>Sign-in</th>
+              <th>Uses</th>
               <th>Status</th>
               <th>Joined</th>
               <th>Last seen</th>
@@ -586,6 +619,7 @@ export default function UsersTable({ rows }: { rows: Row[] }) {
                   <span className="meta">{r.email}</span>
                 </td>
                 <td>{r.provider}</td>
+                <td>{r.clients.length ? r.clients.map((c) => <span key={c} className="adm-pill" data-k={c === "web" ? undefined : "pro"}>{CLIENT_LABEL[c]}</span>) : "—"}</td>
                 <td>
                   <Pills r={r} />
                 </td>
@@ -595,7 +629,7 @@ export default function UsersTable({ rows }: { rows: Row[] }) {
             ))}
             {shown.length === 0 && (
               <tr>
-                <td colSpan={5} className="empty">
+                <td colSpan={6} className="empty">
                   No users found.
                 </td>
               </tr>

@@ -1,3 +1,5 @@
+import { useAnalyticsSync } from "@/features/analytics/useAnalyticsSync";
+import { useBilling } from "@/features/billing/queries";
 import { useNotificationSync } from "@/features/notifications";
 import { useWidgetSync } from "@/features/widgets";
 import { Geist_400Regular, Geist_500Medium, Geist_600SemiBold } from "@expo-google-fonts/geist";
@@ -87,6 +89,9 @@ function Routes({ fresh }: { fresh: boolean }) {
   useWidgetSync(signedIn);
   // Notifications: reminders planned on the phone, push registration, and opening the right screen when one is tapped.
   useNotificationSync(user?.id ?? null);
+  // Firebase Analytics: screen views and the plan, only while signed in and only if the person shares anonymous usage.
+  const billing = useBilling({ enabled: signedIn });
+  useAnalyticsSync(signedIn ? (user?.id ?? null) : null, billing.data?.plan?.id ?? null);
 
   // After a look change: open the screen the person was on (a tab directly, anything else on top of Home).
   useEffect(() => {

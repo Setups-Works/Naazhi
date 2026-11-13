@@ -23,6 +23,20 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-13",
+    title: "Version 7.3.0: pay as you go is prepaid, and a privacy switch for usage",
+    summary: "Pay as you go now runs on the credit you add, and you can choose whether anonymous usage helps us improve Naazhi.",
+    tone: "blue",
+    appVersion: "v7.3.0",
+    changes: [
+      { kind: "fixed", platform: "web", text: "Pay as you go AI now always uses the credit you’ve added. When it runs out, AI pauses until you top up, as the plan says." },
+      { kind: "fixed", platform: "app", text: "The same in the app: Pay as you go AI pauses at zero credit until you top up." },
+      { kind: "new", platform: "web", text: "Settings → General → Privacy has a new Share anonymous usage switch. It covers which screens and features are used, never your notes, journal, chats or files." },
+      { kind: "new", platform: "app", text: "The app has the same Share anonymous usage switch in Preferences, shared with the website." },
+      { kind: "improved", platform: "web", text: "Admins get a new Analytics page (active people, sign-ups, web and app use, plans and features) and see on Users where each person signs in." },
+    ],
+  },
+  {
+    date: "2026-11-13",
     title: "Version 7.2.0: a 7-day free trial and a quicker way to pay",
     summary: "Try the Subscription plan free for 7 days, add your mobile number once, and pay with your details already filled in.",
     tone: "gold",

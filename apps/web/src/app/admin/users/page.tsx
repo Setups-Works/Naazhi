@@ -1,10 +1,11 @@
 import { isAdmin, isRootAdmin, listAllUsers, serverConfigured, currentUser, adminDb } from "../../../server/session";
+import { clientsByUser } from "../../../server/services/admin/analytics";
 import SetupNotice from "../../../components/admin/SetupNotice";
 import UsersTable, { type Row } from "../../../components/admin/UsersTable";
 
 export default async function Page() {
   if (!serverConfigured()) return <SetupNotice />;
-  const [users, me, profiles] = await Promise.all([listAllUsers(), currentUser(), adminDb().from("profiles").select("user_id,plan")]);
+  const [users, me, profiles, clients] = await Promise.all([listAllUsers(), currentUser(), adminDb().from("profiles").select("user_id,plan"), clientsByUser()]);
   const plans = new Map((profiles.data ?? []).map((p) => [p.user_id as string, p.plan as string]));
   const rows: Row[] = users.map((u) => ({
     id: u.id,
@@ -19,6 +20,7 @@ export default async function Page() {
     plan: plans.get(u.id) ?? "free",
     createdAt: u.createdAt,
     lastSignIn: u.lastSignIn ?? null,
+    clients: clients.get(u.id)?.all ?? [],
   }));
   return (
     <div className="dash">

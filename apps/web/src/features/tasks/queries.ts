@@ -1,4 +1,5 @@
 "use client";
+import { track } from "../../lib/analytics";
 import { useMutation, useQuery, useQueryClient, type QueryKey } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { api } from "../../lib/api/client";
@@ -104,6 +105,7 @@ export function useTaskActions(onError: (message: string) => void, today: string
       // The new task's id, so the page can offer "Undo" and "Open" on its toast.
       return data as { id: string };
     },
+    onSuccess: () => void track("task_created"),
     onError: () => onError("Couldn’t add that task."),
     onSettled: refresh,
   });

@@ -1,4 +1,5 @@
 "use client";
+import { track } from "../../lib/analytics";
 import { useState } from "react";
 import { createBillingApi } from "@untitled/api-client";
 import type { BillingPlan, MyBilling } from "@untitled/types";
@@ -122,6 +123,7 @@ export function useTopUp(onError: (m: string) => void, onDone?: () => void) {
             .then((data) => {
               qc.setQueryData(qk.billing.me, data);
               void qc.invalidateQueries({ queryKey: qk.billing.invoices });
+              void track("top_up");
               onDone?.();
             })
             .catch((e: unknown) => onError(restMessage(e, "Your payment went through but we couldn’t add the credit yet. It will appear shortly; contact us if it doesn’t.")))

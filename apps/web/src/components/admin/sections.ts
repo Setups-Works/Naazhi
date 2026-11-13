@@ -3,6 +3,7 @@ import {
   faChartPie,
   faUsers,
   faChartColumn,
+  faChartLine,
   faWallet,
   faBullhorn,
   faPaperPlane,
@@ -17,6 +18,7 @@ import {
 export const ADMIN_SECTIONS: { href: string; t: string; icon: IconDefinition }[] = [
   { href: "/admin", t: "Overview", icon: faChartPie },
   { href: "/admin/users", t: "Users", icon: faUsers },
+  { href: "/admin/analytics", t: "Analytics", icon: faChartLine },
   { href: "/admin/usage", t: "Usage", icon: faChartColumn },
   { href: "/admin/plans", t: "Plans", icon: faWallet },
   { href: "/admin/invoices", t: "Invoices", icon: faFileLines },

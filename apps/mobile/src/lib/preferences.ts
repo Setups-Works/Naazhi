@@ -28,6 +28,8 @@ export type SettingsPrefs = {
   role: string;
   writeTone: WriteTone;
   webBrief: boolean;
+  /** Share anonymous usage with Firebase Analytics (screens and features used, never content). */
+  analytics: boolean;
   recentImports: { at: string; source: string; notes: number; folders: number }[];
 };
 
@@ -54,6 +56,7 @@ export const DEFAULT_SETTINGS_PREFS: SettingsPrefs = {
   role: "",
   writeTone: "",
   webBrief: false,
+  analytics: true,
   recentImports: [],
 };
 
@@ -91,6 +94,7 @@ export function cleanSettingsPrefs(value: unknown): SettingsPrefs {
     role: typeof o.role === "string" ? o.role.replace(/\s+/g, " ").trim().slice(0, 80) : "",
     writeTone: WRITE_TONES.includes(o.writeTone as never) ? (o.writeTone as WriteTone) : "",
     webBrief: o.webBrief === true,
+    analytics: o.analytics !== false,
     recentImports: Array.isArray(o.recentImports)
       ? o.recentImports
           .filter((r) => !!r && typeof r.at === "string" && typeof r.source === "string")

@@ -7,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { http, restMessage } from "../../lib/api/rest";
 import { qk } from "../../lib/query/keys";
 import { useBillingActions } from "./queries";
+import { checkoutBrand } from "./checkoutBrand";
 
 /**
  * Razorpay's checkout window. The server creates the subscription and checks the result; this only opens the window (the script is
@@ -25,6 +26,9 @@ type RazorpayOptions = {
   prefill: { name: string; email: string };
   handler: (r: CheckoutResult & { razorpay_order_id?: string }) => void;
   modal: { ondismiss: () => void };
+  /** Our logo and colours inside Razorpay's window (see checkoutBrand.ts). */
+  image?: string;
+  theme?: { color: string; backdrop_color: string };
 };
 declare global {
   interface Window {
@@ -67,7 +71,7 @@ export function usePlanPicker(billing: MyBilling | undefined, onError: (m: strin
       const rz = new window.Razorpay({
         key: s.key_id,
         subscription_id: s.subscription_id,
-        name: "Naazhi",
+        ...checkoutBrand(),
         description: `${s.name} (₹${s.amount / 100})`,
         prefill: s.prefill,
         handler: (r) => {
@@ -109,7 +113,7 @@ export function useTopUp(onError: (m: string) => void, onDone?: () => void) {
         order_id: s.order_id,
         amount: s.amount,
         currency: s.currency,
-        name: s.name,
+        ...checkoutBrand(),
         description: s.description,
         prefill: s.prefill,
         handler: (r) => {

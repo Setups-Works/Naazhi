@@ -23,6 +23,18 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-13",
+    title: "Version 7.1.3: payments in Naazhi’s own look",
+    summary: "The payment window now shows Naazhi’s name, logo and green, and subscribing works with live payments.",
+    tone: "green",
+    appVersion: "v7.1.3",
+    changes: [
+      { kind: "improved", platform: "web", text: "The payment window for plans and credit top-ups now shows Naazhi’s name, logo and colours." },
+      { kind: "improved", platform: "app", text: "The payment sheet in the app now shows Naazhi’s name, logo and green too." },
+      { kind: "fixed", platform: "web", text: "Subscribing to a plan could fail with a message about the payment provider. It now starts the payment as it should." },
+    ],
+  },
+  {
+    date: "2026-11-13",
     title: "Version 7.1.2: clearer payment problems",
     summary: "A fix that lets us see why a payment could not start, so plan and top-up problems are found and fixed faster.",
     tone: "amber",

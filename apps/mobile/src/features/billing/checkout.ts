@@ -5,6 +5,8 @@ import { formatMoney, needsCheckout } from "@untitled/logic";
 import type { BillingPlan, MyBilling } from "@untitled/types";
 
 import { api, errorMessage } from "@/lib/api";
+import { mobileEnv } from "@/config/env";
+import { paletteFor } from "@/constants/theme";
 import { qk } from "@/lib/queryKeys";
 import { useBillingActions } from "./queries";
 
@@ -14,6 +16,13 @@ import { useBillingActions } from "./queries";
  * Expo Go, so it is loaded when first needed and a missing module becomes a friendly message instead of a crash.
  */
 const billingApi = createBillingApi(api);
+
+/** Naazhi's name, logo and green inside Razorpay's payment sheet (always the light-scheme brand colour, whatever the phone shows). */
+const brand = () => ({
+  name: "Naazhi",
+  theme: { color: paletteFor(false).brand },
+  ...(mobileEnv.apiBaseUrl ? { image: `${mobileEnv.apiBaseUrl}/brand/icon-512.png` } : {}),
+});
 
 type Failure = { code?: number; description?: string };
 
@@ -36,7 +45,7 @@ export function usePlanPicker(billing: MyBilling | undefined, onError: (message:
         throw new Error("Payments need the installed Naazhi app. Update the app, or subscribe on the website.");
       }
       const r = await sdk
-        .open({ key: s.key_id, subscription_id: s.subscription_id, name: "Naazhi", description: `${s.name}, ${formatMoney(s.amount, "inr")}`, prefill: s.prefill })
+        .open({ key: s.key_id, subscription_id: s.subscription_id, ...brand(), description: `${s.name}, ${formatMoney(s.amount, "inr")}`, prefill: s.prefill })
         .catch((e: Failure) => {
           // code 0 on Android and 2 on iOS mean the person closed the sheet; that is not an error.
           if (e?.code === 0 || e?.code === 2) return null;
@@ -75,7 +84,7 @@ export function useTopUp(onError: (message: string) => void) {
         throw new Error("Payments need the installed Naazhi app. Update the app, or add credit on the website.");
       }
       const r = await sdk
-        .open({ key: s.key_id, order_id: s.order_id, amount: s.amount, currency: s.currency, name: s.name, description: s.description, prefill: s.prefill })
+        .open({ key: s.key_id, order_id: s.order_id, amount: s.amount, currency: s.currency, ...brand(), description: s.description, prefill: s.prefill })
         .catch((e: Failure) => {
           if (e?.code === 0 || e?.code === 2) return null;
           throw new Error("That payment didn’t go through. You haven’t been charged. Try again or use another method.");

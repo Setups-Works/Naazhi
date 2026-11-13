@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faCheck, faKey } from "@fortawesome/free-solid-svg-icons";
 import type { BillingPlan, MyBilling } from "@untitled/types";
-import { BYO_PROVIDERS, byoProvider, formatBalance, formatMoney, formatTokens, needsCheckout, priceLine } from "@untitled/logic/billing";
+import { BYO_PROVIDERS, byoProvider, formatBalance, formatMoney, formatTokens, needsCheckout, priceLine, trialButtonLabel, trialLine } from "@untitled/logic/billing";
 import { useConfirm } from "../../components/ui/Confirm";
 import { useBilling, useBillingActions } from "./queries";
 import { usePlanPicker } from "./razorpay";
@@ -20,6 +20,10 @@ function standing(b: MyBilling): string {
     return b.status === "canceled"
       ? "Your last plan has ended. Choose a plan below to start again."
       : "You haven’t chosen a plan yet. AI works as it always has until you do.";
+  if (b.plan.id === "subscription" && b.trial_ends_at)
+    return b.cancel_at_period_end
+      ? `Your free trial ends on ${day(b.trial_ends_at)} and you won’t be charged. You keep everything until then.`
+      : `Free trial. You’ll be charged ${formatMoney(b.plan.price_cents, b.plan.currency)} on ${day(b.trial_ends_at)} unless you cancel before then.`;
   if (b.plan.id === "subscription" && b.period_end)
     return b.cancel_at_period_end ? `Autopay is off. Ends on ${day(b.period_end)}; you keep everything until then.` : `Autopay is on. Next charge on ${day(b.period_end)}.`;
   if (b.plan.id === "payg")
@@ -113,7 +117,7 @@ function KeyForm({ billing, onError }: { billing: MyBilling; onError: (m: string
   );
 }
 
-function PlanCard({ plan, current, busy, autopay, onChoose }: { plan: BillingPlan; current: boolean; busy: boolean; autopay: boolean; onChoose: () => void }) {
+function PlanCard({ plan, current, busy, autopay, trial, onChoose }: { plan: BillingPlan; current: boolean; busy: boolean; autopay: boolean; trial: boolean; onChoose: () => void }) {
   return (
     <article
       className="liquid-flat flex flex-col gap-3 rounded-r3 p-[18px] [backdrop-filter:var(--glass-blur)]"
@@ -128,7 +132,7 @@ function PlanCard({ plan, current, busy, autopay, onChoose }: { plan: BillingPla
           </span>
         )}
       </div>
-      <div className="font-serif font-semibold text-[26px] leading-none tracking-[-0.02em]">{priceLine(plan)}</div>
+      <div className="font-serif font-semibold text-[26px] leading-none tracking-[-0.02em]">{autopay && trial ? trialLine(plan) : priceLine(plan)}</div>
       <p className="m-0 text-[13.5px] text-fg-muted">{plan.tagline}</p>
       {plan.id === "subscription" && plan.included_tokens > 0 && (
         <p className="m-0 text-[13px] text-fg-subtle">{formatTokens(plan.included_tokens)} AI tokens included each month</p>
@@ -143,9 +147,15 @@ function PlanCard({ plan, current, busy, autopay, onChoose }: { plan: BillingPla
       </ul>
       <div className="mt-auto pt-1">
         <button className={`btn btn-sm ${current ? "btn-secondary" : "btn-primary"}`} disabled={current || busy} onClick={onChoose}>
-          {current ? "Your plan" : autopay ? "Subscribe with autopay" : "Choose this plan"}
+          {current ? "Your plan" : autopay ? (trial ? trialButtonLabel(plan, true) : null) ?? "Subscribe with autopay" : "Choose this plan"}
         </button>
-        {autopay && !current && <p className="m-0 mt-2 text-[12.5px] text-fg-subtle">Charged automatically each period by UPI AutoPay or card. Cancel any time.</p>}
+        {autopay && !current && (
+          <p className="m-0 mt-2 text-[12.5px] text-fg-subtle">
+            {trial
+              ? `Free for ${plan.trial_days} days. You’ll approve autopay now and nothing is charged until the trial ends. Cancel any time before then.`
+              : "Charged automatically each period by UPI AutoPay or card. Cancel any time."}
+          </p>
+        )}
       </div>
     </article>
   );
@@ -297,7 +307,7 @@ export default function BillingPanel() {
       <h2 className="m-0 mt-2 text-[15px] font-semibold">Plans</h2>
       <div className="grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(210px,1fr))]">
         {b.plans.map((p) => (
-          <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={busy} autopay={needsCheckout(b, p)} onChoose={() => pick(p)} />
+          <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={busy} autopay={needsCheckout(b, p)} trial={b.trial_available && p.trial_days > 0} onChoose={() => pick(p)} />
         ))}
       </div>
 

@@ -43,6 +43,7 @@ import type { SettingsSection as SettingsTab } from "../../features/settings/tab
 import BillingPanel from "../../features/billing/BillingPanel";
 import AppearancePicker from "../../features/settings/AppearancePicker";
 import { applyLook, saveLook } from "../../lib/look";
+import { normalizePhone } from "@untitled/logic/billing";
 
 type Tab = SettingsTab;
 const NAV: { k: Tab; label: string; icon: IconDefinition }[] = [
@@ -65,6 +66,7 @@ type Account = {
   createdAt: string;
   avatarUrl: string | null;
   lastSignIn: string | null;
+  phone: string;
 };
 
 const csv = (v: unknown) => {
@@ -118,6 +120,8 @@ export default function SettingsView({
   const [name, setName] = useState(account.name);
   const [nameMsg, setNameMsg] = useState<Msg>(null);
   const [email, setEmail] = useState(account.email);
+  const [phone, setPhone] = useState(account.phone);
+  const [phoneMsg, setPhoneMsg] = useState<Msg>(null);
   const [emailMsg, setEmailMsg] = useState<Msg>(null);
   const [username, setUsername] = useState(account.displayUsername || account.username || "");
   const [usernameMsg, setUsernameMsg] = useState<Msg>(null);
@@ -277,6 +281,19 @@ export default function SettingsView({
       const { error } = await authClient.updateUser({ name: v });
       setNameMsg(error ? { ok: false, text: friendly(error.message ?? "") } : { ok: true, text: "Name updated." });
       if (!error) router.refresh();
+    });
+  };
+
+  const savePhone = (e: React.FormEvent) => {
+    e.preventDefault();
+    const v = normalizePhone(phone);
+    if (!v) return setPhoneMsg({ ok: false, text: "Enter a valid mobile number, like 98765 43210 or +1 415 555 0132." });
+    run("phone", async () => {
+      const { error } = await sb.from("profiles").upsert({ phone: v }, { onConflict: "user_id" });
+      if (error) return setPhoneMsg({ ok: false, text: "Couldn’t save that number. Try again." });
+      setPhone(v);
+      setPhoneMsg({ ok: true, text: "Mobile number saved." });
+      router.refresh();
     });
   };
 
@@ -537,6 +554,24 @@ export default function SettingsView({
                 </Button>
               </SettingsRow>
               <Status m={usernameMsg} />
+            </form>
+            <form onSubmit={savePhone}>
+              <SettingsRow title="Mobile number" description="Used to fill in your details when you pay for a plan or add credit.">
+                <Input
+                  type="tel"
+                  inputMode="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.slice(0, 20))}
+                  autoComplete="tel"
+                  placeholder="98765 43210"
+                  aria-label="Mobile number"
+                  className="h-9 w-[220px] max-[600px]:w-full"
+                />
+                <Button type="submit" disabled={busy === "phone" || (normalizePhone(phone) ?? phone.trim()) === account.phone}>
+                  {spin("phone", "Save")}
+                </Button>
+              </SettingsRow>
+              <Status m={phoneMsg} />
             </form>
             <form onSubmit={saveEmail}>
               <SettingsRow title="Email" description="The address you sign in with.">

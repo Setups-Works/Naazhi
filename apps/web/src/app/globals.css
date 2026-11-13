@@ -14610,39 +14610,6 @@
     flex-direction: column;
     outline: 0;
   }
-  .sm-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    height: 48px;
-    padding: 0 clamp(12px, 2vw, 20px);
-    flex: none;
-  }
-  .sm-crumbs {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-    font-size: 14px;
-    color: var(--ink-3);
-  }
-  .sm-crumbs button {
-    padding: 3px 6px;
-    margin: 0 -6px;
-    border-radius: var(--r-sm);
-    color: var(--ink-2);
-  }
-  .sm-crumbs button:hover {
-    background: var(--hover);
-    color: var(--ink);
-  }
-  .sm-crumbs [aria-current] {
-    color: var(--ink);
-  }
-  .sm-crumbs > span[aria-hidden] {
-    color: var(--ink-4);
-  }
   .sm-x {
     display: grid;
     place-items: center;
@@ -14651,10 +14618,6 @@
     border-radius: var(--r-ctl);
     color: var(--ink);
     font-size: 17px;
-  }
-  .sm-crumbs > svg {
-    font-size: 13px;
-    color: var(--ink-2);
   }
   .sm-x:hover {
     background: var(--hover);
@@ -15065,9 +15028,6 @@
       width: 100%;
       height: 94dvh;
       border-radius: var(--r4) var(--r4) 0 0;
-    }
-    .sm-head {
-      padding: 14px 12px 12px 20px;
     }
     .st-layout {
       grid-template-columns: 1fr;

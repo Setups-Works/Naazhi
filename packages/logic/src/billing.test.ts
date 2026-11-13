@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addMonth, addMonths, estimateTokens, estimatePlans, formatBalance, formatMoney, TOPUP, validTopup, formatTokens, priceLine, tokenCostCents } from "./billing";
+import { addMonth, addMonths, estimateTokens, estimatePlans, formatBalance, formatMoney, TOPUP, validTopup, formatTokens, priceLine, tokenCostCents, trialLine, trialButtonLabel, normalizePhone } from "./billing";
 
 describe("billing helpers", () => {
   it("formats money", () => {
@@ -67,9 +67,9 @@ describe("AI credit", () => {
 
 describe("pricing calculator", () => {
   const plans = [
-    { id: "subscription", name: "Subscription", tagline: "", price_cents: 9_900, currency: "inr", interval: "month", included_tokens: 1_000_000, token_price_cents_per_million: 0, features: [], active: true, sort: 1 },
-    { id: "payg", name: "Pay as you go", tagline: "", price_cents: 0, currency: "inr", interval: "none", included_tokens: 0, token_price_cents_per_million: 20_000, features: [], active: true, sort: 2 },
-    { id: "byo", name: "Bring your own key", tagline: "", price_cents: 0, currency: "inr", interval: "none", included_tokens: 0, token_price_cents_per_million: 0, features: [], active: true, sort: 3 },
+    { id: "subscription", name: "Subscription", tagline: "", price_cents: 9_900, currency: "inr", interval: "month", included_tokens: 1_000_000, token_price_cents_per_million: 0, features: [], active: true, sort: 1, trial_days: 0 },
+    { id: "payg", name: "Pay as you go", tagline: "", price_cents: 0, currency: "inr", interval: "none", included_tokens: 0, token_price_cents_per_million: 20_000, features: [], active: true, sort: 2, trial_days: 0 },
+    { id: "byo", name: "Bring your own key", tagline: "", price_cents: 0, currency: "inr", interval: "none", included_tokens: 0, token_price_cents_per_million: 0, features: [], active: true, sort: 3, trial_days: 0 },
   ] as Parameters<typeof estimatePlans>[1];
 
   it("prices light use on Pay as you go and recommends it over the subscription", () => {
@@ -92,5 +92,36 @@ describe("pricing calculator", () => {
     expect(r.estimates.find((e) => e.id === "byo")?.monthlyCents).toBe(0);
     expect(r.best).not.toBe("byo");
     expect(estimatePlans(0, plans).estimates.find((e) => e.id === "payg")?.monthlyCents).toBe(0);
+  });
+});
+
+describe("free trial wording", () => {
+  const sub = { id: "subscription", price_cents: 74_900, currency: "inr", interval: "month", token_price_cents_per_million: 0, trial_days: 7 } as const;
+  it("says how long it is free and what it costs after", () => {
+    expect(trialLine(sub)).toBe("7 days free, then ₹749 / month");
+    expect(trialLine({ ...sub, trial_days: 1 })).toBe("1 day free, then ₹749 / month");
+  });
+  it("shows just the price when there is no trial or it was already used", () => {
+    expect(trialLine({ ...sub, trial_days: 0 })).toBe("₹749 / month");
+    expect(trialLine(sub, false)).toBe("₹749 / month");
+    expect(trialLine({ ...sub, id: "payg", token_price_cents_per_million: 20_000 })).toBe("₹200 per 1M tokens");
+  });
+  it("labels the button only while a trial applies", () => {
+    expect(trialButtonLabel(sub, true)).toBe("Start 7-day free trial");
+    expect(trialButtonLabel(sub, false)).toBeNull();
+    expect(trialButtonLabel({ trial_days: 0 }, true)).toBeNull();
+  });
+});
+
+describe("normalizePhone", () => {
+  it("turns an Indian mobile number into international form however it is typed", () => {
+    for (const v of ["9876543210", "98765 43210", "098765 43210", "91 98765-43210", "+91 98765 43210", "(+91) 98765 43210"]) expect(normalizePhone(v)).toBe("+919876543210");
+  });
+  it("keeps a valid international number", () => {
+    expect(normalizePhone("+1 415 555 0132")).toBe("+14155550132");
+    expect(normalizePhone("+44 7911 123456")).toBe("+447911123456");
+  });
+  it("refuses anything that is not a number", () => {
+    for (const v of ["", "  ", "abc", "12345", "5876543210", "+0 123456789", "+1234", "9876543210123456", "98765 4321"]) expect(normalizePhone(v)).toBeNull();
   });
 });

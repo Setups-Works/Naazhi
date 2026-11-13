@@ -23,6 +23,8 @@ export type RazorpaySubscription = {
   current_start: number | null;
   current_end: number | null;
   charge_at?: number | null;
+  /** Unix seconds the first charge is due; in the future while a free trial runs. */
+  start_at?: number | null;
   notes?: Record<string, string> | unknown[];
 };
 
@@ -78,13 +80,15 @@ export const createPlan = (p: { name: string; amount: number; currency: string; 
     item: { name: p.name.slice(0, 80), amount: p.amount, currency: p.currency.toUpperCase() },
   });
 
-export const createSubscription = (s: { planId: string; interval: "month" | "year"; userId: string }) =>
+/** `startAt` (Unix seconds) delays the first charge: that is how a free trial works. Razorpay still asks for a mandate now. */
+export const createSubscription = (s: { planId: string; interval: "month" | "year"; userId: string; startAt?: number }) =>
   call<RazorpaySubscription>("POST", "/subscriptions", {
     plan_id: s.planId,
     // Razorpay needs an end; this is ten years either way and a person can cancel at any time.
     total_count: s.interval === "year" ? 10 : 120,
     customer_notify: 1,
     notes: { user_id: s.userId },
+    ...(s.startAt ? { start_at: s.startAt } : {}),
   });
 
 export type RazorpayOrder = { id: string; amount: number; currency: string; status: string; notes?: Record<string, string> | unknown[] };

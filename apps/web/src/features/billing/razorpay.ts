@@ -23,7 +23,7 @@ type RazorpayOptions = {
   currency?: string;
   name: string;
   description: string;
-  prefill: { name: string; email: string };
+  prefill: { name: string; email: string; contact?: string };
   handler: (r: CheckoutResult & { razorpay_order_id?: string }) => void;
   modal: { ondismiss: () => void };
   /** Our logo and colours inside Razorpay's window (see checkoutBrand.ts). */
@@ -72,7 +72,7 @@ export function usePlanPicker(billing: MyBilling | undefined, onError: (m: strin
         key: s.key_id,
         subscription_id: s.subscription_id,
         ...checkoutBrand(),
-        description: `${s.name} (₹${s.amount / 100})`,
+        description: s.trial_days > 0 ? `${s.name}: ${s.trial_days} days free, then ₹${s.amount / 100} / month` : `${s.name} (₹${s.amount / 100})`,
         prefill: s.prefill,
         handler: (r) => {
           api

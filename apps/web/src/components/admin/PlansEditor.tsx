@@ -1,7 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
 import type { BillingPlan } from "@untitled/types";
-import { formatBalance, priceLine, tokenCostCents } from "@untitled/logic/billing";
+import { formatBalance, tokenCostCents, trialLine } from "@untitled/logic/billing";
 import { savePlan } from "../../app/admin/plans/actions";
 
 /** Prices are typed in major units (9.50) and stored in the smallest unit (950); this is the only place that converts. */
@@ -30,22 +30,28 @@ function PlanForm({ plan }: { plan: BillingPlan }) {
   const [included, setIncluded] = useState(String(plan.included_tokens));
   const [rate, setRate] = useState(toMajor(plan.token_price_cents_per_million));
   const [features, setFeatures] = useState(plan.features.join("\n"));
+  const [trial, setTrial] = useState(String(plan.trial_days));
   const [active, setActive] = useState(plan.active);
   const [sort, setSort] = useState(String(plan.sort));
   const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, start] = useTransition();
 
-  const shown = priceLine({
+  const trialDays = Number.isInteger(Number(trial)) && Number(trial) >= 0 ? Number(trial) : 0;
+  const shown = trialLine({
     ...plan,
     price_cents: toMinor(price) || 0,
     token_price_cents_per_million: toMinor(rate) || 0,
     interval,
     currency: "inr",
+    trial_days: trialDays,
   });
   const numbersOk =
     [price, rate].every((v) => v !== "" && Number.isFinite(Number(v)) && Number(v) >= 0) &&
     Number.isInteger(Number(included)) &&
-    Number(included) >= 0;
+    Number(included) >= 0 &&
+    Number.isInteger(Number(trial)) &&
+    Number(trial) >= 0 &&
+    Number(trial) <= 90;
 
   return (
     <form
@@ -65,6 +71,7 @@ function PlanForm({ plan }: { plan: BillingPlan }) {
               .split("\n")
               .map((f) => f.trim())
               .filter(Boolean),
+            trial_days: plan.id === "subscription" ? Number(trial) : 0,
             active,
             sort: Number(sort),
           });
@@ -121,6 +128,14 @@ function PlanForm({ plan }: { plan: BillingPlan }) {
         <Field label="Tokens included">
           <input className={INPUT} value={included} onChange={(e) => setIncluded(e.target.value)} inputMode="numeric" />
         </Field>
+        {plan.id === "subscription" && (
+          <Field label="Free trial (days)">
+            <input className={INPUT} value={trial} onChange={(e) => setTrial(e.target.value)} inputMode="numeric" aria-describedby={`trial-${plan.id}`} />
+            <small id={`trial-${plan.id}`} className="text-[12.5px] text-fg-subtle">
+              {trialDays > 0 ? `New subscribers pay nothing for ${trialDays} ${trialDays === 1 ? "day" : "days"}, then the price above. One trial per person.` : "0 means no free trial."}
+            </small>
+          </Field>
+        )}
         <Field label="Price per 1M tokens (₹)">
           <input className={INPUT} value={rate} onChange={(e) => setRate(e.target.value)} inputMode="decimal" />
           {toMinor(rate) > 0 && (
@@ -143,7 +158,7 @@ function PlanForm({ plan }: { plan: BillingPlan }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <small className="text-[13px] text-fg-subtle">
           Changes show on the pricing page and in Settings straight away.
-          {plan.id === "subscription" && " A new price applies to people who subscribe from now on; current subscribers keep their price until they subscribe again."}
+          {plan.id === "subscription" && " A new price or trial length applies to people who subscribe from now on; current subscribers keep their terms until they subscribe again."}
           {plan.id === "payg" && " A new token price applies to AI used from now on."}
         </small>
         <button className="btn btn-primary btn-sm" disabled={pending || !numbersOk || !name.trim()}>

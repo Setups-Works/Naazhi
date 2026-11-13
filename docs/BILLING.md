@@ -67,6 +67,16 @@ Data flow, as everywhere: `component → queries.ts → api-client → /api/v1/b
 
 `/admin/plans`: one form per plan (name, tagline, price, currency, billing interval, tokens included, price per 1M tokens, feature lines, visible, order), counts of people per plan, tokens in the last 30 days, and a subscriber table where an admin can move a person to another plan or off all plans (support, or people who pay outside the app). Prices are typed in major units and converted to cents in `PlansEditor.tsx`, the only place that converts. Saving also revalidates `/pricing`.
 
+## Free trial (Subscription)
+
+- **Admin → Plans → Subscription → Free trial (days)** (`billing_plans.trial_days`, 0 to 90; 0 = no trial). Seeded to 7. A change applies to people who subscribe from then on; the pricing page, Settings, the setup plan step and the phone app all read it, so they say "7 days free, then ₹749 / month" and "Start 7-day free trial" (`trialLine`, `trialButtonLabel` in `packages/logic/src/billing.ts`).
+- **How it is charged:** `startCheckout` creates the Razorpay subscription with `start_at` = now + trial days, so the first charge is pushed back. Razorpay still takes a small refundable check (about ₹5) when the person approves autopay; that is not a charge and gets no invoice. The real first payment, and its invoice, arrive through the `subscription.charged` webhook when the trial ends.
+- **One per person, ever:** `billing_trials` records who has had it. It is written when the trial **starts** (`confirmCheckout`), not when checkout opens, so closing the window does not use it up. `MyBilling.trial_available` tells the screens whether to offer it.
+- **State during a trial:** `user_billing.trial_ends_at` is the day the first payment is taken; `period_end` is the same day, so AI works with the full allowance until then. `getMyBilling` returns `trial_ends_at` only while it is in the future.
+- **Cancel during a trial:** Razorpay can only cancel a subscription that has not started charging immediately, so `cancelPlan` cancels it at once and sets `cancel_at_period_end`; the person keeps the plan until the trial ends and is never charged. The `subscription.cancelled` webhook does not cut that short (`applySubscription`).
+- **Prefilled payment window:** setup asks for a mobile number (`normalizePhone` in `packages/logic/src/billing.ts` turns `98765 43210` into `+919876543210`); it is saved in `profiles.phone` and `startCheckout` / `startTopup` send it, with the name and email, as Razorpay's `prefill`. Razorpay decides whether to show it filled in.
+- Test with `rzp_test_` keys; check the checkout opens for the small check amount, not the full price.
+
 ## Payments: Razorpay autopay (rupees only)
 
 A **Subscription** is a Razorpay Subscription, i.e. **autopay**: the person approves a mandate once (UPI AutoPay, card or e-mandate) and each period is charged on its own. Amounts are INR only (`billing_plans.currency` accepts only `inr`). Pay as you go is **not** charged through Razorpay yet (usage is metered and priced, but there is no invoicing job); Bring your own key never charges.

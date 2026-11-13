@@ -1,4 +1,4 @@
-import { formatTokens, needsCheckout, priceLine } from "@untitled/logic";
+import { formatTokens, needsCheckout, trialLine } from "@untitled/logic";
 import type { BillingPlan, MyBilling } from "@untitled/types";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -22,7 +22,7 @@ const aiLine = (p: BillingPlan) =>
 
 /** The comparison rows, built from the plans so nothing here is a price or a limit written in code. */
 const rows = (plans: BillingPlan[]): { label: string; values: string[] }[] => [
-  { label: "Price", values: plans.map(priceLine) },
+  { label: "Price", values: plans.map((p) => trialLine(p)) },
   { label: "AI", values: plans.map(aiLine) },
   { label: "You pay your AI provider", values: plans.map((p) => (p.id === "byo" ? "Yes" : "No")) },
   { label: "Cancel any time", values: plans.map(() => "Yes") },
@@ -67,7 +67,7 @@ export function PricingScreen() {
       {err ? <Banner kind="error">{err}</Banner> : null}
       {b && !b.payments_connected ? <Banner kind="info">Payments aren’t switched on yet, so choosing a plan doesn’t charge you.</Banner> : null}
       {b?.plans.map((p) => (
-        <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={picker.busy} loading={picker.loadingId === p.id} autopay={needsCheckout(b, p)} onChoose={() => void picker.pick(p)} />
+        <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={picker.busy} loading={picker.loadingId === p.id} autopay={needsCheckout(b, p)} trial={b.trial_available && p.trial_days > 0} onChoose={() => void picker.pick(p)} />
       ))}
       {b && b.plans.length > 0 ? (
         <>

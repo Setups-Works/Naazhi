@@ -23,6 +23,14 @@ describe("billing input", () => {
     const parsed = planPatchInput.parse({ name: "  Plus ", currency: "inr", id: "byo", price_cents: 900 });
     expect(parsed).toEqual({ name: "Plus", currency: "inr", price_cents: 900 });
   });
+
+  it("lets an admin set a free trial of 0 to 90 whole days", () => {
+    expect(planPatchInput.parse({ trial_days: 7 })).toEqual({ trial_days: 7 });
+    expect(planPatchInput.parse({ trial_days: 0 })).toEqual({ trial_days: 0 });
+    expect(planPatchInput.safeParse({ trial_days: -1 }).success).toBe(false);
+    expect(planPatchInput.safeParse({ trial_days: 91 }).success).toBe(false);
+    expect(planPatchInput.safeParse({ trial_days: 2.5 }).success).toBe(false);
+  });
 });
 
 describe("key vault", () => {

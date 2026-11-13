@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faBan, faCheck, faCoins, faKey, faWallet } from "@fortawesome/free-solid-svg-icons";
 import type { BillingPlan } from "@untitled/types";
-import { formatMoney, formatTokens, priceLine } from "@untitled/logic/billing";
+import { formatMoney, formatTokens, priceLine, trialLine } from "@untitled/logic/billing";
 import AuthLink from "../../components/auth/AuthLink";
 import { CompareTable } from "../../components/site/blocks";
 import PricingCalculator from "../../components/site/PricingCalculator";
@@ -28,6 +28,9 @@ function Plan({ plan, emphasis = false }: { plan: BillingPlan; emphasis?: boolea
         <span className="text-[11px] font-semibold tracking-[0.1em] text-fg-faint uppercase">{plan.name}</span>
         {emphasis && <span className="rounded-pill bg-green-bg px-3 py-1 text-[12px] font-medium text-green-fg">Popular</span>}
       </div>
+      {plan.id === "subscription" && plan.trial_days > 0 && plan.price_cents > 0 && (
+        <span className="w-fit rounded-pill bg-green-bg px-3 py-1 text-[13px] font-medium text-green-fg">{plan.trial_days} {plan.trial_days === 1 ? "day" : "days"} free</span>
+      )}
       <h3 className="font-serif font-semibold text-[30px] leading-tight tracking-[-0.022em]">{priceLine(plan)}</h3>
       <p className="m-0 border-y border-line py-4 text-[15px] text-fg-muted">{plan.tagline}</p>
       <ul className="flex flex-1 flex-col gap-3">
@@ -39,7 +42,7 @@ function Plan({ plan, emphasis = false }: { plan: BillingPlan; emphasis?: boolea
         ))}
       </ul>
       <div className="pt-2">
-        <AuthLink className={`${buttonClass(emphasis ? "primary" : "secondary")} w-full`}>Get started</AuthLink>
+        <AuthLink className={`${buttonClass(emphasis ? "primary" : "secondary")} w-full`}>{plan.id === "subscription" && plan.trial_days > 0 && plan.price_cents > 0 ? `Start ${plan.trial_days}-day free trial` : "Get started"}</AuthLink>
       </div>
     </Surface>
   );
@@ -155,7 +158,7 @@ export default async function Page() {
             rows={[
               { label: "Notes, tasks and journal", values: plans.map(() => true) },
               { label: "Calendar, chat and Reader", values: plans.map(() => true) },
-              { label: "Price", values: plans.map(priceLine) },
+              { label: "Price", values: plans.map((p) => trialLine(p)) },
               { label: "AI", values: plans.map(aiLine) },
               { label: "You pay your AI provider directly", values: plans.map((p) => p.id === "byo") },
               { label: "AI-free mode", values: plans.map(() => true) },

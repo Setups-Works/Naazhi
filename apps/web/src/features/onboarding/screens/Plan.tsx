@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faArrowRight, faCheck } from "@fortawesome/free-solid-svg-icons";
-import { formatBalance, needsCheckout, priceLine } from "@untitled/logic/billing";
+import { formatBalance, needsCheckout, priceLine, trialButtonLabel, trialLine } from "@untitled/logic/billing";
 import { cn } from "@/lib/cn";
 import { useBilling } from "../../billing/queries";
 import { usePlanPicker } from "../../billing/razorpay";
@@ -46,7 +46,7 @@ export function PlanScreen({ ctx }: { ctx: Ctx }) {
                     {mine && <span className="rounded-pill bg-hover px-2.5 py-0.5 text-[12.5px] font-medium text-ink-2">Your plan</span>}
                   </div>
                   <p className="m-0 mt-1 text-[14.5px] text-fg-muted">{p.tagline}</p>
-                  <p className="m-0 mt-3 font-serif text-[24px] font-semibold tracking-[-0.02em] text-fg">{priceLine(p)}</p>
+                  <p className="m-0 mt-3 font-serif text-[24px] font-semibold tracking-[-0.02em] text-fg">{needsCheckout(b!, p) && b!.trial_available ? trialLine(p) : priceLine(p)}</p>
                   <ul className="m-0 mt-4 grid flex-1 list-none content-start gap-2 p-0">
                     {p.features.slice(0, 4).map((f) => (
                       <li key={f} className="flex items-start gap-2.5 text-[14.5px] text-fg-muted">
@@ -73,7 +73,7 @@ export function PlanScreen({ ctx }: { ctx: Ctx }) {
                       void pick(p);
                     }}
                   >
-                    {mine ? "Chosen" : b && needsCheckout(b, p) ? "Subscribe with autopay" : `Choose ${p.name}`}
+                    {mine ? "Chosen" : b && needsCheckout(b, p) ? (b.trial_available ? trialButtonLabel(p, true) : null) ?? "Subscribe with autopay" : `Choose ${p.name}`}
                   </button>
                 </Card>
               </li>

@@ -23,6 +23,23 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-13",
+    title: "Version 7.2.0: a 7-day free trial and a quicker way to pay",
+    summary: "Try the Subscription plan free for 7 days, add your mobile number once, and pay with your details already filled in.",
+    tone: "gold",
+    appVersion: "v7.2.0",
+    changes: [
+      { kind: "new", platform: "web", text: "The Subscription plan now starts with a 7-day free trial. You’re charged only when it ends, and you can cancel any time before then." },
+      { kind: "new", platform: "app", text: "The free trial is in the app too: the plan cards and the setup plans step show “7 days free” and a Start free trial button." },
+      { kind: "new", platform: "web", text: "Setup now asks for your mobile number, so the payment window opens with your details already filled in." },
+      { kind: "new", platform: "app", text: "Setup in the app asks for your mobile number too, and it’s shared with the website." },
+      { kind: "new", platform: "web", text: "My account now shows your mobile number and lets you change it." },
+      { kind: "new", platform: "app", text: "My account in the app shows your mobile number too, and you can change it there." },
+      { kind: "improved", platform: "web", text: "Settings now shows where you are (for example Settings / Account / Plans & billing) in the top bar next to the menu button, instead of repeating it below." },
+      { kind: "improved", platform: "web", text: "Admins can change the length of the free trial in Admin → Plans." },
+    ],
+  },
+  {
+    date: "2026-11-13",
     title: "Version 7.1.3: payments in Naazhi’s own look",
     summary: "The payment window now shows Naazhi’s name, logo and green, and subscribing works with live payments.",
     tone: "green",

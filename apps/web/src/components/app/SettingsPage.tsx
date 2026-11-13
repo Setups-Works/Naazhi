@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -13,7 +13,6 @@ import {
   faFileLines,
   faHeartPulse,
   faChevronLeft,
-  faGear,
   faTableCellsLarge,
   faKey,
   faLayerGroup,
@@ -50,6 +49,7 @@ import { settingsHref, type SettingsSection, type SettingsTab } from "../../feat
 import { publicPath } from "../../lib/hosts";
 import { useSettingsData } from "./SettingsData";
 import SettingsView from "./SettingsView";
+import { setCrumb } from "../../lib/crumb";
 
 type Account = {
   name: string;
@@ -71,7 +71,7 @@ const GROUPS: { label: string; tiles: Tile[] }[] = [
   {
     label: "Account",
     tiles: [
-      { k: "profile", label: "My account", desc: "Your name, photo, email and username.", icon: faUser },
+      { k: "profile", label: "My account", desc: "Your name, photo, mobile number, email and username.", icon: faUser },
       { k: "billing", label: "Plans & billing", desc: "Your plan, payments and AI access.", icon: faWallet },
       {
         k: "invites",
@@ -149,6 +149,12 @@ export default function SettingsPage({ tab }: { tab: SettingsTab }) {
     );
   }, [q]);
   const here = tab === "home" ? null : TILES.find((t) => t.k === tab);
+  // The top bar (next to the menu button) carries "Settings / Group / Section", so the page doesn't repeat it.
+  const trail = here ? `${here.group} / ${here.label}` : undefined;
+  useEffect(() => {
+    setCrumb(trail);
+    return () => setCrumb(undefined);
+  }, [trail]);
 
   return (
     <>
@@ -189,22 +195,6 @@ export default function SettingsPage({ tab }: { tab: SettingsTab }) {
       </SidebarPortal>
       <div className="sm-back">
         <div className="sm">
-            <div className="sm-head">
-              {here ? (
-                <nav aria-label="Breadcrumb" className="sm-crumbs">
-                  <FA icon={faGear} />
-                  <button type="button" onClick={() => onTab("home")}>
-                    Settings
-                  </button>
-                  <span aria-hidden>/</span>
-                  <button type="button" onClick={() => onTab("home")}>
-                    {here.group}
-                  </button>
-                  <span aria-hidden>/</span>
-                  <span aria-current="page">{here.label}</span>
-                </nav>
-              ) : null}
-            </div>
             <div className="sm-body">
               {here ? (
                 <div className="sm-page">

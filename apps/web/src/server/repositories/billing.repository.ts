@@ -9,7 +9,7 @@ import { withOwner, withUser } from "../db/pool";
  */
 
 const PLAN_COLS = `id, name, tagline, price_cents, currency, interval, included_tokens::float8 as included_tokens,
-  token_price_cents_per_million, features, active, sort`;
+  token_price_cents_per_million, features, active, sort, trial_days`;
 
 export type UserBillingRow = {
   user_id: string;
@@ -23,6 +23,8 @@ export type UserBillingRow = {
   /** The Razorpay subscription paying for this plan, when there is one. */
   provider_subscription_id: string | null;
   provider_status: string | null;
+  /** When a free trial ends and the first payment is taken; null when not on a trial. */
+  trial_ends_at: string | null;
 };
 
 export const listPlans = (opts: { activeOnly: boolean }) =>
@@ -34,9 +36,9 @@ export const listPlans = (opts: { activeOnly: boolean }) =>
 export const getPlan = (id: string) =>
   withOwner(async (c) => (await c.query<BillingPlan>(`select ${PLAN_COLS} from public.billing_plans where id = $1`, [id])).rows[0] ?? null);
 
-export type PlanPatch = Partial<Pick<BillingPlan, "name" | "tagline" | "price_cents" | "currency" | "interval" | "included_tokens" | "token_price_cents_per_million" | "features" | "active" | "sort">>;
+export type PlanPatch = Partial<Pick<BillingPlan, "name" | "tagline" | "price_cents" | "currency" | "interval" | "included_tokens" | "token_price_cents_per_million" | "features" | "active" | "sort" | "trial_days">>;
 
-const PATCHABLE = new Set(["name", "tagline", "price_cents", "currency", "interval", "included_tokens", "token_price_cents_per_million", "features", "active", "sort"]);
+const PATCHABLE = new Set(["name", "tagline", "price_cents", "currency", "interval", "included_tokens", "token_price_cents_per_million", "features", "active", "sort", "trial_days"]);
 
 export const updatePlan = (id: string, patch: PlanPatch) =>
   withOwner(async (c) => {
@@ -56,24 +58,35 @@ export const getUserBilling = (userId: string) =>
 
 type BillingWrite = Pick<
   UserBillingRow,
-  "plan_id" | "status" | "period_start" | "period_end" | "cancel_at_period_end" | "canceled_at" | "provider_subscription_id" | "provider_status"
+  "plan_id" | "status" | "period_start" | "period_end" | "cancel_at_period_end" | "canceled_at" | "provider_subscription_id" | "provider_status" | "trial_ends_at"
 >;
 
 export const saveUserBilling = (userId: string, b: BillingWrite) =>
   withOwner(async (c) => {
     await c.query(
       `insert into public.user_billing (user_id, plan_id, status, period_start, period_end, cancel_at_period_end, canceled_at,
-         provider_subscription_id, provider_status)
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         provider_subscription_id, provider_status, trial_ends_at)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        on conflict (user_id) do update set plan_id = excluded.plan_id, status = excluded.status, period_start = excluded.period_start,
          period_end = excluded.period_end, cancel_at_period_end = excluded.cancel_at_period_end, canceled_at = excluded.canceled_at,
-         provider_subscription_id = excluded.provider_subscription_id, provider_status = excluded.provider_status,
+         provider_subscription_id = excluded.provider_subscription_id, provider_status = excluded.provider_status, trial_ends_at = excluded.trial_ends_at,
          started_at = case when public.user_billing.plan_id = excluded.plan_id and public.user_billing.status = 'active'
                            then public.user_billing.started_at else now() end,
          updated_at = now()`,
-      [userId, b.plan_id, b.status, b.period_start, b.period_end, b.cancel_at_period_end, b.canceled_at, b.provider_subscription_id, b.provider_status],
+      [userId, b.plan_id, b.status, b.period_start, b.period_end, b.cancel_at_period_end, b.canceled_at, b.provider_subscription_id, b.provider_status, b.trial_ends_at],
     );
   });
+
+/** Whether this person has already had their one free trial. */
+export const hasUsedTrial = (userId: string) =>
+  withOwner(async (c) => (await c.query("select 1 from public.billing_trials where user_id = $1", [userId])).rowCount! > 0);
+
+/** Remembers that the trial is used. Safe to repeat: the first record stands. */
+export const markTrialUsed = (userId: string, planId: string, subscriptionId: string) =>
+  withOwner(
+    async (c) =>
+      void (await c.query("insert into public.billing_trials (user_id, plan_id, provider_subscription_id) values ($1, $2, $3) on conflict (user_id) do nothing", [userId, planId, subscriptionId])),
+  );
 
 export const clearUserBilling = (userId: string) =>
   withOwner(async (c) => void (await c.query("delete from public.user_billing where user_id = $1", [userId])));
@@ -188,8 +201,15 @@ export const setPlanProvider = (id: string, razorpayPlanId: string, key: string)
       void (await c.query("update public.billing_plans set razorpay_plan_id = $2, razorpay_plan_key = $3 where id = $1", [id, razorpayPlanId, key])),
   );
 
+/** Who is paying, for the payment window's prefilled name, email and mobile number (the number is the one given in setup, if any). */
 export const getContact = (userId: string) =>
-  withOwner(async (c) => (await c.query<{ email: string; name: string }>("select email, name from auth.users where id = $1", [userId])).rows[0] ?? null);
+  withOwner(
+    async (c) =>
+      (await c.query<{ email: string; name: string; phone: string | null }>(
+        "select u.email, u.name, p.phone from auth.users u left join public.profiles p on p.user_id = u.id where u.id = $1",
+        [userId],
+      )).rows[0] ?? null,
+  );
 
 /** Claims a webhook event: true if this call is the first to see it. Concurrent retries of one event can't both win. */
 export const claimEvent = (id: string, type: string) =>

@@ -171,7 +171,7 @@ export default function AppNav({
   const sub = adminMode
     ? adminHere?.t
     : settingsTab
-    ? undefined
+    ? crumb
     : (here.startsWith("/dashboard/journal/shared") && crumb ? crumb : undefined) ??
       (SUBPAGES.find(([p]) => here.startsWith(p))?.[1] ??
       (todoView && isView(todoView)

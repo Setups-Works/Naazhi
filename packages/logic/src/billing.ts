@@ -49,6 +49,31 @@ export function priceLine(plan: Pick<BillingPlan, "id" | "price_cents" | "curren
   return per ? `${formatMoney(plan.price_cents, plan.currency)} / ${per}` : formatMoney(plan.price_cents, plan.currency);
 }
 
+/**
+ * A phone number as Razorpay and our database want it: international form, "+" and 8 to 15 digits. A bare 10-digit Indian mobile number
+ * (starting 6 to 9, with or without a leading 0 or 91) becomes +91…; anything that doesn't look like a number gives null.
+ */
+export function normalizePhone(input: string): string | null {
+  const raw = input.trim();
+  const digits = raw.replace(/\D/g, "");
+  if (raw.startsWith("+")) return /^[1-9]\d{7,14}$/.test(digits) ? `+${digits}` : null;
+  if (/^[6-9]\d{9}$/.test(digits)) return `+91${digits}`;
+  if (/^0[6-9]\d{9}$/.test(digits)) return `+91${digits.slice(1)}`;
+  if (/^91[6-9]\d{9}$/.test(digits)) return `+${digits}`;
+  return null;
+}
+
+/** "7 days free, then ₹749 / month" for a plan with a trial, or just the price line. `eligible` is false once the person has had their trial. */
+export function trialLine(plan: Pick<BillingPlan, "id" | "price_cents" | "currency" | "interval" | "token_price_cents_per_million" | "trial_days">, eligible = true): string {
+  const price = priceLine(plan);
+  if (!eligible || plan.id !== "subscription" || plan.trial_days <= 0 || plan.price_cents <= 0) return price;
+  return `${plan.trial_days} ${plan.trial_days === 1 ? "day" : "days"} free, then ${price}`;
+}
+
+/** The button on a plan card: "Start 7-day free trial" when a trial applies, otherwise the usual wording. */
+export const trialButtonLabel = (plan: Pick<BillingPlan, "trial_days">, eligible: boolean) =>
+  eligible && plan.trial_days > 0 ? `Start ${plan.trial_days}-day free trial` : null;
+
 /** Cost of `tokens` at a per-million rate, in the smallest currency unit, rounded up so a tiny amount is never silently free. */
 export const tokenCostCents = (tokens: number, centsPerMillion: number) => Math.ceil((tokens * centsPerMillion) / 1_000_000);
 

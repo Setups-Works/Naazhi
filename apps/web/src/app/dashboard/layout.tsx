@@ -39,7 +39,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
   const db = userDb(user.id);
   // Settings, onboarding progress and announcements are read with the user's own permissions. A failure must never break the app.
   const [profile, ann, info] = await Promise.all([
-    db.from("profiles").select("preferences,onboarding").maybeSingle(),
+    db.from("profiles").select("preferences,onboarding,phone").maybeSingle(),
     db.from("announcements").select("id,message,tone").eq("active", true).order("created_at", { ascending: false }).limit(3),
     accountInfo(user.id),
   ]);
@@ -57,6 +57,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
     createdAt: user.createdAt,
     avatarUrl: user.image,
     lastSignIn: info.lastSignIn,
+    phone: typeof profile.data?.phone === "string" ? profile.data.phone : "",
   };
   return (
     <QueryProvider>

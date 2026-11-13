@@ -45,7 +45,7 @@ export function usePlanPicker(billing: MyBilling | undefined, onError: (message:
         throw new Error("Payments need the installed Naazhi app. Update the app, or subscribe on the website.");
       }
       const r = await sdk
-        .open({ key: s.key_id, subscription_id: s.subscription_id, ...brand(), description: `${s.name}, ${formatMoney(s.amount, "inr")}`, prefill: s.prefill })
+        .open({ key: s.key_id, subscription_id: s.subscription_id, ...brand(), description: s.trial_days > 0 ? `${s.name}: ${s.trial_days} days free, then ${formatMoney(s.amount, "inr")} / month` : `${s.name}, ${formatMoney(s.amount, "inr")}`, prefill: s.prefill })
         .catch((e: Failure) => {
           // code 0 on Android and 2 on iOS mean the person closed the sheet; that is not an error.
           if (e?.code === 0 || e?.code === 2) return null;

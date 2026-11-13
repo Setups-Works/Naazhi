@@ -189,6 +189,8 @@ export type BillingPlan = {
   features: string[];
   active: boolean;
   sort: number;
+  /** Days of free use before the first payment (Subscription only); 0 means no trial. Set in Admin → Plans. */
+  trial_days: number;
 };
 
 /** The signed-in person's plan, this period's AI use and their own-key setup. Never contains the key itself. */
@@ -199,6 +201,10 @@ export type MyBilling = {
   period_start: string | null;
   period_end: string | null;
   cancel_at_period_end: boolean;
+  /** When the free trial ends and the first payment is taken; null when the person is not on a trial. */
+  trial_ends_at: string | null;
+  /** True when this person can still start a free trial (the plan offers one and they haven't had it). */
+  trial_available: boolean;
   tokens_used: number;
   /** What this period's use costs on pay as you go, in the smallest unit of the plan's currency; 0 on other plans. */
   cost_cents: number;
@@ -229,7 +235,7 @@ export type BillingInvoice = {
 };
 
 /** What the browser needs to open Razorpay for a credit top-up. */
-export type TopupSession = { key_id: string; order_id: string; amount: number; currency: string; name: string; description: string; prefill: { name: string; email: string } };
+export type TopupSession = { key_id: string; order_id: string; amount: number; currency: string; name: string; description: string; prefill: { name: string; email: string; contact?: string } };
 
 /** What the browser needs to open Razorpay's checkout window for a subscription (the key id is public by design). */
 export type CheckoutSession = {
@@ -240,7 +246,9 @@ export type CheckoutSession = {
   /** Smallest currency unit (paise). */
   amount: number;
   currency: string;
-  prefill: { name: string; email: string };
+  /** Days of free use before the first payment; 0 when this checkout charges now. */
+  trial_days: number;
+  prefill: { name: string; email: string; /** International form, or empty when we don't have it. */ contact?: string };
 };
 
 /* ---------- AI connections (the model picker) ---------- */

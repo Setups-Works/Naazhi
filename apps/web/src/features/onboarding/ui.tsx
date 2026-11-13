@@ -11,6 +11,9 @@ export type Ctx = {
   first: string;
   display: string;
   setDisplay: (v: string) => void;
+  /** The mobile number as typed; saved in international form once it is valid (needed on the About screen). */
+  phone: string;
+  setPhone: (v: string) => void;
   prefs: Prefs;
   setPrefs: (p: Prefs) => void;
   done: Milestone[];

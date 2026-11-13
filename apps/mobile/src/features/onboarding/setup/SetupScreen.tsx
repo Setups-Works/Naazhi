@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AboutStep, AccountsStep, AppsStep, AskStep, PlanStep, PrefsStep, TourStep, Head, type StepCtx } from "./steps";
 import { FLOW, OB, resumeAt, type Milestone } from "./state";
 import { dbQuery } from "@/features/chat/db";
+import { normalizePhone } from "@untitled/logic";
 import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
 import { GiftCard, captureGiftCard } from "@/components/ui/GiftCard";
@@ -31,10 +32,12 @@ export function SetupScreen() {
   const [step, setStep] = useState(() => resumeAt(setupState?.step ?? 0));
   const [name, setName] = useState(user?.name ?? "");
   const [prefs, setPrefs] = useState(preferences);
+  const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [typing, setTyping] = useState(false);
   const savedName = useRef(user?.name ?? "");
+  const savedPhone = useRef("");
   const savedPrefs = useRef(JSON.stringify(preferences));
   const doneRef = useRef<Milestone[]>(setupState?.done ?? []);
   const card = useRef<Parameters<typeof captureGiftCard>[0] | null>(null);
@@ -49,6 +52,18 @@ export function SetupScreen() {
       hide.remove();
     };
   }, []);
+
+  // A number saved earlier (here or on the web) fills the field again.
+  useEffect(() => {
+    if (!user) return;
+    void dbQuery<{ phone: string | null } | null>({ table: "profiles", op: "select", columns: "phone", filters: [{ column: "user_id", op: "eq", value: user.id }], single: "maybe" })
+      .then((row) => {
+        if (!row?.phone) return;
+        savedPhone.current = row.phone;
+        setPhone((p) => p || row.phone!);
+      })
+      .catch(() => undefined);
+  }, [user]);
 
   const mark = (m: Milestone) => {
     if (doneRef.current.includes(m)) return;
@@ -76,6 +91,20 @@ export function SetupScreen() {
         if (!rows?.length) return false;
         savedPrefs.current = now;
         setPreferences(prefs);
+      }
+      // The mobile number, in international form, only once it is valid (the About step won't continue without one).
+      const e164 = normalizePhone(phone);
+      if (e164 && e164 !== savedPhone.current && user) {
+        const rows = await dbQuery<{ user_id: string }[]>({
+          table: "profiles",
+          op: "update",
+          values: { phone: e164 },
+          filters: [{ column: "user_id", op: "eq", value: user.id }],
+          returning: "user_id",
+        });
+        if (!rows?.length) return false;
+        savedPhone.current = e164;
+        setPhone(e164);
       }
       return await updateSetup({ completed: patch.completed ?? false, step: to, skippedAt: patch.skippedAt ?? null, done: doneRef.current });
     } catch {
@@ -120,7 +149,7 @@ export function SetupScreen() {
     }
   }
 
-  const ctx: StepCtx = { first, name, setName, prefs, setPrefs, mark, setErr };
+  const ctx: StepCtx = { first, name, setName, phone, setPhone, prefs, setPrefs, mark, setErr };
   const chat = step === OB.see || step === OB.task;
   const hideActions = typing && TYPING.has(step);
 
@@ -170,7 +199,7 @@ export function SetupScreen() {
               <Button title="Open my dashboard" icon="arrow-right" loading={busy} onPress={() => void finish()} />
             ) : (
               <>
-                <Button title="Continue" icon="arrow-right" loading={busy} disabled={step === OB.about && !name.trim()} onPress={next} />
+                <Button title="Continue" icon="arrow-right" loading={busy} disabled={step === OB.about && (!name.trim() || !normalizePhone(phone))} onPress={next} />
                 <View style={styles.sub}>
                   {at > 0 ? <Button title="Back" kind="ghost" onPress={back} style={styles.subBtn} /> : null}
                   {step !== OB.about && step !== OB.prefs && step !== OB.tour && step !== OB.apps && step !== OB.connect ? <Button title="Skip for now" kind="ghost" onPress={next} style={styles.subBtn} /> : null}

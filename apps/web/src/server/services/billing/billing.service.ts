@@ -35,6 +35,8 @@ export async function getTopupLimits(): Promise<TopupLimits> {
   const s = await repo.getSettings().catch(() => null);
   return s ? { minCents: s.topup_min_cents, maxCents: s.topup_max_cents, optionsCents: s.topup_options_cents } : { ...TOPUP };
 }
+/** A subscription whose first charge is still in the future is on its free trial. */
+const onTrial = (sub: Pick<RazorpaySubscription, "status" | "start_at">) => sub.status === "authenticated" && !!sub.start_at && sub.start_at * 1000 > Date.now() + 60_000;
 const PROVIDER_DOWN = "We couldn’t reach our payment provider. Nothing was charged. Try again in a moment.";
 /** Only a subscription has billing periods: a month or a year long. The other plans run until they are cancelled. */
 const periodEnd = (plan: Pick<BillingPlan, "id" | "interval">, from: Date) =>
@@ -71,6 +73,8 @@ export async function getMyBilling(userId: string): Promise<MyBilling> {
   const [row, plans, key] = await Promise.all([settled(userId), repo.listPlans({ activeOnly: false }), repo.getAiKey(userId)]);
   const live = row?.status === "active" ? row : null;
   const plan = live ? (plans.find((p) => p.id === live.plan_id) ?? null) : null;
+  const subPlan = plans.find((p) => p.id === "subscription" && p.active);
+  const trialAvailable = !!subPlan && subPlan.trial_days > 0 && paymentsLive() && !(await repo.hasUsedTrial(userId));
   const since = live?.period_start ?? new Date(Date.UTC(now().getUTCFullYear(), now().getUTCMonth(), 1)).toISOString();
   const [tokens, credit, creditTotal, limits] = await Promise.all([repo.tokensSince(userId, since), repo.getCredit(userId), repo.getCreditTotal(userId), getTopupLimits()]);
   return {
@@ -80,6 +84,8 @@ export async function getMyBilling(userId: string): Promise<MyBilling> {
     period_start: live?.period_start ?? null,
     period_end: live?.period_end ?? null,
     cancel_at_period_end: live?.cancel_at_period_end ?? false,
+    trial_ends_at: live?.trial_ends_at && new Date(live.trial_ends_at) > now() ? live.trial_ends_at : null,
+    trial_available: trialAvailable,
     tokens_used: tokens,
     cost_cents: plan?.id === "payg" ? tokenCostCents(tokens, plan.token_price_cents_per_million) : 0,
     byo: { provider: key?.provider ?? null, model: key?.model ?? null, hint: key?.key_hint ?? null },
@@ -104,6 +110,7 @@ async function activate(userId: string, planId: PlanId, opts: { requireActive: b
     canceled_at: null,
     provider_subscription_id: null,
     provider_status: null,
+    trial_ends_at: null,
   });
 }
 
@@ -138,9 +145,11 @@ export async function cancelPlan(userId: string): Promise<MyBilling> {
   if (!row || row.status !== "active") throw new ConflictError("You don’t have a plan to cancel.");
   if (row.cancel_at_period_end) throw new ConflictError("This plan is already set to cancel.");
   if (row.provider_subscription_id) {
-    // Stop charging at the end of the paid period; the person keeps the plan until then.
+    // Stop charging at the end of the paid period (or, during a free trial, before the first one); the person keeps the plan until then.
+    // A subscription that hasn't started charging can only be cancelled at once, so a trial is cancelled now and kept until it ends.
+    const trialing = !!row.trial_ends_at && new Date(row.trial_ends_at) > now();
     try {
-      await razorpay.cancelSubscription(row.provider_subscription_id, true);
+      await razorpay.cancelSubscription(row.provider_subscription_id, !trialing);
     } catch {
       throw new ConflictError(PROVIDER_DOWN);
     }
@@ -183,11 +192,14 @@ export async function startCheckout(userId: string, planId: PlanId): Promise<Che
     throw new ConflictError("You’re already on this plan.");
   const keyId = razorpay.razorpayKeyId();
   if (!keyId) throw new ConflictError("Payments aren’t switched on yet.");
+  // One free trial per person, ever: the first charge is pushed back by the plan's trial days.
+  const trialDays = plan.trial_days > 0 && !(await repo.hasUsedTrial(userId)) ? plan.trial_days : 0;
   try {
     const sub = await razorpay.createSubscription({
       planId: await razorpayPlanFor(plan),
       interval: plan.interval === "year" ? "year" : "month",
       userId,
+      startAt: trialDays ? Math.floor(Date.now() / 1000) + trialDays * 86_400 : undefined,
     });
     const who = await repo.getContact(userId);
     return {
@@ -197,7 +209,8 @@ export async function startCheckout(userId: string, planId: PlanId): Promise<Che
       description: plan.tagline,
       amount: plan.price_cents,
       currency: "INR",
-      prefill: { name: who?.name ?? "", email: who?.email ?? "" },
+      trial_days: trialDays,
+      prefill: { name: who?.name ?? "", email: who?.email ?? "", ...(who?.phone ? { contact: who.phone } : {}) },
     };
   } catch (e) {
     if (e instanceof razorpay.RazorpayError) throw new ConflictError(PROVIDER_DOWN);
@@ -215,8 +228,10 @@ async function applySubscription(userId: string, sub: RazorpaySubscription) {
   if (sub.status === "active" || sub.status === "authenticated") {
     const plan = await repo.getPlan("subscription");
     if (!plan) return;
-    const start = iso(sub.current_start) ?? now().toISOString();
-    const end = iso(sub.current_end) ?? periodEnd(plan, new Date(start))?.toISOString() ?? null;
+    // A free trial: no charge yet, so the period runs from now to the day the first payment is taken.
+    const trial = onTrial(sub) ? iso(sub.start_at) : null;
+    const start = trial ? now().toISOString() : (iso(sub.current_start) ?? now().toISOString());
+    const end = trial ?? iso(sub.current_end) ?? periodEnd(plan, new Date(start))?.toISOString() ?? null;
     // Never move a period backwards (webhooks can arrive out of order).
     const keepEnd = mine && row?.period_end && end && new Date(row.period_end) > new Date(end) ? row.period_end : end;
     const keepStart = mine && row?.period_end && keepEnd === row.period_end ? row.period_start : start;
@@ -229,10 +244,16 @@ async function applySubscription(userId: string, sub: RazorpaySubscription) {
       canceled_at: null,
       provider_subscription_id: sub.id,
       provider_status: sub.status,
+      trial_ends_at: trial,
     });
     return;
   }
   if (!mine || !row) return;
+  // Cancelled during a free trial: Razorpay stops billing at once, but the person keeps the trial until it ends.
+  if (sub.status === "cancelled" && row.cancel_at_period_end && row.period_end && new Date(row.period_end) > now()) {
+    await repo.saveUserBilling(userId, { ...row, provider_status: sub.status });
+    return;
+  }
   if (sub.status === "cancelled" || sub.status === "completed" || sub.status === "expired" || sub.status === "halted") {
     await repo.saveUserBilling(userId, {
       ...row,
@@ -277,10 +298,15 @@ export async function confirmCheckout(userId: string, input: { paymentId: string
   const owner = Array.isArray(sub.notes) ? undefined : sub.notes?.user_id;
   if (owner !== userId) throw new ForbiddenError("We couldn’t verify that payment.");
   const old = await repo.getUserBilling(userId);
+  const trial = onTrial(sub);
   await applySubscription(userId, sub);
+  // The trial is spent the moment it starts (not when checkout opens), so closing the window doesn't burn it.
+  if (trial) await repo.markTrialUsed(userId, "subscription", sub.id).catch(() => undefined);
   // The first charge has just been taken: invoice it now instead of waiting for the webhook. Razorpay itself says what was paid; a
   // payment that isn't captured yet is invoiced later by the webhook.
+  // During a trial the only payment is Razorpay's small refundable card or UPI check, which is not a charge and gets no invoice.
   try {
+    if (trial) throw new Error("trial");
     const pay = await razorpay.fetchPayment(input.paymentId);
     if (pay.status === "captured" && pay.currency === "INR" && Number.isInteger(pay.amount) && pay.amount > 0) await issueSubscriptionInvoice(userId, sub, pay.id, pay.amount);
   } catch {
@@ -376,7 +402,7 @@ export async function startTopup(userId: string, amountCents: number): Promise<T
   try {
     const order = await razorpay.createOrder({ amount: amountCents, receipt: `topup_${userId.slice(0, 8)}_${Date.now()}`, notes: { user_id: userId, kind: "topup" } });
     const who = await repo.getContact(userId);
-    return { key_id: keyId, order_id: order.id, amount: amountCents, currency: "INR", name: "Naazhi AI credit", description: "Pay as you go", prefill: { name: who?.name ?? "", email: who?.email ?? "" } };
+    return { key_id: keyId, order_id: order.id, amount: amountCents, currency: "INR", name: "Naazhi AI credit", description: "Pay as you go", prefill: { name: who?.name ?? "", email: who?.email ?? "", ...(who?.phone ? { contact: who.phone } : {}) } };
   } catch (e) {
     if (e instanceof razorpay.RazorpayError) throw new ConflictError(PROVIDER_DOWN);
     throw e;

@@ -5,7 +5,8 @@ import * as DocumentPicker from "expo-document-picker";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { giftShareText, toDate } from "@untitled/logic";
+import { useQuery } from "@tanstack/react-query";
+import { giftShareText, normalizePhone, toDate } from "@untitled/logic";
 import { BackHandler, Pressable, Share, View } from "react-native";
 
 import { AppText } from "@/components/ui/AppText";
@@ -79,6 +80,15 @@ export function SettingsScreen() {
   const [notice, setNotice] = useState<Notice>(null);
 
   const account = settingsQ.data;
+  // The mobile number given in setup, kept on the profile (shared with the website).
+  const phoneQ = useQuery({
+    queryKey: ["profile", "phone", user?.id],
+    enabled: !!user,
+    queryFn: async () =>
+      (await dbQuery<{ phone: string | null } | null>({ table: "profiles", op: "select", columns: "phone", filters: [{ column: "user_id", op: "eq", value: user!.id }], single: "maybe" }))?.phone ?? "",
+  });
+  const [phoneDraft, setPhoneDraft] = useState<string | null>(null);
+  const phone = phoneDraft ?? phoneQ.data ?? "";
   const [nameDraft, setNameDraft] = useState<string | null>(null);
   const [usernameDraft, setUsernameDraft] = useState<string | null>(null);
   const [emailDraft, setEmailDraft] = useState<string | null>(null);
@@ -184,6 +194,18 @@ export function SettingsScreen() {
       if (error) throw new Error(error.message || "Couldn’t update your username.");
       setNotice({ kind: "success", text: "Username updated." });
       await settingsQ.refetch();
+    });
+  }
+
+  async function savePhone() {
+    const value = normalizePhone(phone);
+    if (!value || !user) return setNotice({ kind: "error", text: "Enter a valid mobile number, like 98765 43210 or +1 415 555 0132." });
+    await perform("phone", async () => {
+      const rows = await dbQuery<{ user_id: string }[]>({ table: "profiles", op: "update", values: { phone: value }, filters: [{ column: "user_id", op: "eq", value: user.id }], returning: "user_id" });
+      if (!rows?.length) throw new Error("Couldn’t save that number. Try again.");
+      setPhoneDraft(null);
+      setNotice({ kind: "success", text: "Mobile number saved." });
+      await phoneQ.refetch();
     });
   }
 
@@ -448,6 +470,11 @@ export function SettingsScreen() {
               <TextField label="Username" value={username} onChangeText={setUsernameDraft} maxLength={30} autoCapitalize="none" autoCorrect={false} placeholder="ada.lovelace" />
               <AppText variant="small" color={Palette.fgSubtle} style={styles.hint}>Use 3–30 letters, numbers, dots or underscores.</AppText>
               <Button title="Save username" kind="secondary" loading={busy === "username"} onPress={() => void saveUsername()} />
+            </Field>
+            <Field>
+              <TextField label="Mobile number" value={phone} onChangeText={(v) => setPhoneDraft(v.slice(0, 20))} keyboardType="phone-pad" autoComplete="tel" placeholder="98765 43210" />
+              <AppText variant="small" color={Palette.fgSubtle} style={styles.hint}>Used to fill in your details when you pay for a plan or add credit.</AppText>
+              <Button title="Save number" kind="secondary" loading={busy === "phone"} disabled={(normalizePhone(phone) ?? phone.trim()) === (phoneQ.data ?? "")} onPress={() => void savePhone()} />
             </Field>
             <Field>
               <TextField label="Email" value={email} onChangeText={setEmailDraft} maxLength={254} autoCapitalize="none" keyboardType="email-address" autoComplete="email" />

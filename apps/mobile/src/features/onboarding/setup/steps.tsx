@@ -15,7 +15,7 @@ import { useBilling } from "@/features/billing/queries";
 import { mobileEnv } from "@/config/env";
 import { api, errorMessage } from "@/lib/api";
 import { openWeb } from "@/lib/webSheet";
-import { needsCheckout } from "@untitled/logic";
+import { needsCheckout, normalizePhone } from "@untitled/logic";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { TextField } from "@/components/ui/TextField";
 import { Palette, Radius, Space, themedStyles } from "@/constants/theme";
@@ -28,6 +28,9 @@ export type StepCtx = {
   first: string;
   name: string;
   setName: (v: string) => void;
+  /** The mobile number as typed; saved in international form once it is valid. */
+  phone: string;
+  setPhone: (v: string) => void;
   prefs: SettingsPrefs;
   setPrefs: (p: SettingsPrefs) => void;
   mark: (m: Milestone) => void;
@@ -81,8 +84,21 @@ export function AboutStep({ ctx }: { ctx: StepCtx }) {
   const { prefs, setPrefs } = ctx;
   return (
     <View style={styles.gap}>
-      <Head title="Help Naazhi get to know you." lead="Just three quick things. It’ll take less than a minute." />
+      <Head title="Help Naazhi get to know you." lead="Just a few quick things. It’ll take less than a minute." />
       <TextField label="What do people call you?" value={ctx.name} onChangeText={ctx.setName} maxLength={80} autoComplete="given-name" placeholder="Your name" />
+      <TextField
+        label="Your mobile number"
+        value={ctx.phone}
+        onChangeText={(v) => ctx.setPhone(v.slice(0, 20))}
+        keyboardType="phone-pad"
+        autoComplete="tel"
+        textContentType="telephoneNumber"
+        placeholder="98765 43210"
+        error={ctx.phone.trim() !== "" && !normalizePhone(ctx.phone) ? "Enter a valid mobile number, like 98765 43210 or +1 415 555 0132." : null}
+      />
+      <AppText variant="small" color={Palette.fgSubtle}>
+        So paying for a plan or adding credit is quick: the payment sheet opens with your number already filled in. We never share it.
+      </AppText>
       <TextField label="What do you do? (optional)" value={prefs.role} onChangeText={(v) => setPrefs({ ...prefs, role: v.slice(0, 80) })} maxLength={80} placeholder="It helps Naazhi tell what matters to you" />
       <View style={styles.wrap}>
         {ROLES.map((r) => (
@@ -361,7 +377,7 @@ export function PlanStep({ ctx }: { ctx: StepCtx }): ReactNode {
       {b && !b.payments_connected ? <Banner kind="info">Payments aren’t switched on yet, so choosing a plan doesn’t charge you.</Banner> : null}
       {b
         ? plans.map((p) => (
-            <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={picker.busy} loading={picker.loadingId === p.id} autopay={needsCheckout(b, p)} onChoose={() => void picker.pick(p)} />
+            <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={picker.busy} loading={picker.loadingId === p.id} autopay={needsCheckout(b, p)} trial={b.trial_available && p.trial_days > 0} onChoose={() => void picker.pick(p)} />
           ))
         : null}
     </View>

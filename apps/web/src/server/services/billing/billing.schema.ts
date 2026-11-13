@@ -26,6 +26,7 @@ export const planPatchInput = z.object({
   included_tokens: z.number().int().min(0).max(1_000_000_000_000).optional(),
   token_price_cents_per_million: z.number().int().min(0).max(100_000_000).optional(),
   features: z.array(z.string().trim().min(1).max(120)).max(12).optional(),
+  trial_days: z.number().int().min(0, "Use 0 for no free trial.").max(90, "A trial can be at most 90 days.").optional(),
   active: z.boolean().optional(),
   sort: z.number().int().min(0).max(100).optional(),
 });

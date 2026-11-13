@@ -12,6 +12,8 @@ export type SettingsAccount = {
   createdAt: string;
   avatarUrl: string | null;
   lastSignIn: string | null;
+  /** International form (+919876543210), or empty when none was given. */
+  phone: string;
 };
 
 type Data = { account: SettingsAccount; prefs: Prefs };

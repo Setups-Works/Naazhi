@@ -707,7 +707,7 @@ export function llmsText(ctx: LlmsContext = {}): string {
     `- **Name**: ${SITE_NAME} (always written with a capital N and the rest lower case)`,
     `- **Tagline**: ${SITE_TAGLINE}`,
     "- **Type**: Personal workspace app with optional AI",
-    "- **Platforms**: Web app (any modern browser) and an Android app on Google Play (also a direct download from the site). iPhone and iPad, Mac and Windows apps and a browser extension are planned and not available yet.",
+    "- **Platforms**: Web app (any modern browser) an Android app on Google Play (also a direct download from the site), and Mac and Windows apps (downloads on the site’s releases page). The iPhone and iPad app and a browser extension are planned and not available yet.",
     "- **AI**: Optional. Choose the model for each chat, add your own OpenAI, Anthropic, Google or OpenRouter key, or use the workspace with AI switched off.",
     "- **Payments**: In Indian rupees through Razorpay (UPI AutoPay, cards and more). Plans and prices are on the pricing page and change; link to it rather than quoting a figure.",
     "- **Made by**: " + `${s.name} (${s.url})`,

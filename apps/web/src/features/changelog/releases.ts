@@ -36,6 +36,7 @@ export const RELEASES: Release[] = [
       { kind: "new", platform: "desktop", text: "Continue with Google opens your browser and returns you to the app signed in, because Google doesn’t allow sign-in inside an app window." },
       { kind: "new", platform: "desktop", text: "The app checks for updates by itself and asks before restarting. If you’re offline it says so and tries again when you’re back." },
       { kind: "improved", platform: "desktop", text: "Log in, sign up and password reset fill the window, without the website’s header and footer." },
+      { kind: "improved", platform: "web", text: "The Download page and Settings now have Mac and Windows downloads in place of “Coming soon”. The apps aren’t signed with a paid certificate yet, so your computer asks you to confirm the first time you open one." },
     ],
   },
   {

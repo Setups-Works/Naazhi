@@ -196,9 +196,13 @@ const STATUS = {
 export type Status = keyof typeof STATUS;
 export const statusTip = (s: Status) => STATUS[s].tip;
 
+/** The chip on a download card also has "Download": the app exists and you can install it today (the page adds the button). */
+const CHIPS = { ...STATUS, download: { label: "Download", cls: "bg-green-bg text-green-fg", tip: "Download it and install it today." } } as const;
+export type ChipStatus = keyof typeof CHIPS;
+
 /** The honest status of a capability: shipped today, being built, or planned. */
-export function StatusChip({ status }: { status: Status }) {
-  const s = STATUS[status];
+export function StatusChip({ status }: { status: ChipStatus }) {
+  const s = CHIPS[status];
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-pill px-2.5 py-0.5 text-[11.5px] font-medium ${s.cls}`}>
       <i className="size-1.5 rounded-full bg-current" aria-hidden />

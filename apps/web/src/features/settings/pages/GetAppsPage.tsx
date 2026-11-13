@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { GITHUB_REPO } from "../../../lib/site";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faCheck, faDesktop, faMobileScreen } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { AppPreview, type PreviewKind } from "@/components/ui/AppPreview";
 
 const PHONE = ["Quick notes, tasks and journal entries on the go", "Voice notes you can record in one tap", "Your workspace, in sync with the web"];
-const DESKTOP = ["The whole workspace in its own window, with your notes, tasks and journal", "Quick capture from anywhere on your computer", "In sync with the web and your phone"];
+const DESKTOP = ["The whole workspace in its own window, with your notes, tasks and journal", "A menu bar or tray icon and keyboard shortcuts", "Updates itself, and always matches the web"];
 const BROWSER = ["Record a meeting in your browser and get a transcript", "It lands in a Naazhi note, where you can read and edit it", "Share it with your workspace and turn action items into tasks"];
 
 function Card({ kind, label, icon, title, items, children }: { kind: PreviewKind; label: string; icon: typeof faMobileScreen; title: string; items: string[]; children: React.ReactNode }) {
@@ -43,12 +44,16 @@ export default function GetAppsPage() {
         </span>
       </Card>
       <Card kind="desktop" label="Desktop app" icon={faDesktop} title="Naazhi on your computer." items={DESKTOP}>
-        <span className="flex items-center gap-2 text-[14px] text-ink-3">
-          Mac <Badge variant="secondary">Coming soon</Badge>
-        </span>
-        <span className="flex items-center gap-2 text-[14px] text-ink-3">
-          Windows <Badge variant="secondary">Coming soon</Badge>
-        </span>
+        <Button asChild size="lg">
+          <a href={`${GITHUB_REPO}/releases/latest`} target="_blank" rel="noopener noreferrer">
+            Download for Mac
+          </a>
+        </Button>
+        <Button asChild size="lg" variant="secondary">
+          <a href={`${GITHUB_REPO}/releases/latest`} target="_blank" rel="noopener noreferrer">
+            Download for Windows
+          </a>
+        </Button>
       </Card>
       <Card kind="browser" label="Browser extension" icon={faDesktop} title="Every meeting, written down." items={BROWSER}>
         <span className="flex items-center gap-2 text-[14px] text-ink-3">

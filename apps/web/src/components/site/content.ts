@@ -192,11 +192,11 @@ export const CAPABILITIES: Capability[] = [
   },
   {
     icon: faDesktop,
-    t: "Desktop apps and extension",
-    d: "Mac and Windows apps, and a browser extension that turns a meeting into a note.",
+    t: "Browser extension",
+    d: "A browser extension that turns a meeting into a note.",
     tone: "sand",
     status: "soon",
-    pts: ["Mac and Windows apps", "A browser extension that turns a meeting into a note"],
+    pts: ["Record a meeting in your browser", "It becomes a Naazhi note with a transcript"],
   },
   {
     icon: faEnvelope,
@@ -333,7 +333,7 @@ export const FAQS: [string, string][] = [
   ],
   [
     "What can I use today, and what is still coming?",
-    "Notes, tasks, journal (including shared journals), calendar, chat with AI, universal search, Library, Reader, Health, imports and plans with autopay are live. Email, meetings, automations, the ChatGPT sign-in, the desktop apps and the browser extension are still being built, and the page says so wherever they appear.",
+    "Notes, tasks, journal (including shared journals), calendar, chat with AI, universal search, Library, Reader, Health, imports and plans with autopay and the Mac and Windows apps are live. Email, meetings, automations, the ChatGPT sign-in and the browser extension are still being built, and the page says so wherever they appear.",
   ],
   [
     "Can the AI change my things without asking?",
@@ -366,7 +366,7 @@ export const FAQS: [string, string][] = [
   ],
   [
     "Is there an app for my computer?",
-    "Not yet. Naazhi works in any browser on a Mac or a Windows PC, and Mac and Windows apps and a browser extension are marked “Coming soon” on the download page. The Android app is on Google Play; the iPhone and iPad app is coming.",
+    "Yes. Download the Mac or Windows app from the download page, or use Naazhi in any browser on a Mac or a Windows PC. A browser extension is marked “Coming soon”. The Android app is on Google Play; the iPhone and iPad app is coming.",
   ],
   [
     "Does it work on my phone?",

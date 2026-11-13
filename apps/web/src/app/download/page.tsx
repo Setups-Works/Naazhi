@@ -23,7 +23,7 @@ import { Heading } from "../../components/site/Heading";
 import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/site/kit";
 import Phone, { PhoneRow } from "../../components/site/Phone";
 import { R, Reveal } from "../../components/site/Reveal";
-import { buttonClass, IconBadge, Kicker, Lead, Section, StatusChip, Surface, type Status } from "../../components/site/ui";
+import { buttonClass, IconBadge, Kicker, Lead, Section, StatusChip, Surface, type ChipStatus } from "../../components/site/ui";
 import AuthLink from "../../components/auth/AuthLink";
 import JsonLd from "../../components/site/JsonLd";
 import { RELEASES } from "../../features/changelog/releases";
@@ -33,7 +33,7 @@ import { GITHUB_REPO } from "../../lib/site";
 
 const TITLE = "Download — Naazhi";
 const DESCRIPTION =
-  "Get Naazhi on your phone. The Android app is on Google Play, the web app works everywhere, and the iPhone and iPad app, Mac and Windows apps and a browser extension are coming soon.";
+  "Get Naazhi on your phone and your computer. The Android app is on Google Play, the Mac and Windows apps are a download away, the web app works everywhere, and the iPhone and iPad app and a browser extension are coming soon.";
 export const metadata: Metadata = pageMeta({ title: TITLE, description: DESCRIPTION, path: "/download", ownImage: true });
 
 const RELEASE = `${GITHUB_REPO}/releases/latest`;
@@ -45,15 +45,22 @@ const RELEASED = latest
   ? new Date(`${latest.date}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })
   : undefined;
 
-// Status must match what ships: the Android app is on Google Play (and still a direct APK download); there is no iPhone, iPad, desktop or extension build yet.
+// Status must match what ships: the Android app is on Google Play (and still a direct APK download); the Mac and Windows apps are a download from the same GitHub release (unsigned until the signing certificates are set up, so the page says what to expect); there is no iPhone, iPad or extension build yet.
+// What to expect on first open: the apps are not signed with a paid certificate yet, so the system asks for a confirmation. Remove the line
+// for a system once its app is signed.
+const DESKTOP_NOTE = {
+  mac: "Open the .dmg and drag Naazhi to Applications. The first time, right-click it and choose Open.",
+  win: "Run the .exe. If Windows shows a warning, choose More info, then Run anyway.",
+} as const;
+
 const platforms: {
   icon: IconDefinition;
   name: string;
-  status: Status;
+  status: ChipStatus;
   title: string;
   items: string[];
   preview: PreviewKind;
-  action: "apk" | "web" | "none";
+  action: "apk" | "web" | "desktop" | "none";
 }[] = [
   {
     icon: faMobileScreen,
@@ -69,17 +76,22 @@ const platforms: {
     action: "apk",
   },
   {
-    icon: faTabletScreenButton,
-    name: "iPhone and iPad",
-    status: "soon",
-    title: "On the App Store, soon.",
-    items: [
-      "The same workspace on your iPhone and iPad",
-      "Notes, tasks and journal in a couple of taps",
-      "In sync with the web and Android",
-    ],
-    preview: "phone",
-    action: "none",
+    icon: faDesktop,
+    name: "Mac",
+    status: "download",
+    title: "Naazhi on your Mac.",
+    items: ["The whole workspace in its own window", "A menu bar icon and keyboard shortcuts", "Updates itself, and always matches the web"],
+    preview: "desktop",
+    action: "desktop",
+  },
+  {
+    icon: faTableColumns,
+    name: "Windows",
+    status: "download",
+    title: "Naazhi on your PC.",
+    items: ["The whole workspace in its own window", "A tray icon and keyboard shortcuts", "Updates itself, and always matches the web"],
+    preview: "desktop",
+    action: "desktop",
   },
   {
     icon: faDesktop,
@@ -91,21 +103,16 @@ const platforms: {
     action: "web",
   },
   {
-    icon: faDesktop,
-    name: "Mac",
+    icon: faTabletScreenButton,
+    name: "iPhone and iPad",
     status: "soon",
-    title: "Naazhi on your Mac.",
-    items: ["The whole workspace in its own window", "Quick capture from anywhere on your computer", "In sync with the web and your phone"],
-    preview: "desktop",
-    action: "none",
-  },
-  {
-    icon: faTableColumns,
-    name: "Windows",
-    status: "soon",
-    title: "Naazhi on your PC.",
-    items: ["The whole workspace in its own window", "Quick capture from anywhere on your computer", "In sync with the web and your phone"],
-    preview: "desktop",
+    title: "On the App Store, soon.",
+    items: [
+      "The same workspace on your iPhone and iPad",
+      "Notes, tasks and journal in a couple of taps",
+      "In sync with the web and Android",
+    ],
+    preview: "phone",
     action: "none",
   },
   {
@@ -173,8 +180,12 @@ const faqs: [string, string][] = [
     "Yes. Search for Naazhi on Google Play or use the badge on this page. It is the same workspace, in sync with the web.",
   ],
   [
-    "What about Mac, Windows and a browser extension?",
-    "They’re planned and marked “Coming soon” here. Until they exist, the web app works in any browser on a Mac or a Windows PC.",
+    "Is there a Mac or Windows app?",
+    "Yes. Download the Mac (.dmg) or Windows (.exe) file from the latest release on GitHub. It opens the same workspace in its own window and updates itself. The apps aren’t signed with a paid certificate yet, so the first time you open one, your computer asks you to confirm: on a Mac, right-click the app and choose Open; on Windows, choose More info, then Run anyway.",
+  ],
+  [
+    "What about the browser extension?",
+    "It’s planned and marked “Coming soon” here. Until it exists, the web app works in any browser.",
   ],
   [
     "Do I need the app to use Naazhi on my phone?",
@@ -248,6 +259,22 @@ export default function Page() {
                       <a href={RELEASE} target="_blank" rel="noopener noreferrer" className="text-[13.5px] text-fg-muted underline underline-offset-2 hover:text-fg">
                         Or download the file directly
                       </a>
+                    </>
+                  )}
+                  {p.action === "desktop" && (
+                    <>
+                      {VERSION && (
+                        <p className="m-0 font-mono text-[13px] text-fg-muted">
+                          Version {VERSION}
+                          {RELEASED && <span className="text-fg-faint"> · {RELEASED}</span>}
+                        </p>
+                      )}
+                      <a href={RELEASE} target="_blank" rel="noopener noreferrer" className={`${buttonClass("primary")} self-start`}>
+                        <span className="inline-flex items-center gap-2">
+                          Download for {p.name} <span aria-hidden>↓</span>
+                        </span>
+                      </a>
+                      <p className="m-0 text-[13.5px] text-fg-muted">{DESKTOP_NOTE[p.name === "Mac" ? "mac" : "win"]}</p>
                     </>
                   )}
                   {p.action === "web" && (

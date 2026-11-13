@@ -9,9 +9,9 @@ export const hex = (color: string) => color as HexColor;
 /** The size the platform gave this widget instance, in dp. */
 export type WidgetSize = { width: number; height: number };
 
-/** The widget's card: the tone's background, the shared radius and padding, and a tap that opens `href` in the app. */
-export function Card({ props, tone, href, children }: { props: WidgetProps; tone: WidgetTone; href: string; children: ReactNode }) {
-  const { layout } = props;
+/** The widget's card: the app's raised surface with a hairline edge and the shared radius; a tap opens `href` in the app. */
+export function Card({ props, href, children }: { props: WidgetProps; tone?: WidgetTone; href: string; children: ReactNode }) {
+  const { layout, theme } = props;
   return (
     <FlexWidget
       clickAction="OPEN_URI"
@@ -19,7 +19,7 @@ export function Card({ props, tone, href, children }: { props: WidgetProps; tone
       style={{
         width: "match_parent",
         height: "match_parent",
-        backgroundColor: hex(tone.bg),
+        backgroundColor: hex(theme.surface),
         borderRadius: layout.radius,
         padding: layout.pad,
         flexDirection: "column",
@@ -27,6 +27,21 @@ export function Card({ props, tone, href, children }: { props: WidgetProps; tone
       }}
     >
       {children}
+    </FlexWidget>
+  );
+}
+
+/** The widget's title in its tone, with an optional tonal pill on the right (a count, a streak). */
+export function Header({ props, tone, title, pill }: { props: WidgetProps; tone: WidgetTone; title: string; pill?: string }) {
+  const { layout } = props;
+  return (
+    <FlexWidget style={{ width: "match_parent", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+      <Label text={title} size={layout.type.title} color={tone.fg} bold />
+      {pill ? (
+        <FlexWidget style={{ backgroundColor: hex(tone.bg), borderRadius: layout.radius, paddingHorizontal: layout.gap + 2, paddingVertical: 3 }}>
+          <Label text={pill} size={layout.type.small} color={tone.fg} bold />
+        </FlexWidget>
+      ) : null}
     </FlexWidget>
   );
 }

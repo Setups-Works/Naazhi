@@ -2,21 +2,22 @@
 import type { WidgetProps } from "@untitled/logic";
 import { FlexWidget } from "react-native-android-widget";
 
-import { Card, Label, hex, type WidgetSize } from "./primitives";
+import { Card, Header, Label, hex, type WidgetSize } from "./primitives";
 
 /** One-tap buttons that open a new journal entry, note or task in the app. */
 export function QuickWidget({ props }: { props: WidgetProps; size: WidgetSize }) {
   const { snapshot, theme, text, links, layout } = props;
   const tone = theme.tones.quick;
+  // The first action is the filled brand button, the others are tonal, as in the app.
   const actions = [
-    { label: text.newEntry, href: links.newEntry },
-    { label: text.newNote, href: links.newNote },
-    { label: text.newTask, href: links.newTask },
+    { label: text.newEntry, href: links.newEntry, filled: true },
+    { label: text.newNote, href: links.newNote, filled: false },
+    { label: text.newTask, href: links.newTask, filled: false },
   ];
 
   return (
     <Card props={props} tone={tone} href={links.journal}>
-      <Label text={text.quickTitle} size={layout.type.title} color={tone.fg} bold />
+      <Header props={props} tone={tone} title={text.quickTitle} />
       {snapshot.signedIn ? (
         <FlexWidget style={{ width: "match_parent", flexDirection: "row", flexGap: layout.gap, alignItems: "center" }}>
           {actions.map((a) => (
@@ -26,15 +27,15 @@ export function QuickWidget({ props }: { props: WidgetProps; size: WidgetSize })
               clickActionData={{ uri: a.href }}
               style={{
                 flex: 1,
-                backgroundColor: hex(theme.accent),
+                backgroundColor: hex(a.filled ? theme.accent : tone.bg),
                 borderRadius: layout.radius / 2,
                 paddingVertical: layout.pad,
                 alignItems: "center",
                 flexDirection: "column",
               }}
             >
-              <Label text="+" size={layout.type.big} color={theme.onAccent} />
-              <Label text={a.label} size={layout.type.small} color={theme.onAccent} />
+              <Label text="+" size={layout.type.big} color={a.filled ? theme.onAccent : tone.fg} />
+              <Label text={a.label} size={layout.type.small} color={a.filled ? theme.onAccent : tone.fg} bold />
             </FlexWidget>
           ))}
         </FlexWidget>

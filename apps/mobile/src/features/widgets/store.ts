@@ -17,5 +17,5 @@ export async function writeWidgetProps(props: WidgetProps) {
   await AsyncStorage.setItem(WIDGET_STORE_KEY, JSON.stringify(props)).catch(() => undefined);
 }
 
-/** What the widgets would show, ignoring when it was built: two snapshots with the same signature need no redraw. */
-export const signatureOf = (props: WidgetProps) => JSON.stringify({ ...props.snapshot, updatedAt: "" });
+/** What the widgets would show, ignoring when it was built: two snapshots with the same signature (and light/dark look) need no redraw. */
+export const signatureOf = (props: WidgetProps) => JSON.stringify({ ...props.snapshot, updatedAt: "", look: props.theme.page });

@@ -23,6 +23,20 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-13",
+    title: "Version 7.1.0: setup with plans, steadier widgets and a calmer look",
+    summary: "Choose your plan and connect Zoho while you set up on your phone, with refreshed Android widgets and controls that match the website.",
+    tone: "mint",
+    appVersion: "v7.1.0",
+    changes: [
+      { kind: "new", platform: "app", text: "Setup on your phone now has a step to connect your accounts, starting with Zoho Mail and Calendar. Google and Microsoft are marked as coming soon." },
+      { kind: "new", platform: "app", text: "You can now choose your plan during setup, right on the plans step, instead of only being sent to a pricing page." },
+      { kind: "improved", platform: "app", text: "The Android widgets have a fresh look in Naazhi green, follow your phone’s light and dark setting, and open the exact task you tap." },
+      { kind: "improved", platform: "app", text: "Switches, buttons, tabs and active menu items now look like the website: ink and paper, with softer corners." },
+      { kind: "fixed", platform: "web", text: "The sitemap no longer shows as plain text in browsers." },
+    ],
+  },
+  {
+    date: "2026-11-13",
     title: "Version 7.0.0: a help center, a roadmap and a clearer site",
     summary: "A help center with search, a public roadmap, new About, Status and policy pages, and links to Naazhi on Google Play.",
     tone: "green",

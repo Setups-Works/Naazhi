@@ -151,7 +151,7 @@ const styles = themedStyles(() => ({
   listContent: { gap: 2 },
   row: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 44, paddingHorizontal: 9, borderRadius: Radius.r2 },
   rowRail: { justifyContent: "center" },
-  rowOn: { backgroundColor: Palette.brandContainer, borderRadius: Radius.pill },
+  rowOn: { backgroundColor: Palette.activeTabPill, borderRadius: Radius.ctl },
   rowIcon: { width: 16, alignItems: "center", justifyContent: "center" },
   rowText: { flex: 1, fontSize: 14.5, lineHeight: 20 },
   badge: { ...Font.sansMedium, fontSize: 12 },

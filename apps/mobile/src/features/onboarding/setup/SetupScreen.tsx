@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Keyboard, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { AboutStep, AppsStep, AskStep, PlanStep, PrefsStep, TourStep, Head, type StepCtx } from "./steps";
+import { AboutStep, AccountsStep, AppsStep, AskStep, PlanStep, PrefsStep, TourStep, Head, type StepCtx } from "./steps";
 import { FLOW, OB, resumeAt, type Milestone } from "./state";
 import { dbQuery } from "@/features/chat/db";
 import { AppText } from "@/components/ui/AppText";
@@ -144,9 +144,10 @@ export function SetupScreen() {
           <ScrollView style={styles.flex} contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             {step === OB.about ? <AboutStep ctx={ctx} /> : null}
             {step === OB.prefs ? <PrefsStep ctx={ctx} /> : null}
+            {step === OB.connect ? <AccountsStep /> : null}
             {step === OB.tour ? <TourStep ctx={ctx} /> : null}
             {step === OB.apps ? <AppsStep /> : null}
-            {step === OB.plan ? <PlanStep onCompare={() => router.push("/pricing")} /> : null}
+            {step === OB.plan ? <PlanStep ctx={ctx} /> : null}
             {step === OB.done ? (
               <View style={styles.gap}>
                 <Head title={`A little gift for you, ${first}.`} lead="You’re all set. Your card is ready. Everything you chose here can be changed later in Settings." />
@@ -172,7 +173,7 @@ export function SetupScreen() {
                 <Button title="Continue" icon="arrow-right" loading={busy} disabled={step === OB.about && !name.trim()} onPress={next} />
                 <View style={styles.sub}>
                   {at > 0 ? <Button title="Back" kind="ghost" onPress={back} style={styles.subBtn} /> : null}
-                  {step !== OB.about && step !== OB.prefs && step !== OB.tour && step !== OB.apps ? <Button title="Skip for now" kind="ghost" onPress={next} style={styles.subBtn} /> : null}
+                  {step !== OB.about && step !== OB.prefs && step !== OB.tour && step !== OB.apps && step !== OB.connect ? <Button title="Skip for now" kind="ghost" onPress={next} style={styles.subBtn} /> : null}
                 </View>
               </>
             )}

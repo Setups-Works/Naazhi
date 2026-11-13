@@ -1,8 +1,6 @@
 "use no memo"; // widget components are called by the widget renderer, not React: the compiler's memo hooks would throw there
 import type { WidgetProps } from "@untitled/logic";
-import { FlexWidget } from "react-native-android-widget";
-
-import { Card, Label, type WidgetSize } from "./primitives";
+import { Card, Header, Label, type WidgetSize } from "./primitives";
 
 /** The latest entry written today and the writing streak. */
 export function JournalWidget({ props, size }: { props: WidgetProps; size: WidgetSize }) {
@@ -14,10 +12,7 @@ export function JournalWidget({ props, size }: { props: WidgetProps; size: Widge
 
   return (
     <Card props={props} tone={tone} href={links.journal}>
-      <FlexWidget style={{ width: "match_parent", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-        <Label text={text.journalTitle} size={layout.type.title} color={tone.fg} bold />
-        <Label text={snapshot.signedIn ? streak : ""} size={layout.type.small} color={theme.fgSubtle} />
-      </FlexWidget>
+      <Header props={props} tone={tone} title={text.journalTitle} pill={snapshot.signedIn && streak ? streak : undefined} />
       {!snapshot.signedIn ? (
         <Label text={text.signIn} size={layout.type.body} color={theme.fgMuted} />
       ) : j.latest ? (

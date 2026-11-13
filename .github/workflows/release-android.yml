@@ -186,6 +186,6 @@ jobs:
           packageName: com.setupsworks.naazhi
           releaseFiles: naazhi-${{ env.TAG }}.aab
           releaseName: ${{ env.TAG }}
-          track: ${{ env.PLAY_TRACK_NAME }}
+          tracks: ${{ env.PLAY_TRACK_NAME }}
           status: ${{ env.PLAY_STATUS_NAME }}
           mappingFile: ${{ env.PLAY_MAPPING }}

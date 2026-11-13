@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { AppState, Platform } from "react-native";
+import { Appearance, AppState, Platform } from "react-native";
 
 import { clearWidgets, syncWidgets } from "./sync";
 
@@ -18,6 +18,11 @@ export function useWidgetSync(signedIn: boolean) {
     const sub = AppState.addEventListener("change", (state) => {
       if (state === "active") void syncWidgets().catch(() => undefined);
     });
-    return () => sub.remove();
+    // The phone switched between light and dark: redraw so the widgets match.
+    const look = Appearance.addChangeListener(() => void syncWidgets({ force: true }).catch(() => undefined));
+    return () => {
+      sub.remove();
+      look.remove();
+    };
   }, [signedIn]);
 }

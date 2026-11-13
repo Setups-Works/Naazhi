@@ -49,7 +49,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: p.changeFrequency,
       priority: p.priority,
       ...(newest && FOLLOWS_RELEASES.has(p.path) ? { lastModified: newest } : POLICY_PAGES.has(p.path) ? { lastModified: LEGAL_UPDATED_ISO } : {}),
-      alternates: { languages: { en: url } },
+      // No language alternates: the site has one language, every page already declares it in its <head>, and a self-pointing
+      // xhtml:link per URL only adds noise (and makes browsers show the file as plain text instead of an XML tree).
       ...(OWN_OG_PATHS.has(p.path) && image ? { images: [image] } : {}),
     };
   });

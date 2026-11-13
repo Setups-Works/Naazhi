@@ -2,7 +2,7 @@
 import type { WidgetProps } from "@untitled/logic";
 import { FlexWidget } from "react-native-android-widget";
 
-import { Card, Label, hex, type WidgetSize } from "./primitives";
+import { Card, Header, Label, hex, type WidgetSize } from "./primitives";
 
 /** Steps today with a progress bar to the goal, plus distance, active energy and sleep when there is room. */
 export function HealthWidget({ props, size }: { props: WidgetProps; size: WidgetSize }) {
@@ -19,7 +19,7 @@ export function HealthWidget({ props, size }: { props: WidgetProps; size: Widget
 
   return (
     <Card props={props} tone={tone} href={links.health}>
-      <Label text={text.healthTitle} size={layout.type.title} color={tone.fg} bold />
+      <Header props={props} tone={tone} title={text.healthTitle} pill={snapshot.signedIn && h && h.steps !== null ? `${Math.round(Math.min(h.stepsRatio, 1) * 100)}%` : undefined} />
       {!snapshot.signedIn ? (
         <Label text={text.signIn} size={layout.type.body} color={theme.fgMuted} />
       ) : !h || h.steps === null ? (
@@ -27,10 +27,10 @@ export function HealthWidget({ props, size }: { props: WidgetProps; size: Widget
       ) : (
         <>
           <Label text={h.steps.toLocaleString()} size={layout.type.big} color={theme.fg} bold />
-          <FlexWidget style={{ width: bar, height: layout.gap / 2, borderRadius: layout.gap / 4, backgroundColor: hex(theme.surface) }}>
+          <FlexWidget style={{ width: bar, height: layout.gap / 2, borderRadius: layout.gap / 4, backgroundColor: hex(tone.bg) }}>
             <FlexWidget
               style={{
-                width: Math.round(bar * h.stepsRatio),
+                width: Math.round(bar * Math.min(Math.max(h.stepsRatio, 0), 1)),
                 height: layout.gap / 2,
                 borderRadius: layout.gap / 4,
                 backgroundColor: hex(tone.fg),

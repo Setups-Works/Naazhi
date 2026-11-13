@@ -9,7 +9,7 @@ import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { TextField } from "@/components/ui/TextField";
-import { Palette, themedStyles } from "@/constants/theme";
+import { Tints, themedStyles } from "@/constants/theme";
 import { useAuth } from "@/providers/AppState";
 import { firstError, forgotPasswordSchema, friendlyAuthError, resetPasswordSchema } from "@untitled/validation";
 
@@ -87,7 +87,7 @@ export default function ForgotPasswordScreen() {
     return (
       <AuthShell eyebrow="All set" title="Password" quiet="updated." sub="You can now log in with your new password.">
         <View style={styles.done} accessible accessibilityLabel="Password updated">
-          <Icon name="check" size={30} color={Palette.onBrandContainer} />
+          <Icon name="check" size={30} color={Tints.green.fg} />
         </View>
         <Button title="Back to log in" onPress={() => router.replace("/login")} />
       </AuthShell>
@@ -175,5 +175,5 @@ export default function ForgotPasswordScreen() {
 
 const styles = themedStyles(() => ({
   // Material 3 style success mark: a round brand-green tonal container holding the check.
-  done: { width: 72, height: 72, borderRadius: 36, backgroundColor: Palette.brandContainer, alignItems: "center", justifyContent: "center", marginVertical: 4 },
+  done: { width: 72, height: 72, borderRadius: 36, backgroundColor: Tints.green.bg, alignItems: "center", justifyContent: "center", marginVertical: 4 },
 }));

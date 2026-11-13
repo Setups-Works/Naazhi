@@ -100,7 +100,7 @@ const styles = themedStyles(() => ({
   },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   tile: { width: "31.8%", flexGrow: 1, minHeight: 64, alignItems: "center", justifyContent: "center", gap: 6, borderRadius: Radius.r2, backgroundColor: Palette.surfaceMuted },
-  tileOn: { backgroundColor: Palette.brandContainer },
+  tileOn: { backgroundColor: Palette.activeTabPill },
   tilePressed: { opacity: 0.7 },
   tileTextOn: { ...Font.sansMedium },
 }));

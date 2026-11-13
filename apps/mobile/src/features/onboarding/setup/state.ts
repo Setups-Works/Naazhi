@@ -4,12 +4,12 @@ import { dbQuery } from "@/features/chat/db";
  * The first-run setup after sign-up. Progress is stored in the account (`profiles.onboarding`), the same record the web's
  * /onboarding flow writes (apps/web/src/lib/onboarding.ts), so someone can start on one and finish on the other.
  * The step numbers are the web's and are stored, so never renumber them. The phone skips the screens that only make sense on a
- * computer (mail and calendar connections, what it may use on this device, importing a vault).
+ * computer (what it may use on this device, importing a vault). Mail and calendar connections are shown here too.
  */
-export const OB = { about: 2, prefs: 3, see: 6, task: 7, tour: 8, apps: 9, plan: 11, done: 12 } as const;
+export const OB = { about: 2, prefs: 3, connect: 4, see: 6, task: 7, tour: 8, apps: 9, plan: 11, done: 12 } as const;
 
 /** The screens the phone shows, in order. */
-export const FLOW: number[] = [OB.about, OB.prefs, OB.see, OB.task, OB.tour, OB.apps, OB.plan, OB.done];
+export const FLOW: number[] = [OB.about, OB.prefs, OB.connect, OB.see, OB.task, OB.tour, OB.apps, OB.plan, OB.done];
 
 export const MILESTONES = ["profile", "access", "ask", "task", "journal", "note", "import"] as const;
 export type Milestone = (typeof MILESTONES)[number];

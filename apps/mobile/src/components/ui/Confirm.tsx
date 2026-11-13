@@ -117,7 +117,7 @@ function Body({
           <Icon
             name={danger ? "trash" : "triangle-exclamation"}
             size={18}
-            color={danger ? Palette.onBrandContainer : Tints.amber.fg}
+            color={danger ? Palette.clayFg : Tints.amber.fg}
           />
         </View>
 
@@ -368,7 +368,7 @@ const styles = themedStyles(() => ({
     marginBottom: 2,
   },
   badgeWarning: { backgroundColor: Tints.amber.bg },
-  badgeDanger: { backgroundColor: Palette.brandContainer },
+  badgeDanger: { backgroundColor: Palette.clayBg },
 
   titleText: { marginTop: 0 },
   bodyText: { fontSize: 14.5, lineHeight: 21 },

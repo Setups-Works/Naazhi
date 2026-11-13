@@ -141,6 +141,10 @@ export const LOOK: Look = readLook();
 export const Palette = buildPalette(LOOK);
 export const Tints = buildTints(LOOK);
 
+/** The default-accent palette and tints of one scheme, whatever the app is showing now: the home-screen widgets follow the phone's light/dark, not the in-app scheme. */
+export const paletteFor = (dark: boolean) => buildPalette({ scheme: dark ? "dark" : "light", accent: "default" });
+export const tintsFor = (dark: boolean) => buildTints({ scheme: dark ? "dark" : "light", accent: "default" });
+
 /** A tint-shaped pair of plain greys, for things that used to be coloured only for decoration (the web uses ink and hairlines there). */
 const buildNeutral = () => ({ bg: Palette.surfaceMuted, line: Palette.line, fg: Palette.fgMuted });
 export const Neutral = buildNeutral();

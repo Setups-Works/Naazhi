@@ -1,12 +1,21 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { useState, type ReactNode } from "react";
-import { Pressable, View } from "react-native";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState, type ReactNode } from "react";
+import { AppState, Pressable, View } from "react-native";
 
 import { dbQuery } from "@/features/chat/db";
 import { Conversation } from "@/features/chat/ConversationScreen";
 import type { Milestone } from "./state";
 import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
+import { AppLogo } from "@/components/ui/AppLogo";
+import { Banner } from "@/components/ui/Banner";
+import { PlanCard } from "@/features/billing/PlanCard";
+import { usePlanPicker } from "@/features/billing/checkout";
+import { useBilling } from "@/features/billing/queries";
+import { mobileEnv } from "@/config/env";
+import { api, errorMessage } from "@/lib/api";
+import { openWeb } from "@/lib/webSheet";
+import { needsCheckout } from "@untitled/logic";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { TextField } from "@/components/ui/TextField";
 import { Palette, Radius, Space, themedStyles } from "@/constants/theme";
@@ -265,17 +274,96 @@ export function AppsStep() {
   );
 }
 
-export function PlanStep({ onCompare }: { onCompare: () => void }): ReactNode {
+const ACCOUNTS: { name: string; logo: "google" | "microsoft"; covers: string }[] = [
+  { name: "Google Workspace", logo: "google", covers: "Gmail, Calendar and Drive" },
+  { name: "Microsoft 365", logo: "microsoft", covers: "Outlook and Calendar" },
+];
+type ZohoStatus = { configured: boolean; connected: boolean };
+const ZOHO_KEY = ["zoho", "status"] as const;
+
+/** Mail and calendar accounts. Zoho connects for real (mail and calendar; more in Settings); Google and Microsoft are marked "Soon". */
+export function AccountsStep() {
+  const qc = useQueryClient();
+  const [err, setErr] = useState("");
+  const status = useQuery({ queryKey: ZOHO_KEY, queryFn: async () => (await api.get<{ data: ZohoStatus }>("/api/v1/integrations/zoho")).data });
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (s) => s === "active" && void qc.invalidateQueries({ queryKey: ZOHO_KEY }));
+    return () => sub.remove();
+  }, [qc]);
+  const connect = useMutation({
+    mutationFn: async () => {
+      const { data } = await api.post<{ data: { url: string } }>("/api/v1/integrations/zoho/start", { services: ["mail", "calendar"] });
+      openWeb(data.url, {
+        title: "Zoho",
+        closeOn: (u) => !!mobileEnv.apiBaseUrl && u.startsWith(mobileEnv.apiBaseUrl) && /\/settings\/zoho/.test(u),
+        onClose: () => void qc.invalidateQueries({ queryKey: ZOHO_KEY }),
+      });
+    },
+    onError: (e) => setErr(errorMessage(e, "Couldn’t start the sign-in.")),
+  });
+  const z = status.data;
+  const soon = (
+    <View style={styles.soon}>
+      <AppText variant="small" color={Palette.fgMuted}>
+        Soon
+      </AppText>
+    </View>
+  );
+  return (
+    <View style={styles.gap}>
+      <Head title="Connect the tools you use every day." lead="Naazhi will use them to understand what’s going on and help you stay on top of things. Nothing gets sent, booked or shared without your say." />
+      {err ? <Banner kind="error">{err}</Banner> : null}
+      {ACCOUNTS.map((a) => (
+        <View key={a.name} style={[styles.card, styles.row]}>
+          <AppLogo name={a.logo} size={36} />
+          <View style={styles.flex}>
+            <AppText variant="bodyStrong">{a.name}</AppText>
+            <AppText variant="small">{a.covers}</AppText>
+          </View>
+          {soon}
+        </View>
+      ))}
+      <View style={[styles.card, styles.row]}>
+        <AppLogo name="zoho" size={36} />
+        <View style={styles.flex}>
+          <AppText variant="bodyStrong">Zoho Workplace</AppText>
+          <AppText variant="small">{z?.connected ? "Connected: Mail and Calendar" : "Mail and Calendar"}</AppText>
+        </View>
+        {z?.connected ? (
+          <Icon name="check" size={16} color={Palette.greenFg} />
+        ) : z && !z.configured ? (
+          soon
+        ) : (
+          <Button title="Connect" kind="secondary" loading={connect.isPending} disabled={!z} onPress={() => connect.mutate()} />
+        )}
+      </View>
+      <AppText variant="small" color={Palette.fgSubtle}>
+        You sign in on the provider’s own page, so Naazhi never sees your password. You can connect more later in Settings.
+      </AppText>
+    </View>
+  );
+}
+
+/** The last choice: how AI is paid for. The same plans and checkout as Settings and the pricing screen, chosen right here. */
+export function PlanStep({ ctx }: { ctx: StepCtx }): ReactNode {
+  const q = useBilling();
+  const b = q.data;
+  const picker = usePlanPicker(b, ctx.setErr);
+  const plans = (b?.plans ?? []).filter((p) => p.active !== false);
   return (
     <View style={styles.gap}>
       <Head
         title="Naazhi already knows you. Keep it your way."
         lead="Your notes, tasks and journal stay yours on any plan. A plan only decides how Naazhi’s AI is paid for, and you can switch whenever you like."
       />
-      <Button title="Compare plans" icon="arrow-right" kind="secondary" onPress={onCompare} />
-      <AppText variant="small" color={Palette.fgSubtle}>
-        You can also choose later in Settings → Plan and billing.
-      </AppText>
+      {q.isError ? <Banner kind="info">Plans aren’t available right now. You can choose one later in Settings → Plan and billing.</Banner> : null}
+      {!b && !q.isError ? <AppText variant="small">Loading plans…</AppText> : null}
+      {b && !b.payments_connected ? <Banner kind="info">Payments aren’t switched on yet, so choosing a plan doesn’t charge you.</Banner> : null}
+      {b
+        ? plans.map((p) => (
+            <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={picker.busy} loading={picker.loadingId === p.id} autopay={needsCheckout(b, p)} onChoose={() => void picker.pick(p)} />
+          ))
+        : null}
     </View>
   );
 }

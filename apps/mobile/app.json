@@ -2,7 +2,7 @@
   "expo": {
     "name": "Naazhi",
     "slug": "untitled-project-mobile",
-    "version": "7.3.0",
+    "version": "7.3.1",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "untitled",
@@ -13,6 +13,7 @@
     },
     "android": {
       "package": "com.setupsworks.naazhi",
+      "blockedPermissions": ["com.google.android.gms.permission.AD_ID"],
       "permissions": [
         "android.permission.health.READ_STEPS",
         "android.permission.health.READ_DISTANCE",
@@ -52,7 +53,7 @@
           { "name": "Clay", "ios": "./assets/icons/clay.png", "android": { "foregroundImage": "./assets/icons/clay-foreground.png", "backgroundColor": "#b9614f" } }
         ]
       ],
-      "expo-audio",
+      ["expo-audio", { "enableBackgroundPlayback": false }],
       "expo-notifications",
       [
         "@kingstinct/react-native-healthkit",

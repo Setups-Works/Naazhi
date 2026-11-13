@@ -1,117 +1,86 @@
-import { faChartLine } from "@fortawesome/free-solid-svg-icons";
-import { Icon as FA } from "@/components/ui/Icon";
+import Link from "next/link";
 import SetupNotice from "../../../components/admin/SetupNotice";
+import { Breakdown, Card, DayChart, Stat, num } from "../../../components/admin/AnalyticsBlocks";
 import { serverConfigured } from "../../../server/session";
 import { adminAnalytics, type Series } from "../../../server/services/admin/analytics";
 import { CLIENT_LABEL, type Client } from "../../../lib/userAgent";
 
 export const dynamic = "force-dynamic";
 
-function Bars({ title, data, note }: { title: string; data: Series; note: string }) {
-  const max = Math.max(1, ...data.map((d) => d.n));
-  return (
-    <div className="dash-card">
-      <h4>{title}</h4>
-      <div className="adm-chart" role="img" aria-label={title}>
-        {data.map((d, i) => (
-          <div key={i} title={`${d.label}: ${d.n.toLocaleString()}`}>
-            <i style={{ height: `${(d.n / max) * 100}%` }} />
-            <small>{i % 5 === 0 ? d.label.split(" ")[0] : ""}</small>
-          </div>
-        ))}
-      </div>
-      <p className="meta" style={{ marginTop: 12 }}>
-        {note}
-      </p>
-    </div>
-  );
-}
+const RANGES = [7, 30, 90] as const;
+const sum = (s: Series) => s.reduce((x, d) => x + d.n, 0);
 
-function Split({ title, data, note }: { title: string; data: Series; note?: string }) {
-  const total = data.reduce((a, d) => a + d.n, 0) || 1;
-  return (
-    <div className="dash-card">
-      <h4>{title}</h4>
-      <table>
-        <tbody>
-          {data.length === 0 && (
-            <tr>
-              <td className="empty">Nothing yet.</td>
-            </tr>
-          )}
-          {data.map((d) => (
-            <tr key={d.label}>
-              <td>{d.label}</td>
-              <td style={{ textAlign: "right" }}>{d.n.toLocaleString()}</td>
-              <td style={{ textAlign: "right" }} className="meta">
-                {Math.round((d.n / total) * 100)}%
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {note && (
-        <p className="meta" style={{ marginTop: 12 }}>
-          {note}
-        </p>
-      )}
-    </div>
-  );
-}
-
-export default async function Page() {
+export default async function Page({ searchParams }: { searchParams: Promise<{ days?: string }> }) {
   if (!serverConfigured()) return <SetupNotice />;
-  const a = await adminAnalytics(30);
-  const sum = (s: Series) => s.reduce((x, d) => x + d.n, 0);
-  const tiles: [string, number][] = [
-    ["Total users", a.users],
-    ["Active, last 7 days", a.wau],
-    ["Active, last 30 days", a.mau],
-    ["Sign-ins on the web (30 days)", sum(a.signinsWeb)],
-    ["Sign-ins in the app (30 days)", sum(a.signinsApp)],
-    ["AI tokens (30 days)", sum(a.tokens)],
-  ];
+  const q = Number((await searchParams).days);
+  const days = (RANGES as readonly number[]).includes(q) ? q : 30;
+  const a = await adminAnalytics(days);
+  const web = sum(a.signinsWeb);
+  const app = sum(a.signinsApp);
+  const period = `last ${days} days`;
+
   return (
-    <div className="dash">
-      <div className="dash-head">
+    <div className="mx-auto w-full max-w-[1120px]">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="eyebrow">
-            <FA icon={faChartLine} /> Analytics
-          </div>
-          <h1 className="h2" style={{ marginTop: 8 }}>
-            How Naazhi is used
-          </h1>
-          <p className="meta">
-            Counts only, never anyone’s content. Where people use it comes from the device they signed in with, so it shows web versus the
-            phone app, not every screen opened. Screen-level detail is in Firebase Analytics.
+          <h1 className="font-serif text-[clamp(28px,3vw,32px)] leading-[1.1] font-semibold tracking-[-0.022em] text-fg">Analytics</h1>
+          <p className="mt-2 max-w-[60ch] text-[14px] text-fg-subtle">
+            How Naazhi is used. Counts only, never anyone’s content. Web or app comes from the device each person signed in with; screen-level detail is in Firebase Analytics.
           </p>
         </div>
+        <nav aria-label="Time range" className="flex rounded-ctl bg-hover p-[3px]">
+          {RANGES.map((r) => (
+            <Link
+              key={r}
+              href={`/admin/analytics?days=${r}`}
+              aria-current={r === days ? "page" : undefined}
+              className={`rounded-tab px-3 py-1 text-[13px] font-medium ${r === days ? "bg-raised text-fg shadow-e1" : "text-fg-muted hover:text-fg"}`}
+            >
+              {r} days
+            </Link>
+          ))}
+        </nav>
       </div>
 
-      <div className="dash-stats adm-six">
-        {tiles.map(([l, n]) => (
-          <div key={l} className="dash-stat">
-            <b>{n.toLocaleString()}</b>
-            <small>{l}</small>
-          </div>
-        ))}
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <Stat label="Total people" value={a.users} />
+        <Stat label="Active, 7 days" value={a.wau} />
+        <Stat label="Active, 30 days" value={a.mau} />
+        <Stat label="Web sign-ins" value={web} hint={period} />
+        <Stat label="App sign-ins" value={app} hint={period} />
+        <Stat label="AI tokens" value={sum(a.tokens)} hint={period} />
       </div>
 
-      <div className="dash-grid">
-        <Bars title="Active people per day" data={a.activeUsers} note="People who signed in that day, last 30 days." />
-        <Bars title="New sign-ups per day" data={a.signups} note="Accounts created, last 30 days." />
-        <Bars title="Web sign-ins per day" data={a.signinsWeb} note="Sign-ins from a browser." />
-        <Bars title="App sign-ins per day" data={a.signinsApp} note="Sign-ins from the Android or iPhone app." />
-        <Bars title="AI tokens per day" data={a.tokens} note="Input plus output tokens used across all plans." />
-        <Split
-          title="Where people sign in"
-          data={a.clients.map((c) => ({ label: CLIENT_LABEL[c.label as Client] ?? c.label, n: c.n }))}
-          note="Sign-ins in the last 30 days."
-        />
-        <Split title="Browsers and devices" data={a.browsers} />
-        <Split title="Sign-in method" data={a.providers} note="People per method (one person can have several)." />
-        <Split title="Plans" data={a.plans} note="People on each active plan." />
-        <Split title="Features used" data={a.adoption} note="People who have used each feature at least once, ever." />
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card title="Active people" note={`People who signed in each day, ${period}.`}>
+          <DayChart label="Active people per day" series={[a.activeUsers]} />
+        </Card>
+        <Card title="New sign-ups" note={`Accounts created each day, ${period}.`}>
+          <DayChart label="New sign-ups per day" series={[a.signups]} />
+        </Card>
+        <Card title="Web and app sign-ins" note={`Sign-ins per day, ${period}.`}>
+          <DayChart label="Sign-ins per day, web and app" series={[a.signinsWeb, a.signinsApp]} legend={[`Web · ${num(web)}`, `App · ${num(app)}`]} />
+        </Card>
+        <Card title="AI tokens" note={`Input plus output, all plans, ${period}.`}>
+          <DayChart label="AI tokens per day" series={[a.tokens]} />
+        </Card>
+        <Card title="Where people sign in" note={`Sign-ins, ${period}.`}>
+          <Breakdown data={a.clients.map((c) => ({ label: CLIENT_LABEL[c.label as Client] ?? c.label, n: c.n }))} />
+        </Card>
+        <Card title="Browsers and devices" note={`Sign-ins, ${period}.`}>
+          <Breakdown data={a.browsers} />
+        </Card>
+        <Card title="Features used" note="Share of all people who have used each at least once, ever.">
+          <Breakdown data={a.adoption} of={a.users} />
+        </Card>
+        <div className="grid gap-4">
+          <Card title="Plans" note="People on each active plan.">
+            <Breakdown data={a.plans} />
+          </Card>
+          <Card title="Sign-in method" note="People per method. One person can have several.">
+            <Breakdown data={a.providers} of={a.users} />
+          </Card>
+        </div>
       </div>
     </div>
   );

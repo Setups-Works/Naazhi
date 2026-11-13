@@ -23,6 +23,17 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-13",
+    title: "Version 7.3.1: a cleaner Analytics page and fewer permissions",
+    summary: "The app asks for fewer Android permissions, and the admin Analytics page is easier to read.",
+    tone: "sand",
+    appVersion: "v7.3.1",
+    changes: [
+      { kind: "improved", platform: "app", text: "The Android app no longer includes the advertising ID or background audio permissions. Naazhi never used them, so nothing changes for you." },
+      { kind: "improved", platform: "web", text: "Admin → Analytics is redesigned with clearer daily charts, a 7, 30 or 90 day range and simple share bars." },
+    ],
+  },
+  {
+    date: "2026-11-13",
     title: "Version 7.3.0: pay as you go is prepaid, and a privacy switch for usage",
     summary: "Pay as you go now runs on the credit you add, and you can choose whether anonymous usage helps us improve Naazhi.",
     tone: "blue",

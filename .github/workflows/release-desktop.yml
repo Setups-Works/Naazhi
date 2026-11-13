@@ -1,0 +1,172 @@
+name: Release Desktop
+
+# Pushing a tag like v1.2.0 builds the Mac and Windows apps and attaches them to the same GitHub Release as the Android build
+# (so one tag ships every platform). Run it by hand (Actions → Release Desktop → Run workflow) to rebuild an existing tag.
+#   git tag v1.2.0 && git push origin v1.2.0
+#
+# The desktop app is a window around the hosted web app, so web releases reach it without a new installer; a tag is only needed
+# when the shell itself changes (apps/desktop). Auto-update reads latest.yml / latest-mac.yml from the newest stable release.
+#
+# Repository settings used (Settings → Secrets and variables → Actions):
+#   variable DESKTOP_APP_URL          the app's address, where the window opens: https://dashboard.naazhi.app (required; falls back to
+#                                     EXPO_PUBLIC_API_URL, which is the same address)
+#   macOS signing and notarization (optional; without them the Mac app is unsigned and will not auto-update):
+#   secret   MAC_CERTIFICATE_BASE64   a "Developer ID Application" certificate exported as .p12, base64
+#   secret   MAC_CERTIFICATE_PASSWORD its password
+#   secret   APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID    notarization (appleid.apple.com → app-specific password)
+#   Windows signing (optional; without it SmartScreen warns on first run). Use ONE of:
+#   secret   WIN_CERTIFICATE_BASE64, WIN_CERTIFICATE_PASSWORD        a code-signing certificate (.pfx), base64
+#   variable AZURE_SIGNING_ENDPOINT, AZURE_SIGNING_ACCOUNT, AZURE_SIGNING_PROFILE, AZURE_SIGNING_PUBLISHER
+#   secret   AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET   Azure Trusted Signing
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build and release (for example v1.2.0)
+        required: true
+
+permissions:
+  contents: write # create the release and upload the installers
+
+concurrency:
+  group: release-desktop-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
+  DESKTOP_APP_URL: ${{ vars.DESKTOP_APP_URL || vars.EXPO_PUBLIC_API_URL }}
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: the Mac app
+            os: macos-latest
+            platform: mac
+          - name: the Windows app
+            os: windows-latest
+            platform: win
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check the tag and settings
+        run: |
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.]+)?$ ]] || { echo "Tag '$TAG' must look like v1.2.3"; exit 1; }
+          [ -n "$DESKTOP_APP_URL" ] || { echo "Set the repository variable DESKTOP_APP_URL (Settings → Variables)."; exit 1; }
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # Credentials arrive as secrets, never as files in the repository. Without them the build still succeeds, unsigned.
+      - name: Prepare signing
+        env:
+          MAC_CERTIFICATE_BASE64: ${{ secrets.MAC_CERTIFICATE_BASE64 }}
+          WIN_CERTIFICATE_BASE64: ${{ secrets.WIN_CERTIFICATE_BASE64 }}
+        run: |
+          if [ "${{ matrix.platform }}" = "mac" ]; then
+            if [ -n "$MAC_CERTIFICATE_BASE64" ]; then
+              echo "$MAC_CERTIFICATE_BASE64" | base64 -d > "$RUNNER_TEMP/mac.p12"
+              echo "CSC_LINK=$RUNNER_TEMP/mac.p12" >> "$GITHUB_ENV"
+              echo "CSC_KEY_PASSWORD=${{ secrets.MAC_CERTIFICATE_PASSWORD }}" >> "$GITHUB_ENV"
+              echo "SIGNED=yes" >> "$GITHUB_ENV"
+            else
+              echo "::warning::No MAC_CERTIFICATE_BASE64 secret: the Mac app is unsigned (it will not auto-update; people right-click → Open the first time)."
+              echo "CSC_IDENTITY_AUTO_DISCOVERY=false" >> "$GITHUB_ENV"
+              echo "SIGNED=no" >> "$GITHUB_ENV"
+            fi
+          else
+            if [ -n "$WIN_CERTIFICATE_BASE64" ]; then
+              echo "$WIN_CERTIFICATE_BASE64" | base64 -d > "$RUNNER_TEMP/win.pfx"
+              echo "CSC_LINK=$RUNNER_TEMP/win.pfx" >> "$GITHUB_ENV"
+              echo "CSC_KEY_PASSWORD=${{ secrets.WIN_CERTIFICATE_PASSWORD }}" >> "$GITHUB_ENV"
+              echo "SIGNED=yes" >> "$GITHUB_ENV"
+            elif [ -n "${{ vars.AZURE_SIGNING_ENDPOINT }}" ]; then
+              echo "SIGNED=yes" >> "$GITHUB_ENV"
+            else
+              echo "::warning::No Windows signing configured: Windows SmartScreen will warn when people first run the installer."
+              echo "CSC_IDENTITY_AUTO_DISCOVERY=false" >> "$GITHUB_ENV"
+              echo "SIGNED=no" >> "$GITHUB_ENV"
+            fi
+          fi
+
+      # The tag decides the version people see (extraMetadata), so a stale package.json can't ship under a new tag.
+      - name: Build the installers
+        working-directory: apps/desktop
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          AZURE_SIGNING_ENDPOINT: ${{ vars.AZURE_SIGNING_ENDPOINT }}
+          AZURE_SIGNING_ACCOUNT: ${{ vars.AZURE_SIGNING_ACCOUNT }}
+          AZURE_SIGNING_PROFILE: ${{ vars.AZURE_SIGNING_PROFILE }}
+          AZURE_SIGNING_PUBLISHER: ${{ vars.AZURE_SIGNING_PUBLISHER }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        run: |
+          node scripts/build.mjs --release
+          pnpm exec electron-builder --config electron-builder.config.mjs --${{ matrix.platform }} --publish never \
+            -c.extraMetadata.version="${TAG#v}"
+
+      - name: Collect the files
+        run: |
+          mkdir -p out
+          cd apps/desktop/release
+          # Installers, the update feed (latest*.yml) and the block maps that make updates download only what changed.
+          cp *.dmg *.zip *.exe *.blockmap latest*.yml ../../../out/ 2>/dev/null || true
+          ls -l ../../../out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: naazhi-${{ env.TAG }}-desktop-${{ matrix.platform }}
+          path: out/*
+          if-no-files-found: error
+
+  publish:
+    name: Publish to the GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: naazhi-${{ env.TAG }}-desktop-*
+          merge-multiple: true
+          path: out
+
+      - name: Write checksums
+        working-directory: out
+        run: sha256sum $(ls | grep -v '\.sha256$') > "naazhi-$TAG-desktop.sha256"
+
+      # The Android workflow publishes the same release; whichever finishes first creates it and the other adds its files.
+      - name: Publish the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          NOTE="Mac and Windows apps $TAG. Open the .dmg (Mac) or run the .exe (Windows). The apps update themselves."
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --title "$TAG" --generate-notes --notes "$NOTE" $( [[ "$TAG" == *-* ]] && echo --prerelease ) \
+              || gh release view "$TAG" >/dev/null
+          fi
+          gh release upload "$TAG" out/* --clobber

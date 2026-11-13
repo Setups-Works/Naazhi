@@ -1,6 +1,6 @@
 import type { Tone } from "../../lib/tones";
 
-export type Platform = "web" | "app";
+export type Platform = "web" | "app" | "desktop";
 export type ChangeKind = "new" | "improved" | "fixed";
 
 export type Change = { kind: ChangeKind; platform: Platform; text: string };
@@ -11,7 +11,7 @@ export type Release = {
   title: string;
   summary: string;
   tone: Tone;
-  /** The Android app's version tag, when the day shipped one. It links to the matching GitHub Release. */
+  /** The version tag (the Android app and the Mac and Windows apps ship from the same tag), when the day shipped one. It links to the matching GitHub Release. */
   appVersion?: string;
   changes: Change[];
 };
@@ -21,6 +21,23 @@ export type Release = {
  * them, not how. App releases are published as GitHub Releases, so `appVersion` is the tag name (`v1.0.1`).
  */
 export const RELEASES: Release[] = [
+  {
+    date: "2026-11-14",
+    title: "Version 7.5.0: Naazhi for Mac and Windows",
+    summary: "Naazhi now has a desktop app for Mac and Windows, and everything new on the web shows up in it by itself.",
+    tone: "mint",
+    appVersion: "v7.5.0",
+    changes: [
+      { kind: "new", platform: "desktop", text: "Naazhi for Mac and Windows. Download it from the latest release on GitHub. It opens straight to your dashboard." },
+      { kind: "new", platform: "desktop", text: "It looks like a real app: your top bar runs to the edge of the window, it follows your theme, and it remembers its size and place." },
+      { kind: "new", platform: "desktop", text: "Menus and shortcuts: Ctrl or ⌘ plus 1 to 6 jump between Home, To-do, Notes, Journal, Chat and Calendar, and Ctrl or ⌘ plus a comma opens Settings." },
+      { kind: "new", platform: "desktop", text: "A menu bar or tray icon takes you back to the window or to a section without opening it first." },
+      { kind: "new", platform: "desktop", text: "Links that start with naazhi:// open the right page in the app." },
+      { kind: "new", platform: "desktop", text: "Continue with Google opens your browser and returns you to the app signed in, because Google doesn’t allow sign-in inside an app window." },
+      { kind: "new", platform: "desktop", text: "The app checks for updates by itself and asks before restarting. If you’re offline it says so and tries again when you’re back." },
+      { kind: "improved", platform: "desktop", text: "Log in, sign up and password reset fill the window, without the website’s header and footer." },
+    ],
+  },
   {
     date: "2026-11-13",
     title: "Version 7.4.0: find Naazhi on X and Instagram, and a QR code for the app",
@@ -1051,7 +1068,7 @@ export const RELEASES: Release[] = [
 ];
 
 export const KIND_LABEL: Record<ChangeKind, string> = { new: "New", improved: "Improved", fixed: "Fixed" };
-export const PLATFORM_LABEL: Record<Platform, string> = { web: "Web", app: "App" };
+export const PLATFORM_LABEL: Record<Platform, string> = { web: "Web", app: "App", desktop: "Desktop" };
 
 export type PlatformFilter = "all" | Platform;
 

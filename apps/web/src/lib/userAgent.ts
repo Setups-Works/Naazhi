@@ -19,6 +19,9 @@ export function browserOf(agent: string | null | undefined): string {
   if (!agent) return "Unknown";
   if (clientOf(agent) !== "web") return CLIENT_LABEL[clientOf(agent)];
   const browser = /Edg\//.test(agent) ? "Edge" : /Chrome\//.test(agent) ? "Chrome" : /Firefox\//.test(agent) ? "Firefox" : /Safari\//.test(agent) ? "Safari" : "Other";
+  // The desktop app's window is a browser engine underneath; it adds its own token (apps/desktop/src/main/index.ts).
+  const desktop = /NaazhiDesktop\//.test(agent);
   const os = /Windows/.test(agent) ? "Windows" : /iPhone|iPad/.test(agent) ? "iOS" : /Android/.test(agent) ? "Android" : /Mac OS X/.test(agent) ? "macOS" : /Linux/.test(agent) ? "Linux" : "";
+  if (desktop) return os ? `Desktop app on ${os}` : "Desktop app";
   return os ? `${browser} on ${os}` : browser;
 }

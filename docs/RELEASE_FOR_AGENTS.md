@@ -38,7 +38,7 @@ File: `apps/web/src/features/changelog/releases.ts`. Add **one new object at the
 - Don't edit an older release's entry to add new things; add a new entry.
 - `apps/web/tests/unit/changelog.test.ts` checks the shape.
 
-## 3. Bump the version in all four places
+## 3. Bump the version in all five places
 
 They must be equal, and equal to the newest `appVersion` in the changelog (minus the `v`):
 
@@ -46,6 +46,7 @@ They must be equal, and equal to the newest `appVersion` in the changelog (minus
 | -------------------------- | -------------- |
 | `apps/mobile/app.json`     | `expo.version` |
 | `apps/mobile/package.json` | `version`      |
+| `apps/desktop/package.json` | `version`     |
 | `apps/web/package.json`    | `version`      |
 | `package.json` (repo root) | `version`      |
 
@@ -84,7 +85,7 @@ git commit -m "release: v2.1.0 — short summary
 Co-Authored-By: <the attribution line the harness gives you>"
 git push origin main                      # CI runs; web changes also trigger "Deploy web app to Azure"
 git tag -a v2.1.0 -m "v2.1.0: short summary"
-git push origin v2.1.0                    # starts "Release Android": builds, signs and publishes the APK
+git push origin v2.1.0                    # starts "Release Android" (the APK) and "Release Desktop" (the Mac and Windows apps) on the same release
 ```
 
 Push the commit **before** the tag so the tag points at what is on `main`. The user's rules decide whether to push to `main` directly or through a pull request; merging a PR needs the user (the sandbox blocks agents from merging unreviewed pull requests, and you shouldn't try to get around that).
@@ -92,18 +93,19 @@ Push the commit **before** the tag so the tag points at what is on `main`. The u
 ## 7. Watch the runs
 
 ```bash
-gh run list --limit 5          # CI, Deploy web app to Azure, Release Android
+gh run list --limit 5          # CI, Deploy web app to Azure, Release Android, Release Desktop
 gh run view <id> --log-failed  # why a run failed
 gh release view v2.1.0         # the APK and its .sha256 should be attached
 ```
 
+- The desktop build takes about 10–15 minutes; `gh release view` should also show `.dmg`, `.exe` and `latest*.yml` (docs/DESKTOP.md). Without the signing secrets they are unsigned: say so.
 - The Android build takes about 8–10 minutes. Until the release exists, the app's update check offers nothing.
 - If **Release Android** fails and **no GitHub Release exists yet**, fix the cause, push the fix to `main`, and re-point the tag at the fixed commit (`git tag -f -a v2.1.0 -m "…" <commit>` then `git push -f origin v2.1.0`). **Ask the user first**: moving a published tag is a rewrite of shared history. Once a release has been published for a tag, never move it; ship a new patch version instead.
 - Only cancel a run if the user asks (`gh run cancel <id>`).
 
 ## 8. What you must not do
 
-- Don't tag a version that the four version files and the changelog don't agree on.
+- Don't tag a version that the five version files and the changelog don't agree on.
 - Don't force-push `main`. Don't delete or reuse a tag that has a published release.
 - Don't print or commit secrets (the `DATABASE_URL`, Azure keys, keystore). Read them from the environment or Azure app settings inside one command and never echo them.
 - Don't say a release is "done" until `gh release view` shows the APK and the Azure deploy run is green.

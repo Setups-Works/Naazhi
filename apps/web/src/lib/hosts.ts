@@ -48,7 +48,7 @@ export const publicPath = (path: string) => {
 };
 
 /** Paths that only exist on the app host. */
-export const APP_PATH_PREFIXES = ["/dashboard", APP_HOME, "/admin", "/onboarding", "/invoice", "/login", "/signup", "/forgot-password", "/reset-password", "/share"];
+export const APP_PATH_PREFIXES = ["/dashboard", APP_HOME, "/admin", "/onboarding", "/invoice", "/login", "/signup", "/forgot-password", "/reset-password", "/share", "/desktop-signin"];
 
 export const isAppPath = (path: string) => APP_PATH_PREFIXES.some((p) => path === p || path.startsWith(`${p}/`)) || isDashboardSection(path);
 

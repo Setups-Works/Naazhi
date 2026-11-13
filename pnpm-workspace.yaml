@@ -6,6 +6,11 @@ allowBuilds:
   # Firebase's postinstall scripts only prepare optional defaults; the app doesn't need them.
   '@firebase/util': false
   protobufjs: false
+  # The desktop shell: Electron downloads its own binary, esbuild its native bundler. electron-winstaller is only for the Squirrel
+  # installer, which we don't use (we ship NSIS).
+  electron: true
+  esbuild: true
+  electron-winstaller: false
 minimumReleaseAgeExclude:
   - '@expo/cli@57.0.29'
   - '@expo/fingerprint@0.20.14'

@@ -3,7 +3,7 @@ import { betterAuth } from "better-auth";
 import { expo } from "@better-auth/expo";
 import { nextCookies } from "better-auth/next-js";
 import { APIError } from "better-auth/api";
-import { admin, emailOTP, lastLoginMethod, oneTap, openAPI, username } from "better-auth/plugins";
+import { admin, emailOTP, lastLoginMethod, oneTap, oneTimeToken, openAPI, username } from "better-auth/plugins";
 import { passkey } from "@better-auth/passkey";
 import pg from "pg";
 import { publicEnv, serverEnv } from "../config/env";
@@ -153,6 +153,9 @@ function create() {
     // One Tap uses the same Google credentials as the redirect sign-in; nextCookies() must stay last.
     plugins: [
       expo(),
+      // The desktop app signs in through the person's browser and trades this single-use token (3 minutes) for its own session
+      // (docs/DESKTOP.md). Making one needs a signed-in session; it uses the existing verifications table.
+      oneTimeToken({ expiresIn: 3, storeToken: "hashed" }),
       // Verify One Tap ID tokens against the same public client ID used by the Google provider.
       oneTap({ clientId: env.google.clientId }),
       // Generates the description of every auth endpoint for /api/v1/openapi.json; our Swagger UI is the viewer, so no built-in page.

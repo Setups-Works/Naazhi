@@ -1,6 +1,6 @@
 # Releasing the Android app
 
-A version tag builds the app and publishes the APK as a GitHub Release. Nothing is built or uploaded by hand.
+A version tag builds the app and publishes the APK as a GitHub Release. Nothing is built or uploaded by hand. The same tag also builds the Mac and Windows apps (`release-desktop.yml`, see [DESKTOP.md](DESKTOP.md)) and attaches them to that release.
 
 ```bash
 git checkout main && git pull

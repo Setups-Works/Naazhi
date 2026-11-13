@@ -10,7 +10,7 @@ import { AUTH_PANEL } from "./content";
  */
 export default function AuthShell({ children }: { children: ReactNode }) {
   return (
-    <main>
+    <main data-auth-shell>
       <div className={`${WRAP} grid gap-[clamp(24px,4vw,64px)] py-[clamp(20px,3vw,40px)] lg:h-[calc(100svh-96px)] lg:min-h-[560px] lg:grid-cols-2`}>
         <div className="flex items-center justify-center py-[clamp(16px,4vw,48px)] lg:order-2 lg:py-0">
           <div className="w-full max-w-[420px]">{children}</div>

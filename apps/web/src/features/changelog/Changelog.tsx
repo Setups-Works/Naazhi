@@ -12,6 +12,7 @@ const FILTERS: { id: PlatformFilter; label: string }[] = [
   { id: "all", label: "Everything" },
   { id: "web", label: "Web" },
   { id: "app", label: "Android app" },
+  { id: "desktop", label: "Desktop app" },
 ];
 const KIND_TONE: Record<ChangeKind, string> = { new: "at-green", improved: "at-blue", fixed: "at-clay" };
 

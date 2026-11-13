@@ -97,7 +97,8 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     setLastUsedMethod(authClient.getLastUsedLoginMethod());
   }, []);
   useEffect(() => {
-    if (!cfg?.googleClientId || (mode !== "login" && mode !== "signup")) return;
+    // One Tap is a Google pop-up, which the desktop window can't show (see google() below).
+    if (!cfg?.googleClientId || (mode !== "login" && mode !== "signup") || window.naazhiDesktop) return;
     void oneTapAuthClient(cfg.googleClientId)
       .oneTap({
         callbackURL: next,
@@ -196,6 +197,8 @@ export default function AuthForm({ mode }: { mode: Mode }) {
 
   async function google() {
     setErr("");
+    // Google refuses sign-in inside the desktop app's window, so the app sends the person to their own browser and signs in on return.
+    if (window.naazhiDesktop) return void window.naazhiDesktop.signInWithBrowser();
     setGoogleBusy(true);
     try {
       const { error } = await authClient.signIn.social({ provider: "google", callbackURL: next });

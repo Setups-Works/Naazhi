@@ -1,13 +1,14 @@
 {
   "name": "untitled-project",
   "private": true,
-  "version": "7.4.0",
+  "version": "7.5.0",
   "packageManager": "pnpm@12.11.2",
   "engines": { "node": ">=22.13.0" },
   "scripts": {
     "dev": "turbo run dev --parallel",
     "dev:web": "turbo run dev --filter=@untitled/web",
     "dev:mobile": "turbo run dev --filter=mobile",
+    "dev:desktop": "corepack pnpm --filter desktop start",
     "build": "turbo run build",
     "build:web": "turbo run build --filter=@untitled/web",
     "build:mobile": "turbo run build --filter=mobile",

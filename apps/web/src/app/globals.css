@@ -152,6 +152,10 @@
     /* App shell */
     --rail: 48px;
     --sidebar: 280px;
+    /* The top bar's height. The desktop app lines its window buttons up with it (see the desktop block at the end of this file). */
+    --bar-h: 48px;
+    /* Space the desktop app's window buttons need at the left of the top bar; the app sets it (0 in a browser). */
+    --desktop-inset-left: 0px;
   }
   /* The colour orbs behind the marketing pages: the muted label palette and the warm coral. */
   :root {
@@ -7054,7 +7058,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    height: 48px;
+    height: var(--bar-h);
     padding: 0 clamp(12px, 2vw, 20px);
     background: color-mix(in srgb, var(--page) 92%, transparent);
     backdrop-filter: blur(12px);
@@ -16188,5 +16192,51 @@
   .tdo[data-side="false"] .tdo-sidewrap {
     left: var(--sb-w, 0px);
     box-shadow: inset 1px 0 0 var(--line), var(--shadow-pop);
+  }
+}
+
+/* ── Desktop app (apps/desktop) ────────────────────────────────────────────────────────────────────────────────────────────────
+   The window has no system title bar: the top bar runs to the edge and the macOS traffic lights / Windows caption buttons sit over it.
+   <html data-desktop="mac|win|linux"> is set by the app's preload script; nothing here applies in a browser. */
+html[data-desktop] .ap-top {
+  -webkit-app-region: drag;
+  user-select: none;
+}
+html[data-desktop] .ap-top :is(a, button, input, select, textarea, [role="button"], [role="menuitem"]) {
+  -webkit-app-region: no-drag;
+}
+/* Windows: keep the top bar's content clear of the caption buttons (the browser reports where the safe area ends). */
+html[data-desktop="win"] .ap-top {
+  padding-right: max(clamp(12px, 2vw, 20px), calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw)));
+}
+/* macOS: the sidebar starts below the traffic lights, and a collapsed sidebar (a rail narrower than the lights) lets the top bar make room. */
+html[data-desktop="mac"] .sb {
+  padding-top: calc(var(--bar-h) + 4px);
+}
+html[data-desktop="mac"] .sb::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: var(--bar-h);
+  -webkit-app-region: drag;
+}
+html[data-desktop="mac"] .ap:not(:has(.sb[data-expanded="true"])) .ap-top {
+  padding-left: max(clamp(12px, 2vw, 20px), calc(var(--desktop-inset-left) - var(--rail)));
+}
+/* Sign-in pages in the desktop app: no website header or footer (HideInApp marks them), the form fills the window, and the top edge can
+   still be dragged to move it. */
+html[data-desktop] [data-site-chrome][data-auth="true"] {
+  display: none;
+}
+html[data-desktop] [data-auth-shell]::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: var(--bar-h);
+  -webkit-app-region: drag;
+}
+@media (min-width: 1024px) {
+  html[data-desktop] [data-auth-shell] > div {
+    height: 100svh;
   }
 }

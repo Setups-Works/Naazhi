@@ -6,13 +6,14 @@ You are working on **Naazhi** (the product name, logo and voice are in `docs/BRA
 
 ## 1. Stack
 
-pnpm/Turborepo monorepo: Next.js 16 web in `apps/web`, Expo/React Native in `apps/mobile`, and shared API transport in `packages/api-client`. Web stack: React 19, TypeScript strict, PostgreSQL + Better Auth + S3-compatible storage + Redis, all self-hosted in Docker (no Supabase), Composio and provider-routed AI. Web styling is migrating from hand-written CSS (`apps/web/src/app/globals.css`) to Tailwind v4 (`apps/web/src/styles/tailwind.css`). Design tokens stay defined once and exposed as utilities. No UI kit; icons are thin line icons (lucide) drawn through `components/ui/Icon.tsx`.
+pnpm/Turborepo monorepo: Next.js 16 web in `apps/web`, Expo/React Native in `apps/mobile`, an Electron Mac/Windows shell in `apps/desktop` (a window around the hosted web app), and shared API transport in `packages/api-client`. Web stack: React 19, TypeScript strict, PostgreSQL + Better Auth + S3-compatible storage + Redis, all self-hosted in Docker (no Supabase), Composio and provider-routed AI. Web styling is migrating from hand-written CSS (`apps/web/src/app/globals.css`) to Tailwind v4 (`apps/web/src/styles/tailwind.css`). Design tokens stay defined once and exposed as utilities. No UI kit; icons are thin line icons (lucide) drawn through `components/ui/Icon.tsx`.
 
 ## 2. Commands
 
 ```bash
 corepack pnpm install
 corepack pnpm dev                       # web + mobile; web at http://localhost:3000
+corepack pnpm dev:desktop               # the desktop shell, against the running web app (docs/DESKTOP.md)
 corepack pnpm typecheck                 # typecheck every workspace — must pass before every push
 corepack pnpm build                     # production builds — must pass before every PR
 docker compose --env-file .env.selfhost up -d   # PostgreSQL, Redis, object storage, Mailpit (see docs/SELF_HOSTING.md)
@@ -38,6 +39,7 @@ apps/
       types/      Shared types
       config/     Typed env and feature flags
   mobile/         Expo / React Native app
+  desktop/        Electron shell for Mac and Windows (window, menus, deep links; no product UI)
 packages/
   api-client/     Platform-independent API transport shared by web and mobile
 db/migrations/     SQL migrations (append-only)
@@ -135,6 +137,7 @@ Three developers and several AI agents write UI here. To keep it one product, th
 | `docs/CURRENT_STATE.md`     | You want to know what exists today and where it lives                                                                                                                           |
 | `docs/DATA_MODEL.md`        | You touch the database                                                                                                                                                          |
 | `docs/BILLING.md`           | You touch plans, prices, AI access or limits, the Plan and billing tab, the admin Plans page or the pricing page — the three plans, the rules, security of saved API keys, how to connect payments |
+| `docs/DESKTOP.md`           | You touch `apps/desktop`, the window frame (top bar, sidebar header), `naazhi://` links, desktop sign-in or the desktop release — what the shell does, how the web app talks to it, signing and the release workflow |
 | `docs/SELF_HOSTING.md`      | You run, deploy or back up the stack (Docker, env, storage, auth, Supabase data import)                                                                                         |
 | `docs/SECURITY.md`          | You touch auth, uploads, sharing, admin, AI tools or secrets                                                                                                                    |
 | `docs/DESIGN_LANGUAGE.md`   | **You build or change any UI** — fonts, colours, glass, buttons, tints, reference screens, mistakes to avoid, how it is enforced                                                |

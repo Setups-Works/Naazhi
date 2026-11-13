@@ -14,6 +14,7 @@ import ImpersonationBanner from "../../components/app/ImpersonationBanner";
 import AnalyticsProvider from "../../components/app/AnalyticsProvider";
 import AcquisitionSync from "../../components/app/AcquisitionSync";
 import ChatWidget from "../../components/app/ChatWidget";
+import DesktopBridge from "../../components/app/DesktopBridge";
 import WebBrief from "../../features/notifications/WebBrief";
 import { cleanOnboarding, shouldShowOnboarding } from "../../lib/onboarding";
 
@@ -75,6 +76,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
         />
         <AnalyticsProvider userId={user.id} />
         <AcquisitionSync userId={user.id} />
+        <DesktopBridge />
         <ImpersonationBanner />
         <AnnouncementBanner items={announcements} />
         <div className="ap-body">{children}</div>

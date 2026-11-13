@@ -1,0 +1,27 @@
+{
+  "name": "desktop",
+  "version": "7.5.0",
+  "private": true,
+  "description": "Naazhi for Mac and Windows: a native window around the hosted web app.",
+  "author": "Setups Works",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "node scripts/start.mjs",
+    "typecheck": "tsc --noEmit",
+    "dist": "node scripts/build.mjs --release && electron-builder --config electron-builder.config.mjs",
+    "dist:mac": "node scripts/build.mjs --release && electron-builder --config electron-builder.config.mjs --mac",
+    "dist:win": "node scripts/build.mjs --release && electron-builder --config electron-builder.config.mjs --win"
+  },
+  "dependencies": {
+    "@untitled/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "electron": "^41.0.0",
+    "electron-builder": "^26.8.1",
+    "electron-updater": "^6.8.3",
+    "esbuild": "^0.25.12",
+    "typescript": "^5.9.3"
+  }
+}

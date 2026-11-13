@@ -82,10 +82,18 @@ jobs:
           # The public addresses (not secret values): link previews and the sitemap need the website's as an absolute URL.
           # SITE_URL is the website (naazhi.app) and falls back to APP_URL; WEB_APP_URL is the app host (dashboard.naazhi.app) and stays
           # empty to serve everything from one host.
+          # Firebase web config comes from repository variables FIREBASE_* (public values, not secrets).
           build-args: |
             NEXT_PUBLIC_SITE_URL=${{ secrets.SITE_URL || secrets.APP_URL }}
             NEXT_PUBLIC_APP_URL=${{ secrets.WEB_APP_URL }}
             NEXT_PUBLIC_HELP_URL=${{ secrets.HELP_URL }}
+            NEXT_PUBLIC_FIREBASE_API_KEY=${{ vars.FIREBASE_API_KEY }}
+            NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${{ vars.FIREBASE_AUTH_DOMAIN }}
+            NEXT_PUBLIC_FIREBASE_PROJECT_ID=${{ vars.FIREBASE_PROJECT_ID }}
+            NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${{ vars.FIREBASE_STORAGE_BUCKET }}
+            NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${{ vars.FIREBASE_MESSAGING_SENDER_ID }}
+            NEXT_PUBLIC_FIREBASE_APP_ID=${{ vars.FIREBASE_APP_ID }}
+            NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=${{ vars.FIREBASE_MEASUREMENT_ID }}
           tags: |
             nitheeshdr/untitled-workspace:${{ github.sha }}
             nitheeshdr/untitled-workspace:latest

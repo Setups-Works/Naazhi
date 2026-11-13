@@ -37,6 +37,7 @@ export const PUBLIC_PAGES: { path: string; priority: number; changeFrequency: "w
   { path: "/context-graph", priority: 0.6, changeFrequency: "monthly" },
   { path: "/daily-brief", priority: 0.6, changeFrequency: "monthly" },
   { path: "/privacy-security", priority: 0.7, changeFrequency: "monthly" },
+  { path: "/privacy", priority: 0.5, changeFrequency: "monthly" },
   { path: "/terms", priority: 0.4, changeFrequency: "monthly" },
   { path: "/refund-policy", priority: 0.4, changeFrequency: "monthly" },
   { path: "/contact", priority: 0.5, changeFrequency: "monthly" },

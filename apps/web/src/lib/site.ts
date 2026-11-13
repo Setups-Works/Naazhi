@@ -82,6 +82,7 @@ export const FOOTER_COLS: { title: string; links: [string, string][] }[] = [
     title: "Trust",
     links: [
       ["Privacy & Security", "/privacy-security"],
+      ["Privacy Policy", "/privacy"],
       ["Terms & Conditions", "/terms"],
       ["Refund & Cancellation", "/refund-policy"],
       ["Contact", "/contact"],

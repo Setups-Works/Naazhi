@@ -23,6 +23,17 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-13",
+    title: "Version 6.8.5: a full privacy policy",
+    summary: "A new privacy policy explains what Naazhi collects, how long it keeps it and how to delete it.",
+    tone: "sand",
+    appVersion: "v6.8.5",
+    changes: [
+      { kind: "new", platform: "web", text: "A new Privacy Policy page explains what we collect, including optional health data, how long it is kept, and how to delete it." },
+      { kind: "improved", platform: "web", text: "The policy is linked from the footer and from Settings, and tells you exactly where to delete your content or your account." },
+    ],
+  },
+  {
+    date: "2026-11-13",
     title: "Version 6.8.4: updates through Google Play",
     summary: "The Android app now updates through Google Play, and an update is required to keep going.",
     tone: "blue",

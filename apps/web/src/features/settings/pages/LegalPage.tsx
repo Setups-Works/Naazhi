@@ -5,6 +5,7 @@ import { SettingsSection } from "../ui";
 
 const DOCS = [
   { href: "/terms", title: "Terms of Service", desc: "The agreement for using Naazhi, including acceptable use." },
+  { href: "/privacy", title: "Privacy policy", desc: "What we collect, including health data, how long we keep it, and how to delete it." },
   { href: "/privacy-security", title: "Privacy and security", desc: "How personal information is collected, used and protected." },
   { href: "/refund-policy", title: "Refund policy", desc: "When and how you can get your money back." },
 ];

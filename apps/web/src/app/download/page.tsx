@@ -31,6 +31,7 @@ import { breadcrumbSchema, faqSchema, pageMeta, softwareSchema, webPageSchema } 
 import GooglePlayBadge from "../../components/site/GooglePlayBadge";
 import DesktopDownload from "../../components/site/DesktopDownload";
 import { GITHUB_REPO } from "../../lib/site";
+import { DESKTOP_DOWNLOADS, DESKTOP_RELEASES_PAGE } from "../../lib/desktopDownloads";
 
 const TITLE = "Download — Naazhi";
 const DESCRIPTION =
@@ -52,6 +53,12 @@ const RELEASED = latest
 const DESKTOP_NOTE = {
   mac: "Open the .dmg and drag Naazhi to Applications. The first time, right-click it and choose Open.",
   win: "Run the .exe. If Windows shows a warning, choose More info, then Run anyway.",
+} as const;
+
+// Which file to pick. The Mac file is one universal app; Windows has one installer per processor type.
+const DESKTOP_ARCH = {
+  mac: "One download for Apple silicon and Intel Macs.",
+  win: "Most PCs use x64. Choose ARM64 for Windows on Arm PCs, such as those with a Snapdragon chip.",
 } as const;
 
 const platforms: {
@@ -182,7 +189,7 @@ const faqs: [string, string][] = [
   ],
   [
     "Is there a Mac or Windows app?",
-    "Yes. Download the Mac (.dmg) or Windows (.exe) file from the latest release on GitHub. It opens the same workspace in its own window and updates itself. The apps aren’t signed with a paid certificate yet, so the first time you open one, your computer asks you to confirm: on a Mac, right-click the app and choose Open; on Windows, choose More info, then Run anyway.",
+    "Yes. Download the Mac (.dmg) or Windows (.exe, x64 or ARM64) file straight from this page, or find every version on the GitHub releases page. It opens the same workspace in its own window and updates itself. The apps aren’t signed with a paid certificate yet, so the first time you open one, your computer asks you to confirm: on a Mac, right-click the app and choose Open; on Windows, choose More info, then Run anyway.",
   ],
   [
     "What about the browser extension?",
@@ -220,8 +227,7 @@ export default function Page() {
         lead="Notes, tasks, journal and chat wherever you work. Get the Android app on Google Play, the Mac or Windows app, or use the web app anywhere else."
         visual={<PhoneRow screens={["/mobile/notes-2.png", "/mobile/home-2.png", "/mobile/chat-2.png"]} />}
       >
-        <DesktopDownload href={RELEASE} devices="#devices" />
-        <GooglePlayBadge />
+        <DesktopDownload mac={DESKTOP_DOWNLOADS.mac} winX64={DESKTOP_DOWNLOADS.winX64} winArm64={DESKTOP_DOWNLOADS.winArm64} store={<GooglePlayBadge />} devices="#devices" />
         <AuthLink className={buttonClass("secondary")} signedIn="Open the web app" href="/signup">
           Use it on the web
         </AuthLink>
@@ -271,12 +277,31 @@ export default function Page() {
                           {RELEASED && <span className="text-fg-faint"> · {RELEASED}</span>}
                         </p>
                       )}
-                      <a href={RELEASE} target="_blank" rel="noopener noreferrer" className={`${buttonClass("primary")} self-start`}>
-                        <span className="inline-flex items-center gap-2">
-                          Download for {p.name} <span aria-hidden>↓</span>
-                        </span>
-                      </a>
+                      {p.name === "Mac" ? (
+                        <a href={DESKTOP_DOWNLOADS.mac} className={`${buttonClass("primary")} self-start`}>
+                          <span className="inline-flex items-center gap-2">
+                            Download for Mac <span aria-hidden>↓</span>
+                          </span>
+                        </a>
+                      ) : (
+                        <div className="flex flex-wrap gap-2.5">
+                          <a href={DESKTOP_DOWNLOADS.winX64} className={buttonClass("primary")}>
+                            <span className="inline-flex items-center gap-2">
+                              Windows x64 <span aria-hidden>↓</span>
+                            </span>
+                          </a>
+                          <a href={DESKTOP_DOWNLOADS.winArm64} className={buttonClass("secondary")}>
+                            <span className="inline-flex items-center gap-2">
+                              Windows ARM64 <span aria-hidden>↓</span>
+                            </span>
+                          </a>
+                        </div>
+                      )}
+                      <p className="m-0 text-[13.5px] text-fg-muted">{DESKTOP_ARCH[p.name === "Mac" ? "mac" : "win"]}</p>
                       <p className="m-0 text-[13.5px] text-fg-muted">{DESKTOP_NOTE[p.name === "Mac" ? "mac" : "win"]}</p>
+                      <a href={DESKTOP_RELEASES_PAGE} target="_blank" rel="noopener noreferrer" className="text-[13.5px] text-fg-muted underline underline-offset-2 hover:text-fg">
+                        More downloads on the GitHub releases page
+                      </a>
                     </>
                   )}
                   {p.action === "web" && (

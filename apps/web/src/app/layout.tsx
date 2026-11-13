@@ -15,6 +15,7 @@ import JsonLd from "../components/site/JsonLd";
 import AttributionCapture from "../components/site/AttributionCapture";
 import { KEYWORDS, androidAppSchema, organizationSchema, SITE_DESCRIPTION, siteOrigin, setupsWorksSchema, siteNavigationSchema, websiteSchema } from "../lib/seo";
 import { lookBootScript } from "../lib/look";
+import { osBootScript } from "../lib/os";
 import { X_HANDLE } from "../lib/site";
 
 config.autoAddCss = false;
@@ -72,6 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning className={`${geist.variable} ${mono.variable} ${serif.variable} ${tamil.variable}`}>
       <body>
         {/* App pages paint the person's colour scheme before the first frame (see lib/look.ts). */}
+        <script dangerouslySetInnerHTML={{ __html: osBootScript }} />
         <script dangerouslySetInnerHTML={{ __html: lookBootScript(publicEnv.appUrl ? new URL(publicEnv.appUrl).host : null) }} />
         <AttributionCapture />
         <JsonLd data={[organizationSchema(), setupsWorksSchema(), websiteSchema(), siteNavigationSchema(), androidAppSchema()]} />

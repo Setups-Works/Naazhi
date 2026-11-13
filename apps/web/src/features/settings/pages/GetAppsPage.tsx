@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GITHUB_REPO } from "../../../lib/site";
+import { DESKTOP_DOWNLOADS, DESKTOP_RELEASES_PAGE } from "../../../lib/desktopDownloads";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faCheck, faDesktop, faMobileScreen } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@/components/ui/button";
@@ -45,15 +45,17 @@ export default function GetAppsPage() {
       </Card>
       <Card kind="desktop" label="Desktop app" icon={faDesktop} title="Naazhi on your computer." items={DESKTOP}>
         <Button asChild size="lg">
-          <a href={`${GITHUB_REPO}/releases/latest`} target="_blank" rel="noopener noreferrer">
-            Download for Mac
-          </a>
+          <a href={DESKTOP_DOWNLOADS.mac}>Download for Mac</a>
         </Button>
         <Button asChild size="lg" variant="secondary">
-          <a href={`${GITHUB_REPO}/releases/latest`} target="_blank" rel="noopener noreferrer">
-            Download for Windows
-          </a>
+          <a href={DESKTOP_DOWNLOADS.winX64}>Windows x64</a>
         </Button>
+        <Button asChild size="lg" variant="secondary">
+          <a href={DESKTOP_DOWNLOADS.winArm64}>Windows ARM64</a>
+        </Button>
+        <a href={DESKTOP_RELEASES_PAGE} target="_blank" rel="noopener noreferrer" className="text-[13.5px] text-ink-3 underline underline-offset-2">
+          More downloads on GitHub
+        </a>
       </Card>
       <Card kind="browser" label="Browser extension" icon={faDesktop} title="Every meeting, written down." items={BROWSER}>
         <span className="flex items-center gap-2 text-[14px] text-ink-3">

@@ -23,6 +23,19 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-14",
+    title: "Version 7.6.0: direct downloads for the Mac and Windows apps",
+    summary: "Get the Mac or Windows app with one click, and the site shows the right download for your device.",
+    tone: "sand",
+    appVersion: "v7.6.0",
+    changes: [
+      { kind: "new", platform: "web", text: "The Download page now has direct downloads for Mac, Windows x64 and Windows ARM64, with a link to every version on GitHub." },
+      { kind: "improved", platform: "web", text: "On a Mac or a Windows PC, the home page, the footer and the Download page offer the right app for that computer in place of Google Play." },
+      { kind: "improved", platform: "web", text: "On an Android phone the site shows Google Play, and on an iPhone or iPad it shows Get started." },
+      { kind: "improved", platform: "web", text: "Settings, Get the apps has the same Mac and Windows downloads." },
+    ],
+  },
+  {
+    date: "2026-11-14",
     title: "Version 7.5.0: Naazhi for Mac and Windows",
     summary: "Naazhi now has a desktop app for Mac and Windows, and everything new on the web shows up in it by itself.",
     tone: "mint",

@@ -13,6 +13,7 @@ import Collaboration from "../components/site/home/Collaboration";
 import Capabilities from "../components/site/home/Capabilities";
 import HealthConnect from "../components/site/home/HealthConnect";
 import Hero from "../components/site/home/Hero";
+import DesktopDownloadButton from "../components/site/home/DesktopDownloadButton";
 import Integrations, { IntegrationsTicker } from "../components/site/home/Integrations";
 import Pro from "../components/site/home/Pro";
 import Shortcuts from "../components/site/home/Shortcuts";
@@ -66,7 +67,7 @@ export default function Page() {
           }),
         ]}
       />
-      <Hero />
+      <Hero desktop={<DesktopDownloadButton />} />
       <IntegrationsTicker />
       <Story />
       <Collaboration />

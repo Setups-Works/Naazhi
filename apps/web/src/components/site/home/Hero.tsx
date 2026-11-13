@@ -1,5 +1,5 @@
 "use client";
-import { useRef } from "react";
+import { useRef, type ReactNode } from "react";
 import AuthLink from "../../auth/AuthLink";
 import { Heading } from "../Heading";
 import { showNow, useMotion } from "../motion";
@@ -18,7 +18,8 @@ const SCREENS = [
  * The opening: the promise in one line, then three whole phones in a row. On load the side phones slide out from behind the middle one
  * and settle into a gentle fan; once open, all three drift at different speeds, and scrolling pulls the sides apart a little further.
  */
-export default function Hero() {
+/** `desktop` is the download button: Mac or Windows download on those computers, the Google Play button elsewhere. */
+export default function Hero({ desktop }: { desktop?: ReactNode }) {
   const root = useRef<HTMLElement>(null);
   useMotion(root, ({ g, root: el, calm }) => {
     const copy = el.querySelectorAll("[data-copy]");
@@ -92,7 +93,7 @@ export default function Hero() {
           </div>
           <div data-copy data-reveal className={`mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 ${hidden}`}>
             <AuthLink arrow className={buttonClass("primary")} />
-            <GooglePlayBadge />
+            {desktop ?? <GooglePlayBadge />}
           </div>
         </div>
 

@@ -384,7 +384,7 @@ export const ARTICLES: readonly HelpArticle[] = [
     keywords: ["mac", "windows", "desktop", "computer", "browser", "extension", "ipad", "iphone"],
     updated: HELP_UPDATED,
     blocks: [
-      { type: "p", text: "Download the Mac (.dmg) or Windows (.exe) app from the latest release linked on the download page. It opens the same workspace in its own window and updates itself. The apps aren’t signed with a paid certificate yet, so the first time you open one your computer asks you to confirm: on a Mac, right-click the app and choose Open; on Windows, choose More info, then Run anyway." },
+      { type: "p", text: "Download the Mac (.dmg) or Windows (.exe, x64 or ARM64) app from the download page; every version is also on the GitHub releases page. It opens the same workspace in its own window and updates itself. The apps aren’t signed with a paid certificate yet, so the first time you open one your computer asks you to confirm: on a Mac, right-click the app and choose Open; on Windows, choose More info, then Run anyway." },
       { type: "p", text: "You can also open Naazhi in any modern browser on a Mac or a Windows PC. A browser extension is planned and marked Coming soon." },
     ],
     related: ["install-the-android-app"],

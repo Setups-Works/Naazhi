@@ -5,6 +5,8 @@ import AuthLink from "../auth/AuthLink";
 import { FOOTER_COLS } from "../../lib/site";
 import FooterNotes from "./FooterNotes";
 import GooglePlayBadge from "./GooglePlayBadge";
+import DesktopDownload from "./DesktopDownload";
+import { DESKTOP_DOWNLOADS } from "../../lib/desktopDownloads";
 import SocialLinks from "./SocialLinks";
 import { buttonClass, WRAP } from "./ui";
 
@@ -27,7 +29,7 @@ export default function Footer() {
             </p>
             <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
               <AuthLink className={buttonClass("primary", "sm")} />
-              <GooglePlayBadge size="sm" />
+              <DesktopDownload mac={DESKTOP_DOWNLOADS.mac} winX64={DESKTOP_DOWNLOADS.winX64} winArm64={DESKTOP_DOWNLOADS.winArm64} store={<GooglePlayBadge size="sm" />} size="sm" />
             </div>
             <SocialLinks />
           </div>

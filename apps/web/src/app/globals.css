@@ -16240,3 +16240,18 @@ html[data-desktop] [data-auth-shell]::before {
     height: 100svh;
   }
 }
+
+/* Download buttons by device (components/site/DesktopDownload.tsx). <html data-os> is set before the first paint (lib/os.ts): a Mac or a
+   Windows PC shows its own download in place of the Google Play button, an iPhone or iPad shows no store button (the page's "Get started"
+   stays), and any other device keeps the Play button. */
+html:not([data-os="mac"]) .os-mac,
+html:not([data-os="win"]) .os-win {
+  display: none;
+}
+html[data-os="mac"] .os-store,
+html[data-os="win"] .os-store,
+html[data-os="ios"] .os-store,
+html[data-os="mac"] .os-other,
+html[data-os="win"] .os-other {
+  display: none;
+}

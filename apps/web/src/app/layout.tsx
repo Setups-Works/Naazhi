@@ -13,7 +13,7 @@ import Refresh from "../components/site/Refresh";
 import ContextMenu from "../components/app/ContextMenu";
 import JsonLd from "../components/site/JsonLd";
 import AttributionCapture from "../components/site/AttributionCapture";
-import { KEYWORDS, androidAppSchema, organizationSchema, SITE_DESCRIPTION, siteOrigin, setupsWorksSchema, siteNavigationSchema, websiteSchema } from "../lib/seo";
+import { KEYWORDS, androidAppSchema, brandSchema, desktopAppSchema, organizationSchema, SITE_DESCRIPTION, siteOrigin, setupsWorksSchema, siteNavigationSchema, webAppSchema, websiteSchema } from "../lib/seo";
 import { lookBootScript } from "../lib/look";
 import { osBootScript } from "../lib/os";
 import { X_HANDLE } from "../lib/site";
@@ -76,7 +76,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: osBootScript }} />
         <script dangerouslySetInnerHTML={{ __html: lookBootScript(publicEnv.appUrl ? new URL(publicEnv.appUrl).host : null) }} />
         <AttributionCapture />
-        <JsonLd data={[organizationSchema(), setupsWorksSchema(), websiteSchema(), siteNavigationSchema(), androidAppSchema()]} />
+        <JsonLd data={[organizationSchema(), brandSchema(), setupsWorksSchema(), websiteSchema(), siteNavigationSchema(), androidAppSchema(), desktopAppSchema("macOS"), desktopAppSchema("Windows"), webAppSchema()]} />
         {/* Marketing content starts hidden for its entrance animation; without JavaScript it must simply be there. */}
         <noscript>
           <style>{"[data-reveal]{opacity:1!important;transform:none!important}"}</style>

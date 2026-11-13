@@ -11,6 +11,9 @@ const latest = RELEASES.find((r) => r.appVersion)?.appVersion;
 
 const file = (name: string) => (latest ? `${GITHUB_REPO}/releases/download/${latest}/naazhi-${latest.replace(/^v/, "")}-${name}` : null);
 
+/** The version number of those files (no leading "v"), or undefined when no app release is in the changelog. */
+export const DESKTOP_VERSION = latest?.replace(/^v/, "");
+
 export const DESKTOP_RELEASES_PAGE = `${GITHUB_REPO}/releases`;
 
 /** Each is the direct download, or the releases page when the version isn't known. */

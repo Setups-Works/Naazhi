@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { defaultSiteOrigin, publicEnv } from "../config/env";
+import { DESKTOP_DOWNLOADS, DESKTOP_RELEASES_PAGE, DESKTOP_VERSION } from "./desktopDownloads";
 import { isHelpSplit } from "./hosts";
 import { GITHUB_REPO, GOOGLE_PLAY_URL, INSTAGRAM_URL, X_URL } from "./site";
 
@@ -281,7 +282,27 @@ export const organizationSchema = (): Json =>
       { "@type": "ContactPoint", contactType: "customer support", email: SETUPS_WORKS.email, availableLanguage: ["English"], url: absoluteUrl("/contact") },
     ],
     knowsAbout: ["Notes", "To-do lists", "Journaling", "AI chat", "Calendar", "Personal knowledge management"],
+    brand: brandRef(),
     parentOrganization: setupsWorksRef(),
+  });
+
+const brandRef = () => ({ "@id": absoluteUrl("/#brand") });
+const orgRef = () => ({ "@id": absoluteUrl("/#organization") });
+const softwareRef = () => ({ "@id": absoluteUrl("/#software") });
+
+/** The Naazhi name and mark as a brand, so the product, the company and the apps all point at one named thing. */
+export const brandSchema = (): Json =>
+  drop({
+    "@context": "https://schema.org",
+    "@type": "Brand",
+    "@id": absoluteUrl("/#brand"),
+    name: SITE_NAME,
+    alternateName: ["நாழி", `${SITE_NAME} — ${SITE_TAGLINE}`],
+    slogan: SITE_TAGLINE,
+    description: SITE_DESCRIPTION,
+    url: absoluteUrl("/"),
+    logo: { "@type": "ImageObject", url: absoluteUrl("/brand/icon-512.png"), width: 512, height: 512 },
+    sameAs: [X_URL, INSTAGRAM_URL, GITHUB_REPO, GOOGLE_PLAY_URL],
   });
 
 export const websiteSchema = (): Json =>
@@ -297,7 +318,21 @@ export const websiteSchema = (): Json =>
     publisher: absoluteUrl("/#organization") ? { "@id": absoluteUrl("/#organization") } : undefined,
   });
 
-/** The app as software: free to start, available on Android and the web. */
+/** What the free tier costs, in rupees (the prices of the paid AI plans live on the pricing page and change, so they are not copied here). */
+const freeOffer = (url?: string): Json => ({
+  "@type": "Offer",
+  price: "0",
+  priceCurrency: "INR",
+  url,
+  availability: "https://schema.org/InStock",
+  description: "Free to start. AI is optional and paid separately.",
+});
+
+/**
+ * The product as one piece of software across every platform: Android, Mac, Windows and the web. It points at one entity per platform
+ * (`hasPart`), says where each can be downloaded, and carries the actions search results can offer ("Install", "Download").
+ * Ratings are left out on purpose: nothing here may state a number the app hasn't earned.
+ */
 export function softwareSchema({
   version,
   released,
@@ -309,35 +344,102 @@ export function softwareSchema({
   /** What the app does today (live capabilities only). */ features?: readonly string[];
   /** Paths of app screens under /public. */ screenshots?: readonly string[];
 } = {}): Json {
+  const downloads = [GOOGLE_PLAY_URL, DESKTOP_DOWNLOADS.mac, DESKTOP_DOWNLOADS.winX64, DESKTOP_DOWNLOADS.winArm64];
   return drop({
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "@id": absoluteUrl("/#software"),
     name: SITE_NAME,
-    alternateName: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    alternateName: ["நாழி", `${SITE_NAME} — ${SITE_TAGLINE}`],
     description: SITE_DESCRIPTION,
+    slogan: SITE_TAGLINE,
     url: absoluteUrl("/"),
+    mainEntityOfPage: absoluteUrl("/download"),
     applicationCategory: "ProductivityApplication",
     applicationSubCategory: "Notes, tasks and journal",
-    operatingSystem: "Android, Web",
+    operatingSystem: "Android, macOS, Windows, Web",
+    keywords: "notes, to-do list, journal, AI chat, calendar, workspace, productivity",
+    audience: { "@type": "PeopleAudience", audienceType: "People who keep notes, tasks and a journal" },
     inLanguage: "en",
     isAccessibleForFree: true,
     featureList: features && features.length ? [...features] : undefined,
     screenshot: screenshots && screenshots.length ? screenshots.map((s) => ({ "@type": "ImageObject", url: absoluteUrl(s) })) : undefined,
     softwareVersion: version?.replace(/^v/, ""),
     datePublished: released,
-    downloadUrl: GOOGLE_PLAY_URL,
+    downloadUrl: downloads,
     installUrl: GOOGLE_PLAY_URL,
-    sameAs: [GOOGLE_PLAY_URL],
+    sameAs: [GOOGLE_PLAY_URL, DESKTOP_RELEASES_PAGE, X_URL, INSTAGRAM_URL],
     softwareHelp: absoluteUrl("/help") ? { "@type": "CreativeWork", url: absoluteUrl("/help") } : undefined,
     releaseNotes: absoluteUrl("/changelog"),
     image: absoluteUrl("/opengraph-image"),
     // Prices are in rupees (see the pricing page); the free tier is price 0 in that currency.
-    offers: { "@type": "Offer", price: "0", priceCurrency: "INR", url: absoluteUrl("/pricing"), availability: "https://schema.org/InStock", description: "Free to start. AI is optional and paid separately." },
-    publisher: absoluteUrl("/#organization") ? { "@id": absoluteUrl("/#organization") } : { "@type": "Organization", name: SITE_NAME },
+    offers: freeOffer(absoluteUrl("/pricing")),
+    brand: brandRef(),
+    publisher: absoluteUrl("/#organization") ? orgRef() : { "@type": "Organization", name: SITE_NAME },
     creator: setupsWorksRef(),
+    copyrightHolder: setupsWorksRef(),
+    // One entity per platform, below.
+    hasPart: [{ "@id": absoluteUrl("/#android-app") }, { "@id": absoluteUrl("/#mac-app") }, { "@id": absoluteUrl("/#windows-app") }, { "@id": absoluteUrl("/#web-app") }],
+    potentialAction: [
+      { "@type": "InstallAction", name: "Install Naazhi on Android", target: { "@type": "EntryPoint", urlTemplate: GOOGLE_PLAY_URL, actionPlatform: "http://schema.org/AndroidPlatform" } },
+      { "@type": "DownloadAction", name: "Download Naazhi for Mac", target: DESKTOP_DOWNLOADS.mac },
+      { "@type": "DownloadAction", name: "Download Naazhi for Windows (x64)", target: DESKTOP_DOWNLOADS.winX64 },
+      { "@type": "DownloadAction", name: "Download Naazhi for Windows (ARM64)", target: DESKTOP_DOWNLOADS.winArm64 },
+    ],
   });
 }
+
+/** A desktop app as its own entity, with the direct download of the newest release. */
+export function desktopAppSchema(platform: "macOS" | "Windows"): Json {
+  const mac = platform === "macOS";
+  return drop({
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "@id": absoluteUrl(mac ? "/#mac-app" : "/#windows-app"),
+    name: `${SITE_NAME} for ${platform}`,
+    description: `${SITE_DESCRIPTION}. The ${platform} app opens the same workspace in its own window and updates itself.`,
+    url: absoluteUrl("/download"),
+    applicationCategory: "ProductivityApplication",
+    operatingSystem: platform,
+    processorRequirements: mac ? "Apple silicon or Intel" : "x64 or ARM64",
+    fileFormat: mac ? "application/x-apple-diskimage" : "application/vnd.microsoft.portable-executable",
+    softwareVersion: DESKTOP_VERSION,
+    downloadUrl: mac ? DESKTOP_DOWNLOADS.mac : [DESKTOP_DOWNLOADS.winX64, DESKTOP_DOWNLOADS.winArm64],
+    installUrl: mac ? DESKTOP_DOWNLOADS.mac : DESKTOP_DOWNLOADS.winX64,
+    releaseNotes: absoluteUrl("/changelog"),
+    image: absoluteUrl("/brand/icon-512.png"),
+    inLanguage: "en",
+    isAccessibleForFree: true,
+    offers: freeOffer(),
+    brand: brandRef(),
+    publisher: orgRef(),
+    isRelatedTo: softwareRef(),
+    isPartOf: softwareRef(),
+    potentialAction: { "@type": "DownloadAction", name: `Download Naazhi for ${platform}`, target: mac ? DESKTOP_DOWNLOADS.mac : DESKTOP_DOWNLOADS.winX64 },
+  });
+}
+
+/** The web app, which needs nothing installed. */
+export const webAppSchema = (): Json =>
+  drop({
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "@id": absoluteUrl("/#web-app"),
+    name: `${SITE_NAME} on the web`,
+    description: `${SITE_DESCRIPTION}. Open it in any modern browser; nothing to install.`,
+    url: publicEnv.appUrl ?? absoluteUrl("/"),
+    applicationCategory: "ProductivityApplication",
+    operatingSystem: "Any",
+    browserRequirements: "Requires JavaScript and a modern web browser.",
+    inLanguage: "en",
+    isAccessibleForFree: true,
+    offers: freeOffer(absoluteUrl("/pricing")),
+    image: absoluteUrl("/brand/icon-512.png"),
+    brand: brandRef(),
+    publisher: orgRef(),
+    isRelatedTo: softwareRef(),
+    isPartOf: softwareRef(),
+  });
 
 /** The Android app as its own entity, so a search result can offer "Install" with the Google Play link (schema.org MobileApplication + InstallAction). */
 export const androidAppSchema = (): Json =>
@@ -355,8 +457,10 @@ export const androidAppSchema = (): Json =>
     image: absoluteUrl("/brand/icon-512.png"),
     isAccessibleForFree: true,
     offers: { "@type": "Offer", price: "0", priceCurrency: "INR", availability: "https://schema.org/InStock" },
-    isRelatedTo: { "@id": absoluteUrl("/#software") },
-    publisher: { "@id": absoluteUrl("/#organization") },
+    isRelatedTo: softwareRef(),
+    isPartOf: softwareRef(),
+    brand: brandRef(),
+    publisher: orgRef(),
     potentialAction: { "@type": "InstallAction", name: "Install Naazhi", target: GOOGLE_PLAY_URL },
   });
 

@@ -8,7 +8,7 @@ import { FEATURE_ORDER, FEATURE_PAGES } from "../../src/lib/featurePages";
 import { FOOTER_COLS, MEGA, MEGA_DEFAULT_SHOT } from "../../src/lib/site";
 import sitemap from "../../src/app/sitemap";
 import { LEGAL_UPDATED_ISO } from "../../src/lib/legal";
-import { faqSchema, llmsFullText, llmsText, organizationSchema, OWN_OG_PATHS, pageMeta, pageSchemas, PUBLIC_PAGES, SITE_DESCRIPTION, SITE_NAV, softwareSchema, webPageSchema } from "../../src/lib/seo";
+import { androidAppSchema, brandSchema, desktopAppSchema, faqSchema, llmsFullText, llmsText, organizationSchema, webAppSchema, OWN_OG_PATHS, pageMeta, pageSchemas, PUBLIC_PAGES, SITE_DESCRIPTION, SITE_NAV, softwareSchema, webPageSchema } from "../../src/lib/seo";
 
 describe("seo", () => {
   it("lists every navigation page in the public page list, so sitelink candidates are also in the sitemap", () => {
@@ -198,5 +198,54 @@ describe("sitemap", () => {
   it("dates the policy pages with the date printed on them", () => {
     const privacy = entries.find((e) => e.url.endsWith("/privacy"));
     expect(privacy?.lastModified).toBe(LEGAL_UPDATED_ISO);
+  });
+});
+
+describe("software structured data", () => {
+  type Node = Record<string, unknown> & { "@id"?: string; hasPart?: { "@id": string }[]; potentialAction?: unknown };
+  const sw = softwareSchema({ version: "v1.2.3" }) as Node;
+  const platforms = [androidAppSchema(), desktopAppSchema("macOS"), desktopAppSchema("Windows"), webAppSchema()] as Node[];
+  const everything = [organizationSchema(), brandSchema(), sw, ...platforms] as Node[];
+
+  it("names every platform the app runs on and links to one entity for each", () => {
+    expect(sw.operatingSystem).toBe("Android, macOS, Windows, Web");
+    const ids = new Set(platforms.map((p) => p["@id"]));
+    expect(sw.hasPart?.map((p) => p["@id"]).sort()).toEqual([...ids].sort());
+    for (const p of platforms) expect((p.isPartOf as { "@id": string })["@id"], String(p.name)).toBe(sw["@id"]);
+  });
+
+  it("gives every entity its own address, so none overwrites another", () => {
+    const ids = everything.map((n) => n["@id"]);
+    expect(ids.every(Boolean)).toBe(true);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("links the downloads of the newest app release, per platform and processor", () => {
+    const v = RELEASES.find((r) => r.appVersion)!.appVersion!;
+    const file = (name: string) => `releases/download/${v}/naazhi-${v.slice(1)}-${name}`;
+    expect(String(desktopAppSchema("macOS").downloadUrl)).toContain(file("mac-universal.dmg"));
+    expect(JSON.stringify(desktopAppSchema("Windows").downloadUrl)).toContain(file("win-x64.exe"));
+    expect(JSON.stringify(desktopAppSchema("Windows").downloadUrl)).toContain(file("win-arm64.exe"));
+    expect(JSON.stringify(sw.potentialAction)).toContain("InstallAction");
+    expect(JSON.stringify(sw.potentialAction)).toContain("DownloadAction");
+  });
+
+  it("states no rating, since there is none to state", () => {
+    for (const n of everything) expect(JSON.stringify(n)).not.toMatch(/aggregateRating|ratingValue|reviewCount/);
+  });
+
+  it("is free to start in rupees, on every platform", () => {
+    for (const n of [sw, ...platforms]) expect(n.offers, String(n.name)).toMatchObject({ price: "0", priceCurrency: "INR" });
+  });
+
+  it("points the organization and the apps at the same brand", () => {
+    const brand = brandSchema() as Node;
+    expect((organizationSchema() as Node).brand).toEqual({ "@id": brand["@id"] });
+    expect(sw.brand).toEqual({ "@id": brand["@id"] });
+    expect(brand["@type"]).toBe("Brand");
+  });
+
+  it("serializes cleanly (no undefined values, no functions)", () => {
+    for (const n of everything) expect(JSON.parse(JSON.stringify(n))).toEqual(n);
   });
 });

@@ -23,6 +23,20 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-13",
+    title: "Version 7.4.0: find Naazhi on X and Instagram, and a QR code for the app",
+    summary: "Follow Naazhi on X and Instagram, scan a QR code to get the app, and we can now tell which links bring people here.",
+    tone: "violet",
+    appVersion: "v7.4.0",
+    changes: [
+      { kind: "new", platform: "web", text: "The footer now links to Naazhi on X and on Instagram." },
+      { kind: "new", platform: "web", text: "Hover the Get it on Google Play button on a computer to see a QR code. Scan it with your phone to open the app’s page." },
+      { kind: "new", platform: "app", text: "The first time you open the app, it notes which Google Play link brought you here, so we can see which posts help. Nothing else about you or your phone is sent." },
+      { kind: "improved", platform: "web", text: "The Cookies page now lists the small cookie that remembers which link or site brought you, for 30 days. It holds a few words and nothing about you." },
+      { kind: "improved", platform: "web", text: "Admins can see where visits and sign-ups come from, make links that track it, and see how many visits became sign-ups." },
+    ],
+  },
+  {
+    date: "2026-11-13",
     title: "Version 7.3.1: a cleaner Analytics page and fewer permissions",
     summary: "The app asks for fewer Android permissions, and the admin Analytics page is easier to read.",
     tone: "sand",

@@ -7,6 +7,7 @@ import { cleanPrefs } from "../../lib/prefs";
 import { cleanOnboarding } from "../../lib/onboarding";
 import QueryProvider from "../../components/providers/QueryProvider";
 import PrefsSync from "../../components/app/PrefsSync";
+import AcquisitionSync from "../../components/app/AcquisitionSync";
 import Onboarding from "../../features/onboarding/Onboarding";
 
 export const metadata: Metadata = { title: "Set up — Naazhi", robots: { index: false } };
@@ -25,6 +26,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
   return (
     <QueryProvider>
       <PrefsSync prefs={prefs} />
+      <AcquisitionSync userId={user.id} />
       <Onboarding name={user.name || user.email.split("@")[0]} phone={typeof data?.phone === "string" ? data.phone : ""} prefs={prefs} state={cleanOnboarding(data?.onboarding)} />
       {children}
     </QueryProvider>

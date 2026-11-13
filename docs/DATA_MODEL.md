@@ -112,3 +112,6 @@ Migration `20261113130000_subscription_trial.sql`: `billing_plans.trial_days`, `
 
 ## Invoices and billing settings
 `billing_invoices` (one row per Razorpay payment: number `NZ-YYYY-NNNNNN`, kind subscription/topup, amount in paise, period, who it was billed to; people read their own, only the service writes) and `billing_settings` (one row: top-up limits and the seller details printed on invoices). See docs/BILLING.md.
+
+## Where people came from
+`user_acquisition` (one row per person, written once: `source`, `medium`, `campaign`, `referrer_host`, `platform` web/android/ios; people read and add their own row, nobody updates or deletes it) and `site_visits` (one row per browser session on the public site: cleaned `source`, `medium`, `campaign` and the landing `path`; no address, device or id; RLS on with no policies, so only the service reads or writes it). Migrations `20261113150000_user_acquisition.sql` and `20261113160000_site_visits.sql`. Written by `acquisition.service.ts` and `visits.service.ts`; read by Admin → Analytics. See `docs/ANALYTICS.md`.

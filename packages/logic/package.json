@@ -8,6 +8,10 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
+    "./acquisition": {
+      "types": "./src/acquisition.ts",
+      "default": "./src/acquisition.ts"
+    },
     "./dates": {
       "types": "./src/dates.ts",
       "default": "./src/dates.ts"

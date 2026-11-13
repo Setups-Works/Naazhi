@@ -16,8 +16,8 @@ The building blocks are in `ui.tsx`: `Section` (`band="plain" | "soft" | "ink"`)
 ## Pieces
 
 - `Header.tsx` — one slim frosted bar (the frost is its own layer, because a backdrop filter on the header would make the full-screen
-  mobile menu size to the bar), a Features menu, plain links, a full-screen menu on a phone. `Footer.tsx` — name, link columns, store
-  badges, the Setups Works credit.
+  mobile menu size to the bar), a Features menu, plain links, a full-screen menu on a phone. `GooglePlayBadge.tsx` — the “Get it on Google Play” button; hovering or tabbing to it opens a QR card (`public/brand/google-play-qr.svg`, drawn by `scripts/make-play-qr.mjs`: brand-ink rounded modules, the Naazhi mark in the middle; redraw it only if `GOOGLE_PLAY_URL` changes). `Footer.tsx` — name, link columns, store
+  badges, `SocialLinks.tsx` (Naazhi on X and Instagram; the addresses are `X_URL`, `INSTAGRAM_URL` and `X_HANDLE` in `lib/site.ts`, which the schema.org `sameAs` and the Twitter card also read), the Setups Works credit.
 - `Phone.tsx` — the iPhone mockup (`Phone`, `PhoneHalf`, `PhoneRow`). There are no store badges on the site (they were removed); the Android app links to the GitHub release, and `public/store/*` keeps the store-listing pictures.
 - `home/` — the sections of the home page, composed in `app/page.tsx`: `Hero` (three whole phones that fan out on load and drift), `Story`
   (sticky phone panel whose colour changes per chapter; tiles on a phone), `Capabilities` (swipeable carousel), `Integrations`, `Shortcuts`,

@@ -51,8 +51,8 @@ export default function Page() {
                   basic technical data needed to keep the service running and secure.
                 </p>
                 <p>
-                  <strong>Cookies and browser storage:</strong> on the website we use a cookie that keeps you signed in, a cookie that remembers how you last signed in, and
-                  browser storage for your settings. We use no advertising cookies and run no analytics on the public pages. Details are on our{" "}
+                  <strong>Cookies and browser storage:</strong> on the website we use a cookie that keeps you signed in, a cookie that remembers how you last signed in, a cookie that remembers which link or site brought you (so we can tell which link a sign-up came from), and
+                  browser storage for your settings. We use no advertising cookies and no third-party analytics scripts on the public pages. We count visits by source without recording anything about the visitor. Details are on our{" "}
                   <a className={link} href="/cookies">
                     Cookies &amp; Storage
                   </a>{" "}

@@ -22,3 +22,14 @@ Firebase project `naazhi-bd05d`. The Firebase console menu maps to code like thi
 - Web: `apps/web/src/lib/analytics/index.ts` (`track`, `identify`, `trackPage`), `components/app/AnalyticsProvider.tsx` (in the dashboard layout).
 - Phone: `apps/mobile/src/features/analytics/` (`track`, `identify`, `trackScreen`, `useAnalyticsSync`), `@react-native-firebase/app` plugin wired in `app.config.js`. Needs a new native build (not Expo Go).
 - Events today: `page_view`/screen views, `select_plan`, `top_up` (web), `task_created` (web), `ai_note_action` (web). Add more with `track("snake_case_name", { small: "values" })`.
+
+## Where people come from (our own database, no third party)
+
+Share a **tracked link** and Admin → Analytics shows which source brought visits and sign-ups. Build the link in Admin → Analytics → **Make a tracked link**.
+
+- **Website:** `https://naazhi.app/?utm_source=instagram&utm_medium=social&utm_campaign=launch` (`ref=` and `source=` work too). With no tags, the referring site is named instead (l.instagram.com becomes `instagram`, google.* becomes `google`, organic).
+- **Google Play:** `…details?id=com.setupsworks.naazhi&referrer=utm_source%3Dinstagram%26utm_medium%3Dsocial`. After install the app reads the Play install referrer (`expo-application`) on the first launch. Needs a build that includes `useAcquisitionSync`; without a referrer Play reports `google-play / organic`.
+- **How it is kept:** `AttributionCapture` (root layout) remembers the source in a 30-day first-party cookie `nz_src` (four short words, nothing else; a tagged link replaces an older source) and counts one anonymous **visit** per browser session (`POST /api/v1/visits`: cleaned source tags, referring host, path; no address, device or id; bots, the app and admin pages are skipped). `AcquisitionSync` (dashboard and onboarding layouts) calls `POST /api/v1/acquisition` once after sign-in, and the server notes the source with the person (`user_acquisition`). The first answer is kept.
+- **Read in:** Admin → Analytics (visits by source, landing pages, visits to sign-ups, sources, campaigns) and Admin → Users (Came from). People who signed up before this was added show "Not tracked".
+- **Code:** `packages/logic/src/acquisition.ts` (one parser for the site, the server and the app, with tests), `server/services/acquisition/*`, `components/site/AttributionCapture.tsx`, `components/app/AcquisitionSync.tsx`, `components/admin/TrackedLinkBuilder.tsx`, `apps/mobile/src/features/acquisition`.
+- Production migrations are manual: apply `20261113150000` and `20261113160000` before the new web code is live.

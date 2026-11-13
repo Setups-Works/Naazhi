@@ -12,6 +12,7 @@ import QueryProvider from "../../components/providers/QueryProvider";
 import AnnouncementBanner from "../../components/app/AnnouncementBanner";
 import ImpersonationBanner from "../../components/app/ImpersonationBanner";
 import AnalyticsProvider from "../../components/app/AnalyticsProvider";
+import AcquisitionSync from "../../components/app/AcquisitionSync";
 import ChatWidget from "../../components/app/ChatWidget";
 import WebBrief from "../../features/notifications/WebBrief";
 import { cleanOnboarding, shouldShowOnboarding } from "../../lib/onboarding";
@@ -73,6 +74,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
           account={account}
         />
         <AnalyticsProvider userId={user.id} />
+        <AcquisitionSync userId={user.id} />
         <ImpersonationBanner />
         <AnnouncementBanner items={announcements} />
         <div className="ap-body">{children}</div>

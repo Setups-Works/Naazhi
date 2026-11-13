@@ -21,6 +21,11 @@ import { helpHref } from "./hosts";
 /** The public repository. App releases (the Android APK) are published under its Releases. */
 export const GITHUB_REPO = "https://github.com/Setups-Works/Naazhi";
 
+/** Naazhi's own social accounts: the footer, the schema.org entity (sameAs) and the Twitter card all read these. */
+export const X_HANDLE = "@naazhiapp";
+export const X_URL = "https://x.com/naazhiapp";
+export const INSTAGRAM_URL = "https://www.instagram.com/naazhi.app/";
+
 /** The Android app's page on Google Play. */
 export const GOOGLE_PLAY_URL = "https://play.google.com/store/apps/details?id=com.setupsworks.naazhi";
 

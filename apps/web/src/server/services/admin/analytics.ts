@@ -37,7 +37,9 @@ function fill(days: number, counts: Map<string, number>): Series {
 
 export async function adminAnalytics(days = 30) {
   const q = <T extends object>(sql: string) => pool().query<T>(sql, [days]).then((r) => r.rows);
-  const [signins, active, signups, providers, tokens, plans, adoption, totals] = await Promise.all([
+  // The source tables come from a newer migration; until it has been applied they read as empty instead of failing the whole page.
+  const soft = <T extends object>(sql: string) => q<T>(sql).catch(() => [] as T[]);
+  const [signins, active, signups, providers, tokens, plans, adoption, totals, sources, campaigns, visitSources, landing, untracked] = await Promise.all([
     q<{ d: Date; user_agent: string | null; n: string }>(
       "select date_trunc('day', created_at) d, user_agent, count(*) n from auth.sessions where created_at > now() - make_interval(days => $1) group by 1, 2",
     ),
@@ -60,6 +62,19 @@ export async function adminAnalytics(days = 30) {
               (select count(distinct user_id) from auth.sessions where created_at > now() - interval '7 days') wau,
               (select count(distinct user_id) from auth.sessions where created_at > now() - interval '30 days') mau`,
     ),
+    soft<{ source: string; n: string }>(
+      "select source, count(*) n from public.user_acquisition where created_at > now() - make_interval(days => $1) group by 1 order by 2 desc, 1 limit 12",
+    ),
+    soft<{ label: string; n: string }>(
+      "select source || ' / ' || campaign as label, count(*) n from public.user_acquisition where campaign <> '' and created_at > now() - make_interval(days => $1) group by 1 order by 2 desc, 1 limit 10",
+    ),
+    soft<{ source: string; n: string }>(
+      "select source, count(*) n from public.site_visits where created_at > now() - make_interval(days => $1) group by 1 order by 2 desc, 1 limit 12",
+    ),
+    soft<{ path: string; n: string }>(
+      "select landing_path path, count(*) n from public.site_visits where created_at > now() - make_interval(days => $1) group by 1 order by 2 desc, 1 limit 8",
+    ),
+    soft<{ n: string }>("select count(*) n from auth.users u where $1::int > 0 and not exists (select 1 from public.user_acquisition a where a.user_id = u.id)"),
   ]);
 
   const perDay = (rows: { d: Date; n: string }[]) => fill(days, new Map(rows.map((r) => [day(r.d), Number(r.n)])));
@@ -92,5 +107,19 @@ export async function adminAnalytics(days = 30) {
     providers: providers.map((r) => ({ label: r.provider_id === "credential" ? "email" : r.provider_id, n: Number(r.n) })),
     plans: plans.map((r) => ({ label: r.plan_id, n: Number(r.n) })),
     adoption: adoption.map((r) => ({ label: r.feature, n: Number(r.n) })),
+    sources: sources.map((r) => ({ label: r.source, n: Number(r.n) })),
+    campaigns: campaigns.map((r) => ({ label: r.label, n: Number(r.n) })),
+    untracked: Number(untracked[0]?.n ?? 0),
+    visits: visitSources.map((r) => ({ label: r.source, n: Number(r.n) })),
+    visitsTotal: visitSources.reduce((a, r) => a + Number(r.n), 0),
+    landing: landing.map((r) => ({ label: r.path, n: Number(r.n) })),
+    // visits and sign-ups for the same source, side by side
+    conversion: (() => {
+      const signups = new Map(sources.map((r) => [r.source, Number(r.n)]));
+      return visitSources.map((r) => {
+        const v = Number(r.n), su = signups.get(r.source) ?? 0;
+        return { label: r.source, visits: v, signups: su, rate: v ? Math.round((su / v) * 1000) / 10 : 0 };
+      });
+    })(),
   };
 }

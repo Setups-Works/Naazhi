@@ -50,6 +50,8 @@ export type Row = {
   avatar: string | null;
   /** Where they have signed in from: the website, the Android app, the iPhone app. */
   clients: ("web" | "android" | "ios")[];
+  /** The link or site they arrived from ("instagram / launch"), empty when it was not tracked. */
+  cameFrom: string;
 };
 
 type Filter = "all" | "admin" | "banned" | "unconfirmed" | "pro";
@@ -210,6 +212,10 @@ function UserDrawer({ row, onClose }: { row: Row; onClose: () => void }) {
           <div>
             <dt>Sign-in</dt>
             <dd>{row.provider}</dd>
+          </div>
+          <div>
+            <dt>Came from</dt>
+            <dd>{row.cameFrom || "Not tracked"}</dd>
           </div>
           <div>
             <dt>User ID</dt>
@@ -532,7 +538,7 @@ export default function UsersTable({ rows }: { rows: Row[] }) {
   const open = rows.find((r) => r.id === openId) ?? null;
 
   function exportCsv() {
-    const cols = ["name", "email", "provider", "uses", "plan", "confirmed", "admin", "banned", "createdAt", "lastSignIn"] as const;
+    const cols = ["name", "email", "provider", "uses", "cameFrom", "plan", "confirmed", "admin", "banned", "createdAt", "lastSignIn"] as const;
     const text = [cols.join(","), ...list.map((r) => cols.map((c) => csv(c === "uses" ? usesText(r) : r[c])).join(","))].join("\n");
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([text], { type: "text/csv" }));
@@ -597,6 +603,7 @@ export default function UsersTable({ rows }: { rows: Row[] }) {
               <th>User</th>
               <th>Sign-in</th>
               <th>Uses</th>
+              <th>Came from</th>
               <th>Status</th>
               <th>Joined</th>
               <th>Last seen</th>
@@ -620,6 +627,7 @@ export default function UsersTable({ rows }: { rows: Row[] }) {
                 </td>
                 <td>{r.provider}</td>
                 <td>{r.clients.length ? r.clients.map((c) => <span key={c} className="adm-pill" data-k={c === "web" ? undefined : "pro"}>{CLIENT_LABEL[c]}</span>) : "—"}</td>
+                <td>{r.cameFrom || "—"}</td>
                 <td>
                   <Pills r={r} />
                 </td>
@@ -629,7 +637,7 @@ export default function UsersTable({ rows }: { rows: Row[] }) {
             ))}
             {shown.length === 0 && (
               <tr>
-                <td colSpan={6} className="empty">
+                <td colSpan={7} className="empty">
                   No users found.
                 </td>
               </tr>

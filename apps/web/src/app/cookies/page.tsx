@@ -31,6 +31,12 @@ const ITEMS = [
     when: "Set when you sign in. Holds only the name of the method.",
   },
   {
+    name: "Where you came from",
+    kind: "Cookie · convenience",
+    why: "If you arrive from a link with a source on it (for example from our Instagram) or from another site, it remembers that name, so we can tell which link brought someone who signs up. It holds four short words and nothing about you, and it is never shared.",
+    when: "Set only when there is a source to remember. Kept for 30 days.",
+  },
+  {
     name: "Your settings and layout",
     kind: "Browser storage · convenience",
     why: "Remembers things like your chosen AI provider, whether a sidebar is open, dismissed tips and your look. They stay on your device.",

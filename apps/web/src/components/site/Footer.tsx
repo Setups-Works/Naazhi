@@ -5,6 +5,7 @@ import AuthLink from "../auth/AuthLink";
 import { FOOTER_COLS } from "../../lib/site";
 import FooterNotes from "./FooterNotes";
 import GooglePlayBadge from "./GooglePlayBadge";
+import SocialLinks from "./SocialLinks";
 import { buttonClass, WRAP } from "./ui";
 
 /**
@@ -28,6 +29,7 @@ export default function Footer() {
               <AuthLink className={buttonClass("primary", "sm")} />
               <GooglePlayBadge size="sm" />
             </div>
+            <SocialLinks />
           </div>
           <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-5">
             {FOOTER_COLS.map((c) => (

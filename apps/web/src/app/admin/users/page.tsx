@@ -5,7 +5,14 @@ import UsersTable, { type Row } from "../../../components/admin/UsersTable";
 
 export default async function Page() {
   if (!serverConfigured()) return <SetupNotice />;
-  const [users, me, profiles, clients] = await Promise.all([listAllUsers(), currentUser(), adminDb().from("profiles").select("user_id,plan"), clientsByUser()]);
+  const [users, me, profiles, clients, acq] = await Promise.all([
+    listAllUsers(),
+    currentUser(),
+    adminDb().from("profiles").select("user_id,plan"),
+    clientsByUser(),
+    adminDb().from("user_acquisition").select("user_id,source,campaign"),
+  ]);
+  const came = new Map((acq.data ?? []).map((a) => [a.user_id as string, [a.source, a.campaign].filter(Boolean).join(" / ")]));
   const plans = new Map((profiles.data ?? []).map((p) => [p.user_id as string, p.plan as string]));
   const rows: Row[] = users.map((u) => ({
     id: u.id,
@@ -21,6 +28,7 @@ export default async function Page() {
     createdAt: u.createdAt,
     lastSignIn: u.lastSignIn ?? null,
     clients: clients.get(u.id)?.all ?? [],
+    cameFrom: came.get(u.id) ?? "",
   }));
   return (
     <div className="dash">

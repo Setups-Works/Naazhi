@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { defaultSiteOrigin, publicEnv } from "../config/env";
 import { isHelpSplit } from "./hosts";
-import { GITHUB_REPO, GOOGLE_PLAY_URL } from "./site";
+import { GITHUB_REPO, GOOGLE_PLAY_URL, INSTAGRAM_URL, X_URL } from "./site";
 
 /*
  * Everything search engines and link previews read, in one place: page metadata, the sitemap's page list and the schema.org (JSON-LD)
@@ -275,7 +275,7 @@ export const organizationSchema = (): Json =>
     url: absoluteUrl("/"),
     logo: { "@type": "ImageObject", url: absoluteUrl("/brand/icon-512.png"), width: 512, height: 512 },
     image: absoluteUrl("/opengraph-image"),
-    sameAs: [GITHUB_REPO],
+    sameAs: [X_URL, INSTAGRAM_URL, GITHUB_REPO],
     email: SETUPS_WORKS.email,
     contactPoint: [
       { "@type": "ContactPoint", contactType: "customer support", email: SETUPS_WORKS.email, availableLanguage: ["English"], url: absoluteUrl("/contact") },

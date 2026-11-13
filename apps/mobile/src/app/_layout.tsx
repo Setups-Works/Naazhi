@@ -1,3 +1,4 @@
+import { useAcquisitionSync } from "@/features/acquisition/useAcquisitionSync";
 import { useAnalyticsSync } from "@/features/analytics/useAnalyticsSync";
 import { useBilling } from "@/features/billing/queries";
 import { useNotificationSync } from "@/features/notifications";
@@ -92,6 +93,8 @@ function Routes({ fresh }: { fresh: boolean }) {
   // Firebase Analytics: screen views and the plan, only while signed in and only if the person shares anonymous usage.
   const billing = useBilling({ enabled: signedIn });
   useAnalyticsSync(signedIn ? (user?.id ?? null) : null, billing.data?.plan?.id ?? null);
+  // Where this person came from (the Google Play install referrer), noted once on the first launch.
+  useAcquisitionSync(signedIn ? (user?.id ?? null) : null);
 
   // After a look change: open the screen the person was on (a tab directly, anything else on top of Home).
   useEffect(() => {

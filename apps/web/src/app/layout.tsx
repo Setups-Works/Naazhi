@@ -12,8 +12,10 @@ import NoImageDrag from "../components/site/NoImageDrag";
 import Refresh from "../components/site/Refresh";
 import ContextMenu from "../components/app/ContextMenu";
 import JsonLd from "../components/site/JsonLd";
+import AttributionCapture from "../components/site/AttributionCapture";
 import { KEYWORDS, androidAppSchema, organizationSchema, SITE_DESCRIPTION, siteOrigin, setupsWorksSchema, siteNavigationSchema, websiteSchema } from "../lib/seo";
 import { lookBootScript } from "../lib/look";
+import { X_HANDLE } from "../lib/site";
 
 config.autoAddCss = false;
 
@@ -61,7 +63,7 @@ export const metadata: Metadata = {
   },
   formatDetection: { telephone: false, email: false, address: false },
   openGraph: { siteName: "Naazhi", title: "Naazhi — one workspace, any AI", description: DESCRIPTION, type: "website", locale: "en_US" },
-  twitter: { card: "summary_large_image", title: "Naazhi — one workspace, any AI", description: DESCRIPTION, site: "@setupsworks", creator: "@setupsworks" },
+  twitter: { card: "summary_large_image", title: "Naazhi — one workspace, any AI", description: DESCRIPTION, site: X_HANDLE, creator: "@setupsworks" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -71,6 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {/* App pages paint the person's colour scheme before the first frame (see lib/look.ts). */}
         <script dangerouslySetInnerHTML={{ __html: lookBootScript(publicEnv.appUrl ? new URL(publicEnv.appUrl).host : null) }} />
+        <AttributionCapture />
         <JsonLd data={[organizationSchema(), setupsWorksSchema(), websiteSchema(), siteNavigationSchema(), androidAppSchema()]} />
         {/* Marketing content starts hidden for its entrance animation; without JavaScript it must simply be there. */}
         <noscript>

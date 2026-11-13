@@ -23,6 +23,16 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-14",
+    title: "Version 7.6.1: easier to find",
+    summary: "Search engines now get clear details about Naazhi and where to download it.",
+    tone: "mint",
+    appVersion: "v7.6.1",
+    changes: [
+      { kind: "improved", platform: "web", text: "The site now tells search engines about the Android, Mac, Windows and web apps, where to download each one, and that Naazhi is free to start." },
+    ],
+  },
+  {
+    date: "2026-11-14",
     title: "Version 7.6.0: direct downloads for the Mac and Windows apps",
     summary: "Get the Mac or Windows app with one click, and the site shows the right download for your device.",
     tone: "sand",

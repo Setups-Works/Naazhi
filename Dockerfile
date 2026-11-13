@@ -28,8 +28,11 @@ COPY . .
 # NEXT_PUBLIC_APP_URL is the app's own address when it lives on a different host than the website (empty = one host).
 ARG NEXT_PUBLIC_SITE_URL=""
 ARG NEXT_PUBLIC_APP_URL=""
+# The help center's own host (help.naazhi.app); empty = it is served at /help on the website.
+ARG NEXT_PUBLIC_HELP_URL=""
 ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+ENV NEXT_PUBLIC_HELP_URL=${NEXT_PUBLIC_HELP_URL}
 RUN --mount=type=cache,target=/app/apps/web/.next/cache pnpm build:web
 
 FROM node:${NODE_VERSION} AS runner

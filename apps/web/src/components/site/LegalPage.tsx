@@ -8,19 +8,22 @@ export type LegalSection = { id: string; title: string; body: ReactNode };
 export default function LegalPage({
   eyebrow,
   title,
+  quiet,
   lead,
   updated,
   sections,
 }: {
   eyebrow: string;
   title: string;
+  /** The italic second half of the heading ("Terms &" + "Policy."); without it a title ending in "&" would hang. */
+  quiet?: string;
   lead: string;
   updated: string;
   sections: LegalSection[];
 }) {
   return (
     <main>
-      <PageHero eyebrow={eyebrow} title={title} lead={lead} />
+      <PageHero eyebrow={eyebrow} title={title} quiet={quiet} lead={lead} />
       <Section tight>
         <div className="mx-auto max-w-[720px]">
           <p className="mb-8 text-[13px] text-fg-subtle">Last updated {updated}</p>

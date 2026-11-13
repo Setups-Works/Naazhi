@@ -24,7 +24,7 @@ export default function Header() {
   const path = usePathname();
   const auth = useAuthState();
   return (
-    <header className="sticky top-0 z-50">
+    <header data-site-chrome className="sticky top-0 z-50">
       {/* The frosted bar is its own layer: a backdrop filter on the header itself would make the full-screen mobile menu size to the bar. */}
       <div aria-hidden className="absolute inset-0 -z-10 border-b border-line bg-surface/75 backdrop-blur-xl" />
       <div className={`${WRAP} flex h-[60px] items-center justify-between gap-6`}>

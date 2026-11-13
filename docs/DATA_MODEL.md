@@ -96,6 +96,10 @@ PostgreSQL 16 (Docker). **All tables have Row-Level Security enabled.** Migratio
 
 Public link for one whole journal day. One row per `(user_id, entry_date)`; `share_token` (32 hex characters, unique) is the secret in `/share/journal/day/<token>`. Deleting the row ends the link. Owner-only RLS (`owner all`); the public page reads it on the server by exact token. Migration `20261111170000_journal_day_share.sql`.
 
+## team_members
+
+The people shown on the public `/team` page, managed in the admin panel (`/admin/team`). One row per person: `slug` (unique, url-safe, the page anchor and the person's `@id` fragment), `name`, `role`, `bio` (≤1000), `photo_url` (https only, optional), `profile_links` jsonb (`[{label, url}]`, https only, up to 8; also the person's `sameAs` in structured data), `sort_order`, `published`. RLS is on with **no policies**: nobody in the browser can read or write it. Admin code writes through `adminDb()` after `assertAdmin()`; the public page reads only published rows, fixed columns, on the server (`server/services/team`). Migration `20261113120000_team_members.sql`.
+
 ## Razorpay (migration 20261111180000)
 `billing_plans.razorpay_plan_id/_key` (the matching Razorpay plan), `user_billing.provider_subscription_id/provider_status`, and `billing_events` (webhook ids handled; RLS on, no policies, owner only).
 

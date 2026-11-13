@@ -15,9 +15,14 @@ import {
   faShieldHalved,
   faSeedling,
   faClockRotateLeft,
+  faMap,
 } from "@fortawesome/free-solid-svg-icons";
+import { helpHref } from "./hosts";
 /** The public repository. App releases (the Android APK) are published under its Releases. */
 export const GITHUB_REPO = "https://github.com/Setups-Works/Naazhi";
+
+/** The Android app's page on Google Play. */
+export const GOOGLE_PLAY_URL = "https://play.google.com/store/apps/details?id=com.setupsworks.naazhi";
 
 export const FEATURES = [
   { href: "/universal-search", t: "Universal Search", d: "Find anything across notes, tasks, mail and meetings." },
@@ -42,8 +47,10 @@ export const MENU: [string, string][] = [
   ["Pricing", "/pricing"],
   ["Download", "/download"],
   ["Privacy & Security", "/privacy-security"],
+  ["Roadmap", "/roadmap"],
   ["Early users", "/early-users"],
   ["Changelog", "/changelog"],
+  ["About", "/about"],
 ];
 
 export const FOOTER_COLS: { title: string; links: [string, string][] }[] = [
@@ -54,6 +61,7 @@ export const FOOTER_COLS: { title: string; links: [string, string][] }[] = [
       ["Product demo", "/demo"],
       ["Pricing", "/pricing"],
       ["Download", "/download"],
+      ["Roadmap", "/roadmap"],
       ["Early users", "/early-users"],
       ["Changelog", "/changelog"],
     ],
@@ -85,8 +93,22 @@ export const FOOTER_COLS: { title: string; links: [string, string][] }[] = [
       ["Privacy Policy", "/privacy"],
       ["Terms & Conditions", "/terms"],
       ["Refund & Cancellation", "/refund-policy"],
-      ["Contact", "/contact"],
+      ["Copyright & Licensing", "/copyright-and-licensing"],
+      ["Cookies & Storage", "/cookies"],
+      ["Accessibility", "/accessibility"],
+      ["Report a security issue", "/responsible-disclosure"],
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      ["About", "/about"],
+      ["Team", "/team"],
+      ["Help center", helpHref("/")],
+      ["Request a feature", "/feature-requests"],
       ["FAQ", "/faq"],
+      ["Contact", "/contact"],
+      ["Status", "/status"],
     ],
   },
 ];
@@ -150,6 +172,7 @@ export const MEGA: { featured: MegaItem[]; workspace: MegaItem[]; explore: MegaI
     { href: "/how-it-works", t: "How it works", d: "", icon: faRoute },
     { href: "/pricing", t: "Pricing", d: "", icon: faTag },
     { href: "/privacy-security", t: "Privacy & Security", d: "", icon: faShieldHalved },
+    { href: "/roadmap", t: "Roadmap", d: "", icon: faMap },
     { href: "/early-users", t: "Early users", d: "", icon: faSeedling },
     { href: "/changelog", t: "Changelog", d: "", icon: faClockRotateLeft },
   ],

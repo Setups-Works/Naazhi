@@ -13,7 +13,7 @@ const SEO = {
   description: "Find anything across your notes, tasks, journal, email, calendar and meetings from one search box.",
   path: "/universal-search",
 };
-export const metadata: Metadata = pageMeta(SEO);
+export const metadata: Metadata = pageMeta({ ...SEO, ownImage: true });
 
 // Must match docs/CURRENT_STATE.md: search covers tasks, notes, journal and chats today.
 const scope: [string, Status][] = [

@@ -84,6 +84,21 @@ to the website, and `dashboard.naazhi.app/` to the dashboard. `robots.txt` on th
 redirect URI to `https://dashboard.naazhi.app/api/auth/callback/google`. Passkeys registered on the old address stop working (they are tied
 to the host) and people register a new one. With the variables unset, everything is served from one host as before.
 
+## The help center on its own host (help.naazhi.app)
+
+The help center (guides, answers, troubleshooting) is part of the same app. Served from one host it lives at `/help`. To give it its own
+address, point a third hostname (`help.naazhi.app`) at the same web app and set `NEXT_PUBLIC_HELP_URL=https://help.naazhi.app` (a build-time
+value, like the other `NEXT_PUBLIC_*` ones; in the deploy workflow it comes from the repository secret `HELP_URL`, passed as a build argument like `WEB_APP_URL`). The proxy then serves the help center from the root of that host, redirects `/help/…` on the website to it, and sends sign-in
+links to the app host. Each host serves its own `robots.txt` and `sitemap.xml`.
+
+**Search engines.** To a search engine `help.naazhi.app` is a separate site. In Google Search Console add a **Domain property** for `naazhi.app`
+(it covers every subdomain: the website, `help.` and `dashboard.`), or add `https://help.naazhi.app/` as its own URL-prefix property. Then submit
+`https://help.naazhi.app/sitemap.xml` there. Do not put help URLs in the website's sitemap: a sitemap may list only URLs on its own host. The
+dashboard host stays `Disallow: /`.
+
+Pages and copy: `apps/web/src/app/help-center` (routes), `apps/web/src/features/help` (articles, search, structured data). Add an article by
+adding an entry to `features/help/articles.ts`; it appears in its category, in search and in the help sitemap on its own.
+
 ## Deploying the Azure Docker app with GitHub Actions
 
 The workflow at `.github/workflows/deploy-azure-docker.yml` builds the web app from the repository `Dockerfile`, publishes an immutable commit-tagged image and `latest` to Docker Hub, then deploys the commit-tagged image to the Azure Web App. It runs on pushes to `main` when app, shared package, database migration, or image build files change. You can also run it from the repository's **Actions** tab with **Run workflow**.

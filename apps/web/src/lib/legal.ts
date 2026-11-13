@@ -10,4 +10,5 @@ export const OPERATOR = {
 };
 
 /** Shown on every policy page; change it when the text changes. */
-export const LEGAL_UPDATED = "11 November 2026";
+export const LEGAL_UPDATED_ISO = "2026-11-13";
+export const LEGAL_UPDATED = new Date(`${LEGAL_UPDATED_ISO}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });

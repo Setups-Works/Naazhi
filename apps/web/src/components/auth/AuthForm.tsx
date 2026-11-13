@@ -270,10 +270,10 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   const checking = mode === "signup" || mode === "reset" || (mode === "forgot" && otpSent);
 
   return (
-    <div className="flex flex-col gap-5">
-      <header className="flex flex-col gap-2">
+    <div className="flex flex-col gap-5 short:gap-3">
+      <header className="flex flex-col gap-2 short:gap-1">
         <p className="m-0 text-[12px] font-semibold tracking-[0.1em] text-green-fg uppercase">{c.eyebrow}</p>
-        <h1 className="m-0 font-serif text-[clamp(30px,4vw,38px)] leading-[1.06] font-semibold tracking-[-0.03em]">
+        <h1 className="m-0 font-serif text-[clamp(30px,4vw,38px)] short:text-[28px] leading-[1.06] font-semibold tracking-[-0.03em]">
           {c.title} <span className="text-fg-faint">{c.quiet}</span>
         </h1>
         <p className="m-0 text-[15px] leading-relaxed text-fg-muted">
@@ -318,7 +318,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         </div>
       )}
 
-      <form className="flex flex-col gap-4" onSubmit={submit} noValidate>
+      <form className="flex flex-col gap-4 short:gap-2.5" onSubmit={submit} noValidate>
         {mode === "signup" && (
           <Field label="Full name">
             <TextInput name="name" autoComplete="name" maxLength={80} placeholder="Ada Lovelace" />

@@ -23,17 +23,18 @@ import { Heading } from "../../components/site/Heading";
 import { CtaPanel, FeatureCards, PageHero, SectionHead } from "../../components/site/kit";
 import Phone, { PhoneRow } from "../../components/site/Phone";
 import { R, Reveal } from "../../components/site/Reveal";
-import { ButtonLink, buttonClass, IconBadge, Kicker, Lead, Section, StatusChip, Surface, type Status } from "../../components/site/ui";
+import { buttonClass, IconBadge, Kicker, Lead, Section, StatusChip, Surface, type Status } from "../../components/site/ui";
 import AuthLink from "../../components/auth/AuthLink";
 import JsonLd from "../../components/site/JsonLd";
 import { RELEASES } from "../../features/changelog/releases";
 import { breadcrumbSchema, faqSchema, pageMeta, softwareSchema, webPageSchema } from "../../lib/seo";
+import GooglePlayBadge from "../../components/site/GooglePlayBadge";
 import { GITHUB_REPO } from "../../lib/site";
 
 const TITLE = "Download — Naazhi";
 const DESCRIPTION =
-  "Get Naazhi on your phone. The Android app is available to download now, the web app works everywhere, and the iPhone app, Mac and Windows apps and a browser extension are coming soon.";
-export const metadata: Metadata = pageMeta({ title: TITLE, description: DESCRIPTION, path: "/download" });
+  "Get Naazhi on your phone. The Android app is on Google Play, the web app works everywhere, and the iPhone and iPad app, Mac and Windows apps and a browser extension are coming soon.";
+export const metadata: Metadata = pageMeta({ title: TITLE, description: DESCRIPTION, path: "/download", ownImage: true });
 
 const RELEASE = `${GITHUB_REPO}/releases/latest`;
 
@@ -44,7 +45,7 @@ const RELEASED = latest
   ? new Date(`${latest.date}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })
   : undefined;
 
-// Status must match what ships: the Android app is a downloadable APK today; there is no iPhone, desktop or extension build yet.
+// Status must match what ships: the Android app is on Google Play (and still a direct APK download); there is no iPhone, iPad, desktop or extension build yet.
 const platforms: {
   icon: IconDefinition;
   name: string;
@@ -132,7 +133,7 @@ const install = [
   {
     icon: faMobileScreen,
     t: "Open the file",
-    d: "Tap the download. Android may ask you to allow installs from your browser or Files app, because the app isn’t in the Play Store yet.",
+    d: "Tap the download. Android may ask you to allow installs from your browser or Files app, because this file doesn’t come from the Play Store.",
     pts: ["You can switch that permission off again afterwards", "Only install apps you trust"],
   },
   {
@@ -153,23 +154,23 @@ const inApp = [
 const faqs: [string, string][] = [
   [
     "How do I update the app?",
-    "Download the newest file from the releases page and open it over the version you have. Your data stays in your account. Each version is listed in the changelog.",
+    "From Google Play, updates arrive automatically, or you can update from the app’s Play page. If you installed the file directly, download the newest one from the releases page and open it over the version you have. Your data stays in your account, and each version is listed in the changelog.",
   ],
   [
     "Is the app free?",
     "Yes. The workspace itself is free to use. You only pay if you choose a plan for AI. See the pricing page for the details.",
   ],
   [
-    "Why isn’t it in the Play Store?",
-    "Not yet. For now the Android app is a direct download from our GitHub releases. We’ll add the store listing here when it exists.",
+    "Is the direct download safe to install?",
+    "It’s built from this project’s own repository and published on its releases page. As with any app outside a store, only download it from that page. Google Play is the easier choice.",
   ],
   [
-    "Is the APK safe to install?",
-    "It’s built from this project’s own repository and published on its releases page. As with any app outside a store, only download it from that page.",
-  ],
-  [
-    "When is the iPhone app coming?",
+    "When is the iPhone and iPad app coming?",
     "It’s in the plans and marked “Coming soon” here. We won’t say it’s available until you can actually install it.",
+  ],
+  [
+    "Is the Android app on Google Play?",
+    "Yes. Search for Naazhi on Google Play or use the badge on this page. It is the same workspace, in sync with the web.",
   ],
   [
     "What about Mac, Windows and a browser extension?",
@@ -204,12 +205,10 @@ export default function Page() {
         }
         title="Take your workspace"
         quiet="with you."
-        lead="Notes, tasks, journal and chat in your pocket. Get the Android app today, and use the web app anywhere else."
+        lead="Notes, tasks, journal and chat in your pocket. Get the Android app on Google Play, and use the web app anywhere else."
         visual={<PhoneRow screens={["/mobile/notes-2.png", "/mobile/home-2.png", "/mobile/chat-2.png"]} />}
       >
-        <ButtonLink href={RELEASE} external arrow>
-          Download for Android
-        </ButtonLink>
+        <GooglePlayBadge />
         <AuthLink className={buttonClass("secondary")} signedIn="Open the web app" href="/signup">
           Use it on the web
         </AuthLink>
@@ -245,9 +244,10 @@ export default function Page() {
                           {RELEASED && <span className="text-fg-faint"> · {RELEASED}</span>}
                         </p>
                       )}
-                      <ButtonLink href={RELEASE} external arrow>
-                        Download APK
-                      </ButtonLink>
+                      <GooglePlayBadge className="self-start" />
+                      <a href={RELEASE} target="_blank" rel="noopener noreferrer" className="text-[13.5px] text-fg-muted underline underline-offset-2 hover:text-fg">
+                        Or download the file directly
+                      </a>
                     </>
                   )}
                   {p.action === "web" && (
@@ -269,10 +269,10 @@ export default function Page() {
 
       <Section id="install" band="soft">
         <SectionHead
-          kicker="Android"
-          title="Install it in"
-          quiet="three steps."
-          lead="It takes about a minute. No account with a store needed."
+          kicker="Without Google Play"
+          title="Install the file"
+          quiet="directly."
+          lead="Most people should use Google Play, which also keeps the app up to date. If you can’t, install the Android file yourself in three steps."
         />
         <StepCards steps={install} />
         <Reveal className="mt-8 text-center">
@@ -341,7 +341,7 @@ export default function Page() {
       <CtaPanel
         title="Ready when"
         quiet="you are."
-        lead="Download the Android app, or start in the browser and pick it up on your phone later."
+        lead="Get the Android app on Google Play, or start in the browser and pick it up on your phone later."
         primary={["Get started", "/signup"]}
         secondary={["See what’s new", "/changelog"]}
         phone="/mobile/home-2.png"

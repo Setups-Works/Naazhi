@@ -85,6 +85,7 @@ jobs:
           build-args: |
             NEXT_PUBLIC_SITE_URL=${{ secrets.SITE_URL || secrets.APP_URL }}
             NEXT_PUBLIC_APP_URL=${{ secrets.WEB_APP_URL }}
+            NEXT_PUBLIC_HELP_URL=${{ secrets.HELP_URL }}
           tags: |
             nitheeshdr/untitled-workspace:${{ github.sha }}
             nitheeshdr/untitled-workspace:latest

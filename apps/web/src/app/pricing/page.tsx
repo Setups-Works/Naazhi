@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 
 const TITLE = "Pricing — Naazhi";
 const DESCRIPTION = "One workspace, three ways to pay for AI in rupees: an autopay subscription, prepaid pay as you go credit, or your own API key. Work out what you would pay with the calculator. Change or cancel any time.";
-export const metadata: Metadata = pageMeta({ title: TITLE, description: DESCRIPTION, path: "/pricing" });
+export const metadata: Metadata = pageMeta({ title: TITLE, description: DESCRIPTION, path: "/pricing", ownImage: true });
 
 function Plan({ plan, emphasis = false }: { plan: BillingPlan; emphasis?: boolean }) {
   const body = (

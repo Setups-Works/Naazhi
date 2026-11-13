@@ -13,7 +13,7 @@ const SEO = {
   description: "See how your notes, tasks, emails, meetings and journal entries connect to each other.",
   path: "/context-graph",
 };
-export const metadata: Metadata = pageMeta(SEO);
+export const metadata: Metadata = pageMeta({ ...SEO, ownImage: true });
 
 export default function Page() {
   return (

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import JsonLd from "../../components/site/JsonLd";
 import { PageHero } from "../../components/site/kit";
 import { Section, Surface } from "../../components/site/ui";
-import { OPERATOR } from "../../lib/legal";
+import { LEGAL_UPDATED_ISO, OPERATOR } from "../../lib/legal";
 import { pageMeta, pageSchemas } from "../../lib/seo";
 
 const SEO = {
@@ -21,7 +21,7 @@ export default function Page() {
   ];
   return (
     <main>
-      <JsonLd data={pageSchemas(SEO)} />
+      <JsonLd data={pageSchemas({ ...SEO, type: "ContactPage", mainEntity: "organization", dateModified: LEGAL_UPDATED_ISO })} />
       <PageHero eyebrow="Contact" title="Talk to a" quiet="person." lead="Support, billing, refunds or feedback: write to us and we reply within 3 working days." />
       <Section tight>
         <Surface className="mx-auto max-w-[720px] p-6 sm:p-8">

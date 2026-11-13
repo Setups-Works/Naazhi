@@ -7,8 +7,8 @@ import type { AuthConfig } from "./useAuthConfig";
 import type { MobileAuthClient } from "@/lib/auth-client";
 
 /**
- * "Continue with Google": the phone's own Google sheet first (no browser), and the web redirect only when the native one isn't available
- * (a build without the native module, or no Google Play services).
+ * "Continue with Google": the phone's own Google sheet first (no browser), and the web redirect only when the native one can't run at all
+ * (a build without the native module, or no Google Play services). If the native sheet ran and was refused, that is reported, not retried in the browser.
  */
 export function useGoogleLogin(auth: MobileAuthClient, config: AuthConfig | undefined, onError: (message: string) => void) {
   const [busy, setBusy] = useState(false);
@@ -19,6 +19,11 @@ export function useGoogleLogin(auth: MobileAuthClient, config: AuthConfig | unde
     try {
       const native = config?.googleClientId ? await nativeGoogleSignIn(config.googleClientId) : { unavailable: true as const };
       if ("cancelled" in native) return;
+      if ("failed" in native) {
+        // The phone's own Google sheet already ran. Opening the browser would ask for the same account again, so say what happened.
+        onError(`Google sign-in couldn’t finish on this phone (code ${native.failed}). Please sign in another way, or update the app and try again.`);
+        return;
+      }
       if ("token" in native) {
         const res = await auth.signIn.social({ provider: "google", idToken: { token: native.token } });
         if (res?.error) onError(friendlyAuthError(res.error.message ?? "Couldn’t sign in with Google."));

@@ -11,7 +11,7 @@ import NoImageDrag from "../components/site/NoImageDrag";
 import Refresh from "../components/site/Refresh";
 import ContextMenu from "../components/app/ContextMenu";
 import JsonLd from "../components/site/JsonLd";
-import { KEYWORDS, organizationSchema, siteOrigin, setupsWorksSchema, siteNavigationSchema, websiteSchema } from "../lib/seo";
+import { KEYWORDS, organizationSchema, SITE_DESCRIPTION, siteOrigin, setupsWorksSchema, siteNavigationSchema, websiteSchema } from "../lib/seo";
 import { lookBootScript } from "../lib/look";
 
 config.autoAddCss = false;
@@ -30,8 +30,7 @@ const serif = Instrument_Serif({
   variable: "--font-serif-display",
 });
 
-const DESCRIPTION =
-  "Notes, tasks, journal, email, calendar, meetings and automations in one workspace. Use AI when it helps, ignore it when it doesn't.";
+const DESCRIPTION = SITE_DESCRIPTION;
 
 // The browser's address-bar colour follows the app's paper (light) and its dark surface.
 export const viewport: Viewport = {

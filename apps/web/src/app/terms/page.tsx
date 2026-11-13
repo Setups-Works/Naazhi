@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import JsonLd from "../../components/site/JsonLd";
 import LegalPage from "../../components/site/LegalPage";
-import { LEGAL_UPDATED, OPERATOR } from "../../lib/legal";
+import { LEGAL_UPDATED, LEGAL_UPDATED_ISO, OPERATOR } from "../../lib/legal";
 import { pageMeta, pageSchemas } from "../../lib/seo";
 
 const SEO = {
@@ -15,10 +15,11 @@ export const metadata: Metadata = pageMeta(SEO);
 export default function Page() {
   return (
     <>
-      <JsonLd data={pageSchemas(SEO)} />
+      <JsonLd data={pageSchemas({ ...SEO, dateModified: LEGAL_UPDATED_ISO })} />
       <LegalPage
         eyebrow="Terms"
         title="Terms &"
+        quiet="Policy."
         lead={`These terms cover your use of ${OPERATOR.product}, operated by ${OPERATOR.name}. By creating an account or using the service you agree to them.`}
         updated={LEGAL_UPDATED}
         sections={[

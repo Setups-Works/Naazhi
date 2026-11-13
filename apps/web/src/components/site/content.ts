@@ -366,7 +366,7 @@ export const FAQS: [string, string][] = [
   ],
   [
     "Is there an app for my computer?",
-    "Not yet. Naazhi works in any browser on a Mac or a Windows PC, and Mac and Windows apps and a browser extension are marked “Coming soon” on the download page. The Android app is available now; the iPhone app is coming.",
+    "Not yet. Naazhi works in any browser on a Mac or a Windows PC, and Mac and Windows apps and a browser extension are marked “Coming soon” on the download page. The Android app is on Google Play; the iPhone and iPad app is coming.",
   ],
   [
     "Does it work on my phone?",

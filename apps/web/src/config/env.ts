@@ -12,6 +12,8 @@ export const publicEnv = {
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL?.trim() || undefined,
   /** The app (dashboard, sign-in, API), e.g. https://dashboard.naazhi.app. Leave unset to serve everything from one host. */
   appUrl: process.env.NEXT_PUBLIC_APP_URL?.trim() || undefined,
+  /** The help center, e.g. https://help.naazhi.app. Leave unset to serve it at /help on the website. */
+  helpUrl: process.env.NEXT_PUBLIC_HELP_URL?.trim() || undefined,
   posthogKey: process.env.NEXT_PUBLIC_POSTHOG_KEY?.trim() || undefined,
   posthogHost: process.env.NEXT_PUBLIC_POSTHOG_HOST?.trim() || "https://eu.i.posthog.com",
   sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN?.trim() || undefined,

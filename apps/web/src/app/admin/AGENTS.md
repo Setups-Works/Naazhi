@@ -10,6 +10,7 @@
 | `/admin/users`         | Search/filter/sort/page, CSV, invite, detail drawer | `components/admin/UsersTable.tsx`, actions in `actions.ts` |
 | `/admin/usage`         | Item counts per user (ids only)                     | scans tables (to move into SQL: UNT-35)                    |
 | `/admin/plans`         | Plans: prices, allowances, token price (per 1M, shown per 100), wording; Razorpay status; AI credit top-up limits (`CreditSettings.tsx`); who is on which plan, their AI credit and an Adjust button | `components/admin/PlansEditor.tsx`, `SubscribersTable.tsx`, actions in `plans/actions.ts`; `billing_plans`, `user_billing`, `ai_usage` (counts and token totals only) — see `docs/BILLING.md` |
+| `/admin/team`          | People on the public Team page: name, role, bio, photo address, profile links, order, show/hide | `components/admin/TeamEditor.tsx`, `app/admin/team/actions.ts`, `server/services/team`, `team_members` |
 | `/admin/announcements` | Banners for all users                               | `announcements`                                            |
 | `/admin/messages`      | Write to everyone or one person (inbox + push)      | `components/admin/MessageComposer.tsx`, `sendMessageToUsers` in `actions.ts` → `services/notifications`; `notifications`, `push_devices` (the audit log keeps the title, never the text) |
 | `/admin/invoices`      | Every invoice (search by email or number) and Refund (full or partial, through Razorpay) | `components/admin/InvoicesTable.tsx`, `app/admin/invoices/actions.ts`, `invoices.service.ts` |

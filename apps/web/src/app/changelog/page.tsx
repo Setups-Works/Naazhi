@@ -4,7 +4,8 @@ import JsonLd from "../../components/site/JsonLd";
 import { CtaPanel, PageHero } from "../../components/site/kit";
 import { RELEASES } from "../../features/changelog/releases";
 import { pageMeta, pageSchemas, releasesSchema } from "../../lib/seo";
-import { Section } from "../../components/site/ui";
+import Link from "next/link";
+import { buttonClass, Section } from "../../components/site/ui";
 import Changelog from "../../features/changelog/Changelog";
 
 const SEO = {
@@ -13,7 +14,7 @@ const SEO = {
   description: "What’s new in the web app and the Android app, newest first.",
   path: "/changelog",
 };
-export const metadata: Metadata = pageMeta(SEO);
+export const metadata: Metadata = pageMeta({ ...SEO, ownImage: true });
 
 export default function Page() {
   return (
@@ -24,7 +25,11 @@ export default function Page() {
         title="What’s new,"
         quiet="newest first."
         lead="Every change people can see, in the web app and the Android app. App releases link to their download on GitHub."
-      />
+      >
+        <Link className={buttonClass("secondary")} href="/roadmap">
+          See what’s planned
+        </Link>
+      </PageHero>
       <Section tight>
         <ClientOnly>
           <Changelog />
@@ -35,7 +40,7 @@ export default function Page() {
         quiet="what ships next?"
         lead="Early users get a direct line to the team, and what you tell us shows up here."
         primary={["Get started", "/signup"]}
-        secondary={["Early users", "/early-users"]}
+        secondary={["See the roadmap", "/roadmap"]}
       />
     </main>
   );

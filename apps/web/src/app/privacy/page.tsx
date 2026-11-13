@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import JsonLd from "../../components/site/JsonLd";
 import LegalPage from "../../components/site/LegalPage";
-import { LEGAL_UPDATED, OPERATOR } from "../../lib/legal";
+import { LEGAL_UPDATED, LEGAL_UPDATED_ISO, OPERATOR } from "../../lib/legal";
 import { pageMeta, pageSchemas } from "../../lib/seo";
 
 const SEO = {
@@ -17,10 +17,11 @@ const link = "text-green-fg underline";
 export default function Page() {
   return (
     <>
-      <JsonLd data={pageSchemas(SEO)} />
+      <JsonLd data={pageSchemas({ ...SEO, dateModified: LEGAL_UPDATED_ISO })} />
       <LegalPage
         eyebrow="Privacy"
         title="Privacy"
+        quiet="Policy."
         lead={`This policy explains what ${OPERATOR.product}, operated by ${OPERATOR.name}, collects when you use the website or the Android and iOS apps, what we do with it, how long we keep it, and how you can delete it.`}
         updated={LEGAL_UPDATED}
         sections={[
@@ -48,6 +49,14 @@ export default function Page() {
                 <p>
                   <strong>Device and notification details:</strong> a push-notification token for your device so we can deliver reminders and notifications, and
                   basic technical data needed to keep the service running and secure.
+                </p>
+                <p>
+                  <strong>Cookies and browser storage:</strong> on the website we use a cookie that keeps you signed in, a cookie that remembers how you last signed in, and
+                  browser storage for your settings. We use no advertising cookies and run no analytics on the public pages. Details are on our{" "}
+                  <a className={link} href="/cookies">
+                    Cookies &amp; Storage
+                  </a>{" "}
+                  page.
                 </p>
               </>
             ),
@@ -158,7 +167,11 @@ export default function Page() {
               <p>
                 Data is sent over encrypted connections. Each person’s data is separated in the database by row-level security, your files sit in private storage and
                 open only through short-lived signed links, and your journal is visible only to you. Our administrators work with counts and ids, not the content of your
-                notes, journal or chats. No system is perfectly safe, so please use a strong password and tell us if you notice anything wrong. More detail is on our{" "}
+                notes, journal or chats. No system is perfectly safe, so please use a strong password and tell us if you notice anything wrong, or report a security issue through our{" "}
+                <a className={link} href="/responsible-disclosure">
+                  disclosure page
+                </a>
+                . More detail is on our{" "}
                 <a className={link} href="/privacy-security">
                   Privacy &amp; Security
                 </a>{" "}

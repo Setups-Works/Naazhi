@@ -5,12 +5,12 @@ import { buttonClass } from "../site/ui";
 /** The pieces the sign-in pages are made of, in the site's look: pill fields, pill buttons, brand-green links and chips. */
 
 export const inputCls =
-  "h-12 w-full appearance-none rounded-pill border-0 bg-surface px-5 text-[15px] text-fg ring-1 ring-line-strong outline-none transition-shadow placeholder:text-fg-faint focus:ring-2 focus:ring-green-fg disabled:opacity-60";
+  "h-12 short:h-10 w-full appearance-none rounded-pill border-0 bg-surface px-5 text-[15px] text-fg ring-1 ring-line-strong outline-none transition-shadow placeholder:text-fg-faint focus:ring-2 focus:ring-green-fg disabled:opacity-60";
 
 /** A labelled field. `aside` sits at the right end of the label row (a "Last used" chip, a "Forgot password?" link). */
 export function Field({ label, aside, hint, children }: { label: ReactNode; aside?: ReactNode; hint?: ReactNode; children: ReactNode }) {
   return (
-    <label className="flex flex-col gap-2">
+    <label className="flex flex-col gap-2 short:gap-1">
       <span className="flex items-center justify-between gap-3 text-[13.5px] font-medium text-fg">
         <span>{label}</span>
         {aside}
@@ -27,7 +27,7 @@ export function TextInput(props: ComponentProps<"input">) {
 
 export function PrimaryButton({ children, ...rest }: ComponentProps<"button">) {
   return (
-    <button {...rest} className={`${buttonClass("primary")} w-full disabled:opacity-60`}>
+    <button {...rest} className={`${buttonClass("primary")} w-full short:h-10 disabled:opacity-60`}>
       {children}
     </button>
   );
@@ -35,7 +35,7 @@ export function PrimaryButton({ children, ...rest }: ComponentProps<"button">) {
 
 export function SecondaryButton({ children, ...rest }: ComponentProps<"button">) {
   return (
-    <button {...rest} className={`${buttonClass("secondary")} relative w-full disabled:opacity-60`}>
+    <button {...rest} className={`${buttonClass("secondary")} relative w-full short:h-10 disabled:opacity-60`}>
       {children}
     </button>
   );

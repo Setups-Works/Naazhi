@@ -24,9 +24,12 @@ export default function WhatsNew() {
           </R>
         ))}
       </Reveal>
-      <Reveal className="mt-8 text-center">
+      <Reveal className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-center">
         <Link href="/changelog" className="text-[15px] font-medium text-fg underline underline-offset-4">
           Read the full changelog
+        </Link>
+        <Link href="/roadmap" className="text-[15px] font-medium text-fg-muted underline underline-offset-4 hover:text-fg">
+          See the roadmap
         </Link>
       </Reveal>
     </Section>

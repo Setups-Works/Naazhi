@@ -14,7 +14,7 @@ const SEO = {
   description: "Start the day knowing what matters: your events, tasks, email and journal in one brief, with or without AI.",
   path: "/daily-brief",
 };
-export const metadata: Metadata = pageMeta(SEO);
+export const metadata: Metadata = pageMeta({ ...SEO, ownImage: true });
 
 export default function Page() {
   return (

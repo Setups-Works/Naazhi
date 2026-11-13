@@ -3,9 +3,10 @@ import { useRef } from "react";
 import AuthLink from "../../auth/AuthLink";
 import { Heading } from "../Heading";
 import { showNow, useMotion } from "../motion";
+import GooglePlayBadge from "../GooglePlayBadge";
 import HeroDots from "./HeroDots";
 import Phone from "../Phone";
-import { buttonClass, Kicker, Lead, TextLink, WRAP } from "../ui";
+import { buttonClass, Kicker, Lead, WRAP } from "../ui";
 
 const SCREENS = [
   { src: "/mobile/calendar.png", alt: "Calendar and to-dos in the Naazhi app" },
@@ -91,7 +92,7 @@ export default function Hero() {
           </div>
           <div data-copy data-reveal className={`mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 ${hidden}`}>
             <AuthLink arrow className={buttonClass("primary")} />
-            <TextLink href="/demo">Watch the product demo</TextLink>
+            <GooglePlayBadge />
           </div>
         </div>
 

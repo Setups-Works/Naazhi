@@ -1,16 +1,20 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
-import { FAQS } from "../../src/components/site/content";
+import { beforeAll, describe, expect, it } from "vitest";
+import { CAPABILITIES, FAQS } from "../../src/components/site/content";
+import { RELEASES } from "../../src/features/changelog/releases";
 import { FAQ_GROUPS, faqSlug } from "../../src/components/site/faqGroups";
 import { FEATURE_ORDER, FEATURE_PAGES } from "../../src/lib/featurePages";
 import { FOOTER_COLS, MEGA, MEGA_DEFAULT_SHOT } from "../../src/lib/site";
-import { faqSchema, llmsFullText, llmsText, pageMeta, PUBLIC_PAGES, SITE_NAV } from "../../src/lib/seo";
+import sitemap from "../../src/app/sitemap";
+import { LEGAL_UPDATED_ISO } from "../../src/lib/legal";
+import { faqSchema, llmsFullText, llmsText, organizationSchema, OWN_OG_PATHS, pageMeta, pageSchemas, PUBLIC_PAGES, SITE_DESCRIPTION, SITE_NAV, softwareSchema, webPageSchema } from "../../src/lib/seo";
 
 describe("seo", () => {
   it("lists every navigation page in the public page list, so sitelink candidates are also in the sitemap", () => {
     const known = new Set(PUBLIC_PAGES.map((p) => p.path));
-    for (const n of SITE_NAV) expect(known.has(n.path), n.path).toBe(true);
+    // The help center is listed by its own sitemap (see app/sitemap.ts), not from this list.
+    for (const n of SITE_NAV) expect(known.has(n.path) || n.path === "/help", n.path).toBe(true);
   });
 
   it("gives every navigation entry a short name and a one-line description", () => {
@@ -26,6 +30,17 @@ describe("seo", () => {
     const text = llmsText();
     expect(text.startsWith("# Naazhi")).toBe(true);
     for (const n of SITE_NAV) expect(text).toContain(`[${n.name}]`);
+  });
+
+  it("separates what is live from what is not in llms.txt, using the same status labels as the site", () => {
+    const text = llmsText({ capabilities: CAPABILITIES, releases: RELEASES });
+    const [liveBlock, nextBlock] = [text.split("## What works today")[1]?.split("## ")[0] ?? "", text.split("## Not available yet")[1]?.split("## ")[0] ?? ""];
+    for (const c of CAPABILITIES) {
+      if (c.status === "live") expect(liveBlock, c.t).toContain(`**${c.t}**`);
+      else expect(nextBlock, c.t).toContain(`**${c.t}**`);
+    }
+    expect(text).toContain("## Answering questions about Naazhi");
+    expect(text).toContain("About Setups Works");
   });
 
   it("has a /faq page in the sitemap list and the navigation", () => {
@@ -120,5 +135,68 @@ describe("mega menu", () => {
     }
     const known = new Set(PUBLIC_PAGES.map((p) => p.path));
     for (const i of items) expect(known.has(i.href) || i.href.startsWith("/#"), i.href).toBe(true);
+  });
+});
+
+describe("structured data", () => {
+  const org = organizationSchema() as Record<string, unknown>;
+
+  it("describes the organization with its Tamil name, a contact point and its parent company", () => {
+    expect(org["@type"]).toBe("Organization");
+    expect(org.alternateName).toContain("நாழி");
+    expect(JSON.stringify(org.contactPoint)).toContain("customer support");
+    expect(org.parentOrganization).toEqual({ "@id": "https://setups.works/#organization" });
+  });
+
+  it("prices the software in rupees and points to the organization by id", () => {
+    const sw = softwareSchema() as { offers: { priceCurrency: string; price: string }; publisher: unknown };
+    expect(sw.offers).toMatchObject({ price: "0", priceCurrency: "INR" });
+    expect(sw.publisher).toEqual({ "@id": org["@id"] });
+  });
+
+  it("types About and Contact pages specifically and ties them to the organization", () => {
+    const about = webPageSchema({ name: "About", description: "d", path: "/about", type: "AboutPage", mainEntity: "organization" }) as Record<string, unknown>;
+    expect(about["@type"]).toBe("AboutPage");
+    expect(about.mainEntity).toEqual({ "@id": org["@id"] });
+    expect((webPageSchema({ name: "C", description: "d", path: "/contact", type: "ContactPage" }) as Record<string, unknown>)["@type"]).toBe("ContactPage");
+  });
+
+  it("names a page's own share picture in its structured data when it has one", () => {
+    const [page] = pageSchemas({ name: "About", title: "About — Naazhi", description: "d", path: "/about" }) as { primaryImageOfPage: { url: string } }[];
+    expect(page.primaryImageOfPage.url).toContain("/about/opengraph-image");
+    const [plain] = pageSchemas({ name: "Cookies", title: "Cookies", description: "d", path: "/cookies" }) as { primaryImageOfPage: { url: string } }[];
+    expect(plain.primaryImageOfPage.url).toMatch(/\/opengraph-image$/);
+  });
+
+  it("describes only what is live in the site description", () => {
+    expect(SITE_DESCRIPTION).not.toMatch(/email|meetings|automations/i);
+  });
+});
+
+describe("sitemap", () => {
+  let entries: Awaited<ReturnType<typeof sitemap>> = [];
+  beforeAll(async () => {
+    entries = await sitemap();
+  });
+
+  it("lists every public page once, and not the live status page", () => {
+    const urls = entries.map((e) => e.url);
+    expect(new Set(urls).size).toBe(urls.length);
+    // Served from one host, the help center's pages are listed here too, under /help.
+    expect(urls.filter((u) => !u.includes("/help")).length).toBe(PUBLIC_PAGES.length);
+    expect(urls.some((u) => u.endsWith("/status"))).toBe(false);
+  });
+
+  it("gives the pages with a share picture an image entry, and every such picture has a page in the list", () => {
+    const known = new Set(PUBLIC_PAGES.map((p) => p.path));
+    for (const path of OWN_OG_PATHS) {
+      expect(known.has(path), path).toBe(true);
+      expect(existsSync(join(__dirname, "../../src/app", path === "/" ? "" : path, "opengraph-image.tsx")), path).toBe(true);
+    }
+  });
+
+  it("dates the policy pages with the date printed on them", () => {
+    const privacy = entries.find((e) => e.url.endsWith("/privacy"));
+    expect(privacy?.lastModified).toBe(LEGAL_UPDATED_ISO);
   });
 });

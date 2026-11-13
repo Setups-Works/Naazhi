@@ -2,7 +2,13 @@ import { GoogleSignin, isErrorWithCode, isSuccessResponse, statusCodes } from "@
 
 import { mobileEnv } from "@/config/env";
 
-export type NativeGoogleResult = { token: string } | { cancelled: true } | { unavailable: true };
+/**
+ * `unavailable`: the native sheet can't run at all (no Google Play services, or a build without the native module such as Expo Go), so the
+ * browser flow is the only way. `failed`: the sheet ran (the person picked an account) but Google or the build's configuration refused,
+ * for example error code 10 (DEVELOPER_ERROR) when the app's signing certificate isn't registered for the Google client. Falling back to the
+ * browser there would ask for the same Google account a second time and fail the same way, so the caller reports it instead.
+ */
+export type NativeGoogleResult = { token: string } | { cancelled: true } | { unavailable: true } | { failed: string };
 
 /**
  * The phone's own Google account sheet. It gives back a Google ID token, which the Naazhi server checks and turns into a session
@@ -16,13 +22,16 @@ export async function nativeGoogleSignIn(webClientId: string): Promise<NativeGoo
     const res = await GoogleSignin.signIn();
     if (!isSuccessResponse(res)) return { cancelled: true };
     const token = res.data.idToken;
-    return token ? { token } : { unavailable: true };
+    return token ? { token } : { failed: "no-id-token" };
   } catch (e) {
     if (isErrorWithCode(e)) {
       if (e.code === statusCodes.SIGN_IN_CANCELLED || e.code === statusCodes.IN_PROGRESS) return { cancelled: true };
-      // No Google Play services, or the app build has no native module (Expo Go): the caller falls back to the browser flow.
+      // No Google Play services: the caller falls back to the browser flow.
       if (e.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) return { unavailable: true };
+      // The sheet ran and was refused (e.g. "10" = DEVELOPER_ERROR, a signing certificate that isn't registered for this client).
+      return { failed: String(e.code) };
     }
+    // Not a Google Sign-In error at all: the native module isn't in this build (Expo Go), so only the browser flow is possible.
     return { unavailable: true };
   }
 }

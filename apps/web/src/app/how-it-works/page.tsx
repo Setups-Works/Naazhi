@@ -31,7 +31,7 @@ const SEO = {
     "One workspace for notes, tasks, journal, calendar and chat, with email and meetings on the way. AI that you choose, or no AI at all.",
   path: "/how-it-works",
 };
-export const metadata: Metadata = pageMeta(SEO);
+export const metadata: Metadata = pageMeta({ ...SEO, ownImage: true });
 
 /** The four steps, each beside the app screen that shows it. The facts are the ones this page has always made. */
 const STEPS = [

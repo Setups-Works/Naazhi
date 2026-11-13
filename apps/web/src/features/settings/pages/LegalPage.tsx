@@ -8,6 +8,8 @@ const DOCS = [
   { href: "/privacy", title: "Privacy policy", desc: "What we collect, including health data, how long we keep it, and how to delete it." },
   { href: "/privacy-security", title: "Privacy and security", desc: "How personal information is collected, used and protected." },
   { href: "/refund-policy", title: "Refund policy", desc: "When and how you can get your money back." },
+  { href: "/cookies", title: "Cookies and storage", desc: "The few cookies and browser storage Naazhi uses." },
+  { href: "/copyright-and-licensing", title: "Copyright & licensing", desc: "Who owns what on the site, and how you may use it." },
 ];
 
 export default function LegalPage() {

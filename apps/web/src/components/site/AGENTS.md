@@ -44,7 +44,7 @@ The building blocks are in `ui.tsx`: `Section` (`band="plain" | "soft" | "ink"`)
 `content.ts` holds copy that makes factual claims. A capability is `live` only if it ships today (`docs/CURRENT_STATE.md`); otherwise
 `building` or `soon`. When something ships, flip its status; don't reword the claim. Don't add claims about security, features or numbers
 that the docs and code don't support, and don't invent testimonials. The download page names the Android app as a direct APK download and
-the iPhone app as coming soon; change that only when a store listing exists.
+the iPhone and iPad app as coming soon (change that only when a store listing exists), and the Android app as on Google Play (`GOOGLE_PLAY_URL` in `lib/site.ts`).
 
 ## SEO and structured data
 

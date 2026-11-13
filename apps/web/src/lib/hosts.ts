@@ -51,3 +51,32 @@ export const publicPath = (path: string) => {
 export const APP_PATH_PREFIXES = ["/dashboard", APP_HOME, "/admin", "/onboarding", "/invoice", "/login", "/signup", "/forgot-password", "/reset-password", "/share"];
 
 export const isAppPath = (path: string) => APP_PATH_PREFIXES.some((p) => path === p || path.startsWith(`${p}/`)) || isDashboardSection(path);
+
+/*
+ * The help center. With NEXT_PUBLIC_HELP_URL set to its own host (help.naazhi.app) it is served from the root of that host; otherwise it
+ * is served at /help on the website. The pages themselves live in app/help-center either way, the proxy maps the address to them.
+ */
+
+/** The path the help center is served at when it has no host of its own. */
+export const HELP_BASE = "/help";
+
+/** The route that holds the help center's pages. */
+export const HELP_ROUTE = "/help-center";
+
+/** True when the help center has its own host. */
+export const isHelpSplit = () => {
+  const { siteUrl, helpUrl } = publicEnv;
+  return Boolean(helpUrl && (!siteUrl || new URL(helpUrl).host !== new URL(siteUrl).host));
+};
+
+/** The address of a help-center page ("/" is its front door): on the help host, or under /help on the website. */
+export const helpHref = (path = "/") => {
+  if (isHelpSplit()) return `${trim(publicEnv.helpUrl!)}${path === "/" ? "/" : path}`;
+  return path === "/" ? HELP_BASE : `${HELP_BASE}${path}`;
+};
+
+/** The path of a help-center page within whichever host serves it (used for canonical addresses under the help host's own base). */
+export const helpPath = (path = "/") => (isHelpSplit() ? path : path === "/" ? HELP_BASE : `${HELP_BASE}${path}`);
+
+/** True for an address on the website that belongs to the help center (/help, /help/getting-started/…). */
+export const isHelpPath = (path: string) => path === HELP_BASE || path.startsWith(`${HELP_BASE}/`);

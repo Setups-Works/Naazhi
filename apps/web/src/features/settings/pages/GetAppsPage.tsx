@@ -39,7 +39,7 @@ export default function GetAppsPage() {
           <Link href="/download">Get the Android app</Link>
         </Button>
         <span className="flex items-center gap-2 text-[14px] text-ink-3">
-          iPhone <Badge variant="secondary">Coming soon</Badge>
+          iPhone and iPad <Badge variant="secondary">Coming soon</Badge>
         </span>
       </Card>
       <Card kind="desktop" label="Desktop app" icon={faDesktop} title="Naazhi on your computer." items={DESKTOP}>

@@ -1,6 +1,7 @@
 name: Release Android
 
-# Pushing a tag like v1.2.0 builds the Android app and publishes it as a GitHub Release with the APK and the AAB (for Google Play) attached.
+# Pushing a tag like v1.2.0 builds the Android app, publishes it as a GitHub Release with the APK and the AAB attached, and uploads the AAB
+# to Google Play (see the last step). Stable tags go to the production track; a pre-release tag (v1.2.0-rc.1) goes to the internal-testing track.
 #   git tag v1.2.0 && git push origin v1.2.0
 # Run it by hand (Actions → Release Android → Run workflow) to rebuild the APK of an existing tag.
 #
@@ -11,6 +12,11 @@ name: Release Android
 #   secret   ANDROID_KEY_ALIAS
 #   secret   ANDROID_KEY_PASSWORD
 #   secret   GOOGLE_SERVICES_JSON_BASE64  optional: your Firebase google-services.json, base64. Needed for push notifications.
+#   secret   PLAY_SERVICE_ACCOUNT_JSON  optional: the Google Play service account's JSON key (plain text). With it, a tag push also uploads the
+#                                       AAB to Google Play. The upload needs the release keystore above (Play rejects a debug-signed bundle).
+#   variable PLAY_TRACK                 optional: the track for stable tags (default "production"; use "internal" or "closed" to test first)
+#   variable PLAY_STATUS                optional: "completed" (default: roll out to everyone on that track) or "draft" (upload only; you press
+#                                       Release in Play Console). A brand-new app that has not been published yet must use "draft".
 
 on:
   push:
@@ -147,3 +153,39 @@ jobs:
             gh release create "$TAG" "naazhi-$TAG.apk" "naazhi-$TAG.aab" "naazhi-$TAG.sha256" \
               --title "$TAG" --generate-notes --notes "$NOTE" $( [[ "$TAG" == *-* ]] && echo --prerelease )
           fi
+
+      # ── Upload the AAB to Google Play (tag pushes only) ───────────────────────────────────────────────────────────────────────
+      # A tag push is a deliberate release; a manual re-run of an old tag (workflow_dispatch) never uploads. The step is skipped, with a
+      # notice, when the service account secret or the release keystore is missing, so the GitHub Release always goes out regardless.
+      # Google's own review still applies before a production release reaches people. The upload itself is allowed to fail without
+      # failing the run (a freshly reset upload key that Play has not activated yet is the usual cause): check the step's annotation.
+      - name: Check the Google Play upload settings
+        env:
+          PLAY_SA: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          PLAY_TRACK_VAR: ${{ vars.PLAY_TRACK }}
+          PLAY_STATUS_VAR: ${{ vars.PLAY_STATUS }}
+        run: |
+          if [ "${{ github.event_name }}" != "push" ]; then echo "::notice::Manual run: not uploading to Google Play."; exit 0; fi
+          if [ -z "$PLAY_SA" ]; then echo "::notice::No PLAY_SERVICE_ACCOUNT_JSON secret: skipping the Google Play upload."; exit 0; fi
+          if [ "$SIGNED" != "release" ]; then echo "::warning::The bundle is signed with the debug key, which Google Play rejects. Skipping the upload."; exit 0; fi
+          # A pre-release tag (v1.2.0-rc.1) is a test build: it goes to internal testing, never to everyone.
+          if [[ "$TAG" == *-* ]]; then TRACK=internal; else TRACK="${PLAY_TRACK_VAR:-production}"; fi
+          STATUS="${PLAY_STATUS_VAR:-completed}"
+          # Only send the R8/ProGuard mapping when the build produced one (it lets Play deobfuscate crash reports).
+          MAPPING=apps/mobile/android/app/build/outputs/mapping/release/mapping.txt
+          [ -f "$MAPPING" ] || MAPPING=""
+          { echo "PLAY=yes"; echo "PLAY_TRACK_NAME=$TRACK"; echo "PLAY_STATUS_NAME=$STATUS"; echo "PLAY_MAPPING=$MAPPING"; } >> "$GITHUB_ENV"
+          echo "Will upload naazhi-$TAG.aab to Google Play: track=$TRACK status=$STATUS mapping=${MAPPING:-none}"
+
+      - name: Upload the AAB to Google Play
+        if: env.PLAY == 'yes'
+        continue-on-error: true
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.setupsworks.naazhi
+          releaseFiles: naazhi-${{ env.TAG }}.aab
+          releaseName: ${{ env.TAG }}
+          track: ${{ env.PLAY_TRACK_NAME }}
+          status: ${{ env.PLAY_STATUS_NAME }}
+          mappingFile: ${{ env.PLAY_MAPPING }}

@@ -41,7 +41,7 @@ const SEO = {
     "Click around an interactive preview of the workspace: notes, to-do, journal, email, calendar, meetings and automations. No sign-up.",
   path: "/demo",
 };
-export const metadata: Metadata = pageMeta(SEO);
+export const metadata: Metadata = pageMeta({ ...SEO, ownImage: true });
 
 /** What is true of each area today comes from the site's own capability list, so this page can never promise more than ships. */
 const status = (title: string) => CAPABILITIES.find((c) => c.t === title)?.status ?? "soon";
@@ -167,7 +167,7 @@ const DEMO_FAQS: [string, string][] = [
   ["Does it use AI?", "Only if you choose to. The preview lets you switch AI off, and the real workspace works the same without it."],
   [
     "Can I try it on my phone?",
-    "Yes, this page works on a phone. For the full thing there is an Android app you can download today; the iPhone app is not out yet.",
+    "Yes, this page works on a phone. For the full thing there is an Android app on Google Play; the iPhone and iPad app is not out yet.",
   ],
 ];
 
@@ -290,7 +290,7 @@ export default function Page() {
             <Reveal delay={150}>
               <Lead>
                 The Android app has the same notes, tasks, journal and chat, plus Health from your phone. It looks like the website, in
-                light, cream or charcoal, and signs in with Google or a passkey. The iPhone app is on its way.
+                light, cream or charcoal, and signs in with Google or a passkey. The app is on Google Play, and the iPhone and iPad app is on its way.
               </Lead>
             </Reveal>
             <Reveal delay={300}>

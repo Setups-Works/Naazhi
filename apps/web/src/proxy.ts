@@ -1,7 +1,7 @@
 import { getSessionCookie } from "better-auth/cookies";
 import { NextResponse, type NextRequest } from "next/server";
 import { publicEnv } from "./config/env";
-import { APP_HOME, homePath, internalPath, isAppPath, isDashboardSection, isSplit, publicPath } from "./lib/hosts";
+import { APP_HOME, appHref, HELP_ROUTE, helpHref, homePath, internalPath, isAppPath, isDashboardSection, isHelpPath, isHelpSplit, isSplit, publicPath } from "./lib/hosts";
 
 /** The host the request came in on (behind Azure's front end it is in `x-forwarded-host`). */
 const requestHost = (request: NextRequest) => request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? request.nextUrl.host;
@@ -21,6 +21,31 @@ export function proxy(request: NextRequest) {
   const signedIn = Boolean(getSessionCookie(request));
   const split = isSplit();
   let onApp = false;
+
+  // The help center. Its pages live in app/help-center; people see them at the root of the help host (help.naazhi.app), or at /help on the
+  // website when it has no host of its own. Only the share picture is reached by its internal address; every other internal address
+  // is sent to the public one so the same page never answers at two addresses.
+  const host0 = requestHost(request);
+  const helpHost = isHelpSplit() ? new URL(publicEnv.helpUrl!).host : null;
+  const onHelp = helpHost !== null && host0 === helpHost;
+  if (path === HELP_ROUTE || path.startsWith(`${HELP_ROUTE}/`)) {
+    if (path.endsWith("/opengraph-image")) return NextResponse.next();
+    const rest = path.slice(HELP_ROUTE.length) || "/";
+    return NextResponse.redirect(new URL(`${helpHref(rest)}${request.nextUrl.search}`, request.url));
+  }
+  if (onHelp) {
+    // Only help pages live here; sign-in and the rest belong to the app.
+    if (isAppPath(path)) return NextResponse.redirect(new URL(`${appHref(publicPath(path))}${request.nextUrl.search}`, request.url));
+    const to = request.nextUrl.clone();
+    to.pathname = path === "/" ? HELP_ROUTE : `${HELP_ROUTE}${path}`;
+    return NextResponse.rewrite(to);
+  }
+  if (isHelpPath(path)) {
+    if (helpHost) return NextResponse.redirect(new URL(`${helpHref(path.replace(/^\/help/, "") || "/")}${request.nextUrl.search}`, request.url));
+    const to = request.nextUrl.clone();
+    to.pathname = `${HELP_ROUTE}${path.slice("/help".length)}`;
+    return NextResponse.rewrite(to);
+  }
 
   if (split) {
     const host = requestHost(request);

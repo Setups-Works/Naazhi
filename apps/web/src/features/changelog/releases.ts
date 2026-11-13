@@ -23,6 +23,24 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-13",
+    title: "Version 7.0.0: a help center, a roadmap and a clearer site",
+    summary: "A help center with search, a public roadmap, new About, Status and policy pages, and links to Naazhi on Google Play.",
+    tone: "green",
+    appVersion: "v7.0.0",
+    changes: [
+      { kind: "new", platform: "web", text: "A Help center with guides for notes, tasks, journal, chat, your account, plans and your data, and search that answers as you type." },
+      { kind: "new", platform: "web", text: "A public Roadmap shows what is being built, what is planned next and what shipped lately." },
+      { kind: "new", platform: "web", text: "A Request a feature page tells us what Naazhi should do next, and an About page explains our mission, our vision and what the name means." },
+      { kind: "new", platform: "web", text: "A Status page checks, each time you open it, whether the website and your workspace are working." },
+      { kind: "new", platform: "web", text: "New Cookies, Accessibility, Copyright & Licensing and Report a security issue pages, and numbered notes at the foot of every page." },
+      { kind: "new", platform: "web", text: "A Team page shows the people who build Naazhi." },
+      { kind: "improved", platform: "web", text: "The home page, the Download page and the footer now link to Naazhi on Google Play." },
+      { kind: "improved", platform: "web", text: "Pages have their own preview pictures when shared, and clearer information for search engines." },
+      { kind: "fixed", platform: "app", text: "If Google sign-in fails after you choose an account, the app now says so instead of opening the browser and asking for the account again." },
+    ],
+  },
+  {
+    date: "2026-11-13",
     title: "Version 6.8.5: a full privacy policy",
     summary: "A new privacy policy explains what Naazhi collects, how long it keeps it and how to delete it.",
     tone: "sand",

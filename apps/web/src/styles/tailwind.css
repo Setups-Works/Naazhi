@@ -19,6 +19,9 @@
 /* shadcn/ui's `dark:` follows the app's scheme class on <html>, not the OS setting. */
 @custom-variant dark (&:is(.dark *));
 
+/* Short screens (a laptop with the browser bars showing): the sign-in pages tighten up so they fit without scrolling. */
+@custom-variant short (@media (max-height: 860px));
+
 @theme inline {
   /* shadcn/ui's semantic names, mapped onto the paper-and-ink tokens (no second palette). Its "accent" (a hover fill) is
      written as `hover` in the copied components, because `accent` here is the person's chosen accent colour. */

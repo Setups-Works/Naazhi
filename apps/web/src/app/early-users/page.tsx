@@ -24,7 +24,7 @@ const SEO = {
   description: "Be one of the first to shape Naazhi. Early users get a direct line to the team.",
   path: "/early-users",
 };
-export const metadata: Metadata = pageMeta(SEO);
+export const metadata: Metadata = pageMeta({ ...SEO, ownImage: true });
 
 const slots = [0, 1, 2];
 
@@ -134,7 +134,7 @@ export default function Page() {
         title="Be one of"
         quiet="the first."
         lead="Start with the notes, connect your tools as they arrive, and tell us what you think."
-        secondary={["See the product demo", "/demo"]}
+        secondary={["Request a feature", "/feature-requests"]}
         phone="/mobile/home-2.png"
       />
     </main>

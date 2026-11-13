@@ -29,6 +29,7 @@ import JsonLd from "../../components/site/JsonLd";
 import { RELEASES } from "../../features/changelog/releases";
 import { breadcrumbSchema, faqSchema, pageMeta, softwareSchema, webPageSchema } from "../../lib/seo";
 import GooglePlayBadge from "../../components/site/GooglePlayBadge";
+import DesktopDownload from "../../components/site/DesktopDownload";
 import { GITHUB_REPO } from "../../lib/site";
 
 const TITLE = "Download — Naazhi";
@@ -216,16 +217,17 @@ export default function Page() {
         }
         title="Take your workspace"
         quiet="with you."
-        lead="Notes, tasks, journal and chat in your pocket. Get the Android app on Google Play, and use the web app anywhere else."
+        lead="Notes, tasks, journal and chat wherever you work. Get the Android app on Google Play, the Mac or Windows app, or use the web app anywhere else."
         visual={<PhoneRow screens={["/mobile/notes-2.png", "/mobile/home-2.png", "/mobile/chat-2.png"]} />}
       >
+        <DesktopDownload href={RELEASE} devices="#devices" />
         <GooglePlayBadge />
         <AuthLink className={buttonClass("secondary")} signedIn="Open the web app" href="/signup">
           Use it on the web
         </AuthLink>
       </PageHero>
 
-      <Section tight>
+      <Section tight id="devices">
         <SectionHead kicker="Choose your device" title="Wherever you" quiet="keep your day." />
         <Reveal stagger={0.1} className="mt-[clamp(28px,4vw,52px)] grid gap-4 md:grid-cols-3">
           {platforms.map((p) => (

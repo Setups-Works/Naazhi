@@ -23,6 +23,17 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-13",
+    title: "Version 7.1.2: clearer payment problems",
+    summary: "A fix that lets us see why a payment could not start, so plan and top-up problems are found and fixed faster.",
+    tone: "amber",
+    appVersion: "v7.1.2",
+    changes: [
+      { kind: "fixed", platform: "web", text: "When choosing a plan or adding credit could not reach the payment provider, the cause was hidden from us. We now record it, so these problems are fixed sooner." },
+      { kind: "fixed", platform: "web", text: "A slow or dropped connection while starting a payment now shows the friendly message instead of a general error." },
+    ],
+  },
+  {
+    date: "2026-11-13",
     title: "Version 7.1.1: install Naazhi from Google Play",
     summary: "On an Android phone, the website now offers the Google Play app, and browsers point to Google Play instead of installing the site.",
     tone: "green",

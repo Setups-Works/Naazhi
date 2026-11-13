@@ -32,20 +32,42 @@ export const razorpayConfigured = () => {
   return Boolean(r.keyId && r.keySecret && r.webhookSecret);
 };
 
+/** Says why a Razorpay call failed without leaking anything: the HTTP status, Razorpay's short error code and the route, never keys, bodies or descriptions. */
+function logFailure(method: string, path: string, status: number, code: string | null) {
+  console.error("[razorpay] request failed", { method, route: path.split("?")[0]!.replace(/\/(pay|order|sub|plan|rfnd|refund)_[A-Za-z0-9]+/g, "/:id"), status, code });
+}
+
 async function call<T>(method: "GET" | "POST", path: string, body?: unknown): Promise<T> {
   const { keyId, keySecret } = serverEnv().razorpay;
-  if (!keyId || !keySecret) throw new RazorpayError(0);
-  const res = await fetch(`${API}${path}`, {
-    method,
-    headers: {
-      authorization: `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString("base64")}`,
-      "content-type": "application/json",
-    },
-    body: body === undefined ? undefined : JSON.stringify(body),
-    cache: "no-store",
-    signal: AbortSignal.timeout(15_000),
-  });
-  if (!res.ok) throw new RazorpayError(res.status);
+  if (!keyId || !keySecret) {
+    logFailure(method, path, 0, "keys_missing");
+    throw new RazorpayError(0);
+  }
+  let res: Response;
+  try {
+    res = await fetch(`${API}${path}`, {
+      method,
+      headers: {
+        authorization: `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString("base64")}`,
+        "content-type": "application/json",
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      cache: "no-store",
+      signal: AbortSignal.timeout(15_000),
+    });
+  } catch (e) {
+    // Network trouble or a timeout: the person sees the same friendly message as for any provider problem.
+    logFailure(method, path, 0, e instanceof Error ? e.name : "network_error");
+    throw new RazorpayError(0);
+  }
+  if (!res.ok) {
+    const code = await res
+      .json()
+      .then((j: { error?: { code?: unknown } }) => (typeof j?.error?.code === "string" ? j.error.code : null))
+      .catch(() => null);
+    logFailure(method, path, res.status, code);
+    throw new RazorpayError(res.status);
+  }
   return (await res.json()) as T;
 }
 

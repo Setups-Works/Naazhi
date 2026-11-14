@@ -43,6 +43,7 @@ import {
   faSpellCheck,
   faPenNib,
   faSliders,
+  faWandMagicSparkles,
 } from "@fortawesome/free-solid-svg-icons";
 import type { ApiClient } from "../../lib/api/client";
 import type { Attachment, Note, NoteVersion } from "../../lib/workspace";
@@ -54,7 +55,6 @@ import AttachmentImage from "../ui/AttachmentImage";
 import AudioWave from "../ui/AudioWave";
 import Markdown from "./Markdown";
 import NoteAiPanel from "./NoteAiPanel";
-import AiIcon from "../ui/AiIcon";
 import { useAiProviders } from "../../features/ai/useAiProviders";
 import { useNoteAi, type NoteAiAction } from "../../features/ai/useNoteAi";
 
@@ -570,7 +570,7 @@ export default function NoteEditor({
         </button>
         <span className="ne-gap" />
         {aiReady ? (
-          <Menu label="AI actions" trigger={<AiIcon />} className="ne-more">
+          <Menu label="AI actions" trigger={<FA icon={faWandMagicSparkles} />} className="ne-more">
             <MenuLabel>{selected ? "AI on the selection" : "AI on the whole note"}</MenuLabel>
             {AI_ACTIONS.map((a) => (
               <MenuItem key={a.k} onSelect={() => void runAi(a.k)}>
@@ -588,7 +588,7 @@ export default function NoteEditor({
           </Menu>
         ) : (
           <button type="button" className="ne-btn" aria-label="AI actions" title="Connect an AI provider to use AI actions" disabled>
-            <AiIcon />
+            <FA icon={faWandMagicSparkles} />
           </button>
         )}
         {tb("Add link", faLink, link)}

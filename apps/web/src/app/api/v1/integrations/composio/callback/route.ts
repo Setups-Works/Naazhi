@@ -18,7 +18,7 @@ export async function GET(req: Request) {
   const returnTo = readConnectReturn(req.headers.get("cookie"));
   const sp = new URL(req.url).searchParams;
   const back = (result: "connected" | "error", message?: string) => {
-    const url = new URL(returnTo ?? publicPath("/dashboard/settings/google"), base);
+    const url = new URL(publicPath(returnTo ?? "/dashboard/settings/google"), base);
     url.searchParams.set("composio", result);
     if (message) url.searchParams.set("msg", message.slice(0, 200));
     const res = NextResponse.redirect(url, { headers: { "cache-control": "no-store" } });

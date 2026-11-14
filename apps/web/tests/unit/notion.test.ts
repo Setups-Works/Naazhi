@@ -7,7 +7,11 @@ const notes = vi.hoisted(() => ({ createNote: vi.fn() }));
 
 vi.mock("../../src/server/repositories/integrations.repository", () => integrations);
 vi.mock("../../src/server/repositories/notes.repository", () => notes);
-vi.mock("../../src/server/db/builders", () => ({ userDb: () => ({}) }));
+// `notes` rows that still exist: the fake answers the "which of these ids are alive" query with whatever the test puts in `alive`.
+const alive = vi.hoisted(() => ({ ids: ["note-9"] as string[] }));
+vi.mock("../../src/server/db/builders", () => ({
+  userDb: () => ({ from: () => ({ select: () => ({ in: () => ({ is: async () => ({ data: alive.ids.map((id) => ({ id })), error: null }) }) }) }) }),
+}));
 vi.mock("../../src/server/rateLimit", () => ({ underLimit: async () => true }));
 vi.mock("../../src/server/services/notion/client", () => ({ notionSession: async () => ({ execute: sdk.execute }) }));
 vi.mock("../../src/server/services/notion/connection", () => ({ requireNotion: async () => undefined }));
@@ -21,6 +25,7 @@ const ok = (data: Record<string, unknown>) => ({ error: null, data });
 
 beforeEach(() => {
   vi.clearAllMocks();
+  alive.ids = ["note-9"];
   integrations.getIntegration.mockResolvedValue({ provider: "notion", secret_cipher: "sealed", label: "", services: ["connected"], scopes: "", meta: { imported: { [ID2]: "note-9" } } });
 });
 
@@ -50,6 +55,14 @@ describe("Notion pages", () => {
 });
 
 describe("Notion import", () => {
+  it("imports a page again when its note was deleted", async () => {
+    alive.ids = []; // the note made from ID2 is gone
+    sdk.execute.mockImplementation(async (tool: string) => (tool === "NOTION_GET_PAGE_MARKDOWN" ? ok({ markdown: "Hello" }) : ok({ properties: { T: { type: "title", title: [{ plain_text: "Back" }] } } })));
+    notes.createNote.mockResolvedValue({ id: "note-2" });
+    const r = await importNotionPages("user-1", [ID2]);
+    expect(r).toEqual({ imported: 1, skipped: 0, failed: 0 });
+  });
+
   it("makes a note from each page, skips pages already imported, counts a page that can't be read, and remembers what it did", async () => {
     const bad = "33333333-3333-3333-3333-333333333333";
     const page = (a: { page_id: string }) => a.page_id;

@@ -18,7 +18,7 @@ function summary(r: { imported: number; skipped: number; failed: number }) {
  * Import from Notion: connect once (Notion's own sign-in, where the person chooses what to share), pick pages, and each becomes a note.
  * Pages already imported are marked and skipped, so importing again never adds copies.
  */
-export default function NotionImport({ onImported }: { onImported?: (notes: number) => void }) {
+export default function NotionImport({ onImported, returnTo }: { onImported?: (notes: number) => void; returnTo?: string }) {
   const status = useNotionStatus();
   const connect = useConnectNotion();
   const disconnect = useDisconnectNotion();
@@ -81,7 +81,7 @@ export default function NotionImport({ onImported }: { onImported?: (notes: numb
       {!connected ? (
         <div className="flex items-center justify-between gap-3 max-[600px]:flex-wrap">
           <p className="m-0 text-[13.5px] text-ink-3">You sign in on Notion’s own page and choose which pages to share, so Naazhi never sees your password.</p>
-          <Button disabled={busy || !status.data?.configured} onClick={() => connect.mutate()}>
+          <Button disabled={busy || !status.data?.configured} onClick={() => connect.mutate({ returnTo })}>
             {connect.isPending ? "Opening Notion…" : "Connect Notion"}
           </Button>
         </div>

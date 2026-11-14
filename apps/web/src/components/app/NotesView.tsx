@@ -2,6 +2,8 @@
 import SidebarPortal from "./SidebarPortal";
 import NotesAtlas from "./NotesAtlas";
 import ShareNoteDialog from "./ShareNoteDialog";
+import Modal from "../ui/Modal";
+import NotionImport from "../../features/settings/pages/NotionImport";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
@@ -12,6 +14,7 @@ import {
   faLayerGroup,
   faChevronDown,
   faEllipsis,
+  faFileImport,
   faFolder,
   faFolderPlus,
   faTag,
@@ -282,6 +285,8 @@ export default function NotesView() {
 
   // "Select notes": tick several cards, then export or delete them together.
   const [selecting, setSelecting] = useState(false);
+  // Import from Notion opens in a popup. The Notion sign-in leaves the page, so coming back with its outcome in the address reopens it.
+  const [notionOpen, setNotionOpen] = useState(() => params.has("notion"));
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const stopSelecting = () => {
     setSelecting(false);
@@ -740,6 +745,11 @@ export default function NotesView() {
               </span>
             </MenuItem>
             <MenuSeparator />
+            <MenuItem onSelect={() => setNotionOpen(true)}>
+              <span>
+                <FA icon={faFileImport} /> Import from Notion
+              </span>
+            </MenuItem>
             <MenuItem onSelect={exportMarkdown}>
               <span>
                 <FA icon={faFileExport} /> Export as Markdown
@@ -748,6 +758,13 @@ export default function NotesView() {
           </Menu>
         </div>
       </div>
+
+      {notionOpen && (
+        <Modal label="Import from Notion" onClose={() => setNotionOpen(false)}>
+          <h2 className="m-0 px-4 pt-4 font-serif text-[22px] font-semibold text-fg">Import from Notion</h2>
+          <NotionImport returnTo="/dashboard/notes" />
+        </Modal>
+      )}
 
       <div className="nt-folders">
         <button type="button" className="nt-newfolder" onClick={newFolder}>

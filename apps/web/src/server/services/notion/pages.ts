@@ -8,6 +8,7 @@ import { createNote } from "../../repositories/notes.repository";
 import { sealKey } from "../billing/keyVault";
 import { arr, obj, str, type J } from "../composio/json";
 import { notionSession } from "./client";
+import { cleanNotionMarkdown } from "./markdown";
 import { requireNotion } from "./connection";
 
 /**
@@ -78,6 +79,18 @@ const imported = (meta: Record<string, unknown>): Record<string, string> => {
   return Object.fromEntries(Object.entries(m).filter(([, v]) => typeof v === "string")) as Record<string, string>;
 };
 
+/** The imported pages whose note still exists: delete a note (or empty the trash) and its Notion page can be imported again. */
+async function liveImports(userId: string, done: Record<string, string>): Promise<Record<string, string>> {
+  const noteIds = [...new Set(Object.values(done))];
+  if (!noteIds.length) return done;
+  const alive = new Set<string>();
+  for (let i = 0; i < noteIds.length; i += 200) {
+    const { data } = await userDb(userId).from("notes").select("id").in("id", noteIds.slice(i, i + 200)).is("deleted_at", null);
+    for (const r of (data ?? []) as { id: string }[]) alive.add(r.id);
+  }
+  return Object.fromEntries(Object.entries(done).filter(([, note]) => alive.has(note)));
+}
+
 /** One page of the person's Notion pages (newest edits first as Notion returns them), with which ones are already notes. */
 export async function listNotionPages(userId: string, cursor?: string, query?: string): Promise<NotionPages> {
   const args: J = { fetch_type: "pages", page_size: PAGE_SIZE };
@@ -85,7 +98,7 @@ export async function listNotionPages(userId: string, cursor?: string, query?: s
   if (query?.trim()) args.query = query.trim().slice(0, 100);
   const data = await run(userId, "NOTION_FETCH_DATA", args);
   const row = await integrations.getIntegration(userId, "notion");
-  const done = imported(row?.meta ?? {});
+  const done = await liveImports(userId, imported(row?.meta ?? {}));
   const list = pick(data, ["results", "pages", "values", "items"]);
   const pages: NotionPage[] = arr(list)
     .map(obj)
@@ -105,7 +118,7 @@ export async function listNotionPages(userId: string, cursor?: string, query?: s
 async function markdownOf(userId: string, id: string): Promise<{ title: string; body: string }> {
   const [md, meta] = await Promise.all([run(userId, "NOTION_GET_PAGE_MARKDOWN", { page_id: id }), run(userId, "NOTION_RETRIEVE_PAGE", { page_id: id }).catch(() => ({}) as J)]);
   const raw = pick(md, ["markdown", "content", "text", "body"]);
-  const body = (typeof raw === "string" ? raw : "").slice(0, BODY_MAX);
+  const body = cleanNotionMarkdown(typeof raw === "string" ? raw : "").slice(0, BODY_MAX);
   const heading = /^#\s+(.+)$/m.exec(body)?.[1]?.trim() ?? "";
   const title = (titleOf(meta) || titleOf(obj(meta.data)) || titleOf(obj(meta.response_data)) || titleOf(obj(meta.page)) || heading || "Untitled").slice(0, TITLE_MAX);
   return { title, body };
@@ -121,7 +134,7 @@ export async function importNotionPages(userId: string, ids: string[]): Promise<
   const row =
     (await integrations.getIntegration(userId, "notion")) ??
     { provider: "notion" as const, secret_cipher: sealKey("composio-session", userId), label: "Notion workspace", services: ["connected"], scopes: "", meta: {} };
-  const done = imported(row.meta);
+  const done = await liveImports(userId, imported(row.meta));
   const todo = unique.filter((id) => !(id in done));
   const result: NotionImportResult = { imported: 0, skipped: unique.length - todo.length, failed: 0 };
   const db = userDb(userId);

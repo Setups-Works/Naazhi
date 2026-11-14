@@ -102,11 +102,8 @@ export function serverEnv() {
       .map((e) => e.trim().toLowerCase())
       .filter(Boolean),
     groqApiKey: optional("GROQ_API_KEY"),
-    /**
-     * Composio, used only for Notion (Google connects through our own sign-in). One project API key for every person, plus the id of the
-     * Notion auth config created once in the Composio dashboard. Without both, the Notion connect button says it isn't set up.
-     */
-    composio: { apiKey: optional("COMPOSIO_API_KEY"), authConfigs: { notion: optional("COMPOSIO_AUTH_CONFIG_NOTION") } },
+    /** Composio, used only for Notion (Google connects through our own sign-in): one project API key for everyone; each person's connection is kept apart by their user id. */
+    composio: { apiKey: optional("COMPOSIO_API_KEY") },
     /** Zoho ("Server-based Application" client from api-console.zoho.com). Without both values the Zoho connect button says it isn't set up. */
     zoho: {
       clientId: optional("ZOHO_CLIENT_ID"),

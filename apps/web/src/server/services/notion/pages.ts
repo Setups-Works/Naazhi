@@ -5,9 +5,10 @@ import { ConflictError, RateLimitError, ValidationError } from "../../errors";
 import { underLimit } from "../../rateLimit";
 import * as integrations from "../../repositories/integrations.repository";
 import { createNote } from "../../repositories/notes.repository";
+import { sealKey } from "../billing/keyVault";
 import { arr, obj, str, type J } from "../composio/json";
-import { composio } from "./client";
-import { notionConnectionId } from "./connection";
+import { notionSession } from "./client";
+import { requireNotion } from "./connection";
 
 /**
  * Reading a person's Notion pages (through Composio, as that person) and turning chosen ones into notes. Nothing is stored but the
@@ -25,25 +26,20 @@ const TITLE_MAX = 300;
 const BODY_MAX = 200_000;
 
 async function run(userId: string, tool: string, args: J): Promise<J> {
-  const connectionId = await notionConnectionId(userId);
+  await requireNotion(userId);
   if (!(await underLimit(`notion:${userId}`, CALLS_PER_MINUTE, 60))) throw new RateLimitError();
-  let result: Awaited<ReturnType<ReturnType<typeof composio>["tools"]["execute"]>>;
+  let result: Awaited<ReturnType<Awaited<ReturnType<typeof notionSession>>["execute"]>>;
   try {
-    result = await composio().tools.execute(
-      tool,
-      { userId, connectedAccountId: connectionId, arguments: args, dangerouslySkipVersionCheck: true },
-      { signal: AbortSignal.timeout(TIMEOUT_MS) },
-    );
+    const session = await notionSession(userId);
+    // The SDK takes no abort signal here, so a call that hangs is given up on after TIMEOUT_MS.
+    result = await Promise.race([session.execute(tool, args), new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), TIMEOUT_MS))]);
   } catch (e) {
     console.error("notion call failed", e instanceof Error ? e.name : "unknown error");
     throw new ConflictError("We couldn’t reach Notion. Try again in a moment.");
   }
-  if (result.successful) return obj(result.data);
-  const reason = (result.error ?? "").slice(0, 160);
-  if (/\b(401|unauthori[sz]ed|invalid_grant|revoked)\b/i.test(reason)) {
-    await integrations.deleteIntegration(userId, "notion");
-    throw new ConflictError("Your Notion connection expired. Connect it again in Settings → Imports & backup.");
-  }
+  if (!result.error) return obj(result.data);
+  const reason = String(result.error).slice(0, 160);
+  if (/\b(401|unauthori[sz]ed|invalid_grant|revoked)\b/i.test(reason)) throw new ConflictError("Your Notion connection expired. Connect it again in Settings → Imports & backup.");
   throw new ConflictError(/\b404\b|not found|could not find/i.test(reason) ? "Notion can’t see that page. Share it with the connection in Notion first." : "Notion couldn’t do that.");
 }
 
@@ -121,8 +117,10 @@ export async function importNotionPages(userId: string, ids: string[]): Promise<
   if (!unique.length) throw new ValidationError("Pick at least one page.");
   if (unique.length > MAX_PER_IMPORT) throw new ValidationError(`Import at most ${MAX_PER_IMPORT} pages at a time.`);
   if (unique.some((id) => !NOTION_ID.test(id))) throw new ValidationError("That isn’t a Notion page.");
-  const row = await integrations.getIntegration(userId, "notion");
-  if (!row) throw new ConflictError("Connect Notion in Settings → Imports & backup first.");
+  await requireNotion(userId);
+  const row =
+    (await integrations.getIntegration(userId, "notion")) ??
+    { provider: "notion" as const, secret_cipher: sealKey("composio-session", userId), label: "Notion workspace", services: ["connected"], scopes: "", meta: {} };
   const done = imported(row.meta);
   const todo = unique.filter((id) => !(id in done));
   const result: NotionImportResult = { imported: 0, skipped: unique.length - todo.length, failed: 0 };
@@ -144,6 +142,6 @@ export async function importNotionPages(userId: string, ids: string[]): Promise<
     );
   }
   const kept = Object.fromEntries(Object.entries(done).slice(-MAX_REMEMBERED));
-  await integrations.updateIntegrationTokens(userId, "notion", row.secret_cipher, { ...row.meta, imported: kept });
+  await integrations.saveIntegration(userId, { ...row, meta: { ...row.meta, imported: kept } });
   return result;
 }

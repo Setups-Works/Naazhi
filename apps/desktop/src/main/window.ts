@@ -82,10 +82,10 @@ export function createMainWindow(): BrowserWindow {
   });
 
   // No connection: show the bundled "you're offline" page, which retries by itself when the network returns.
-  win.webContents.on("did-fail-load", (_event, code, _desc, url, isMainFrame) => {
+  win.webContents.on("did-fail-load", (_event, code, desc, url, isMainFrame) => {
     // -3 is a navigation that was cancelled on purpose (a redirect, a new load).
     if (!isMainFrame || code === -3 || url.startsWith("file:")) return;
-    void win.loadFile(path.join(config.assets, "offline.html"), { query: { to: config.startUrl } });
+    void win.loadFile(path.join(config.assets, "offline.html"), { query: { to: config.startUrl, code: String(code), reason: desc.slice(0, 60) } });
   });
 
   win.webContents.on("context-menu", (_event, params) => {

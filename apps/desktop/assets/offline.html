@@ -12,6 +12,7 @@
       main { max-width: 360px; padding: 24px; text-align: center; }
       h1 { margin: 0 0 8px; font-size: 22px; font-weight: 500; }
       p { margin: 0 0 20px; opacity: 0.7; }
+      small { display: block; margin-top: 16px; font-size: 12px; opacity: 0.5; font-family: ui-monospace, monospace; }
       button { -webkit-app-region: no-drag; font: inherit; padding: 8px 18px; border-radius: 8px; border: 1px solid GrayText; background: ButtonFace; color: ButtonText; cursor: pointer; }
     </style>
   </head>
@@ -20,6 +21,7 @@
       <h1>You’re offline</h1>
       <p>Naazhi needs a connection to open. Check your internet and try again.</p>
       <button type="button" id="retry">Try again</button>
+      <small id="why" hidden></small>
     </main>
     <script src="offline.js"></script>
   </body>

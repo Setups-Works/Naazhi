@@ -23,6 +23,16 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-14",
+    title: "Version 7.7.1: clearer desktop errors",
+    summary: "When the desktop app can’t open, it now says why.",
+    tone: "sand",
+    appVersion: "v7.7.1",
+    changes: [
+      { kind: "improved", platform: "desktop", text: "If the desktop app can’t reach Naazhi, the offline screen now shows the error that caused it, so a blocked connection can be told apart from no internet." },
+    ],
+  },
+  {
+    date: "2026-11-14",
     title: "Version 7.7.0: reminders and simpler desktop sign-in",
     summary: "To-dos can remind you at a time you choose, and the desktop app signs you in with a short code.",
     tone: "gold",

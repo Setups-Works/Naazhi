@@ -31,6 +31,7 @@ import { LogoTile, SettingsNotice, Tag } from "../ui";
 import { ZOHO_SERVICES, isZohoService } from "../../../lib/zoho";
 import { useConfirm } from "../../../components/ui/Confirm";
 import { useConnectZoho, useDisconnectZoho, useZohoStatus } from "../../integrations/zoho";
+import { ComposioProviderPage } from "./ComposioPages";
 
 /** Each service's own icon and colour, so Outlook mail and Outlook calendar (or Zoho's thirteen apps) can be told apart at a glance. */
 const LOOK: Record<string, [IconDefinition, string]> = {
@@ -230,7 +231,8 @@ function ProviderPage({ id }: { id: ProviderId }) {
   );
 }
 
-export const GooglePage = () => <ProviderPage id="google" />;
+/** Google's services connect through Composio, one at a time (see ComposioPages.tsx). */
+export const GooglePage = () => <ComposioProviderPage provider="google" />;
 export const MicrosoftPage = () => <ProviderPage id="microsoft" />;
 
 /** Zoho: connect once, pick the services, and see which account is connected. Tokens stay on the server. */

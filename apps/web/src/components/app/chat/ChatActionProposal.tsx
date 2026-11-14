@@ -3,8 +3,8 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Icon as FA } from "@/components/ui/Icon";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { faAddressCard, faBookOpen, faComments, faEnvelope, faListCheck, faPenToSquare, faRss } from "@fortawesome/free-solid-svg-icons";
-import { stripRefs, type ChatAction, type ChatProposal } from "../../../lib/chat-actions";
+import { faAddressCard, faBookOpen, faCalendarDays, faComments, faEnvelope, faListCheck, faPenToSquare, faRss } from "@fortawesome/free-solid-svg-icons";
+import { eventTimeLabel, isComposioDraft, stripRefs, type ChatAction, type ChatProposal } from "../../../lib/chat-actions";
 import { qk } from "../../../lib/query/keys";
 import { draftDue, recurrenceLabel } from "../../../lib/tasks";
 
@@ -16,9 +16,31 @@ const ICON: Record<ChatAction["kind"], IconDefinition> = {
   zoho_crm: faAddressCard,
   zoho_mail: faEnvelope,
   zoho_cliq: faComments,
+  gmail_send: faEnvelope,
+  gcal_event: faCalendarDays,
 };
-const LABEL: Record<ChatAction["kind"], string> = { task: "to-do", journal: "journal entry", note: "note", feed: "feed", zoho_crm: "record", zoho_mail: "email", zoho_cliq: "message" };
-const WHERE: Record<ChatAction["kind"], string> = { task: "To-do", journal: "Journal", note: "Notes", feed: "Reader", zoho_crm: "Zoho CRM", zoho_mail: "Zoho Mail", zoho_cliq: "Zoho Cliq" };
+const LABEL: Record<ChatAction["kind"], string> = {
+  task: "to-do",
+  journal: "journal entry",
+  note: "note",
+  feed: "feed",
+  zoho_crm: "record",
+  zoho_mail: "email",
+  zoho_cliq: "message",
+  gmail_send: "email",
+  gcal_event: "event",
+};
+const WHERE: Record<ChatAction["kind"], string> = {
+  task: "To-do",
+  journal: "Journal",
+  note: "Notes",
+  feed: "Reader",
+  zoho_crm: "Zoho CRM",
+  zoho_mail: "Zoho Mail",
+  zoho_cliq: "Zoho Cliq",
+  gmail_send: "Gmail",
+  gcal_event: "Google Calendar",
+};
 /** What the button says for each draft: Zoho actions say exactly what will happen, because they reach outside the app. */
 const CREATE: Record<ChatAction["kind"], string> = {
   task: "Create to-do",
@@ -28,9 +50,23 @@ const CREATE: Record<ChatAction["kind"], string> = {
   zoho_crm: "Create in Zoho CRM",
   zoho_mail: "Send with Zoho Mail",
   zoho_cliq: "Post in Zoho Cliq",
+  gmail_send: "Send with Gmail",
+  gcal_event: "Add to Google Calendar",
 };
-const OPEN: Record<ChatAction["kind"], string> = { task: "Open to-do", journal: "Open journal entry", note: "Open note", feed: "Open feed", zoho_crm: "Open in Zoho", zoho_mail: "Open Sent in Zoho", zoho_cliq: "Open Zoho Cliq" };
+const OPEN: Record<ChatAction["kind"], string> = {
+  task: "Open to-do",
+  journal: "Open journal entry",
+  note: "Open note",
+  feed: "Open feed",
+  zoho_crm: "Open in Zoho",
+  zoho_mail: "Open Sent in Zoho",
+  zoho_cliq: "Open Zoho Cliq",
+  gmail_send: "Open Sent in Gmail",
+  gcal_event: "Open in Google Calendar",
+};
 const isZoho = (k: ChatAction["kind"]) => k.startsWith("zoho_");
+/** Drafts that act in another app: their button says exactly what will happen, and a finished one opens that app in a new tab. */
+const isExternal = (k: ChatAction["kind"]) => isZoho(k) || isComposioDraft(k);
 
 /** The heading and body a draft card shows (journal entries have no heading). */
 function look(a: ChatAction): { title: string; preview: string } {
@@ -57,6 +93,10 @@ function look(a: ChatAction): { title: string; preview: string } {
       return { title: a.subject, preview: `To ${a.to}\n\n${a.body}` };
     case "zoho_cliq":
       return { title: `#${a.channel.replace(/^#/, "")}`, preview: a.text };
+    case "gmail_send":
+      return { title: a.subject, preview: `To ${a.to}\n\n${a.body}` };
+    case "gcal_event":
+      return { title: a.title, preview: [`${dateLabel(a.date)}, ${eventTimeLabel(a)}`, a.location, a.description].filter(Boolean).join("\n") };
   }
 }
 
@@ -122,7 +162,7 @@ export default function ChatActionProposal({
               <span className="grid size-7 place-items-center rounded-ctl bg-hover text-[12px] text-ink-2">
                 <FA icon={ICON[a.kind]} />
               </span>
-              {p.created ? (isZoho(a.kind) ? `Done in ${WHERE[a.kind]}` : `Saved to ${WHERE[a.kind]}`) : `${WHERE[a.kind]} · draft`}
+              {p.created ? (isExternal(a.kind) ? `Done in ${WHERE[a.kind]}` : `Saved to ${WHERE[a.kind]}`) : `${WHERE[a.kind]} · draft`}
             </p>
             {title && <p className="mt-2 font-semibold">{title}</p>}
             {preview && <p className="mt-1 line-clamp-6 whitespace-pre-wrap break-words text-sm text-fg-muted">{preview}</p>}
@@ -148,13 +188,13 @@ export default function ChatActionProposal({
               <a
                 className="btn btn-secondary btn-sm mt-3 inline-flex h-9 px-4 text-[13px]"
                 href={p.created.path}
-                {...(isZoho(a.kind) ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                {...(isExternal(a.kind) ? { target: "_blank", rel: "noopener noreferrer" } : {})}
               >
                 {OPEN[a.kind]}
               </a>
             ) : (
               <button className="btn btn-primary btn-sm mt-3 h-9 px-4 text-[13px]" disabled={busy !== null} onClick={() => create(p.index)}>
-                {busy === p.index ? (isZoho(a.kind) ? "Sending to Zoho…" : "Creating…") : CREATE[a.kind]}
+                {busy === p.index ? (isZoho(a.kind) ? "Sending to Zoho…" : isComposioDraft(a.kind) ? `Sending to ${WHERE[a.kind]}…` : "Creating…") : CREATE[a.kind]}
               </button>
             )}
           </section>

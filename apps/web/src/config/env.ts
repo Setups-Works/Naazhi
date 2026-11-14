@@ -102,6 +102,17 @@ export function serverEnv() {
       .filter(Boolean),
     groqApiKey: optional("GROQ_API_KEY"),
     composioApiKey: optional("COMPOSIO_API_KEY"),
+    /**
+     * Composio: one project API key for every person (each person's connections are kept apart by their user id), plus one auth
+     * config per app, created in the Composio dashboard. An app without its auth config shows as "not set up". The webhook secret
+     * verifies events Composio sends; without it the webhook refuses everything. Toolkit versions are optional pins.
+     */
+    composio: {
+      apiKey: optional("COMPOSIO_API_KEY"),
+      webhookSecret: optional("COMPOSIO_WEBHOOK_SECRET"),
+      authConfigs: { gmail: optional("COMPOSIO_AUTH_CONFIG_GMAIL"), googlecalendar: optional("COMPOSIO_AUTH_CONFIG_GOOGLECALENDAR") },
+      toolkitVersions: { gmail: optional("COMPOSIO_TOOLKIT_VERSION_GMAIL"), googlecalendar: optional("COMPOSIO_TOOLKIT_VERSION_GOOGLECALENDAR") },
+    },
     /** Zoho ("Server-based Application" client from api-console.zoho.com). Without both values the Zoho connect button says it isn't set up. */
     zoho: {
       clientId: optional("ZOHO_CLIENT_ID"),

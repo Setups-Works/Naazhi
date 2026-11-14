@@ -13,12 +13,14 @@ import { calendarFor } from "../../../lib/dates";
 import { healthContextFor } from "../health/health.service";
 import { zohoStatus } from "../integrations/zoho";
 import { CHAT_PROMPT, personaLine, zohoLine } from "./prompts/chat";
+import { composioStatus } from "../composio";
+import { composioLine } from "./prompts/composio";
 
 /** Limits live here (not in routes) so every caller gets the same behaviour. */
 const LIMITS = { historyMessages: 20, charsPerMessage: 6000, repliesPerMinute: 20, savedChars: 19000 } as const;
 
 /** The field of each draft kind that holds its text, where {{reply}} and {{previous}} may stand in for it. */
-const TEXT_FIELD: Record<string, string> = { note: "body", zoho_mail: "body", zoho_cliq: "text" };
+const TEXT_FIELD: Record<string, string> = { note: "body", zoho_mail: "body", zoho_cliq: "text", gmail_send: "body" };
 
 const DRAFT_BLOCK = /<create-item>([\s\S]*?)<\/create-item>/g;
 
@@ -157,15 +159,19 @@ export async function startChatReply(opts: {
   if (rows[rows.length - 1].role !== "user") return { ok: false, status: 400, error: "Nothing to reply to." };
 
   // The model is bad at calendar arithmetic ("next Tuesday", "the 20th"), so it gets a ready list of the coming dates instead.
-  const [health, profile, zoho] = await Promise.all([
+  const [health, profile, zoho, google] = await Promise.all([
     healthContextFor(opts.userId, opts.localDate),
     db.from("profiles").select("preferences").maybeSingle(),
     // Only the ids of the services they picked: no Zoho data ever reaches the model. A failed lookup means "not connected" for this reply.
     zohoStatus(opts.userId).catch(() => null),
+    // The same for Gmail and Google Calendar (through Composio): which apps are connected, never their content.
+    composioStatus(opts.userId).catch(() => null),
   ]);
+  const googleApps = google?.apps.filter((a) => a.state === "connected").map((a) => a.app) ?? [];
+  const googleLine = google?.configured ? `\n${composioLine(googleApps)}` : "";
   const persona = personaLine((profile.data as { preferences?: { role?: unknown; writeTone?: unknown } } | null)?.preferences);
   const messages: AiMessage[] = [
-    { role: "system", content: `${CHAT_PROMPT.system} ${calendarFor(opts.localDate)}${health ? `\n${health}` : ""}${persona ? `\n${persona}` : ""}${zoho?.configured ? `\n${zohoLine(zoho.connected ? zoho.services : [])}` : ""}` },
+    { role: "system", content: `${CHAT_PROMPT.system} ${calendarFor(opts.localDate)}${health ? `\n${health}` : ""}${persona ? `\n${persona}` : ""}${zoho?.configured ? `\n${zohoLine(zoho.connected ? zoho.services : [])}` : ""}${googleLine}` },
     ...rows.map((m) => ({ role: m.role, content: m.body.slice(0, LIMITS.charsPerMessage) })),
   ];
   const it = provider

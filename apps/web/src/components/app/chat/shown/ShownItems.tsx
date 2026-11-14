@@ -6,6 +6,7 @@ import NotesShown from "./NotesShown";
 import RssShown from "./RssShown";
 import TasksShown from "./TasksShown";
 import ZohoShown from "./ZohoShown";
+import ComposioShown from "./ComposioShown";
 
 /**
  * The cards a chat reply asked for with `<show-item>` blocks. The assistant only names what to show; each card reads the real items
@@ -28,6 +29,8 @@ export default function ShownItems({ shows }: { shows: ShowItem[] }) {
             return <ZohoShown key={i} service={s.service} view={s.view} query={s.query} />;
           case "health":
             return <HealthShown key={i} date={s.date} />;
+          case "composio":
+            return <ComposioShown key={i} app={s.app} view={s.view} query={s.query} />;
         }
       })}
     </div>

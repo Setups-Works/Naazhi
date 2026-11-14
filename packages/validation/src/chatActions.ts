@@ -1,4 +1,8 @@
 import { z } from "zod";
+import { composioShowSchema, COMPOSIO_DRAFT_KINDS, describeComposioDraft, gcalEventSchema, gmailSendSchema } from "./composioActions";
+
+// The Gmail and Google Calendar blocks (through Composio) live in their own file; they are part of the schemas below.
+export * from "./composioActions";
 
 /** The Zoho services a card can show. The same list is in apps/web/src/lib/zoho (a unit test keeps the two equal). */
 export const ZOHO_SERVICE_IDS = ["mail", "calendar", "cliq", "workdrive", "projects", "sign", "crm", "books", "billing", "expense", "desk", "people", "recruit"] as const;
@@ -39,6 +43,8 @@ export const chatActionSchema = z.discriminatedUnion("kind", [
   }),
   z.object({ kind: z.literal("zoho_mail"), to: z.string().trim().email().max(320), subject: z.string().trim().min(1).max(300), body: z.string().max(10_000) }),
   z.object({ kind: z.literal("zoho_cliq"), channel: z.string().trim().min(1).max(100), text: z.string().trim().min(1).max(4000) }),
+  gmailSendSchema,
+  gcalEventSchema,
 ]);
 
 export type ChatAction = z.infer<typeof chatActionSchema>;
@@ -57,6 +63,7 @@ export const showItemSchema = z.discriminatedUnion("kind", [
   /** Records from the person's connected Zoho account (leads, inbox, invoices, tickets…); `view` picks the list, `query` searches it. Read by the app with the person's own Zoho connection. */
   z.object({ kind: z.literal("zoho"), service: z.enum(ZOHO_SERVICE_IDS), view: z.string().trim().max(20).optional(), query: z.string().trim().max(100).optional() }),
   z.object({ kind: z.literal("rss"), view: z.enum(["latest", "starred", "unread"]).optional(), site: z.string().trim().max(100).optional(), query: z.string().trim().max(100).optional() }),
+  composioShowSchema,
 ]);
 
 export type ShowItem = z.infer<typeof showItemSchema>;
@@ -94,6 +101,7 @@ export function describeItem(a: ChatAction): string {
   if (a.kind === "zoho_crm") return `Zoho CRM · ${a.module.slice(0, -1)} · ${clean(a.fields.Last_Name ?? a.fields.Account_Name ?? "", 80)}`;
   if (a.kind === "zoho_mail") return `Zoho Mail · ${clean(a.subject, 80)}`;
   if (a.kind === "zoho_cliq") return `Zoho Cliq · #${clean(a.channel, 40)}`;
+  if (a.kind === "gmail_send" || a.kind === "gcal_event") return describeComposioDraft(a);
   if (a.kind === "note") return `Note · ${clean(a.title, 80)}${a.body.trim() ? ` · ${clean(a.body, 100)}` : ""}`;
   return "Journal entry";
 }
@@ -117,7 +125,7 @@ const MAX_PROPOSALS = 6;
 const BLOCK = /<(create-item|created-item)>\s*([\s\S]*?)\s*<\/\1>/g;
 
 const createdSchema = z.object({
-  kind: z.enum(["note", "journal", "task", "feed", "zoho_crm", "zoho_mail", "zoho_cliq"]),
+  kind: z.enum(["note", "journal", "task", "feed", "zoho_crm", "zoho_mail", "zoho_cliq", ...COMPOSIO_DRAFT_KINDS]),
   path: z.string().max(500),
   id: z.string().max(60).optional(),
   action: chatActionSchema,

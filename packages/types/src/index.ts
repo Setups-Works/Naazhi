@@ -291,3 +291,4 @@ export type AppNotification = {
 export type Inbox = { items: AppNotification[]; unread: number };
 
 export * from "./desktop";
+export * from "./integrations";

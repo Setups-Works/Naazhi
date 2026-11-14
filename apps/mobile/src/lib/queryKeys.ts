@@ -10,6 +10,7 @@ export const qk = {
   billing: ["billing"] as const,
   billingInvoices: ["billing", "invoices"] as const,
   zohoItems: (service: string, view: string, q: string) => ["zoho", "items", service, view, q] as const, // a Zoho card in chat
+  composioItems: (app: string, view: string, q: string) => ["composio", "items", app, view, q] as const, // a Gmail or Google Calendar card in chat
   rss: {
     all: ["rss"] as const,
     feeds: ["rss", "feeds"] as const,

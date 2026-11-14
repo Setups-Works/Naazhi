@@ -56,6 +56,12 @@ export const qk = {
   },
   // Zoho: the connection (account and picked services) and the records a chat card shows (never cached across people: the keys sit under "zoho").
   zoho: { status: ["zoho", "status"] as const, items: (service: string, view: string, q: string) => ["zoho", "items", service, view, q] as const },
+  // Apps connected through Composio (Gmail, Google Calendar): which are connected, and the items a chat card shows.
+  composio: {
+    status: ["composio", "status"] as const,
+    allItems: ["composio", "items"] as const,
+    items: (app: string, view: string, q: string) => ["composio", "items", app, view, q] as const,
+  },
   aiCatalog: ["ai", "catalog"] as const, // the model picker: ChatGPT and provider connections with their models
   billing: { me: ["billing", "me"] as const, invoices: ["billing", "invoices"] as const }, // the signed-in person's plan, usage and own-key setup
   profile: ["profile"] as const,

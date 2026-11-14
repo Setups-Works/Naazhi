@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
-import { stripRefs, type ChatAction, type ChatProposal, type ShowItem } from "@untitled/validation";
+import { eventTimeLabel, stripRefs, type ChatAction, type ChatProposal, type ShowItem } from "@untitled/validation";
 
 import { ShownItems } from "../shown/ShownItems";
 import { AppText } from "@/components/ui/AppText";
@@ -44,6 +44,9 @@ const KIND = {
   zoho_crm: { tone: "clay", icon: "address-card", label: "record", where: "Zoho CRM", href: "", create: "Create in Zoho CRM" },
   zoho_mail: { tone: "clay", icon: "envelope", label: "email", where: "Zoho Mail", href: "", create: "Send with Zoho Mail" },
   zoho_cliq: { tone: "clay", icon: "comments", label: "message", where: "Zoho Cliq", href: "", create: "Post in Zoho Cliq" },
+  // Gmail and Google Calendar (through Composio) also act outside the app, the same way.
+  gmail_send: { tone: "blue", icon: "envelope", label: "email", where: "Gmail", href: "", create: "Send with Gmail", open: "Open Sent in Gmail" },
+  gcal_event: { tone: "blue", icon: "calendar-days", label: "event", where: "Google Calendar", href: "", create: "Add to Google Calendar", open: "Open in Google Calendar" },
 } as const;
 
 /** The heading and body of a draft card (journal entries have no heading). */
@@ -66,6 +69,10 @@ function look(a: ChatAction): { title: string; preview: string } {
       return { title: a.subject, preview: `To ${a.to}\n\n${a.body}` };
     case "zoho_cliq":
       return { title: `#${a.channel.replace(/^#/, "")}`, preview: a.text };
+    case "gmail_send":
+      return { title: a.subject, preview: `To ${a.to}\n\n${a.body}` };
+    case "gcal_event":
+      return { title: a.title, preview: [`${dateLabel(a.date)}, ${eventTimeLabel(a)}`, a.location, a.description].filter(Boolean).join("\n\n") };
   }
 }
 
@@ -138,7 +145,7 @@ function Drafts({ proposals, messageId, chatId }: { proposals: ChatProposal[]; m
             ) : null}
             {p.created ? (
               <Button
-                title={k.href ? `Open ${k.label}` : "Open in Zoho"}
+                title={k.href ? `Open ${k.label}` : "open" in k ? k.open : "Open in Zoho"}
                 kind="secondary"
                 onPress={() => (k.href ? router.navigate(k.href) : openWeb(p.created!.path))}
                 style={styles.draftBtn}

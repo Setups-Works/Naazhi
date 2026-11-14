@@ -66,3 +66,4 @@ export * from "./notifications";
 export * from "./rss";
 export * from "./billing";
 export * from "./aiConnections";
+export * from "./composio";

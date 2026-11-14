@@ -1,15 +1,15 @@
 "use client";
 import Link from "next/link";
-import { faCalendarDays, faEnvelope } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarDays, faEnvelope, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import { COMPOSIO_APPS, composioSettingsPath, type ComposioAppId } from "../../../../lib/composio/apps";
 import { useComposioItems } from "../../../../features/integrations/composio";
 import ShownGroup, { ShownEmpty } from "./ShownGroup";
 import ToolCallLog from "../kit/ToolCallLog";
 
-const ICON = { gmail: faEnvelope, googlecalendar: faCalendarDays } satisfies Record<ComposioAppId, unknown>;
+const ICON = { gmail: faEnvelope, googlecalendar: faCalendarDays, googledrive: faFolderOpen } satisfies Record<ComposioAppId, unknown>;
 
 /**
- * Emails or events from the person's own connected app (through Composio). The assistant only names the app, the list and an
+ * Emails or events from the person's own connected app (Google sign-in). The assistant only names the app, the list and an
  * optional search; this card reads the real items through our server with the person's own connection, so nothing is invented
  * and no email or event is ever sent to the AI.
  */

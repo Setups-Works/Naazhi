@@ -1,9 +1,9 @@
 /**
- * Composio — OAuth, tools, triggers and connections for Gmail, Google Calendar, Slack, GitHub and more.
+ * Integrations vocabulary (older; new code uses apps.ts).
  * NOT IMPLEMENTED YET (Phase 3). This file fixes the vocabulary so features and the server service agree on it.
  *
  * Rule: browser code never talks to Composio directly. It calls our own /api/v1/integrations/* routes, which use
- * the server service in src/server/services/composio (that is where COMPOSIO_API_KEY lives).
+ * the server service in src/server/services/composio (that is where the Google tokens are handled).
  */
 
 export type IntegrationApp = "gmail" | "googlecalendar" | "slack" | "github";

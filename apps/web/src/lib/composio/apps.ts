@@ -2,18 +2,16 @@ import { COMPOSIO_APP_IDS, type ComposioAppId } from "@untitled/types";
 import { PROVIDERS, type ProviderId } from "./catalog";
 
 /**
- * The apps Naazhi reaches through Composio, in one list. Pure constants, safe in the browser: no secrets and no SDK (those live in
+ * The Google apps Naazhi connects with one Google sign-in, in one list. Pure constants, safe in the browser: no secrets and no SDK (those live in
  * apps/web/src/server/services/composio). To add an app: add its id to COMPOSIO_APP_IDS in @untitled/types and in
- * packages/validation/src/composioActions.ts, add its entry here, its two environment variables in config/env.ts and its reader in
- * services/composio/readers.ts. Nothing else needs to change, and the database needs no migration.
+ * packages/validation/src/composioActions.ts, add its entry here (with its scopes) and its reader in services/composio/readers.ts.
+ * The database needs no migration.
  */
 export { COMPOSIO_APP_IDS };
 export type { ComposioAppId, ComposioAppStatus, ComposioConnectionState, ComposioItems, ComposioRow, ComposioStatus } from "@untitled/types";
 
 export type ComposioAppDef = {
   name: string;
-  /** The toolkit's name at Composio. Every tool of the app starts with it in capitals (GMAIL_SEND_EMAIL). */
-  toolkit: string;
   /** The Settings page the app is connected from, and its service id on that page (lib/composio/catalog.ts). */
   provider: ProviderId;
   service: string;
@@ -22,26 +20,41 @@ export type ComposioAppDef = {
   web: string;
   /** The lists a chat card can show; the first is the default. */
   views: readonly [string, ...string[]];
+  /** What Google is asked for. Narrowest that does the job: Gmail and Drive are read-only, and Gmail may also send. */
+  scopes: readonly string[];
 };
+
+/** Asked on every connect, to learn which account signed in. */
+export const GOOGLE_IDENTITY_SCOPES = ["openid", "email"] as const;
+const SCOPE = "https://www.googleapis.com/auth";
 
 export const COMPOSIO_APPS: Record<ComposioAppId, ComposioAppDef> = {
   gmail: {
     name: "Gmail",
-    toolkit: "gmail",
     provider: "google",
     service: "gmail",
     logo: "/logos/gmail.svg",
     web: "https://mail.google.com/",
     views: ["inbox", "unread", "sent"],
+    scopes: [`${SCOPE}/gmail.readonly`, `${SCOPE}/gmail.send`],
   },
   googlecalendar: {
     name: "Google Calendar",
-    toolkit: "googlecalendar",
     provider: "google",
     service: "calendar",
     logo: "/logos/google-calendar.svg",
     web: "https://calendar.google.com/",
     views: ["upcoming"],
+    scopes: [`${SCOPE}/calendar.events`],
+  },
+  googledrive: {
+    name: "Google Drive",
+    provider: "google",
+    service: "drive",
+    logo: "/logos/google-drive.svg",
+    web: "https://drive.google.com/",
+    views: ["recent"],
+    scopes: [`${SCOPE}/drive.readonly`],
   },
 };
 

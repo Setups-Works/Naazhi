@@ -36,7 +36,7 @@ export const PROVIDERS: Record<ProviderId, Provider> = {
           { id: "calendar", name: "Google Calendar", description: "Check your schedule and book events", access: "See every calendar on the account and create, change or cancel events." },
         ],
       },
-      { label: "Work", services: [{ id: "drive", name: "Google Drive", description: "Find, read and create files, Docs and Sheets", access: "Open, search, create and edit files in your Drive, including Docs and Sheets." }] },
+      { label: "Work", services: [{ id: "drive", name: "Google Drive", description: "Find your files, Docs and Sheets", access: "Search and list the files in your Drive, including Docs and Sheets. Naazhi can only read them." }] },
     ],
   },
   microsoft: {

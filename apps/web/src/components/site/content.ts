@@ -354,7 +354,7 @@ export const FAQS: [string, string][] = [
   ],
   [
     "Which email and calendar services will connect?",
-    "Gmail and Google Calendar, and Zoho Mail and Zoho Calendar, are live now, and you can ask chat about them. Outlook for email is planned. With Pro you can connect up to 5 email accounts and up to 5 calendars.",
+    "Gmail, Google Calendar and Google Drive (one Google sign-in), and Zoho Mail and Zoho Calendar, are live now, and you can ask chat about them. Outlook for email is planned. With Pro you can connect up to 5 email accounts and up to 5 calendars.",
   ],
   [
     "Does it connect to the tools my team already uses?",

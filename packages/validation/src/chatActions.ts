@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { composioShowSchema, COMPOSIO_DRAFT_KINDS, describeComposioDraft, gcalEventSchema, gmailSendSchema } from "./composioActions";
 
-// The Gmail and Google Calendar blocks (through Composio) live in their own file; they are part of the schemas below.
+// The Gmail and Google Calendar blocks (Google sign-in) live in their own file; they are part of the schemas below.
 export * from "./composioActions";
 
 /** The Zoho services a card can show. The same list is in apps/web/src/lib/zoho (a unit test keeps the two equal). */

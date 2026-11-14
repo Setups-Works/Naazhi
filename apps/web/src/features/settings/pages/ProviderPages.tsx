@@ -231,7 +231,7 @@ function ProviderPage({ id }: { id: ProviderId }) {
   );
 }
 
-/** Google's services connect through Composio, one at a time (see ComposioPages.tsx). */
+/** Google's services connect with one Google sign-in (see ComposioPages.tsx). */
 export const GooglePage = () => <ComposioProviderPage provider="google" />;
 export const MicrosoftPage = () => <ProviderPage id="microsoft" />;
 

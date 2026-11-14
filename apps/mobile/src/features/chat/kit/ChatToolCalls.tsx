@@ -44,7 +44,7 @@ const KIND = {
   zoho_crm: { tone: "clay", icon: "address-card", label: "record", where: "Zoho CRM", href: "", create: "Create in Zoho CRM" },
   zoho_mail: { tone: "clay", icon: "envelope", label: "email", where: "Zoho Mail", href: "", create: "Send with Zoho Mail" },
   zoho_cliq: { tone: "clay", icon: "comments", label: "message", where: "Zoho Cliq", href: "", create: "Post in Zoho Cliq" },
-  // Gmail and Google Calendar (through Composio) also act outside the app, the same way.
+  // Gmail, Google Calendar and Google Drive (Google sign-in) also act outside the app, the same way.
   gmail_send: { tone: "blue", icon: "envelope", label: "email", where: "Gmail", href: "", create: "Send with Gmail", open: "Open Sent in Gmail" },
   gcal_event: { tone: "blue", icon: "calendar-days", label: "event", where: "Google Calendar", href: "", create: "Add to Google Calendar", open: "Open in Google Calendar" },
 } as const;

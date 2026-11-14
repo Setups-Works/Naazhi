@@ -89,6 +89,7 @@ export function serverEnv() {
       .split(",")
       .map((origin) => origin.trim())
       .filter(Boolean),
+    /** One Google OAuth client for sign-in and for connecting Gmail, Calendar and Drive (add the redirect address in the Google console, see docs/SELF_HOSTING.md). */
     google: { clientId: optional("GOOGLE_CLIENT_ID"), clientSecret: optional("GOOGLE_CLIENT_SECRET") },
     /** The phone app's identity for passkeys. Apple Team ID (iOS) and the SHA-256 fingerprint(s) of the Android signing key, comma separated. */
     appleTeamId: optional("APPLE_TEAM_ID"),
@@ -101,18 +102,6 @@ export function serverEnv() {
       .map((e) => e.trim().toLowerCase())
       .filter(Boolean),
     groqApiKey: optional("GROQ_API_KEY"),
-    composioApiKey: optional("COMPOSIO_API_KEY"),
-    /**
-     * Composio: one project API key for every person (each person's connections are kept apart by their user id), plus one auth
-     * config per app, created in the Composio dashboard. An app without its auth config shows as "not set up". The webhook secret
-     * verifies events Composio sends; without it the webhook refuses everything. Toolkit versions are optional pins.
-     */
-    composio: {
-      apiKey: optional("COMPOSIO_API_KEY"),
-      webhookSecret: optional("COMPOSIO_WEBHOOK_SECRET"),
-      authConfigs: { gmail: optional("COMPOSIO_AUTH_CONFIG_GMAIL"), googlecalendar: optional("COMPOSIO_AUTH_CONFIG_GOOGLECALENDAR") },
-      toolkitVersions: { gmail: optional("COMPOSIO_TOOLKIT_VERSION_GMAIL"), googlecalendar: optional("COMPOSIO_TOOLKIT_VERSION_GOOGLECALENDAR") },
-    },
     /** Zoho ("Server-based Application" client from api-console.zoho.com). Without both values the Zoho connect button says it isn't set up. */
     zoho: {
       clientId: optional("ZOHO_CLIENT_ID"),

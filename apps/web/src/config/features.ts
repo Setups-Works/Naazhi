@@ -18,7 +18,7 @@ export const FEATURES = {
   // Planned — see docs/PHASES.md
   workspaces: false, // Phase 1: shared workspaces and membership
   aiReplies: false, // Phase 4: real AI answers in Chat (provider router + orchestrator)
-  calendar: false, // Phase 3: Google Calendar through Composio
+  calendar: false, // Phase 3: Google Calendar through Google sign-in
   email: false, // Phase 3: Gmail through Composio
   integrations: false, // Phase 3: Composio connections page
   meetings: false, // Phase 5

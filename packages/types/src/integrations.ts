@@ -1,9 +1,9 @@
 /**
- * Apps a person connects through Composio (Gmail, Google Calendar) and what the API answers about them. Shared by the web app, the
+ * Google apps a person connects with one Google sign-in (Gmail, Google Calendar, Google Drive) and what the API answers about them. Shared by the web app, the
  * Expo app and the API client, so all three agree on the shapes. Each app's details (name, logo, views) are in
- * apps/web/src/lib/composio/apps.ts; the routes are in apps/web/src/app/api/v1/integrations/composio.
+ * apps/web/src/lib/composio/apps.ts; the routes are in apps/web/src/app/api/v1/integrations/composio (the name is kept from before Google was connected directly).
  */
-export const COMPOSIO_APP_IDS = ["gmail", "googlecalendar"] as const;
+export const COMPOSIO_APP_IDS = ["gmail", "googlecalendar", "googledrive"] as const;
 export type ComposioAppId = (typeof COMPOSIO_APP_IDS)[number];
 
 /** `connected` works. `pending` is a sign-in that was started but not finished. `expired` and `error` need a reconnect. */
@@ -11,7 +11,7 @@ export type ComposioConnectionState = "connected" | "pending" | "expired" | "err
 
 export type ComposioAppStatus = {
   app: ComposioAppId;
-  /** False until an admin has added this app's auth config id on the server. */
+  /** False until Google sign-in is set up on this server (GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET). */
   available: boolean;
   /** null when the person has never connected this app. */
   state: ComposioConnectionState | null;
@@ -20,7 +20,7 @@ export type ComposioAppStatus = {
 };
 
 export type ComposioStatus = {
-  /** False until COMPOSIO_API_KEY is set on the server. */
+  /** False until the Google client is set up on the server. */
   configured: boolean;
   apps: ComposioAppStatus[];
 };

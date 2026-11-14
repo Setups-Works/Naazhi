@@ -6,8 +6,10 @@ import { withOwner } from "../db/pool";
  * access to these tables, so everything goes through the integrations service, which has checked the person first. Secrets arrive
  * already sealed and are never logged.
  */
+export type IntegrationProvider = "zoho" | "google";
+
 export type IntegrationRow = {
-  provider: "zoho";
+  provider: IntegrationProvider;
   secret_cipher: string;
   label: string;
   services: string[];
@@ -17,7 +19,7 @@ export type IntegrationRow = {
 
 const COLS = "provider, secret_cipher, label, services, scopes, meta";
 
-export const getIntegration = (userId: string, provider: "zoho") =>
+export const getIntegration = (userId: string, provider: IntegrationProvider) =>
   withOwner(
     async (c) =>
       (await c.query<IntegrationRow>(`select ${COLS} from public.user_integrations where user_id = $1 and provider = $2`, [userId, provider])).rows[0] ?? null,
@@ -35,7 +37,7 @@ export const saveIntegration = (userId: string, row: IntegrationRow) =>
   );
 
 /** Replaces only the sealed tokens and the non-secret meta (after a refresh), leaving the picked services alone. */
-export const updateIntegrationTokens = (userId: string, provider: "zoho", secretCipher: string, meta: Record<string, unknown>) =>
+export const updateIntegrationTokens = (userId: string, provider: IntegrationProvider, secretCipher: string, meta: Record<string, unknown>) =>
   withOwner(
     async (c) =>
       void (await c.query("update public.user_integrations set secret_cipher = $3, meta = $4, updated_at = now() where user_id = $1 and provider = $2", [
@@ -46,10 +48,10 @@ export const updateIntegrationTokens = (userId: string, provider: "zoho", secret
       ])),
   );
 
-export const deleteIntegration = (userId: string, provider: "zoho") =>
+export const deleteIntegration = (userId: string, provider: IntegrationProvider) =>
   withOwner(async (c) => void (await c.query("delete from public.user_integrations where user_id = $1 and provider = $2", [userId, provider])));
 
-export const saveOAuthState = (userId: string, provider: "zoho", stateHash: string, services: string[], ttlSeconds: number) =>
+export const saveOAuthState = (userId: string, provider: IntegrationProvider, stateHash: string, services: string[], ttlSeconds: number) =>
   withOwner(async (c) => {
     // Old attempts are removed here, so the table never grows without a cleanup job.
     await c.query("delete from public.integration_oauth_states where expires_at < now()");
@@ -60,7 +62,7 @@ export const saveOAuthState = (userId: string, provider: "zoho", stateHash: stri
   });
 
 /** Takes the sign-in attempt if it is the person's own, unexpired and unused. One use only: it is deleted as it is read. */
-export const takeOAuthState = (userId: string, provider: "zoho", stateHash: string) =>
+export const takeOAuthState = (userId: string, provider: IntegrationProvider, stateHash: string) =>
   withOwner(
     async (c) =>
       (await c.query<{ services: string[] }>(

@@ -77,7 +77,7 @@ See [`.env.example`](.env.example). Never commit `.env*` files; never prefix a s
 | `SMTP_URL`, `MAIL_FROM`                                                | Verification, password reset and invitation emails      |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`                             | Optional "Continue with Google"                         |
 | `ADMIN_EMAILS`                                                         | Comma-separated emails that are always admins           |
-| `GROQ_API_KEY`, `COMPOSIO_API_KEY`, `CRON_SECRET`, Sentry/PostHog keys | AI, integrations, scheduled jobs and monitoring         |
+| `GROQ_API_KEY`, `CRON_SECRET`, Sentry/PostHog keys | AI, integrations, scheduled jobs and monitoring         |
 
 ## Documentation
 

@@ -55,7 +55,7 @@ docs/                  Architecture, phases, workflow, data model, security, Jir
 ## 4. Architecture rules (non-negotiable)
 
 1. **Layering and direction of dependencies:** `UI component → feature hook → API v1 route / server action → service → repository → PostgreSQL`. A layer may import only from layers to its right. Components never import from `apps/web/src/server`.
-2. **Server-only secrets stay on the server.** `DATABASE_URL`, `BETTER_AUTH_SECRET`, `S3_SECRET_KEY`, `GROQ_API_KEY`, `COMPOSIO_API_KEY`, Stripe keys: only in `apps/web/src/server/**`, route handlers and server actions, via `serverEnv()` from `apps/web/src/config`. Files that must never reach the browser import `"server-only"`.
+2. **Server-only secrets stay on the server.** `DATABASE_URL`, `BETTER_AUTH_SECRET`, `S3_SECRET_KEY`, `GROQ_API_KEY`, Stripe keys: only in `apps/web/src/server/**`, route handlers and server actions, via `serverEnv()` from `apps/web/src/config`. Files that must never reach the browser import `"server-only"`.
 3. **The browser never calls Composio or an AI provider with a secret.** It calls our `/api/v1/*` routes. (Exception: Puter.js runs in the browser by design, using the _user's_ Puter account.)
 4. **Every table has Row-Level Security.** Data is scoped to a workspace (`workspace_id`) or, for private data like journal entries, to the author. Never rely on UI checks for authorisation. Service-role queries must re-check permissions in code first.
 5. **Business rules live in services**, not in components or route handlers. A service exposes plain async functions with typed inputs/outputs so UI, API routes, background jobs and AI tools can all reuse them.

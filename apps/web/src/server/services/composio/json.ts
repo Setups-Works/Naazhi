@@ -11,8 +11,7 @@ export const str = (v: unknown): string => (typeof v === "string" ? v : typeof v
 /** Joins the parts that are not empty with a middle dot: dot("Ada", "", "3 Nov") → "Ada · 3 Nov". */
 export const dot = (...parts: (string | undefined | null)[]) => parts.filter(Boolean).join(" · ");
 
-/** A field of a tool's answer. Some tools put their answer one level down, under `response_data` or `data`. */
-export const field = (data: J, key: string): unknown => data[key] ?? obj(data.response_data)[key] ?? obj(data.data)[key];
+
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 

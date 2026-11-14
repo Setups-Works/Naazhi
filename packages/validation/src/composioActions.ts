@@ -7,7 +7,7 @@ import { z } from "zod";
  */
 
 /** The same list as COMPOSIO_APP_IDS in @untitled/types (a unit test keeps the two equal). */
-export const COMPOSIO_APP_IDS = ["gmail", "googlecalendar"] as const;
+export const COMPOSIO_APP_IDS = ["gmail", "googlecalendar", "googledrive"] as const;
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 /** A time of day on the 24-hour clock, for example "09:30". */

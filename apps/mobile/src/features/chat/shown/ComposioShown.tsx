@@ -17,10 +17,11 @@ const composio = createComposioApi(api);
 const APPS: Record<ComposioAppId, { name: string; icon: IconName; logo: LogoName; web: string }> = {
   gmail: { name: "Gmail", icon: "envelope", logo: "gmail", web: "https://mail.google.com/" },
   googlecalendar: { name: "Google Calendar", icon: "calendar-days", logo: "google-calendar", web: "https://calendar.google.com/" },
+  googledrive: { name: "Google Drive", icon: "folder-open", logo: "google-drive", web: "https://drive.google.com/" },
 };
 
 /**
- * Emails or events from the person's own connected app (through Composio), read by our server with their own connection, so the
+ * Emails or events from the person's own connected app (Google sign-in), read by our server with their own connection, so the
  * assistant never sees them. Connecting happens in Settings → Google on the web; here the card only explains that when it is missing.
  */
 export function ComposioShown({ app, view = "", query = "" }: { app: ComposioAppId; view?: string; query?: string }) {

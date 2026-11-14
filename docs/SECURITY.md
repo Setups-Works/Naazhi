@@ -18,7 +18,7 @@ Rules for everyone (and every AI agent). The checklist at the bottom is finished
 | `S3_ACCESS_KEY`                                     | file storage credentials             | server only                                               |
 | `S3_ENDPOINT`, `S3_REGION`, `S3_AUTO_CREATE_BUCKETS` | object storage endpoint and behavior | server-only configuration                                 |
 | `ADMIN_EMAILS`                                    | bootstrap admins                     | server only                                              |
-| `GROQ_API_KEY`, `COMPOSIO_API_KEY`                | AI / integrations services           | server only (Phase 3–4)                                  |
+| `GROQ_API_KEY`                                   | AI / integrations services           | server only (Phase 3–4)                                  |
 | `CRON_SECRET`                                     | protects `/api/v1/jobs/*`            | server only                                              |
 | `SENTRY_*`, `NEXT_PUBLIC_POSTHOG_KEY`             | observability                        | DSN/keys are public identifiers; auth tokens server only |
 | Stripe keys                                       | billing                              | server only (Phase 6)                                    |

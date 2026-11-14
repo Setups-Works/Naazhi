@@ -164,7 +164,7 @@ export async function startChatReply(opts: {
     db.from("profiles").select("preferences").maybeSingle(),
     // Only the ids of the services they picked: no Zoho data ever reaches the model. A failed lookup means "not connected" for this reply.
     zohoStatus(opts.userId).catch(() => null),
-    // The same for Gmail and Google Calendar (through Composio): which apps are connected, never their content.
+    // The same for Gmail, Google Calendar and Google Drive (Google sign-in): which apps are connected, never their content.
     composioStatus(opts.userId).catch(() => null),
   ]);
   const googleApps = google?.apps.filter((a) => a.state === "connected").map((a) => a.app) ?? [];

@@ -5,8 +5,8 @@ import type { ComposioAppId, ComposioItems, ComposioStatus } from "../../lib/com
 import { qk } from "../../lib/query/keys";
 
 /**
- * Data layer for apps connected through Composio: the Settings rows (connect, disconnect) and the chat cards. The browser only ever
- * talks to our own /api/v1 routes; the Composio key and the Google tokens never leave the server.
+ * Data layer for the Google apps (Gmail, Calendar, Drive): the Settings card (connect, disconnect) and the chat cards. The browser only ever
+ * talks to our own /api/v1 routes; the Google tokens never leave the server.
  */
 async function call<T>(method: "GET" | "POST" | "DELETE", path: string, body?: unknown): Promise<T> {
   const res = await fetch(path, {
@@ -28,11 +28,11 @@ const api = createComposioApi(http);
 
 export const useComposioStatus = () => useQuery<ComposioStatus>({ queryKey: qk.composio.status, queryFn: api.status, staleTime: 60_000 });
 
-/** Sends the person to the app's own sign-in page (Google's). They come back to Settings when it is done. */
+/** Sends the person to Google's approval page, once for every Google app. They come back to Settings when it is done. */
 export function useConnectComposio() {
   return useMutation({
-    mutationFn: async (app: ComposioAppId) => {
-      const { url } = await api.start(app);
+    mutationFn: async () => {
+      const { url } = await api.start();
       window.location.assign(url);
     },
   });
@@ -41,7 +41,7 @@ export function useConnectComposio() {
 export function useDisconnectComposio() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (app: ComposioAppId) => api.disconnect(app),
+    mutationFn: () => api.disconnect(),
     onSuccess: (status) => {
       qc.setQueryData(qk.composio.status, status);
       void qc.invalidateQueries({ queryKey: qk.composio.allItems });

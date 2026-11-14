@@ -53,7 +53,7 @@ async function create(userId: string, db: Db, action: ChatAction, links: Links):
   }
   if (action.kind === "zoho_mail") return { kind: action.kind, path: (await sendZohoMail(userId, action)).url };
   if (action.kind === "zoho_cliq") return { kind: action.kind, path: (await postZohoCliq(userId, action)).url };
-  // Gmail and Google Calendar (through Composio): also only now, after the button press, and checked again by the service.
+  // Gmail, Google Calendar and Google Drive (Google sign-in): also only now, after the button press, and checked again by the service.
   if (action.kind === "gmail_send") return { kind: action.kind, path: (await sendGmail(userId, action)).url };
   if (action.kind === "gcal_event") {
     const r = await createCalendarEvent(userId, action);

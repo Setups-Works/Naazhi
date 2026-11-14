@@ -1,11 +1,10 @@
 import "server-only";
 
 /**
- * The composio service: everything Naazhi does through Composio. Routes, the chat service and (later) jobs import from here only;
- * the files beside this one are its insides. See AGENTS.md in this folder.
+ * The Google service: everything Naazhi does in a person's Gmail, Google Calendar and Google Drive, with one Google sign-in.
+ * Routes and the chat service import from here only; the files beside this one are its insides. See AGENTS.md in this folder.
  */
-export { asComposioApp, composioStatus, disconnectComposio, finishComposioConnect, startComposioConnect } from "./connections";
-export { executeTool } from "./tools";
+export { asComposioApp, composioStatus, disconnectComposio, startComposioConnect } from "./connections";
+export { finishGoogleConnect } from "./google";
 export { listComposioItems } from "./readers";
 export { createCalendarEvent, sendGmail } from "./drafts";
-export { handleComposioEvent, verifyComposioWebhook } from "./webhook";

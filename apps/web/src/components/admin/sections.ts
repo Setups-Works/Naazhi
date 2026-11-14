@@ -12,6 +12,7 @@ import {
   faEnvelope,
   faFileLines,
   faPeopleGroup,
+  faSpider,
 } from "@fortawesome/free-solid-svg-icons";
 
 /** The admin sections, shown in the app's own sidebar while an /admin page is open. Add a line here for every new section (pages live in app/admin/<section>). */
@@ -19,6 +20,7 @@ export const ADMIN_SECTIONS: { href: string; t: string; icon: IconDefinition }[]
   { href: "/admin", t: "Overview", icon: faChartPie },
   { href: "/admin/users", t: "Users", icon: faUsers },
   { href: "/admin/analytics", t: "Analytics", icon: faChartLine },
+  { href: "/admin/crawlers", t: "Crawlers", icon: faSpider },
   { href: "/admin/usage", t: "Usage", icon: faChartColumn },
   { href: "/admin/plans", t: "Plans", icon: faWallet },
   { href: "/admin/invoices", t: "Invoices", icon: faFileLines },

@@ -1,7 +1,12 @@
 import { getSessionCookie } from "better-auth/cookies";
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 import { publicEnv } from "./config/env";
+import { crawlerOf, isCountedPath } from "./lib/crawlers";
+import { recordCrawl } from "./server/services/admin/crawlers";
 import { APP_HOME, appHref, HELP_ROUTE, helpHref, homePath, internalPath, isAppPath, isDashboardSection, isHelpPath, isHelpSplit, isSplit, publicPath } from "./lib/hosts";
+
+/** Files with an extension, which the matcher normally skips, that crawlers fetch first: they are counted and left exactly as they were. */
+const CRAWLER_FILES = new Set(["/robots.txt", "/sitemap.xml", "/llms.txt", "/llms-full.txt"]);
 
 /** The host the request came in on (behind Azure's front end it is in `x-forwarded-host`). */
 const requestHost = (request: NextRequest) => request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? request.nextUrl.host;
@@ -16,8 +21,15 @@ const requestHost = (request: NextRequest) => request.headers.get("x-forwarded-h
  * 2. Redirect by whether a session cookie exists. This is only a convenience: every page and API route still verifies the session
  *    against the database (currentUser()), and /admin additionally checks the admin role.
  */
-export function proxy(request: NextRequest) {
+export function proxy(request: NextRequest, event: NextFetchEvent) {
   const path = request.nextUrl.pathname;
+
+  // Count visits from known crawlers (search engines, AI assistants, link previews) for Admin → Crawlers. It runs after the response
+  // is on its way (waitUntil), so it never slows a page. The files crawlers read first are counted and then served as before.
+  const crawler = crawlerOf(request.headers.get("user-agent"));
+  if (crawler && isCountedPath(path)) event.waitUntil(recordCrawl({ ...crawler, path, host: requestHost(request) }));
+  if (CRAWLER_FILES.has(path)) return NextResponse.next();
+
   const signedIn = Boolean(getSessionCookie(request));
   const split = isSplit();
   let onApp = false;
@@ -91,5 +103,5 @@ export function proxy(request: NextRequest) {
 
 // Pages only: the API, Next's own files and anything with a file extension (images, icons, the manifest) are left alone.
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|opengraph-image|.*\\..*).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|opengraph-image|.*\\..*).*)", "/robots.txt", "/sitemap.xml", "/llms.txt", "/llms-full.txt"],
 };

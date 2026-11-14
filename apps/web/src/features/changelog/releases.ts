@@ -23,6 +23,16 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-14",
+    title: "Version 7.8.0: see who crawls the site",
+    summary: "Admins can now see which search engines, AI assistants and link previews visit Naazhi.",
+    tone: "mint",
+    appVersion: "v7.8.0",
+    changes: [
+      { kind: "new", platform: "web", text: "A new Crawlers page in the admin panel shows visits from search engines, AI assistants, link previews and SEO tools: each bot, the pages it read, and when it last came." },
+    ],
+  },
+  {
+    date: "2026-11-14",
     title: "Version 7.7.1: clearer desktop errors",
     summary: "When the desktop app can’t open, it now says why.",
     tone: "sand",

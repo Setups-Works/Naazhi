@@ -3,6 +3,7 @@ import type { CalendarEvent, Task, Tone } from "@untitled/types";
 import { useMemo, useState } from "react";
 import { View } from "react-native";
 
+import { GoogleCalendarBanner } from "./GoogleCalendarBanner";
 import { useCalendarEvents } from "./queries";
 import { useTasks } from "@/features/tasks/queries";
 import { AppText } from "@/components/ui/AppText";
@@ -64,6 +65,7 @@ export function CalendarPage() {
   return (
     <Screen edges={EDGES} onRefresh={refresh} refreshing={refreshing}>
       <PageHeader title="Calendar" subtitle="Your events and the to-dos due each day" />
+      <GoogleCalendarBanner />
 
       {eventsQ.isPending ? (
         <LoadingState />

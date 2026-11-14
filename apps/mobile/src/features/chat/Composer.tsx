@@ -89,7 +89,7 @@ export function Composer({ busy, providers, provider, onProvider, onSend, onErro
             <View style={styles.menu} accessibilityRole="menu" accessibilityLabel="Connected apps">
               {atMatches.length === 0 ? (
                 <AppText variant="small" color={Palette.fgSubtle} style={styles.none}>
-                  {connectors.length === 0 ? "No apps connected. Connect Zoho in Settings → Zoho." : "No connected app with that name."}
+                  {connectors.length === 0 ? "No apps connected. Connect Google or Zoho in Settings." : "No connected app with that name."}
                 </AppText>
               ) : (
                 atMatches.map((c) => (

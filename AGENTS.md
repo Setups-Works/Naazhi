@@ -95,7 +95,7 @@ Full details: `docs/TEAM_AND_WORKFLOW.md`. Writing tasks: `docs/JIRA_GUIDE.md`.
 
 ## 8. Definition of done
 
-Acceptance criteria met · typecheck and build pass · works on mobile · accessible by keyboard · RLS in place and verified for new tables · no secrets or PII in logs · docs updated · PR reviewed · Jira moved to Done.
+**Every feature and every bug fix covers web, the phone app and desktop (or says why not): read `docs/ALL_PLATFORMS.md` before you start and fill its checklist in the PR.** Acceptance criteria met · typecheck and build pass · works on mobile · accessible by keyboard · RLS in place and verified for new tables · no secrets or PII in logs · docs updated · PR reviewed · Jira moved to Done.
 
 ## 9. Things AI agents get wrong here — avoid them
 
@@ -144,6 +144,7 @@ Three developers and several AI agents write UI here. To keep it one product, th
 | `docs/BRAND.md`             | **You write copy, make an asset, or use the name or logo** — the name Naazhi, the mark, wordmark and lockup, colours of the logo files, clear space, do and don't, voice, which technical names stay |
 | `docs/CONVENTIONS.md`       | Naming, UI patterns, error handling, testing                                                                                                                                    |
 | `docs/AI_WORKFLOW.md`       | **You are an AI agent taking a Jira task** — the exact loop, the Jira helper (`node scripts/jira/jira.mjs`) and what you must not do (never merge; never handle tokens in chat) |
+| `docs/ALL_PLATFORMS.md`     | **You add a feature or fix a bug** — it must land on web, the phone app and desktop: the checklist, where each platform's code lives, desktop and sign-in specifics |
 | `docs/RELEASE_FOR_AGENTS.md` | **You are asked to release, bump the version, write the changelog, tag or push** — the exact checklist (version files, changelog entry, migrations first, commit → push → tag, watching the runs) |
 | `docs/JIRA_GUIDE.md`        | You write or refine tasks                                                                                                                                                       |
 | `docs/JIRA_BACKLOG.md`      | You want the full task list offline                                                                                                                                             |

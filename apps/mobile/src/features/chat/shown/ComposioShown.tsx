@@ -1,5 +1,8 @@
 import { openWeb } from "@/lib/webSheet";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { router } from "expo-router";
+import { useState } from "react";
+import { View } from "react-native";
 import { createComposioApi } from "@untitled/api-client";
 import type { ComposioAppId } from "@untitled/types";
 
@@ -8,6 +11,8 @@ import { ToolCallLog } from "../kit/ToolCallLog";
 import type { LogoName } from "@/components/ui/AppLogo";
 import { AppText } from "@/components/ui/AppText";
 import type { IconName } from "@/components/ui/Icon";
+import { Button } from "@/components/ui/Button";
+import { Palette } from "@/constants/theme";
 import { api, errorMessage } from "@/lib/api";
 import { qk } from "@/lib/queryKeys";
 
@@ -45,17 +50,44 @@ export function ComposioShown({ app, view = "", query = "" }: { app: ComposioApp
       <ToolCallLog logo={def.logo} state={log.state} text={log.text} />
       {q.isError ? <ShownEmpty>{errorMessage(q.error, `Couldn’t load ${def.name}.`)}</ShownEmpty> : null}
       {q.data?.rows.map((r, i) => (
-        <ShownRow key={`${r.id}-${i}`} label={`Open in ${def.name}: ${r.title}`} onPress={() => openWeb(r.url ?? q.data.openUrl)}>
-          <AppText variant="bodyStrong" numberOfLines={2}>
-            {r.title}
-          </AppText>
-          {r.subtitle ? (
-            <AppText variant="small" numberOfLines={1}>
-              {r.subtitle}
+        <View key={`${r.id}-${i}`}>
+          <ShownRow label={`Open in ${def.name}: ${r.title}`} onPress={() => openWeb(r.url ?? q.data.openUrl)}>
+            <AppText variant="bodyStrong" numberOfLines={2}>
+              {r.title}
             </AppText>
-          ) : null}
-        </ShownRow>
+            {r.subtitle ? (
+              <AppText variant="small" numberOfLines={1}>
+                {r.subtitle}
+              </AppText>
+            ) : null}
+          </ShownRow>
+          {app === "googlecalendar" && r.id ? <SaveToJournal eventId={r.id} title={r.title} /> : null}
+        </View>
       ))}
     </ShownGroup>
+  );
+}
+
+/** One event of a Google Calendar card → a journal entry on the event's day. The server reads the event itself; the assistant never sees it. */
+function SaveToJournal({ eventId }: { eventId: string; title: string }) {
+  const qc = useQueryClient();
+  const [saved, setSaved] = useState(false);
+  const save = useMutation({
+    mutationFn: () => composio.saveEventToJournal(eventId),
+    onSuccess: () => {
+      setSaved(true);
+      void qc.invalidateQueries({ queryKey: ["journal"] });
+    },
+  });
+  if (saved) return <Button title="Saved · Open journal" kind="ghost" onPress={() => router.push("/journal")} />;
+  return (
+    <>
+      <Button title={save.isPending ? "Saving…" : save.isError ? "Try again" : "Save to journal"} kind="ghost" icon="book-open" loading={save.isPending} onPress={() => save.mutate()} />
+      {save.isError ? (
+        <AppText variant="small" color={Palette.clayFg}>
+          {errorMessage(save.error, "Couldn’t save that.")}
+        </AppText>
+      ) : null}
+    </>
   );
 }

@@ -17,7 +17,7 @@ const summary = (r: { imported: number; skipped: number; failed: number }) =>
   [`Imported ${r.imported} ${r.imported === 1 ? "page" : "pages"} as notes`, r.skipped ? `${r.skipped} already imported` : "", r.failed ? `${r.failed} couldn’t be read` : ""].filter(Boolean).join(", ") + ".";
 
 /** Import from Notion: connect once (Notion's own sign-in, where you choose what to share), pick pages, and each becomes a note. */
-export function NotionImport({ onImported }: { onImported: (notes: number) => void }) {
+export function NotionImport({ onImported, onBeforeConnect }: { onImported: (notes: number) => void; onBeforeConnect?: () => void }) {
   const { ask, dialog } = useConfirm();
   const status = useNotionStatus();
   const connect = useConnectNotion();
@@ -71,7 +71,7 @@ export function NotionImport({ onImported }: { onImported: (notes: number) => vo
               icon="arrow-up-right-from-square"
               loading={connect.isPending}
               disabled={!status.data?.configured}
-              onPress={() => connect.mutate(undefined, { onError: (e) => setMsg({ kind: "error", text: errorMessage(e, "Couldn’t start the sign-in.") }) })}
+              onPress={() => { onBeforeConnect?.(); connect.mutate(undefined, { onError: (e) => setMsg({ kind: "error", text: errorMessage(e, "Couldn’t start the sign-in.") }) }); }}
             />
           ) : (
             <>

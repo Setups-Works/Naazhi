@@ -2,10 +2,11 @@ import { openWeb } from "@/lib/webSheet";
 
 import { AppText } from "@/components/ui/AppText";
 import { Palette } from "@/constants/theme";
+import { ALL_MENTION_LABELS } from "../connectors";
 
 const URL_RE = /(https?:\/\/[^\s<>"']+)/g;
-// "@Zoho Books" and the like: shown in bold, so it reads as the app the message points at.
-const MENTION_RE = /(@Zoho (?:CRM|Mail|Calendar|Cliq|WorkDrive|Projects|Sign|Books|Billing|Expense|Desk|People|Recruit))/;
+// "@Zoho Books", "@Gmail" and the like: shown in bold, so it reads as the app the message points at.
+const MENTION_RE = new RegExp(`(@(?:${ALL_MENTION_LABELS.map((l) => l.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")}))`);
 const TRAILING = /[).,;:!?]+$/;
 
 /** A person's plain message with its web addresses turned into links that open in the browser. Everything else stays text. */

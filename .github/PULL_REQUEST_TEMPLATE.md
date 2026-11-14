@@ -37,3 +37,10 @@ Closes: [UNT-](https://setups-works.atlassian.net/browse/UNT-)
 ## Notes for the reviewer
 
 <!-- Risks, trade-offs, follow-ups (link new Jira tasks), anything you'd like a second opinion on. -->
+
+## Platforms (docs/ALL_PLATFORMS.md)
+
+- [ ] Web: built / n/a because … / follow-up UNT-
+- [ ] App (apps/mobile): built / n/a because … / follow-up UNT-
+- [ ] Desktop: works through the web app / needs shell work / n/a
+- [ ] Twin bug searched for on the other surface

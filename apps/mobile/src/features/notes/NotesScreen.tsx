@@ -1,3 +1,4 @@
+import { noteShareUrl, setNoteShared } from "@untitled/api-client";
 import { toDate } from "@untitled/logic";
 import type { Note } from "@untitled/types";
 import { router } from "expo-router";
@@ -16,6 +17,11 @@ import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { Markdown } from "@/components/ui/Markdown";
 import { Sheet } from "@/components/ui/Sheet";
+import { ShareLinkSheet } from "@/components/ui/ShareLinkSheet";
+import { mobileEnv } from "@/config/env";
+import { dbQuery } from "@/features/chat/db";
+import { NotionImport } from "@/features/settings/pages/NotionImport";
+import { usePrefsSave } from "@/features/settings/usePrefsSave";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Screen } from "@/components/ui/Screen";
 import { NotesAtlas } from "./NotesAtlas";
@@ -23,7 +29,7 @@ import { NotesTrash } from "./NotesTrash";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/States";
 import { TextField } from "@/components/ui/TextField";
 import { Palette, Radius, Space, Tints, themedStyles, Neutral } from "@/constants/theme";
-import { errorMessage } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import { timeOf } from "@/lib/dates";
 import { GlassPill } from "@/components/ui/GlassPill";
 
@@ -68,6 +74,9 @@ export function NotesScreen({ edges }: { edges?: ("top" | "bottom" | "left" | "r
   const [atlas, setAtlas] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const [actionNote, setActionNote] = useState<Note | null>(null);
+  const [shareNote, setShareNote] = useState<Note | null>(null);
+  const [notionOpen, setNotionOpen] = useState(false);
+  const { prefs, change } = usePrefsSave();
   const [error, setError] = useState("");
   const [sort, setSort] = useState<NoteSort>("manual");
   const [refreshing, setRefreshing] = useState(false);
@@ -258,7 +267,29 @@ export function NotesScreen({ edges }: { edges?: ("top" | "bottom" | "left" | "r
             <View style={[styles.radio, sort === value ? styles.radioOn : null]}>{sort === value ? <View style={styles.radioDot} /> : null}</View>
           </Pressable>
         ))}
+        <AppText variant="label" style={styles.sectionLabel}>Import</AppText>
+        <OptionAction icon="file-import" title="Import from Notion" onPress={() => { setSortOpen(false); setNotionOpen(true); }} />
       </Sheet>
+
+      <Sheet visible={notionOpen} onClose={() => setNotionOpen(false)} title="Import from Notion">
+        <NotionImport
+          // The sign-in opens in the app's web sheet, which can't show over this one, so this one closes first.
+          onBeforeConnect={() => setNotionOpen(false)}
+          onImported={(notes) => void change({ recentImports: [{ at: new Date().toISOString(), source: "Notion", notes, folders: 0 }, ...prefs.recentImports].slice(0, 10) })}
+        />
+      </Sheet>
+
+      {shareNote ? (
+        <ShareLinkSheet
+          title="Share note"
+          noun="this note"
+          detail={`It shows “${noteTitle(shareNote)}” without your name, and you can switch it off at any time.`}
+          load={async () => (await dbQuery<{ share_token: string | null }[]>({ table: "notes", op: "select", columns: "share_token", filters: [{ column: "id", op: "eq", value: shareNote.id }] }))?.[0]?.share_token ?? null}
+          toggle={(on) => setNoteShared(api, shareNote.id, on)}
+          urlFor={(t) => noteShareUrl(mobileEnv.apiBaseUrl ?? "", t)}
+          onClose={() => setShareNote(null)}
+        />
+      ) : null}
 
       {error ? <Banner kind="error">{error}</Banner> : null}
       {undo ? (
@@ -309,6 +340,7 @@ export function NotesScreen({ edges }: { edges?: ("top" | "bottom" | "left" | "r
         {actionNote ? (
           <View style={styles.noteActions}>
             <OptionAction icon="thumbtack" title={actionNote.pinned ? "Unpin note" : "Pin note"} onPress={() => { const note = actionNote; setActionNote(null); void changeNote(note.id, { pinned: !note.pinned }); }} />
+            <OptionAction icon="share-nodes" title="Share link" onPress={() => { const note = actionNote; setActionNote(null); setShareNote(note); }} />
             <OptionAction icon="clone" title="Duplicate" onPress={() => { const note = actionNote; setActionNote(null); void duplicateNote(note); }} />
             <OptionAction icon="arrow-up" title="Move up" disabled={sort !== "manual" || noteSiblings(actionNote)[0]?.id === actionNote.id} onPress={() => void moveNote(actionNote, -1)} />
             <OptionAction icon="arrow-down" title="Move down" disabled={sort !== "manual" || noteSiblings(actionNote).slice(-1)[0]?.id === actionNote.id} onPress={() => void moveNote(actionNote, 1)} />
@@ -435,7 +467,7 @@ function NoteCard({
   );
 }
 
-function OptionAction({ icon, title, onPress, disabled = false }: { icon: "thumbtack" | "clone" | "arrow-up" | "arrow-down"; title: string; onPress: () => void; disabled?: boolean }) {
+function OptionAction({ icon, title, onPress, disabled = false }: { icon: "thumbtack" | "clone" | "arrow-up" | "arrow-down" | "share-nodes" | "file-import"; title: string; onPress: () => void; disabled?: boolean }) {
   return (
     <Pressable accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[styles.optionAction, disabled ? styles.optionDisabled : null]}>
       <Icon name={icon} size={16} color={Palette.fgSubtle} />

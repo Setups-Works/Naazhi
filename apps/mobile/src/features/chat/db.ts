@@ -3,7 +3,7 @@ import { api } from "@/lib/api";
 type Filter = { column: string; op: "eq" | "neq" | "in" | "is"; value: unknown; not?: boolean };
 type Spec = {
   table: string;
-  op: "select" | "insert" | "update" | "delete";
+  op: "select" | "insert" | "update" | "delete" | "upsert";
   columns?: string;
   returning?: string | null;
   values?: Record<string, unknown> | Record<string, unknown>[];
@@ -12,6 +12,8 @@ type Spec = {
   limit?: number;
   range?: [number, number];
   single?: "single" | "maybe";
+  /** For `upsert`: the columns that identify a row, for example "user_id,calendar_id,external_id". */
+  onConflict?: string;
 };
 type Result<T> = { data: T | null; count: number | null; error: { message: string; code?: string } | null };
 

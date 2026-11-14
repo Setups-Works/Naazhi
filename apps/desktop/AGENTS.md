@@ -25,3 +25,7 @@ electron-builder.config.mjs   installers, update feed, signing (all from the env
 ## Checks
 
 `corepack pnpm --filter desktop typecheck`, `corepack pnpm --filter desktop build`, and for packaging `corepack pnpm --filter desktop exec electron-builder --config electron-builder.config.mjs --mac dir -c.mac.identity=null --publish never`.
+
+## Every change lands on every platform
+
+The desktop app shows the hosted web app, so web changes reach it by themselves; the phone app is separate code. When you change the shell, check the web and the app too, and read `docs/ALL_PLATFORMS.md` (desktop specifics in section 4).

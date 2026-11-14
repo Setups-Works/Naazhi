@@ -23,10 +23,10 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-15",
-    title: "Version 8.0.1: Google and Notion, connected",
+    title: "Version 8.1.0: Google and Notion, on web, app and desktop",
     summary: "Connect your Google account once for Gmail, Calendar and Drive, bring Notion pages in as notes, and use both from chat, on the web and in the app.",
     tone: "blue",
-    appVersion: "v8.0.1",
+    appVersion: "v8.1.0",
     changes: [
       { kind: "new", platform: "web", text: "One Google sign-in connects Gmail, Google Calendar and Google Drive. Disconnect them together from Settings, Google." },
       { kind: "new", platform: "web", text: "Type @ in chat and pick Gmail, Google Calendar or Google Drive to see your latest mail, your events or your files in a card." },
@@ -35,7 +35,10 @@ export const RELEASES: Release[] = [
       { kind: "new", platform: "web", text: "Search your calendar from chat, including past events, and press Save to journal on an event to add it to the journal on its day." },
       { kind: "new", platform: "web", text: "Import your Notion pages as notes. Open the menu on the Notes page, or go to Settings, Imports and backup. Pages you already imported are skipped." },
       { kind: "new", platform: "web", text: "Onboarding lets you connect Google and Notion right away, and brings you back to the step you were on." },
-      { kind: "new", platform: "app", text: "Connect Google and Notion in the app, import Notion pages as notes, and set them up in your first-run steps." },
+      { kind: "new", platform: "app", text: "Connect Google and Notion in the app, and set them up in your first-run steps." },
+      { kind: "new", platform: "app", text: "Type @ in chat in the app and pick Gmail, Google Calendar or Google Drive, just like on the web." },
+      { kind: "new", platform: "app", text: "Import your Google Calendar into the app’s Calendar, and press Save to journal on an event in a chat card." },
+      { kind: "new", platform: "app", text: "Import Notion pages as notes from the menu on the Notes screen, and share a note with a public link from its card." },
       { kind: "new", platform: "desktop", text: "Everything above works in the Mac and Windows apps too, because they show the same workspace." },
       { kind: "new", platform: "web", text: "Every note card on the Notes page has a Share button, so you can make a public read-only link without opening the note." },
       { kind: "improved", platform: "web", text: "The AI button in the note editor is now a sparkles icon that matches the other toolbar icons." },

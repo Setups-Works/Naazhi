@@ -91,6 +91,18 @@ describe("Chat cards", () => {
     expect(items.rows[0]).toMatchObject({ id: "f1", title: "Plan", subtitle: "Doc · 14 Nov 2026, 08:00" });
   });
 
+  it("searches past events too, retrying with the longest word when the whole phrase finds nothing", async () => {
+    api.googleApi
+      .mockResolvedValueOnce({ items: [] })
+      .mockResolvedValueOnce({ items: [{ id: "k", summary: "Kaber Vasuki - Live", start: { dateTime: "2026-03-22T18:00:00+05:30" }, htmlLink: "https://calendar.google.com/e/k" }] });
+    const items = await listComposioItems("user-1", "googlecalendar", "upcoming", "kaber vasuki concert");
+    const first = new URL(String(api.googleApi.mock.calls[0][2])).searchParams;
+    expect(Date.parse(first.get("timeMin") ?? "")).toBeLessThan(Date.now() - 300 * 24 * 3_600_000);
+    expect(new URL(String(api.googleApi.mock.calls[1][2])).searchParams.get("q")).toBe("kaber vasuki concert".split(" ").sort((a, b) => b.length - a.length)[0]);
+    expect(items.rows).toEqual([{ id: "k", title: "Kaber Vasuki - Live", subtitle: "22 Mar 2026, 18:00", url: "https://calendar.google.com/e/k" }]);
+    expect(items.title).toBe("Google Calendar matching “kaber vasuki concert”");
+  });
+
   it("refuses an app Naazhi doesn't connect", async () => {
     await expect(listComposioItems("user-1", "dropbox")).rejects.toThrow("isn’t an app Naazhi can connect");
   });

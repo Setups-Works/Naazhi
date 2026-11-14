@@ -39,13 +39,12 @@ const gmail: Reader = async (userId, view, query) => {
   });
 };
 
-const googlecalendar: Reader = async (userId, _view, query) => {
-  const params = new URLSearchParams({ timeMin: new Date().toISOString(), singleEvents: "true", orderBy: "startTime", maxResults: String(MAX_ROWS) });
-  if (query) params.set("q", query);
-  const data = await googleApi(userId, "googlecalendar", `https://www.googleapis.com/calendar/v3/calendars/primary/events?${params}`);
-  return arr(data.items)
+const YEAR_MS = 365 * 24 * 3_600_000;
+const EVENTS = "https://www.googleapis.com/calendar/v3/calendars/primary/events";
+
+const eventRows = (items: unknown): (ComposioRow & { at: number })[] =>
+  arr(items)
     .map(obj)
-    .slice(0, MAX_ROWS)
     .map((e) => {
       const start = obj(e.start);
       return {
@@ -54,8 +53,39 @@ const googlecalendar: Reader = async (userId, _view, query) => {
         // A timed event has `dateTime`; one that lasts the whole day has only `date`.
         subtitle: dot(str(start.dateTime) ? dayAndTime(str(start.dateTime)) : dot(dayAndTime(str(start.date)), "all day"), str(e.location)).slice(0, 200),
         url: str(e.htmlLink) || null,
+        at: Date.parse(str(start.dateTime) || `${str(start.date)}T00:00:00Z`),
       };
     });
+
+/** Events of the main calendar that match some words, from a year back to a year ahead. */
+const searchEvents = async (userId: string, words: string) => {
+  const now = Date.now();
+  const params = new URLSearchParams({
+    q: words,
+    singleEvents: "true",
+    orderBy: "startTime",
+    maxResults: "50",
+    timeMin: new Date(now - YEAR_MS).toISOString(),
+    timeMax: new Date(now + YEAR_MS).toISOString(),
+  });
+  return eventRows((await googleApi(userId, "googlecalendar", `${EVENTS}?${params}`)).items);
+};
+
+const googlecalendar: Reader = async (userId, _view, query) => {
+  if (!query) {
+    const params = new URLSearchParams({ timeMin: new Date().toISOString(), singleEvents: "true", orderBy: "startTime", maxResults: String(MAX_ROWS) });
+    return eventRows((await googleApi(userId, "googlecalendar", `${EVENTS}?${params}`)).items).map(({ at: _at, ...row }) => row);
+  }
+  // A search looks at past events too (a concert last March is still "my concert"). Google wants every word to match, so when the whole
+  // phrase finds nothing the longest word is tried alone. The ones closest to today come first.
+  let found = await searchEvents(userId, query);
+  const longest = query.split(/\s+/).sort((a, b) => b.length - a.length)[0] ?? "";
+  if (!found.length && longest && longest !== query) found = await searchEvents(userId, longest);
+  const now = Date.now();
+  return found
+    .sort((a, b) => Math.abs(a.at - now) - Math.abs(b.at - now))
+    .slice(0, MAX_ROWS)
+    .map(({ at: _at, ...row }) => row);
 };
 
 const KINDS: Record<string, string> = {
@@ -100,5 +130,5 @@ export async function listComposioItems(userId: string, appId: string, view?: st
   const picked = view && def.views.includes(view) ? view : def.views[0];
   const text = (query ?? "").trim().slice(0, 100);
   const rows = await READERS[app](userId, picked, text);
-  return { app, view: picked, title: dot(def.name, capital(picked)) + (text ? ` matching “${text}”` : ""), rows, openUrl: def.web };
+  return { app, view: picked, title: dot(def.name, text ? "" : capital(picked)) + (text ? ` matching “${text}”` : ""), rows, openUrl: def.web };
 }

@@ -21,6 +21,32 @@ export type InvoiceMail = {
 
 export const templates = {
   /* ---------- account ---------- */
+  /** Sent once, when an account's email is confirmed (or at sign-up when the provider already confirmed it). */
+  welcome: (p: { name?: string | null; url: string }): EmailContent => ({
+    subject: "Welcome to Naazhi",
+    preheader: "Your workspace is ready.",
+    heading: "Welcome to Naazhi",
+    paragraphs: [
+      `Hi ${p.name || "there"}, your account is ready. Notes, tasks, journal, chat and calendar live in one place, and AI is there when you want it.`,
+      "Start with a note or a task. You can change how AI works any time in Settings.",
+    ],
+    action: { label: "Open Naazhi", url: p.url },
+  }),
+  /** "Get now" on the phone app's Get apps page: the download link for a computer, sent to the person's own address. */
+  desktopLink: (p: { platform: "mac" | "windows"; url: string; altUrl?: string; releasesUrl: string }): EmailContent => ({
+    subject: p.platform === "mac" ? "Get Naazhi for Mac" : "Get Naazhi for Windows",
+    preheader: "Your download link.",
+    heading: p.platform === "mac" ? "Get Naazhi for Mac" : "Get Naazhi for Windows",
+    paragraphs: [
+      p.platform === "mac"
+        ? "Open this email on your Mac and press the button to download the app. It works on Apple silicon and Intel."
+        : "Open this email on your PC and press the button to download the app for most Windows computers.",
+      ...(p.altUrl ? [`On an ARM PC, use this link instead: ${p.altUrl}`] : []),
+      `Every version is listed at ${p.releasesUrl}. Sign in with the same account and your workspace is there.`,
+    ],
+    action: { label: "Download Naazhi", url: p.url },
+    reason: "You received this because you asked for the link in the Naazhi app.",
+  }),
   confirmEmail: (p: { name?: string | null; url: string }): EmailContent => ({
     subject: "Confirm your email",
     preheader: "One tap to activate your account.",
@@ -128,6 +154,8 @@ export const templates = {
 /** Example content for every template, shown in Admin → Emails. */
 export const SAMPLES: { id: string; label: string; content: EmailContent }[] = [
   { id: "confirmEmail", label: "Confirm email", content: templates.confirmEmail({ name: "Asha", url: "https://naazhi.app/verify?token=example" }) },
+  { id: "welcome", label: "Welcome", content: templates.welcome({ name: "Asha", url: "https://naazhi.app/dashboard" }) },
+  { id: "desktopLink", label: "Desktop download link", content: templates.desktopLink({ platform: "windows", url: "https://github.com/example/releases/download/v1/naazhi-1-win-x64.exe", altUrl: "https://github.com/example/releases/download/v1/naazhi-1-win-arm64.exe", releasesUrl: "https://github.com/example/releases" }) },
   { id: "resetPassword", label: "Reset password", content: templates.resetPassword({ url: "https://naazhi.app/reset-password?token=example" }) },
   { id: "resetCode", label: "Reset code", content: templates.resetCode({ code: "482913" }) },
   { id: "changeEmail", label: "Email change", content: templates.changeEmail({ newEmail: "asha@example.com", url: "https://naazhi.app/approve?token=example" }) },

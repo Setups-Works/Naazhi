@@ -1,6 +1,7 @@
 import { app, ipcMain, session, type WebContents } from "electron";
 import { IPC, type BootInfo } from "../shared/ipc";
 import { startBrowserSignIn } from "./auth";
+import { notifyNow, setReminders } from "./reminders";
 import { applyChrome, cleanChrome, LIGHTS_FOOTPRINT } from "./chrome";
 import { config, isAppUrl, platform } from "./config";
 import * as deepLink from "./deepLink";
@@ -31,8 +32,14 @@ if (!deepLink.listen()) {
     };
     event.returnValue = info;
   });
-  ipcMain.handle(IPC.signIn, (event) => {
-    if (fromApp(event.sender)) startBrowserSignIn();
+  ipcMain.handle(IPC.signIn, (event, code: unknown) => {
+    if (fromApp(event.sender)) startBrowserSignIn(typeof code === "string" ? code : undefined);
+  });
+  ipcMain.on(IPC.notify, (event, input: unknown) => {
+    if (fromApp(event.sender)) notifyNow(input);
+  });
+  ipcMain.on(IPC.reminders, (event, input: unknown) => {
+    if (fromApp(event.sender)) setReminders(input);
   });
   ipcMain.on(IPC.chrome, (event, input: unknown) => {
     const win = mainWindow();

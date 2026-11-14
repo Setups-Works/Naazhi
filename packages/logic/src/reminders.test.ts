@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { planReminders, type ReminderInput } from "./reminders";
 
-const task = (title: string, due: string | null, over: Partial<{ done: boolean }> = {}) => ({ title, due_date: due, done: false, cancelled: false, archived: false, ...over });
+const task = (title: string, due: string | null, over: Partial<{ done: boolean; remind_time: string | null; start_date: string | null }> = {}) => ({ title, due_date: due, done: false, cancelled: false, archived: false, ...over });
 // 10 Nov 2026, 10:00 local: after the 8:00 to-do reminder, before the 21:00 journal one.
 const now = new Date(2026, 10, 10, 10, 0, 0).getTime();
 const base: ReminderInput = {
@@ -24,6 +24,21 @@ describe("planReminders", () => {
     expect(tasks[0]!.title).toBe("2 to-dos for today"); // Pay rent is overdue, Call mum is due the 11th
     expect(tasks[0]!.body).toBe("Pay rent, Call mum");
     expect(tasks[1]!.body).toBe("Pay rent, Call mum"); // both are still open (and overdue) on the 12th
+  });
+
+  it("reminds at the exact time set on a to-do, by name", () => {
+    const r = planReminders({ ...base, tasks: [task("Call the bank", "2026-11-10", { remind_time: "14:30:00" })] });
+    const own = r.find((x) => x.title === "Call the bank");
+    expect(own?.at).toBe(new Date(2026, 10, 10, 14, 30).getTime());
+    expect(own?.kind).toBe("tasks");
+  });
+
+  it("ignores a reminder time that has passed, is on a finished to-do, or has no single day", () => {
+    const names = (tasks: ReturnType<typeof task>[]) => planReminders({ ...base, tasks }).filter((x) => x.title === "A");
+    expect(names([task("A", "2026-11-10", { remind_time: "09:00" })])).toEqual([]); // 9:00 is before now (10:00)
+    expect(names([task("A", "2026-11-11", { remind_time: "09:00", done: true })])).toEqual([]);
+    expect(names([task("A", "2026-11-11", { remind_time: "09:00", start_date: "2026-11-10" })])).toEqual([]);
+    expect(names([task("A", null, { remind_time: "09:00" })])).toEqual([]);
   });
 
   it("does not remind about finished to-dos", () => {

@@ -19,6 +19,7 @@ import {
 import { authClient, oneTapAuthClient } from "../../lib/auth/client";
 import { EMAIL_RE } from "../../lib/validate";
 import { safeNext } from "../../lib/auth/redirect";
+import DesktopCodeSignIn from "./DesktopCodeSignIn";
 
 type Mode = "login" | "signup" | "forgot" | "reset";
 
@@ -79,6 +80,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   const c = COPY[mode];
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
+  const [viaBrowser, setViaBrowser] = useState(false);
   const [passkeyBusy, setPasskeyBusy] = useState(false);
   const [err, setErr] = useState(params.get("error") === "link" ? "That link has expired or was already used. Please try again." : "");
   const [done, setDone] = useState<null | "confirm" | "reset">(null);
@@ -198,7 +200,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   async function google() {
     setErr("");
     // Google refuses sign-in inside the desktop app's window, so the app sends the person to their own browser and signs in on return.
-    if (window.naazhiDesktop) return void window.naazhiDesktop.signInWithBrowser();
+    if (window.naazhiDesktop) return void setViaBrowser(true);
     setGoogleBusy(true);
     try {
       const { error } = await authClient.signIn.social({ provider: "google", callbackURL: next });
@@ -271,6 +273,8 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   const oneTap = !!cfg?.google && (mode === "login" || mode === "signup");
   const locked = busy || googleBusy || passkeyBusy;
   const checking = mode === "signup" || mode === "reset" || (mode === "forgot" && otpSent);
+
+  if (viaBrowser) return <DesktopCodeSignIn next={next} onCancel={() => setViaBrowser(false)} />;
 
   return (
     <div className="flex flex-col gap-5 short:gap-3">

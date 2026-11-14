@@ -12,8 +12,10 @@ import { mainWindow, showMainWindow } from "./window";
  *
  * Email and password and passkeys sign in inside the window and don't need this.
  */
-export function startBrowserSignIn(): void {
-  void shell.openExternal(`${config.appUrl}/desktop-signin`);
+export function startBrowserSignIn(code?: string): void {
+  // The code is six letters and digits; anything else is dropped so the page never receives text it did not ask for.
+  const valid = code && /^[A-HJ-NP-Z2-9]{6}$/.test(code) ? code : null;
+  void shell.openExternal(`${config.appUrl}/desktop-signin${valid ? `?code=${valid}` : ""}`);
 }
 
 export async function finishBrowserSignIn(token: string): Promise<void> {

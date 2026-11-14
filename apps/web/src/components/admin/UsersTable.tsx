@@ -48,10 +48,12 @@ export type Row = {
   createdAt: string;
   lastSignIn: string | null;
   avatar: string | null;
-  /** Where they have signed in from: the website, the Android app, the iPhone app. */
-  clients: ("web" | "android" | "ios")[];
+  /** Where they have signed in from: the website, the desktop app, the Android app, the iPhone app. */
+  clients: ("web" | "desktop" | "android" | "ios")[];
   /** The link or site they arrived from ("instagram / launch"), empty when it was not tracked. */
   cameFrom: string;
+  /** International form (+919876543210), or empty when the person has not given one. */
+  phone: string;
 };
 
 type Filter = "all" | "admin" | "banned" | "unconfirmed" | "pro";
@@ -212,6 +214,10 @@ function UserDrawer({ row, onClose }: { row: Row; onClose: () => void }) {
           <div>
             <dt>Sign-in</dt>
             <dd>{row.provider}</dd>
+          </div>
+          <div>
+            <dt>Phone</dt>
+            <dd>{row.phone || "Not given"}</dd>
           </div>
           <div>
             <dt>Came from</dt>
@@ -519,7 +525,7 @@ export default function UsersTable({ rows }: { rows: Row[] }) {
     const t = q.trim().toLowerCase();
     const out = rows.filter(
       (r) =>
-        (!t || `${r.name} ${r.email}`.toLowerCase().includes(t)) &&
+        (!t || `${r.name} ${r.email} ${r.phone}`.toLowerCase().includes(t)) &&
         (filter === "all" ||
           (filter === "admin" ? r.admin : filter === "pro" ? r.plan === "pro" : filter === "banned" ? r.banned : !r.confirmed)),
     );
@@ -538,7 +544,7 @@ export default function UsersTable({ rows }: { rows: Row[] }) {
   const open = rows.find((r) => r.id === openId) ?? null;
 
   function exportCsv() {
-    const cols = ["name", "email", "provider", "uses", "cameFrom", "plan", "confirmed", "admin", "banned", "createdAt", "lastSignIn"] as const;
+    const cols = ["name", "email", "phone", "provider", "uses", "cameFrom", "plan", "confirmed", "admin", "banned", "createdAt", "lastSignIn"] as const;
     const text = [cols.join(","), ...list.map((r) => cols.map((c) => csv(c === "uses" ? usesText(r) : r[c])).join(","))].join("\n");
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([text], { type: "text/csv" }));
@@ -561,7 +567,7 @@ export default function UsersTable({ rows }: { rows: Row[] }) {
               setQ(e.target.value);
               setPage(0);
             }}
-            placeholder="Search name or email…"
+            placeholder="Search name, email or phone…"
             aria-label="Search users"
           />
         </label>
@@ -624,6 +630,12 @@ export default function UsersTable({ rows }: { rows: Row[] }) {
                   <b>{r.name || "—"}</b>
                   <br />
                   <span className="meta">{r.email}</span>
+                  {r.phone && (
+                    <>
+                      <br />
+                      <span className="meta">{r.phone}</span>
+                    </>
+                  )}
                 </td>
                 <td>{r.provider}</td>
                 <td>{r.clients.length ? r.clients.map((c) => <span key={c} className="adm-pill" data-k={c === "web" ? undefined : "pro"}>{CLIENT_LABEL[c]}</span>) : "—"}</td>

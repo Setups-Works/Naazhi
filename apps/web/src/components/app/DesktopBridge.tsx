@@ -1,6 +1,9 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { INBOX_POLL_MS, notificationTarget, remindAt } from "@untitled/logic";
+import type { Inbox } from "@untitled/types";
+import { useTasks } from "../../features/tasks/queries";
 import { publicPath } from "../../lib/hosts";
 import { tokenColor } from "../../lib/cssVar";
 
@@ -11,6 +14,55 @@ import { tokenColor } from "../../lib/cssVar";
  */
 export default function DesktopBridge() {
   const router = useRouter();
+  const { tasks } = useTasks();
+
+  // Messages that reach the inbox while the app is open (a shared-journal invitation, a note from the team) also show as system
+  // notifications. What is already there when the app opens is not announced again. A tap opens the page that can act on it: an
+  // invitation goes to the shared-journals page, where it is accepted or declined.
+  const seen = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    const desktop = window.naazhiDesktop;
+    if (!desktop) return;
+    let stop = false;
+    const check = async () => {
+      try {
+        const res = await fetch("/api/v1/notifications", { cache: "no-store" });
+        if (!res.ok || stop) return;
+        const { data } = (await res.json()) as { data?: Inbox };
+        const items = data?.items ?? [];
+        const first = seen.current === null;
+        seen.current ??= new Set();
+        for (const n of items) {
+          if (seen.current.has(n.id)) continue;
+          seen.current.add(n.id);
+          if (first || n.read_at) continue;
+          const target = notificationTarget(n);
+          desktop.notify({ id: n.id, title: n.title, body: n.body, path: target ? (target.startsWith("/dashboard") ? target : `/dashboard${target}`) : "/dashboard/notifications" });
+        }
+      } catch {
+        /* offline: the next check tries again */
+      }
+    };
+    void check();
+    const id = window.setInterval(check, INBOX_POLL_MS);
+    return () => {
+      stop = true;
+      window.clearInterval(id);
+    };
+  }, []);
+
+  // To-dos with a reminder time become system notifications in the desktop app (shown at that time, even with the window closed).
+  useEffect(() => {
+    const desktop = window.naazhiDesktop;
+    if (!desktop) return;
+    const now = Date.now();
+    desktop.setReminders(
+      tasks.flatMap((t) => {
+        const at = t.done || t.cancelled || t.archived ? null : remindAt(t);
+        return at !== null && at > now ? [{ id: t.id, at, title: t.title, body: "Reminder for your to-do", path: "/dashboard/todo" }] : [];
+      }),
+    );
+  }, [tasks]);
 
   useEffect(() => {
     const desktop = window.naazhiDesktop;

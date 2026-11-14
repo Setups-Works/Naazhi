@@ -80,14 +80,14 @@ export async function adminAnalytics(days = 30) {
   const perDay = (rows: { d: Date; n: string }[]) => fill(days, new Map(rows.map((r) => [day(r.d), Number(r.n)])));
   const byClient = new Map<Client, number>();
   const byBrowser = new Map<string, number>();
-  const dayClient = { web: new Map<string, number>(), app: new Map<string, number>() };
+  const dayClient = { web: new Map<string, number>(), app: new Map<string, number>(), desktop: new Map<string, number>() };
   for (const r of signins) {
     const n = Number(r.n);
     const c = clientOf(r.user_agent);
     byClient.set(c, (byClient.get(c) ?? 0) + n);
     const b = browserOf(r.user_agent);
     byBrowser.set(b, (byBrowser.get(b) ?? 0) + n);
-    const m = c === "web" ? dayClient.web : dayClient.app;
+    const m = c === "web" ? dayClient.web : c === "desktop" ? dayClient.desktop : dayClient.app;
     m.set(day(r.d), (m.get(day(r.d)) ?? 0) + n);
   }
   const top = (m: Map<string, number>, k = 8) => [...m].sort((a, b) => b[1] - a[1]).slice(0, k).map(([label, n]) => ({ label, n }));
@@ -99,6 +99,7 @@ export async function adminAnalytics(days = 30) {
     mau: Number(t?.mau ?? 0),
     signinsWeb: fill(days, dayClient.web),
     signinsApp: fill(days, dayClient.app),
+    signinsDesktop: fill(days, dayClient.desktop),
     activeUsers: perDay(active),
     signups: perDay(signups),
     tokens: perDay(tokens),

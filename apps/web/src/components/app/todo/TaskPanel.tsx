@@ -24,7 +24,7 @@ import {
 import type { Task, TaskList } from "../../../lib/workspace";
 import DatePopover from "./DatePopover";
 import { rangeLabel } from "../../../lib/dates";
-import { PRIORITIES, recurrenceChoices, recurrenceLabel, firstDue, type Draft } from "../../../lib/tasks";
+import { PRIORITIES, REMINDER_TIMES, clockLabel, clockOf, recurrenceChoices, recurrenceLabel, firstDue, type Draft } from "../../../lib/tasks";
 import { addDays, dayLabel } from "../../../lib/dates";
 import Modal from "../../ui/Modal";
 import Menu, { MenuItem, MenuLabel, MenuRadioGroup, MenuRadioItem, MenuSeparator } from "../../ui/Menu";
@@ -237,8 +237,8 @@ export default function TaskPanel({
               value={t.due_date}
               start={t.start_date ?? null}
               today={today}
-              onChange={(d) => onPatch(t.id, { due_date: d && t.recurrence ? firstDue(d, t.recurrence, today) : d, start_date: null })}
-              onRange={(from, to) => onPatch(t.id, { start_date: from, due_date: to, recurrence: null })}
+              onChange={(d) => onPatch(t.id, { due_date: d && t.recurrence ? firstDue(d, t.recurrence, today) : d, start_date: null, ...(d ? {} : { remind_time: null }) })}
+              onRange={(from, to) => onPatch(t.id, { start_date: from, due_date: to, recurrence: null, ...(from ? { remind_time: null } : {}) })}
             >
               <button type="button" className="tp-val" data-tone={!t.due_date ? "none" : late ? "late" : t.due_date === today ? "today" : "later"}>
                 {t.due_date ? rangeLabel(t.start_date, t.due_date, today) : "No date"}
@@ -268,7 +268,27 @@ export default function TaskPanel({
               </MenuRadioGroup>
             </Menu>,
           )}
-          {row(faBell, "Reminders", <span className="tp-muted">Coming soon</span>)}
+          {row(
+            faBell,
+            "Reminder",
+            t.due_date && !t.start_date ? (
+              <select
+                className="tp-val bg-transparent outline-none"
+                value={clockOf(t.remind_time) ?? ""}
+                onChange={(e) => onPatch(t.id, { remind_time: e.target.value || null })}
+                aria-label="Reminder time"
+              >
+                <option value="">No reminder</option>
+                {REMINDER_TIMES.map((x) => (
+                  <option key={x} value={x}>
+                    {clockLabel(x)}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="tp-muted">Pick a single day first</span>
+            ),
+          )}
           {row(
             faRotate,
             "Repeat",

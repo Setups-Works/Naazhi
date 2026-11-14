@@ -38,14 +38,24 @@ export type DesktopPlatform = "mac" | "win" | "linux";
 /** What the page reports so the window frame matches the theme: colours are the page's resolved `--page` and `--fg`. */
 export type DesktopChrome = { background: string; foreground: string; barHeight: number };
 
+/** A reminder the page hands the shell to show as a system notification at `at` (milliseconds), even with the window closed. */
+export type DesktopReminder = { id: string; at: number; title: string; body: string; path: string };
+
+/** Something to show as a system notification right now (an invitation, a message from the team). Clicking it opens `path`. */
+export type DesktopNotice = { id: string; title: string; body: string; path: string };
+
 /** The `window.naazhiDesktop` object the shell's preload script exposes. Absent in a normal browser. */
 export type NaazhiDesktopApi = {
   platform: DesktopPlatform;
   version: string;
-  /** Opens the system browser to sign in (Google refuses sign-in inside an embedded window); the shell signs in when the browser hands back. */
-  signInWithBrowser(): Promise<void>;
+  /** Opens the system browser to sign in (Google refuses sign-in inside an embedded window). With a code, the browser page authorizes that code and the page collects the sign-in itself; without one the shell signs in when the browser hands back a naazhi:// link. */
+  signInWithBrowser(code?: string): Promise<void>;
   /** Tells the shell the page's colours and top-bar height so the title bar and traffic lights fit the theme. */
   setChrome(chrome: DesktopChrome): void;
+  /** Replaces the reminders the shell will show (to-dos with a reminder time). Call again whenever they change; an empty list clears them. */
+  setReminders(reminders: DesktopReminder[]): void;
+  /** Shows a system notification now. Used for inbox messages that arrive while the app is open (for example a shared-journal invitation). */
+  notify(notice: DesktopNotice): void;
   /** Called with an app path (`/dashboard/notes`) when a menu item, shortcut or deep link asks the page to go somewhere. */
   onNavigate(listener: (path: string) => void): () => void;
 };

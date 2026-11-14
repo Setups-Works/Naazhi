@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { readText, writeText } from "../../../lib/drafts";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faBell, faCalendarDay, faChevronDown, faFlag, faInbox, faRotate, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { PRIORITIES, firstDue, recurrenceChoices, type Draft } from "../../../lib/tasks";
+import { PRIORITIES, REMINDER_TIMES, clockLabel, clockOf, firstDue, recurrenceChoices, type Draft } from "../../../lib/tasks";
 import { isoDate, rangeLabel } from "../../../lib/dates";
 import type { TaskList } from "../../../lib/workspace";
 import Menu, { MenuRadioGroup, MenuRadioItem } from "../../ui/Menu";
@@ -117,13 +117,13 @@ export default function TaskForm({
               start={d.start_date ?? null}
               today={today}
               onChange={(x) => setD((v) => ({ ...v, due_date: x, start_date: null }))}
-              onRange={(from, to) => setD((v) => ({ ...v, start_date: from, due_date: to, recurrence: null }))}
+              onRange={(from, to) => setD((v) => ({ ...v, start_date: from, due_date: to, recurrence: null, remind_time: from ? null : v.remind_time }))}
             >
               <button type="button" className="qa-chip-btn" aria-label="Change date">
                 <FA icon={faCalendarDay} /> {rangeLabel(d.start_date, d.due_date, today)}
               </button>
             </DatePopover>
-            <button type="button" aria-label="Clear date" onClick={() => setD((v) => ({ ...v, due_date: null, start_date: null }))}>
+            <button type="button" aria-label="Clear date" onClick={() => setD((v) => ({ ...v, due_date: null, start_date: null, remind_time: null }))}>
               <FA icon={faXmark} />
             </button>
           </span>
@@ -132,7 +132,7 @@ export default function TaskForm({
             value={null}
             today={today}
             onChange={(x) => setD((v) => ({ ...v, due_date: x, start_date: null }))}
-            onRange={(from, to) => setD((v) => ({ ...v, start_date: from, due_date: to, recurrence: null }))}
+            onRange={(from, to) => setD((v) => ({ ...v, start_date: from, due_date: to, recurrence: null, remind_time: from ? null : v.remind_time }))}
           >
             <button type="button" className="qa-chip" aria-label="Pick a date">
               <FA icon={faCalendarDay} /> Date
@@ -154,9 +154,29 @@ export default function TaskForm({
             ))}
           </MenuRadioGroup>
         </Menu>
-        <span className="qa-chip" data-off aria-disabled="true" title="Reminders are coming soon">
-          <FA icon={faBell} /> Reminders
-        </span>
+        {/* A reminder is "on the due date at this time", so it needs a single day. */}
+        {d.due_date && !d.start_date ? (
+          <label className="qa-chip" data-set={d.remind_time ? "" : undefined}>
+            <FA icon={faBell} />
+            <select
+              className="bg-transparent text-inherit outline-none"
+              value={clockOf(d.remind_time) ?? ""}
+              onChange={(e) => set("remind_time", e.target.value || null)}
+              aria-label="Reminder time"
+            >
+              <option value="">Remind me</option>
+              {REMINDER_TIMES.map((t) => (
+                <option key={t} value={t}>
+                  {clockLabel(t)}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          <span className="qa-chip" data-off aria-disabled="true" title="Pick a single day to set a reminder">
+            <FA icon={faBell} /> Remind me
+          </span>
+        )}
         <Menu
           label="Repeat"
           align="start"

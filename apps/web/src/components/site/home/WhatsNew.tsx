@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { RELEASES, type ChangeKind } from "../../../features/changelog/releases";
+import { PLATFORM_LABEL, RELEASES, type ChangeKind } from "../../../features/changelog/releases";
 import { R, Reveal } from "../Reveal";
 import { Section, SectionHead, Surface } from "../ui";
 
@@ -17,7 +17,7 @@ export default function WhatsNew() {
           <R key={c.text}>
             <Surface className="flex h-full flex-col gap-2 p-5">
               <span className="text-[11.5px] font-semibold tracking-[0.08em] text-fg-faint uppercase">
-                {KIND[c.kind]} · {c.platform === "web" ? "Web" : "App"}
+                {KIND[c.kind]} · {PLATFORM_LABEL[c.platform]}
               </span>
               <p className="m-0 text-[15px] leading-relaxed text-fg">{c.text}</p>
             </Surface>

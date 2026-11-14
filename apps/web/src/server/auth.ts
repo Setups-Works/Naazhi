@@ -23,6 +23,10 @@ function authPool() {
   return g.__authPool;
 }
 
+// Welcome mail must never break sign-up or verification, so failures are swallowed (sendEmail already logs the cause).
+const sendWelcome = (user: { email: string; name?: string | null }) =>
+  sendEmail(user.email, templates.welcome({ name: user.name, url: `${env.authUrl.replace(/\/$/, "")}/dashboard` })).catch(() => {});
+
 const verificationRequired = process.env.AUTH_REQUIRE_EMAIL_VERIFICATION?.trim().toLowerCase() !== "false";
 
 function create() {
@@ -114,6 +118,9 @@ function create() {
       sendOnSignUp: verificationRequired,
       sendOnSignIn: verificationRequired,
       autoSignInAfterVerification: true,
+      afterEmailVerification: async (user) => {
+        await sendWelcome(user);
+      },
       sendVerificationEmail: async ({ user, url }) => {
         await sendEmail(user.email, templates.confirmEmail({ name: user.name, url }));
       },
@@ -131,6 +138,8 @@ function create() {
           // Every account gets a profile row (plan, preferences, onboarding).
           after: async (user) => {
             await authPool().query("insert into public.profiles (user_id) values ($1) on conflict do nothing", [user.id]);
+            // Social sign-ups arrive already verified, so they never reach afterEmailVerification.
+            if (user.emailVerified) await sendWelcome(user);
           },
         },
       },

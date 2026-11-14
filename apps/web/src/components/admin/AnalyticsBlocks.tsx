@@ -37,7 +37,7 @@ export function DayChart({ label, series, legend }: { label: string; series: Ser
   const days = series[0]?.length ?? 0;
   const totals = Array.from({ length: days }, (_, i) => series.reduce((a, s) => a + (s[i]?.n ?? 0), 0));
   const max = Math.max(1, ...totals);
-  const dots = ["bg-(--data)", "bg-ink-3"];
+  const dots = ["bg-(--data)", "bg-ink-3", "bg-green-fg"];
   const dateAt = (i: number) => series[0]?.[i]?.label ?? "";
   const empty = totals.every((t) => t === 0);
   return (

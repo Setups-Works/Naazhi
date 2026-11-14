@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { GOOGLE_PLAY_URL } from "../../lib/site";
@@ -31,6 +31,15 @@ function wantsDrawer(): boolean {
 export default function InstallAppDrawer() {
   const eligible = useSyncExternalStore(noop, wantsDrawer, () => false);
   const [closed, setClosed] = useState(false);
+
+  // Chrome fires this when the manifest points at the Play app (app/manifest.ts). Cancelling it stops Chrome's own install banner, so
+  // the only install offer people see is this drawer, which goes to Google Play.
+  useEffect(() => {
+    const hide = (e: Event) => e.preventDefault();
+    window.addEventListener("beforeinstallprompt", hide);
+    return () => window.removeEventListener("beforeinstallprompt", hide);
+  }, []);
+
   if (!eligible || closed) return null;
 
   const close = () => {

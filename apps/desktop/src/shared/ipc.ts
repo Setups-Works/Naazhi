@@ -6,6 +6,10 @@ export const IPC = {
   chrome: "naazhi:chrome",
   /** Preload → main (synchronous, once): platform, version and the insets the page must leave for the window buttons. */
   boot: "naazhi:boot",
+  /** Page → main: the reminders to show as system notifications (replaces the previous list). */
+  reminders: "naazhi:reminders",
+  /** Page → main: show a system notification now (an inbox message that just arrived). */
+  notify: "naazhi:notify",
   /** Main → page: go to this app path. */
   navigate: "naazhi:navigate",
 } as const;

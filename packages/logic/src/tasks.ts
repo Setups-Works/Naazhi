@@ -30,6 +30,8 @@ export type Draft = {
   start_date?: string | null;
   list_id: string | null;
   recurrence: string | null;
+  /** Time of day to be reminded on the due date, "HH:MM" on the person's own clock; null for no reminder. Needs a due date. */
+  remind_time?: string | null;
   /** Set when the new task is a sub-task of another. */
   parent_id?: string | null;
 };
@@ -41,6 +43,7 @@ export const emptyDraft = (over: Partial<Draft> = {}): Draft => ({
   priority: 5,
   list_id: null,
   recurrence: null,
+  remind_time: null,
   ...over,
 });
 
@@ -276,4 +279,30 @@ export function nextDue(due: string, rule: string, after = isoDate()): string {
     if (cur > after) return cur;
   }
   return cur;
+}
+
+/** Times a to-do reminder can be set to, every 15 minutes ("HH:MM", the person's own clock). */
+export const REMINDER_TIMES: string[] = Array.from({ length: 96 }, (_, i) => `${String(Math.floor(i / 4)).padStart(2, "0")}:${String((i % 4) * 15).padStart(2, "0")}`);
+
+/** "HH:MM" or "HH:MM:SS" as "9:30 AM". */
+export function clockLabel(time: string): string {
+  const [h, m] = time.split(":").map(Number);
+  if (h === undefined || m === undefined || Number.isNaN(h) || Number.isNaN(m)) return time;
+  return `${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`;
+}
+
+/** The "HH:MM" a database `time` value ("09:30:00") stands for, or null. */
+export const clockOf = (time: string | null | undefined): string | null => (time && /^\d{2}:\d{2}/.test(time) ? time.slice(0, 5) : null);
+
+/**
+ * The moment (milliseconds) a to-do's reminder is due: its due date at its reminder time on the device's own clock, or null when it
+ * has no reminder (no time, no due date, or a task spanning several days).
+ */
+export function remindAt(t: { due_date: string | null; start_date?: string | null; remind_time?: string | null }): number | null {
+  const clock = clockOf(t.remind_time);
+  if (!clock || !t.due_date || t.start_date) return null;
+  const [y, mo, d] = t.due_date.split("-").map(Number);
+  const [h, m] = clock.split(":").map(Number);
+  const at = new Date(y!, mo! - 1, d!, h!, m!, 0, 0).getTime();
+  return Number.isNaN(at) ? null : at;
 }

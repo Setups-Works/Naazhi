@@ -22,6 +22,8 @@ export type Task = {
   cancelled: boolean;
   archived: boolean;
   recurrence: string | null;
+  /** Time of day (HH:MM or HH:MM:SS) to be reminded on the due date; null for none. */
+  remind_time?: string | null;
   /** The task this is a sub-task of, or null for a top-level task. */
   parent_id?: string | null;
   created_at: string;

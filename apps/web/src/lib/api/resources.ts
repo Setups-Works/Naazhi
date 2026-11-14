@@ -8,6 +8,7 @@ import { z } from "zod";
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const attachment = z.object({ path: z.string(), name: z.string(), type: z.string(), size: z.number() });
 const tone = z.enum(["violet", "blue", "green", "amber", "clay", "sand", "mint", "gold"]);
+const clock = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/);
 const recurrence = z.string().regex(/^(daily|weekdays|weekly|biweekly|monthly|yearly|nth:([1-4]|last):(sun|mon|tue|wed|thu|fri|sat))$/);
 
 export type ResourceDef = {
@@ -60,6 +61,7 @@ const taskRow = z.object({
   cancelled: z.boolean(),
   archived: z.boolean(),
   recurrence: recurrence.nullable(),
+  remind_time: clock.nullable().optional(),
   created_at: z.string(),
 });
 const taskCreate = z.object({
@@ -70,6 +72,7 @@ const taskCreate = z.object({
   list_id: z.string().uuid().nullable().optional(),
   due_date: date.nullable().optional(),
   recurrence: recurrence.nullable().optional(),
+  remind_time: clock.nullable().optional(),
 });
 
 const journalRow = z.object({
@@ -108,7 +111,7 @@ export const RESOURCES: ResourceDef[] = [
     table: "tasks",
     tag: "To-do",
     singular: "to-do",
-    columns: "id,title,description,priority,list_id,due_date,start_date,done,done_at,cancelled,archived,recurrence,created_at",
+    columns: "id,title,description,priority,list_id,due_date,start_date,remind_time,done,done_at,cancelled,archived,recurrence,created_at",
     order: [{ column: "created_at", ascending: true }],
     filters: { done: "boolean", archived: "boolean", cancelled: "boolean", due_date: "date", list_id: "string" },
     row: taskRow,

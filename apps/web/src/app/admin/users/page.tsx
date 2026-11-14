@@ -8,12 +8,13 @@ export default async function Page() {
   const [users, me, profiles, clients, acq] = await Promise.all([
     listAllUsers(),
     currentUser(),
-    adminDb().from("profiles").select("user_id,plan"),
+    adminDb().from("profiles").select("user_id,plan,phone"),
     clientsByUser(),
     adminDb().from("user_acquisition").select("user_id,source,campaign"),
   ]);
   const came = new Map((acq.data ?? []).map((a) => [a.user_id as string, [a.source, a.campaign].filter(Boolean).join(" / ")]));
   const plans = new Map((profiles.data ?? []).map((p) => [p.user_id as string, p.plan as string]));
+  const phones = new Map((profiles.data ?? []).map((p) => [p.user_id as string, (p.phone as string | null) ?? ""]));
   const rows: Row[] = users.map((u) => ({
     id: u.id,
     email: u.email,
@@ -24,6 +25,7 @@ export default async function Page() {
     admin: isAdmin(u),
     banned: u.banned,
     protected: isRootAdmin(u.email) || u.id === me?.id,
+    phone: phones.get(u.id) ?? "",
     plan: plans.get(u.id) ?? "free",
     createdAt: u.createdAt,
     lastSignIn: u.lastSignIn ?? null,

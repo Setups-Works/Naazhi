@@ -1,4 +1,4 @@
-import { dayLabel, emptyDraft, firstDue, PRIORITIES, recurrenceChoices, recurrenceLabel, type Draft } from "@untitled/logic";
+import { clockLabel, clockOf, dayLabel, emptyDraft, firstDue, PRIORITIES, recurrenceChoices, recurrenceLabel, REMINDER_TIMES, type Draft } from "@untitled/logic";
 import type { Task, TaskList } from "@untitled/types";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -66,6 +66,7 @@ function TaskScreen({ task, lists }: { task: Task; lists: TaskList[] }) {
           priority: task.priority,
           list_id: task.list_id,
           recurrence: task.recurrence,
+          remind_time: clockOf(task.remind_time),
         }}
         lists={lists}
         onSaved={() => setEditing(false)}
@@ -99,6 +100,7 @@ function TaskScreen({ task, lists }: { task: Task; lists: TaskList[] }) {
         />
         <Detail label="Priority" value={priority ?? "—"} />
         <Detail label="List" value={list?.name ?? "Inbox"} />
+        {task.due_date && clockOf(task.remind_time) ? <Detail label="Reminder" value={clockLabel(task.remind_time!)} /> : null}
         <Detail label="Repeat" value={recurrenceLabel(task.recurrence)} />
       </Card>
       {task.description ? <Markdown text={task.description} /> : null}
@@ -154,6 +156,8 @@ function Form({
     setError("");
     if (!d.title.trim()) return setError("Give the task a title.");
     const values = { ...d, title: d.title.trim(), due_date: firstDue(d.due_date, d.recurrence, today) };
+    // A reminder is "on the due date at this time", so it goes with the date.
+    if (!values.due_date) values.remind_time = null;
     if (task) patch.mutate({ id: task.id, changes: values }, done);
     else add.mutate(values, done);
   }
@@ -198,7 +202,15 @@ function Form({
         minHeight={100}
         maxLength={5000}
       />
-      <DateField label="Due date" value={d.due_date} onChange={(due_date) => set({ due_date })} />
+      <DateField label="Due date" value={d.due_date} onChange={(due_date) => set({ due_date, ...(due_date ? {} : { remind_time: null }) })} />
+      {d.due_date ? (
+        <PickerField
+          label="Remind me"
+          value={d.remind_time ?? ""}
+          options={[{ value: "", label: "No reminder" }, ...REMINDER_TIMES.map((t) => ({ value: t, label: clockLabel(t) }))]}
+          onChange={(v) => set({ remind_time: v || null })}
+        />
+      ) : null}
       <PickerField
         label="Priority"
         value={d.priority}

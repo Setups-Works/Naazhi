@@ -12,8 +12,10 @@ const boot = ipcRenderer.sendSync(IPC.boot) as BootInfo;
 const api: NaazhiDesktopApi = {
   platform: boot.platform,
   version: boot.version,
-  signInWithBrowser: () => ipcRenderer.invoke(IPC.signIn),
+  signInWithBrowser: (code?: string) => ipcRenderer.invoke(IPC.signIn, code),
   setChrome: (chrome: DesktopChrome) => ipcRenderer.send(IPC.chrome, chrome),
+  notify: (notice) => ipcRenderer.send(IPC.notify, notice),
+  setReminders: (reminders) => ipcRenderer.send(IPC.reminders, reminders),
   onNavigate(listener) {
     const handler = (_event: unknown, path: unknown) => {
       // Only plain app paths; the page decides how to go there.

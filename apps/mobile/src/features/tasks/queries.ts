@@ -4,11 +4,12 @@ import { firstDue, nextDue } from "@untitled/logic";
 import type { ItemResponse, Task, TaskList } from "@untitled/types";
 
 import { dbQuery } from "@/features/chat/db";
+import { requestReplan } from "@/features/notifications/useNotificationSync";
 import { api } from "@/lib/api";
 import { qk } from "@/lib/queryKeys";
 
 // Same reads the web makes: the generic /api/v1/db door for lists of everything, the REST endpoints for writes.
-const TASK_COLS = "id,title,description,priority,list_id,due_date,done,done_at,cancelled,archived,recurrence,created_at";
+const TASK_COLS = "id,title,description,priority,list_id,due_date,remind_time,done,done_at,cancelled,archived,recurrence,created_at";
 const LIST_COLS = "id,name,color,created_at";
 const listsKey = ["task-lists"] as const;
 
@@ -40,13 +41,17 @@ export function useTaskLists() {
 }
 
 type Changes = Partial<
-  Pick<Task, "title" | "description" | "priority" | "list_id" | "due_date" | "recurrence" | "done" | "done_at" | "cancelled" | "archived">
+  Pick<Task, "title" | "description" | "priority" | "list_id" | "due_date" | "remind_time" | "recurrence" | "done" | "done_at" | "cancelled" | "archived">
 >;
 
 /** All task writes. Each updates the cached list at once (so Home and To-do agree) and rolls back if the server refuses. */
 export function useTaskActions(today: string) {
   const qc = useQueryClient();
-  const refresh = () => qc.invalidateQueries({ queryKey: qk.tasks });
+  const refresh = () => {
+    // Reminder times may have changed: plan the phone's reminders again.
+    requestReplan();
+    return qc.invalidateQueries({ queryKey: qk.tasks });
+  };
   const mapAll = (fn: (all: Task[]) => Task[]) => qc.setQueryData<Task[]>(qk.tasks, (old) => (old ? fn(old) : old));
   const snapshot = async () => {
     await qc.cancelQueries({ queryKey: qk.tasks });
@@ -76,6 +81,7 @@ export function useTaskActions(today: string) {
         priority: d.priority,
         list_id: d.list_id,
         recurrence: d.recurrence,
+        remind_time: d.remind_time ?? null,
       }),
     onSettled: refresh,
   });
@@ -93,6 +99,7 @@ export function useTaskActions(today: string) {
           priority: t.priority,
           list_id: t.list_id,
           recurrence: t.recurrence,
+          remind_time: t.remind_time ?? null,
         });
       }
     },

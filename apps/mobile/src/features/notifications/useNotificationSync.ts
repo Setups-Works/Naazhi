@@ -10,6 +10,10 @@ import { replanReminders, clearReminders } from "./reminders";
 import { configureNotifications, permissionGranted } from "./setup";
 
 let lastReplan = 0;
+let replanNow: (() => void) | null = null;
+
+/** Plans the phone's reminders again now (after a to-do is saved, so a new reminder time takes effect without reopening the app). */
+export const requestReplan = () => replanNow?.();
 
 /** A tapped notification opens the screen it names (an in-app path set by the server or the reminder planner). */
 function open(response: Notifications.NotificationResponse | null) {
@@ -48,9 +52,13 @@ export function useNotificationSync(userId: string | null) {
       await replanReminders(prefs);
     }
     void run(true).catch(() => undefined);
+    replanNow = () => void run(true).catch(() => undefined);
     const sub = AppState.addEventListener("change", (s) => {
       if (s === "active") void run(false).catch(() => undefined);
     });
-    return () => sub.remove();
+    return () => {
+      sub.remove();
+      replanNow = null;
+    };
   }, [userId]);
 }

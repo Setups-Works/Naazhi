@@ -2,17 +2,19 @@
  * Which kind of client a sign-in came from, read from its user-agent. The phone app's network layer identifies itself as okhttp (Android) or
  * CFNetwork/Darwin (iOS) and never as a browser; every browser says "Mozilla/", including phone browsers, which count as the web.
  */
-export type Client = "web" | "android" | "ios" | "unknown";
+export type Client = "web" | "desktop" | "android" | "ios" | "unknown";
 
 export function clientOf(agent: string | null | undefined): Client {
   if (!agent) return "unknown";
+  // The desktop app is a browser window underneath, so it says "Mozilla/" too; its own token (apps/desktop/src/main/index.ts) comes first.
+  if (/NaazhiDesktop\//.test(agent)) return "desktop";
   if (/Mozilla\//.test(agent)) return "web";
   if (/CFNetwork|Darwin/.test(agent)) return "ios";
   if (/okhttp|Dalvik/i.test(agent)) return "android";
   return "unknown";
 }
 
-export const CLIENT_LABEL: Record<Client, string> = { web: "Web", android: "Android app", ios: "iPhone app", unknown: "Unknown" };
+export const CLIENT_LABEL: Record<Client, string> = { web: "Web", desktop: "Desktop app", android: "Android app", ios: "iPhone app", unknown: "Unknown" };
 
 /** "Chrome on macOS" style label for a browser user-agent. */
 export function browserOf(agent: string | null | undefined): string {

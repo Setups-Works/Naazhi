@@ -2,7 +2,7 @@
 import type { MetadataRoute } from "next";
 import { GOOGLE_PLAY_URL } from "../lib/site";
 
-/** What the browser shows when the site is installed as an app: the name, the icons and the colours of the splash and the title bar. */
+/** What the browser shows when the site is installed: the name, the icons and the colours. On Android it points at the Play app instead (below). */
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Naazhi",
@@ -12,7 +12,7 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     background_color: "#f5f4eb",
     theme_color: "#235340",
-    // On Android, Chrome and other browsers send "Install app" to Google Play instead of installing the website as an app.
+    // Browsers that still offer an install point to the Google Play app, never to the website.
     related_applications: [{ platform: "play", url: GOOGLE_PLAY_URL, id: "com.setupsworks.naazhi" }],
     prefer_related_applications: true,
     icons: [

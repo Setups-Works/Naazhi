@@ -115,3 +115,9 @@ Migration `20261113130000_subscription_trial.sql`: `billing_plans.trial_days`, `
 
 ## Where people came from
 `user_acquisition` (one row per person, written once: `source`, `medium`, `campaign`, `referrer_host`, `platform` web/android/ios; people read and add their own row, nobody updates or deletes it) and `site_visits` (one row per browser session on the public site: cleaned `source`, `medium`, `campaign` and the landing `path`; no address, device or id; RLS on with no policies, so only the service reads or writes it). Migrations `20261113150000_user_acquisition.sql` and `20261113160000_site_visits.sql`. Written by `acquisition.service.ts` and `visits.service.ts`; read by Admin → Analytics. See `docs/ANALYTICS.md`.
+
+## Desktop sign-in codes
+`desktop_sign_ins` (one row per Google sign-in started in the desktop app: a six-character `code`, a hashed `secret_hash`, the approving `user_id` and single-use `token` once authorized, `expires_at` ten minutes out; the row is deleted when the app collects the token). RLS on with no policies, so only the service reads or writes it. Migration `20261114120000_desktop_sign_ins.sql`; written by `desktopSignIn.service.ts`. See `docs/DESKTOP.md`.
+
+## To-do reminder time
+`tasks.remind_time` (a `time`, the person's own clock): be reminded on the due date at this time. A wall-clock time, not an instant, so it stays right when the due date moves or a repeating to-do advances; the phone and desktop apps work out the moment from `due_date` and deliver it themselves. Ignored when the to-do has no due date or spans several days. Migration `20261114130000_task_remind_time.sql`.

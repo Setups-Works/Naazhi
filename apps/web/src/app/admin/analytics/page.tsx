@@ -20,6 +20,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ d
   const a = await adminAnalytics(days);
   const web = sum(a.signinsWeb);
   const app = sum(a.signinsApp);
+  const desktop = sum(a.signinsDesktop);
   const period = `last ${days} days`;
 
   return (
@@ -61,8 +62,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ d
         <Card title="New sign-ups" note={`Accounts created each day, ${period}.`}>
           <DayChart label="New sign-ups per day" series={[a.signups]} />
         </Card>
-        <Card title="Web and app sign-ins" note={`Sign-ins per day, ${period}.`}>
-          <DayChart label="Sign-ins per day, web and app" series={[a.signinsWeb, a.signinsApp]} legend={[`Web · ${num(web)}`, `App · ${num(app)}`]} />
+        <Card title="Web, phone app and desktop app sign-ins" note={`Sign-ins per day, ${period}.`}>
+          <DayChart label="Sign-ins per day, web, phone app and desktop app" series={[a.signinsWeb, a.signinsApp, a.signinsDesktop]} legend={[`Web · ${num(web)}`, `Phone app · ${num(app)}`, `Desktop app · ${num(desktop)}`]} />
         </Card>
         <Card title="AI tokens" note={`Input plus output, all plans, ${period}.`}>
           <DayChart label="AI tokens per day" series={[a.tokens]} />

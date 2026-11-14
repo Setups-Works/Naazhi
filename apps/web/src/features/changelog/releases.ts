@@ -23,6 +23,22 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-14",
+    title: "Version 7.7.0: reminders and simpler desktop sign-in",
+    summary: "To-dos can remind you at a time you choose, and the desktop app signs you in with a short code.",
+    tone: "gold",
+    appVersion: "v7.7.0",
+    changes: [
+      { kind: "new", platform: "web", text: "Set a reminder time on any to-do that has a date, in the to-do form or its side panel." },
+      { kind: "new", platform: "app", text: "The phone app reminds you at the time you set on a to-do, by name, even when the app is closed." },
+      { kind: "new", platform: "desktop", text: "The desktop app shows to-do reminders as notifications, and new messages such as a shared-journal invitation. Click one to open it." },
+      { kind: "new", platform: "desktop", text: "Continue with Google in the desktop app now shows a six-character code. Press Authorize in your browser and the app signs you in." },
+      { kind: "new", platform: "app", text: "Get apps has Mac and Windows. Press Get now and we email you the download link." },
+      { kind: "new", platform: "web", text: "New accounts get a welcome email once they confirm their address." },
+      { kind: "improved", platform: "web", text: "The home page’s new-in-this-release cards now label desktop changes as Desktop." },
+    ],
+  },
+  {
+    date: "2026-11-14",
     title: "Version 7.6.1: easier to find",
     summary: "Search engines now get clear details about Naazhi and where to download it.",
     tone: "mint",

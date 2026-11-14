@@ -19,7 +19,7 @@ import type { Task, TaskList } from "../../lib/workspace";
  */
 
 import { readPrefs } from "../../lib/prefs";
-const TASK_COLS = "id,title,description,priority,list_id,due_date,start_date,done,done_at,cancelled,archived,recurrence,parent_id,created_at";
+const TASK_COLS = "id,title,description,priority,list_id,due_date,start_date,remind_time,done,done_at,cancelled,archived,recurrence,parent_id,created_at";
 const LIST_COLS = "id,name,color,created_at";
 const EMPTY_TASKS: Task[] = [];
 const EMPTY_LISTS: TaskList[] = [];
@@ -97,6 +97,8 @@ export function useTaskActions(onError: (message: string) => void, today: string
           priority: d.priority,
           list_id: d.list_id,
           recurrence: d.recurrence,
+          // A reminder needs a single due date (the database enforces it).
+          remind_time: d.due_date && !d.start_date ? (d.remind_time ?? null) : null,
           ...(d.parent_id ? { parent_id: d.parent_id } : {}),
         })
         .select("id")
@@ -128,6 +130,7 @@ export function useTaskActions(onError: (message: string) => void, today: string
           priority: t.priority,
           list_id: t.list_id,
           recurrence: t.recurrence,
+          remind_time: t.remind_time ?? null,
         });
         if (e2) throw e2;
       }

@@ -1,3 +1,4 @@
+import { remindAt } from "./tasks";
 import { journalStreak } from "./widgets";
 
 /**
@@ -8,7 +9,16 @@ import { journalStreak } from "./widgets";
 export type ReminderKind = "tasks" | "journal" | "event";
 export type Reminder = { kind: ReminderKind; at: number; title: string; body: string; url: string };
 
-type PlanTask = { title: string; due_date: string | null; done: boolean; cancelled: boolean; archived: boolean };
+type PlanTask = {
+  title: string;
+  due_date: string | null;
+  start_date?: string | null;
+  /** Time of day to be reminded on the due date ("HH:MM"). */
+  remind_time?: string | null;
+  done: boolean;
+  cancelled: boolean;
+  archived: boolean;
+};
 type PlanEvent = { id: string; title: string; start_at: string; all_day: boolean };
 
 export type ReminderInput = {
@@ -35,6 +45,15 @@ export function planReminders(i: ReminderInput): Reminder[] {
   const out: Reminder[] = [];
   const todayIso = dayOf(new Date(i.now));
   const open = i.tasks.filter((t) => !t.done && !t.cancelled && !t.archived && t.due_date);
+
+  // A to-do with its own reminder time is reminded at exactly that time, by name.
+  if (i.on.tasks) {
+    const horizon = i.now + i.days * 86_400_000;
+    for (const t of open) {
+      const at = remindAt(t);
+      if (at !== null && at > i.now && at <= horizon) out.push({ kind: "tasks", at, title: t.title, body: "Reminder for your to-do", url: "/todo" });
+    }
+  }
 
   for (let d = 0; d < i.days; d++) {
     const base = new Date(i.now);

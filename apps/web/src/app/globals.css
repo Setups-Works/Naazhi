@@ -16219,6 +16219,9 @@ html[data-desktop="mac"] .sb::before {
   inset: 0 0 auto 0;
   height: var(--bar-h);
   -webkit-app-region: drag;
+  /* The traffic lights sit in a plain band of the page colour that runs straight across the sidebar and the top bar: no grey rail
+     behind them and no dividing line cutting between the buttons. The sidebar's own colour and edge start below it. */
+  background: var(--page);
 }
 html[data-desktop="mac"] .ap:not(:has(.sb[data-expanded="true"])) .ap-top {
   padding-left: max(clamp(12px, 2vw, 20px), calc(var(--desktop-inset-left) - var(--rail)));

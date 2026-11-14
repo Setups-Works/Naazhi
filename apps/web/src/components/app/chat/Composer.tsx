@@ -19,7 +19,8 @@ import { useDraftFiles, useDraftText } from "../../../hooks/useDraft";
 import { clearDraft } from "../../../lib/drafts";
 import { useSkills } from "../../../features/settings/useSkills";
 import { useZohoStatus } from "../../../features/integrations/zoho";
-import { ALL_MENTIONS, matchConnectors, mentionAt, zohoConnectors } from "../../../lib/connectors";
+import { useComposioStatus } from "../../../features/integrations/composio";
+import { ALL_MENTIONS, googleConnectors, matchConnectors, mentionAt, zohoConnectors } from "../../../lib/connectors";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -58,12 +59,16 @@ export default function Composer({
   // Typing "@" lists the apps the person connected (each with its logo); picking one puts "@Zoho Books" in the message, and the
   // assistant uses that app for the request. A small chip shows the app; the name is not repeated in the box.
   const zoho = useZohoStatus();
-  const connectors = zohoConnectors(zoho.data?.connected ? zoho.data.services : []);
+  const google = useComposioStatus();
+  const connectors = [
+    ...googleConnectors((google.data?.apps ?? []).filter((a) => a.state === "connected").map((a) => a.app)),
+    ...zohoConnectors(zoho.data?.connected ? zoho.data.services : []),
+  ];
   const mention = mentionAt(text);
   const [active, setActive] = useState(0);
   const [closedFor, setClosedFor] = useState("");
   const atMatches = mention && closedFor !== text ? matchConnectors(connectors, mention.query) : [];
-  const showAt = !!mention && closedFor !== text && (connectors.length > 0 || zoho.isFetched);
+  const showAt = !!mention && closedFor !== text && (connectors.length > 0 || (zoho.isFetched && google.isFetched));
   // A picked app becomes a small chip and the "@word" typed to find it is taken out of the box, so the name is shown once. It is put
   // back in front of the message when sending, which is how the assistant knows which app to use.
   const [picked, setPicked] = useState<string[]>([]);
@@ -147,7 +152,7 @@ export default function Composer({
         {showAt && (
           <ul className="cx-slash" aria-label="Connected apps" role="listbox">
             {atMatches.length === 0 ? (
-              <li className="cx-slash-none">{connectors.length === 0 ? "No apps connected. Connect Zoho in Settings → Zoho." : "No connected app with that name."}</li>
+              <li className="cx-slash-none">{connectors.length === 0 ? "No apps connected. Connect Google or Zoho in Settings." : "No connected app with that name."}</li>
             ) : (
               atMatches.map((c, i) => (
                 <li key={c.id} role="option" aria-selected={i === Math.min(active, atMatches.length - 1)}>

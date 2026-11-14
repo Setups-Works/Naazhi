@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createComposioApi, type Http } from "@untitled/api-client";
 import type { ComposioAppId, ComposioItems, ComposioStatus } from "../../lib/composio/apps";
 import { api as createDb } from "../../lib/api/client";
+import { rememberConnectReturn } from "../../lib/connectReturn";
 import { qk } from "../../lib/query/keys";
 
 /** `calendar_id` of events that came from Google Calendar, so they stay apart from the ones made in Naazhi. */
@@ -35,8 +36,9 @@ export const useComposioStatus = () => useQuery<ComposioStatus>({ queryKey: qk.c
 /** Sends the person to Google's approval page, once for every Google app. They come back to Settings when it is done. */
 export function useConnectComposio() {
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (opts?: { returnTo?: string }) => {
       const { url } = await api.start();
+      if (opts?.returnTo) rememberConnectReturn(opts.returnTo);
       window.location.assign(url);
     },
   });

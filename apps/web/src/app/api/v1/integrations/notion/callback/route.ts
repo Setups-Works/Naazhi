@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { serverEnv } from "../../../../../../config/env";
+import { CONNECT_RETURN_COOKIE, readConnectReturn } from "../../../../../../lib/connectReturn";
 import { publicPath } from "../../../../../../lib/hosts";
 import { ServiceError } from "../../../../../../server/errors";
 import { currentUser } from "../../../../../../server/session";
@@ -14,11 +15,14 @@ export const runtime = "nodejs";
  */
 export async function GET(req: Request) {
   const base = serverEnv().authUrl.replace(/\/+$/, "");
+  const returnTo = readConnectReturn(req.headers.get("cookie"));
   const back = (result: "connected" | "error", message?: string) => {
-    const url = new URL(publicPath("/dashboard/settings/imports"), base);
+    const url = new URL(returnTo ?? publicPath("/dashboard/settings/imports"), base);
     url.searchParams.set("notion", result);
     if (message) url.searchParams.set("msg", message.slice(0, 200));
-    return NextResponse.redirect(url, { headers: { "cache-control": "no-store" } });
+    const res = NextResponse.redirect(url, { headers: { "cache-control": "no-store" } });
+    if (returnTo) res.cookies.set(CONNECT_RETURN_COOKIE, "", { path: "/", maxAge: 0 });
+    return res;
   };
   const user = await currentUser();
   if (!user) return NextResponse.redirect(new URL("/login", base));

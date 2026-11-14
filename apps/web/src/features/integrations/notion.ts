@@ -2,6 +2,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createNotionApi, type Http } from "@untitled/api-client";
 import type { NotionImportResult, NotionStatus } from "@untitled/types";
+import { rememberConnectReturn } from "../../lib/connectReturn";
 import { qk } from "../../lib/query/keys";
 
 /**
@@ -31,8 +32,9 @@ export const useNotionStatus = () => useQuery<NotionStatus>({ queryKey: qk.notio
 /** Sends the person to Notion's own sign-in page. They come back to Settings when it is done. */
 export const useConnectNotion = () =>
   useMutation({
-    mutationFn: async () => {
+    mutationFn: async (opts?: { returnTo?: string }) => {
       const { url } = await api.start();
+      if (opts?.returnTo) rememberConnectReturn(opts.returnTo);
       window.location.assign(url);
     },
   });

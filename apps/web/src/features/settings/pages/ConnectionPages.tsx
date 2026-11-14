@@ -217,10 +217,12 @@ export function ImportsPage({ prefs: initial }: { prefs: Prefs }) {
           />
         </AppRow>
         <AppRow name="Notion" description="Import pages from Notion as notes. Pages you already imported are skipped.">{null}</AppRow>
-        <NotionImport />
+        <NotionImport
+          onImported={(notes) => void change({ recentImports: [{ at: new Date().toISOString(), source: "Notion", notes, folders: 0 }, ...prefs.recentImports].slice(0, 10) })}
+        />
       </SettingsSection>
       <p className="m-0 mt-3 px-1 text-[13.5px] text-ink-3" role="status">
-        {msg || "Imports only read the files you pick, in your browser, and add them to your notes."}
+        {msg || "Obsidian imports read only the files you pick, in your browser. Notion imports read only the pages you choose, through your Notion connection."}
       </p>
       <SettingsSection title="Recent imports">
         {prefs.recentImports.length === 0 ? (

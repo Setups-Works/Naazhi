@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useConfirm } from "../../../components/ui/Confirm";
 import { useConnectNotion, useDisconnectNotion, useImportNotionPages, useNotionPages, useNotionStatus } from "../../integrations/notion";
+import { Input } from "@/components/ui/input";
 import { SettingsNotice } from "../ui";
 
 /** Plain words for what an import did. */
@@ -17,7 +18,7 @@ function summary(r: { imported: number; skipped: number; failed: number }) {
  * Import from Notion: connect once (Notion's own sign-in, where the person chooses what to share), pick pages, and each becomes a note.
  * Pages already imported are marked and skipped, so importing again never adds copies.
  */
-export default function NotionImport() {
+export default function NotionImport({ onImported }: { onImported?: (notes: number) => void }) {
   const status = useNotionStatus();
   const connect = useConnectNotion();
   const disconnect = useDisconnectNotion();
@@ -54,6 +55,7 @@ export default function NotionImport() {
     try {
       const r = await run.mutateAsync(ids);
       setResult({ ok: r.imported > 0 || r.skipped > 0, text: summary(r) });
+      if (r.imported > 0) onImported?.(r.imported);
       setPicked(new Set());
     } catch (e) {
       setResult({ ok: false, text: e instanceof Error ? e.message : "Couldn’t finish that import." });
@@ -86,7 +88,7 @@ export default function NotionImport() {
       ) : (
         <>
           <div className="flex items-center justify-between gap-3 max-[600px]:flex-wrap">
-            <p className="m-0 text-[13.5px] text-ink-3">Notion is connected. Only pages you shared with the connection in Notion are listed.</p>
+            <p className="m-0 text-[13.5px] text-ink-3">{result?.ok && result.text.startsWith("Notion is connected") ? "Only pages you shared with the connection in Notion are listed." : "Notion is connected. Only pages you shared with the connection in Notion are listed."}</p>
             <Button
               variant="outline"
               disabled={busy}
@@ -105,7 +107,7 @@ export default function NotionImport() {
               setQ(search.trim());
             }}
           >
-            <input className="tf-input min-w-0 flex-1" aria-label="Search your Notion pages" placeholder="Search your Notion pages" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Input className="min-w-0 flex-1" aria-label="Search your Notion pages" placeholder="Search your Notion pages" value={search} onChange={(e) => setSearch(e.target.value)} />
             <Button type="submit" variant="outline" disabled={pages.isFetching}>
               Search
             </Button>

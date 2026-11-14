@@ -30,7 +30,7 @@ export const CATEGORIES: readonly HelpCategory[] = [
   { slug: "account", title: "Account and sign-in", description: "Passkeys, Google, passwords and what to do when you can’t get in.", icon: faUserLock, tone: "clay" },
   { slug: "plans-billing", title: "Plans and billing", description: "Subscriptions, credit, your own key, cancelling and refunds.", icon: faCreditCard, tone: "mint" },
   { slug: "apps", title: "Apps and devices", description: "The Android app, Health, and what works on a computer.", icon: faMobileScreen, tone: "sand" },
-  { slug: "integrations", title: "Connected apps", description: "Connect Zoho and ask about your records from chat.", icon: faPlug, tone: "blue" },
+  { slug: "integrations", title: "Connected apps", description: "Connect Gmail, Google Calendar and Zoho, and ask about them from chat.", icon: faPlug, tone: "blue" },
   { slug: "privacy-data", title: "Privacy and your data", description: "Who can see what, exporting, and deleting your account.", icon: faLock, tone: "violet" },
   { slug: "troubleshooting", title: "Troubleshooting", description: "Something not working? Start here.", icon: faScrewdriverWrench, tone: "clay" },
 ];
@@ -228,9 +228,9 @@ export const ARTICLES: readonly HelpArticle[] = [
     keywords: ["@", "zoho", "connected apps", "books", "crm", "ask"],
     updated: HELP_UPDATED,
     blocks: [
-      { type: "steps", items: ["Connect the app first (see Connect Zoho).", "In a chat, type @ and pick the app, for example Zoho Books.", "Ask your question. Chat shows what it is doing and reads your real records.", "If it drafts something, check it and press Create."] },
+      { type: "steps", items: ["Connect the app first (see Connect Gmail and Google Calendar, or Connect Zoho).", "In a chat, type @ and pick the app, for example Zoho Books.", "Ask your question. Chat shows what it is doing and reads your real records.", "If it drafts something, check it and press Create."] },
     ],
-    related: ["connect-zoho", "ai-confirms-before-saving"],
+    related: ["connect-google", "connect-zoho", "ai-confirms-before-saving"],
   },
 
   // ── Search, Library and Reader ────────────────────────────────────────────────────────────────────────────────
@@ -280,9 +280,9 @@ export const ARTICLES: readonly HelpArticle[] = [
     updated: HELP_UPDATED,
     blocks: [
       { type: "p", text: "Switch between month, week, day and agenda views. Tasks that have a due date appear on the calendar beside your events." },
-      { type: "p", text: "Zoho Calendar events can be asked about from chat once Zoho is connected. Google Calendar is planned and not available yet." },
+      { type: "p", text: "Google Calendar and Zoho Calendar events can be asked about from chat once the account is connected, and chat can add an event to Google Calendar after you check the draft." },
     ],
-    related: ["plan-your-tasks", "connect-zoho"],
+    related: ["plan-your-tasks", "connect-google", "connect-zoho"],
   },
 
   // ── Account ───────────────────────────────────────────────────────────────────────────────────────────────────
@@ -392,6 +392,20 @@ export const ARTICLES: readonly HelpArticle[] = [
 
   // ── Connected apps ────────────────────────────────────────────────────────────────────────────────────────────
   {
+    slug: "connect-google",
+    category: "integrations",
+    title: "Connect Gmail and Google Calendar",
+    summary: "Connect Gmail and Google Calendar, then read mail, check your schedule and add events from chat.",
+    keywords: ["google", "gmail", "google calendar", "connect", "email", "calendar", "integration"],
+    updated: HELP_UPDATED,
+    blocks: [
+      { type: "steps", items: ["Open Settings → Google.", "Press Connect next to Gmail or Google Calendar and approve access on Google’s own page.", "In chat, type @ and pick Gmail or Google Calendar."] },
+      { type: "p", text: "You sign in on Google’s page, so Naazhi never sees your password. Chat reads your mail and events only when you ask, and anything it would send or add waits for you to check it and press the button." },
+      { type: "p", text: "Disconnect any time from the same page. You can also remove Naazhi’s access in your Google account." },
+    ],
+    related: ["ask-connected-apps", "connect-zoho"],
+  },
+  {
     slug: "connect-zoho",
     category: "integrations",
     title: "Connect Zoho",
@@ -400,7 +414,7 @@ export const ARTICLES: readonly HelpArticle[] = [
     updated: HELP_UPDATED,
     blocks: [
       { type: "steps", items: ["Open Settings → Zoho.", "Follow the prompts to connect your Zoho account.", "In chat, type @ and pick the app you connected."] },
-      { type: "p", text: "You can disconnect at any time from the same place. Gmail, Outlook and Google Calendar are planned and not available yet, and each app is marked live or coming soon on the integrations list." },
+      { type: "p", text: "You can disconnect at any time from the same place. Outlook is planned and not available yet, and each app is marked live or coming soon on the integrations list." },
       { type: "note", tone: "info", text: "Names and logos of other companies belong to their owners. Naazhi is not affiliated with or endorsed by them." },
     ],
     related: ["ask-connected-apps"],

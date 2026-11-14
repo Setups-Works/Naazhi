@@ -12,6 +12,8 @@ export const ICONS: Record<string, { path: string; hex: string }> = {
   },
 };
 
-// Google products and the Zoho services we have verified are live; everything else is marked "Coming soon".
+// The Google and Zoho services we have verified are live; everything else is marked "Coming soon".
 const LIVE_ZOHO = new Set(["Zoho CRM", "Zoho Mail", "Zoho Desk", "Zoho Cliq", "Zoho Books", "Zoho Calendar", "Zoho Expense"]);
-export const isLive = (name: string) => /^Google/.test(name) || name === "Gmail" || name === "Maps" || LIVE_ZOHO.has(name);
+// Of Google, only Gmail and Google Calendar connect so far (Drive, Docs, Sheets and Meet are still to come).
+const LIVE_GOOGLE = new Set(["Gmail", "Google Calendar"]);
+export const isLive = (name: string) => LIVE_GOOGLE.has(name) || name === "Maps" || LIVE_ZOHO.has(name);

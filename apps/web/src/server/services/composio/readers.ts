@@ -38,7 +38,7 @@ const gmail: Reader = async (run, view, query) => {
         id,
         title: str(m.subject) || "(no subject)",
         subtitle: dot(str(m.sender) || str(m.from), dayAndTime(str(m.messageTimestamp))).slice(0, 200),
-        url: id ? `https://mail.google.com/mail/#all/${encodeURIComponent(id)}` : null,
+        url: id ? `${COMPOSIO_APPS.gmail.web}mail/#all/${encodeURIComponent(id)}` : null,
       };
     });
 };

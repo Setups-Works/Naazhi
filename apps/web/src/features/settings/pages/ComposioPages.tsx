@@ -103,7 +103,7 @@ export function ComposioProviderPage({ provider }: { provider: ProviderId }) {
       )}
       {s && !s.configured && (
         <SettingsNotice className="mt-2">
-          Connecting {def.name} isn’t set up on this server yet. An admin adds the Composio API key (COMPOSIO_API_KEY) and an auth config for each app.
+          Connecting {def.name} isn’t available yet. It will appear here as soon as it is switched on for Naazhi.
         </SettingsNotice>
       )}
       {status.isError && (

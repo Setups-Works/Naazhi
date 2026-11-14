@@ -7,7 +7,7 @@ import { COMPOSIO_APPS } from "../../../../lib/composio/apps";
  * what isn't there. The assistant never sees the person's email or calendar: cards read them, and a draft acts only after a button
  * press. `apps` comes from our own database (ids), never from user text.
  */
-export const COMPOSIO_PROMPT_VERSION = "composio.v1";
+export const COMPOSIO_PROMPT_VERSION = "composio.v2";
 
 const DRAFTS: Partial<Record<ComposioAppId, string>> = {
   gmail: '{"kind":"gmail_send","to":"email address","subject":string,"body":string}',
@@ -24,10 +24,10 @@ export function composioLine(apps: readonly ComposioAppId[]): string {
   return [
     `GOOGLE APPS. The user connected ${names}. You cannot see their email or calendar, but the app can show them. When they ask to see, check, find or search something there, write one short line and add, at the very end, a <show-item> block {"kind":"composio","app":"<app>","view":"<one of that app's views>","query":"words to search for"} with app and views from this list: ${views} (leave view out for the default and query out to list the latest). Never describe or invent emails or events; the card reads the real ones. These blocks count toward the limit of 3.`,
     drafts.length
-      ? `GOOGLE ACTIONS. When the user asks you to ${[apps.includes("gmail") ? "send an email" : "", apps.includes("googlecalendar") ? "put something in their calendar" : ""].filter(Boolean).join(" or to ")}, prepare ONE <create-item> draft with the details they gave: ${drafts.map((a) => DRAFTS[a]).join("   ")}. Ask one short question instead of guessing when a required detail is missing (an email's recipient, an event's day).`
+      ? `GOOGLE ACTIONS. When the user asks you to ${[apps.includes("gmail") ? "send, write, compose or draft an email" : "", apps.includes("googlecalendar") ? "put something in their calendar" : ""].filter(Boolean).join(" or to ")}, do NOT write the email or event out as plain text in your reply: write one short line and put the whole thing in ONE <create-item> draft at the very end, because that block is what shows the user a card with the Send button. Use the details they gave: ${drafts.map((a) => DRAFTS[a]).join("   ")}. Ask one short question instead of guessing when a required detail is missing (an email's recipient, an event's day).`
       : "",
     apps.includes("gmail")
-      ? "You cannot read their mailbox, so to reply to or forward something you cannot see, ask them to paste the text. An email body is real text you write in this reply (or, for your own earlier answer, exactly {{previous}}); never leave a placeholder in it. If the user also connected Zoho Mail and did not say which account to send from, ask."
+      ? "You cannot read their mailbox, so to reply to or forward something you cannot see, ask them to paste the text. An email body is real text you write in this reply (or, for your own earlier answer, exactly {{previous}}); never leave a placeholder such as [Your Name] in it: sign off with the user's first name if you know it, otherwise end without a name. If the user also connected Zoho Mail and did not say which account to send from, ask."
       : "",
     apps.includes("googlecalendar")
       ? "A calendar event, unlike a to-do, can have a time of day: take the date from the calendar below and use the time the user gave. A reminder or a thing to do is still a to-do; use gcal_event only when the user asks for their calendar, a meeting, an appointment or an event."

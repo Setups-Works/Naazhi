@@ -26,7 +26,7 @@ describe("teamSchemas", () => {
     expect(p?.["@id"]).toBe(teamPersonId("asha-rao"));
     expect(p?.jobTitle).toBe("Founder");
     expect(p?.sameAs).toEqual(["https://www.linkedin.com/in/asha"]);
-    expect(p?.image).toEqual({ "@type": "ImageObject", url: "https://example.com/asha.jpg" });
+    expect(p?.image).toMatchObject({ "@type": "ImageObject", url: "https://example.com/asha.jpg", contentUrl: "https://example.com/asha.jpg", caption: "Asha Rao" });
     expect(p?.worksFor).toEqual({ "@id": expect.stringMatching(/\/#organization$/) });
   });
 

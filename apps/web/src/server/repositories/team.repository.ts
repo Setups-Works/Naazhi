@@ -3,7 +3,7 @@ import type { adminDb } from "../db/builders";
 
 type Db = ReturnType<typeof adminDb>;
 
-export const TEAM_COLUMNS = "id,slug,name,role,bio,photo_url,profile_links,sort_order,published";
+export const TEAM_COLUMNS = "id,slug,name,role,bio,photo_url,profile_links,sort_order,published,updated_at,alternate_names,knows_about,awards,location,alumni_of,alumni_url";
 
 export type TeamRow = {
   id: string;
@@ -15,9 +15,16 @@ export type TeamRow = {
   profile_links: unknown;
   sort_order: number;
   published: boolean;
+  updated_at?: string;
+  alternate_names?: unknown;
+  knows_about?: unknown;
+  awards?: unknown;
+  location?: string;
+  alumni_of?: string;
+  alumni_url?: string | null;
 };
 
-export type TeamWrite = Omit<TeamRow, "id">;
+export type TeamWrite = Omit<TeamRow, "id" | "updated_at">;
 
 /** Everyone, or only the published people, in the order the admin set. */
 export async function listTeam(db: Db, onlyPublished: boolean) {

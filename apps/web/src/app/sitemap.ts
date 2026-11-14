@@ -6,7 +6,8 @@ import { helpSitemapEntries } from "../features/help/seo";
 import { isHelpSplit } from "../lib/hosts";
 import { RELEASES } from "../features/changelog/releases";
 import { LEGAL_UPDATED_ISO } from "../lib/legal";
-import { absoluteUrl, OWN_OG_PATHS, PUBLIC_PAGES } from "../lib/seo";
+import { absoluteUrl, OWN_OG_PATHS, PUBLIC_PAGES, teamMemberPath } from "../lib/seo";
+import { listPublicTeam } from "../server/services/team/team.service";
 
 /** Pages whose content moves with the product, so they take the newest release date. The legal pages leave the date out rather than guess one. */
 const FOLLOWS_RELEASES = new Set([
@@ -54,6 +55,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...(OWN_OG_PATHS.has(p.path) && image ? { images: [image] } : {}),
     };
   });
+  // Each published team member has a page of their own; the list comes from the admin panel, so it is read when the sitemap is asked for.
+  const people = (await listPublicTeam().catch(() => [])).map((m) => {
+    const path = teamMemberPath(m.slug);
+    const image = absoluteUrl(`${path}/opengraph-image`);
+    return {
+      url: absoluteUrl(path)!,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+      ...(m.updatedAt ? { lastModified: m.updatedAt } : {}),
+      ...(image ? { images: [image] } : {}),
+    };
+  });
   // With no host of its own the help center is part of this site, under /help.
-  return isHelpSplit() ? site : [...site, ...help];
+  return isHelpSplit() ? [...site, ...people] : [...site, ...people, ...help];
 }

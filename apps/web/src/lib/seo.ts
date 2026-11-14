@@ -582,10 +582,105 @@ export function breadcrumbSchema(trail: { name: string; path: string }[]): Json 
 }
 
 /** A person on the Team page, as far as structured data needs to know. */
-export type TeamPerson = { slug: string; name: string; role: string; bio: string; photoUrl: string | null; links: { label: string; url: string }[] };
+export type TeamPerson = { slug: string; name: string; role: string; bio: string; photoUrl: string | null; links: { label: string; url: string }[];
+  updatedAt?: string;
+  /** Other names the person goes by. */
+  alternateNames?: string[];
+  /** Topics they know about. */
+  knowsAbout?: string[];
+  awards?: string[];
+  /** Where they are based, as text ("Chennai, Tamil Nadu, India"). */
+  location?: string;
+  alumniOf?: string;
+  alumniUrl?: string | null;
+};
 
 /** The address of one person's block on the Team page; also their @id in structured data. */
 export const teamPersonId = (slug: string) => absoluteUrl(`/team#${slug}`);
+
+/** The path of one person's own page. */
+export const teamMemberPath = (slug: string) => `/team/${slug}`;
+
+/** The text for a person's page title, search snippet and share card. A written bio wins; otherwise a plain sentence from the role. */
+export function teamMemberDescription(p: Pick<TeamPerson, "name" | "role" | "bio">): string {
+  const bio = p.bio.replace(/\s+/g, " ").trim();
+  if (bio) return bio.length <= 155 ? bio : `${bio.slice(0, 154).replace(/\s+\S*$/, "")}…`;
+  return `${p.name} is ${p.role} at ${SITE_NAME}, the calm workspace for notes, to-dos, journal and chat, built by ${SETUPS_WORKS.name}.`;
+}
+
+/** The Wikidata item a person's profile links point to (Q-number), or undefined. Wikidata is the identifier search engines match people on. */
+export function wikidataIdOf(links: readonly { url: string }[]): string | undefined {
+  for (const l of links) {
+    const m = /^https:\/\/(?:www\.)?wikidata\.org\/(?:wiki|entity)\/(Q\d+)\/?$/i.exec(l.url);
+    if (m) return m[1]!.toUpperCase();
+  }
+  return undefined;
+}
+
+/**
+ * The Person node for one member. Its @id stays the one the Team page has always used, so search engines keep treating it as the same
+ * entity; its `url` is now the person's own page, and `sameAs` lists the profile links the admin entered (the strongest signal a search
+ * engine has for tying a person to the profiles it already knows). Only what the admin entered is stated.
+ */
+function personNode(p: TeamPerson, pageId: string | undefined, orgId: string | undefined): Json {
+  const own = absoluteUrl(teamMemberPath(p.slug));
+  return drop({
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "@id": teamPersonId(p.slug),
+    name: p.name,
+    jobTitle: p.role,
+    description: p.bio || undefined,
+    image: p.photoUrl ? { "@type": "ImageObject", url: p.photoUrl, contentUrl: p.photoUrl, caption: p.name } : undefined,
+    url: own,
+    sameAs: p.links.length ? p.links.map((l) => l.url) : undefined,
+    // The facts below are only stated when an admin entered them, and the profile page shows the same facts in plain text.
+    alternateName: p.alternateNames?.length ? p.alternateNames : undefined,
+    knowsAbout: p.knowsAbout?.length ? p.knowsAbout : undefined,
+    homeLocation: p.location ? { "@type": "Place", name: p.location } : undefined,
+    alumniOf: p.alumniOf ? drop({ "@type": "Organization", name: p.alumniOf, url: p.alumniUrl || undefined }) : undefined,
+    award: p.awards?.length ? p.awards : undefined,
+    identifier: wikidataIdOf(p.links) ? { "@type": "PropertyValue", propertyID: "Wikidata", value: wikidataIdOf(p.links) } : undefined,
+    worksFor: orgId ? { "@id": orgId } : undefined,
+    mainEntityOfPage: pageId ? { "@id": pageId } : undefined,
+  });
+}
+
+/**
+ * Structured data for one person's page: a ProfilePage about them (Google's type for a page whose subject is one person), the Person it
+ * describes, a link to Naazhi's organization, and the breadcrumb Team > person. The Person is also referenced from the Team page.
+ */
+export function teamMemberSchemas(p: TeamPerson): (Json | undefined)[] {
+  const orgId = absoluteUrl("/#organization");
+  const own = absoluteUrl(teamMemberPath(p.slug));
+  const profileId = own ? `${own}#profile` : undefined;
+  const crumbs = [
+    { name: "Team", path: "/team" },
+    { name: p.name, path: teamMemberPath(p.slug) },
+  ];
+  return [
+    drop({
+      "@context": "https://schema.org",
+      "@type": "ProfilePage",
+      "@id": profileId,
+      name: `${p.name}, ${p.role} at ${SITE_NAME}`,
+      description: teamMemberDescription(p),
+      url: own,
+      inLanguage: "en",
+      dateModified: p.updatedAt,
+      primaryImageOfPage: p.photoUrl ? { "@type": "ImageObject", url: p.photoUrl } : undefined,
+      isPartOf: absoluteUrl("/#website") ? { "@id": absoluteUrl("/#website") } : undefined,
+      breadcrumb: absoluteUrl(`${teamMemberPath(p.slug)}#breadcrumb`) ? { "@id": absoluteUrl(`${teamMemberPath(p.slug)}#breadcrumb`) } : undefined,
+      about: { "@id": teamPersonId(p.slug) },
+      mainEntity: { "@id": teamPersonId(p.slug) },
+    }),
+    personNode(p, profileId, orgId),
+    orgId
+      ? drop({ "@context": "https://schema.org", "@type": "Organization", "@id": orgId, name: SITE_NAME, url: absoluteUrl("/"), parentOrganization: setupsWorksRef(), employee: { "@id": teamPersonId(p.slug) } })
+      : undefined,
+    breadcrumbSchema(crumbs),
+  ];
+}
 
 /**
  * Structured data for the Team page: the page as an AboutPage, Naazhi's organization with its people, and one Person per member with a
@@ -595,21 +690,7 @@ export const teamPersonId = (slug: string) => absoluteUrl(`/team#${slug}`);
 export function teamSchemas(people: readonly TeamPerson[], dateModified?: string): (Json | undefined)[] {
   const orgId = absoluteUrl("/#organization");
   const pageId = absoluteUrl("/team#page");
-  const persons = people.map((p) =>
-    drop({
-      "@context": "https://schema.org",
-      "@type": "Person",
-      "@id": teamPersonId(p.slug),
-      name: p.name,
-      jobTitle: p.role,
-      description: p.bio || undefined,
-      image: p.photoUrl ? { "@type": "ImageObject", url: p.photoUrl } : undefined,
-      url: teamPersonId(p.slug),
-      sameAs: p.links.length ? p.links.map((l) => l.url) : undefined,
-      worksFor: orgId ? { "@id": orgId } : undefined,
-      mainEntityOfPage: pageId ? { "@id": pageId } : undefined,
-    }),
-  );
+  const persons = people.map((p) => personNode(p, absoluteUrl(`${teamMemberPath(p.slug)}#profile`), orgId));
   return [
     drop({
       "@context": "https://schema.org",

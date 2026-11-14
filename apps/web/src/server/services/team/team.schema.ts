@@ -35,6 +35,13 @@ export const teamMemberInput = z.object({
   links: z.array(teamLink).max(8, "Add at most 8 links.").default([]),
   sortOrder: z.coerce.number().int().min(0).max(9999).default(0),
   published: z.boolean().default(true),
+  // For the profile page and its structured data. All optional; an admin enters only what is true and public.
+  alternateNames: z.array(z.string().trim().min(1).max(60)).max(6, "Add at most 6 other names.").default([]),
+  knowsAbout: z.array(z.string().trim().min(1).max(60)).max(12, "Add at most 12 topics.").default([]),
+  awards: z.array(z.string().trim().min(1).max(150)).max(5, "Add at most 5 awards.").default([]),
+  location: z.string().trim().max(80, "Keep the place under 80 characters.").default(""),
+  alumniOf: z.string().trim().max(120, "Keep the school under 120 characters.").default(""),
+  alumniUrl: z.union([z.literal(""), httpsUrl("The school website")]).default(""),
 });
 
 export type TeamMemberInput = z.infer<typeof teamMemberInput>;
@@ -51,4 +58,12 @@ export type TeamMember = {
   links: TeamLink[];
   sortOrder: number;
   published: boolean;
+  /** When the row last changed (ISO); used for the page's modified date in structured data and the sitemap. */
+  updatedAt?: string;
+  alternateNames: string[];
+  knowsAbout: string[];
+  awards: string[];
+  location: string;
+  alumniOf: string;
+  alumniUrl: string | null;
 };

@@ -15,6 +15,12 @@ export type TeamMemberRow = {
   links: { label: string; url: string }[];
   sortOrder: number;
   published: boolean;
+  alternateNames: string[];
+  knowsAbout: string[];
+  awards: string[];
+  location: string;
+  alumniOf: string;
+  alumniUrl: string | null;
 };
 
 /** Inputs here need their own look: the base CSS does not reset form controls (border, font, background). */
@@ -39,7 +45,13 @@ const slugify = (s: string) =>
     .replace(/^-+|-+$/g, "")
     .slice(0, 60);
 
-const EMPTY: TeamMemberRow = { id: "", slug: "", name: "", role: "", bio: "", photoUrl: null, links: [], sortOrder: 0, published: true };
+const EMPTY: TeamMemberRow = {
+  id: "", slug: "", name: "", role: "", bio: "", photoUrl: null, links: [], sortOrder: 0, published: true,
+  alternateNames: [], knowsAbout: [], awards: [], location: "", alumniOf: "", alumniUrl: null,
+};
+
+/** One entry per line in a text box, as a list: blank lines are dropped. */
+const lines = (s: string) => s.split("\n").map((x) => x.trim()).filter(Boolean);
 
 function MemberForm({ member, onDone }: { member: TeamMemberRow; onDone?: () => void }) {
   const isNew = member.id === "";
@@ -53,6 +65,12 @@ function MemberForm({ member, onDone }: { member: TeamMemberRow; onDone?: () => 
   const [links, setLinks] = useState(member.links);
   const [sort, setSort] = useState(String(member.sortOrder));
   const [published, setPublished] = useState(member.published);
+  const [alsoKnown, setAlsoKnown] = useState(member.alternateNames.join("\n"));
+  const [topics, setTopics] = useState(member.knowsAbout.join("\n"));
+  const [awards, setAwards] = useState(member.awards.join("\n"));
+  const [place, setPlace] = useState(member.location);
+  const [school, setSchool] = useState(member.alumniOf);
+  const [schoolUrl, setSchoolUrl] = useState(member.alumniUrl ?? "");
   const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, start] = useTransition();
 
@@ -75,6 +93,12 @@ function MemberForm({ member, onDone }: { member: TeamMemberRow; onDone?: () => 
             links: links.filter((l) => l.label.trim() || l.url.trim()),
             sortOrder: Number(sort) || 0,
             published,
+            alternateNames: lines(alsoKnown),
+            knowsAbout: lines(topics),
+            awards: lines(awards),
+            location: place,
+            alumniOf: school,
+            alumniUrl: schoolUrl,
           });
           if (!r.ok) return setNote({ ok: false, text: r.error });
           if (isNew) {
@@ -87,6 +111,12 @@ function MemberForm({ member, onDone }: { member: TeamMemberRow; onDone?: () => 
             setLinks([]);
             setSort("0");
             setPublished(true);
+            setAlsoKnown("");
+            setTopics("");
+            setAwards("");
+            setPlace("");
+            setSchool("");
+            setSchoolUrl("");
             onDone?.();
           }
           setNote({ ok: true, text: isNew ? "Added. It shows on the Team page now." : "Saved. The Team page is updated." });
@@ -161,6 +191,34 @@ function MemberForm({ member, onDone }: { member: TeamMemberRow; onDone?: () => 
           </button>
         )}
       </div>
+
+      <fieldset className="grid gap-3 rounded-r2 border p-4">
+        <legend className="px-1 text-[12.5px] text-fg-subtle">
+          For search engines (optional). Shown on the person’s page and written into its structured data. Add only what is true and already public: never a birth date, phone, email or family.
+        </legend>
+        <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
+          <Field label="Based in">
+            <input className={INPUT} value={place} maxLength={80} onChange={(e) => setPlace(e.target.value)} placeholder="Chennai, Tamil Nadu, India" />
+          </Field>
+          <Field label="Studied at">
+            <input className={INPUT} value={school} maxLength={120} onChange={(e) => setSchool(e.target.value)} />
+          </Field>
+          <Field label="School website (https://…)">
+            <input className={INPUT} value={schoolUrl} maxLength={500} onChange={(e) => setSchoolUrl(e.target.value)} inputMode="url" />
+          </Field>
+        </div>
+        <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
+          <Field label="Also known as (one per line, up to 6)">
+            <textarea className={`${INPUT} h-auto min-h-[84px] resize-y py-2.5`} value={alsoKnown} rows={3} onChange={(e) => setAlsoKnown(e.target.value)} />
+          </Field>
+          <Field label="Topics they work on (one per line, up to 12)">
+            <textarea className={`${INPUT} h-auto min-h-[84px] resize-y py-2.5`} value={topics} rows={3} onChange={(e) => setTopics(e.target.value)} />
+          </Field>
+          <Field label="Awards and recognition (one per line, up to 5)">
+            <textarea className={`${INPUT} h-auto min-h-[84px] resize-y py-2.5`} value={awards} rows={3} onChange={(e) => setAwards(e.target.value)} />
+          </Field>
+        </div>
+      </fieldset>
 
       <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(150px,1fr))]">
         <Field label="Order (lowest first)">

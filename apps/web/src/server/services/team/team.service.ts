@@ -15,6 +15,10 @@ function cleanLinks(value: unknown): TeamLink[] {
   });
 }
 
+/** A stored list of short texts (admin-entered JSON): keep only the strings, so a bad row can never break the page. */
+const cleanList = (value: unknown, max: number): string[] =>
+  Array.isArray(value) ? value.filter((v): v is string => typeof v === "string" && v.trim().length > 0).map((v) => v.trim()).slice(0, max) : [];
+
 const toMember = (r: TeamRow): TeamMember => ({
   id: r.id,
   slug: r.slug,
@@ -25,6 +29,13 @@ const toMember = (r: TeamRow): TeamMember => ({
   links: cleanLinks(r.profile_links),
   sortOrder: r.sort_order,
   published: r.published,
+  updatedAt: r.updated_at ? new Date(r.updated_at).toISOString() : undefined,
+  alternateNames: cleanList(r.alternate_names, 6),
+  knowsAbout: cleanList(r.knows_about, 12),
+  awards: cleanList(r.awards, 5),
+  location: r.location ?? "",
+  alumniOf: r.alumni_of ?? "",
+  alumniUrl: r.alumni_url ?? null,
 });
 
 /**
@@ -35,6 +46,13 @@ export async function listPublicTeam(): Promise<TeamMember[]> {
   if (!serverConfigured()) return [];
   const { data, error } = await listTeam(adminDb(), true);
   return error ? [] : (data ?? []).map(toMember);
+}
+
+/** One published person by the name in their address, or null. The team is small, so this reads the published list and picks. */
+export async function getPublicMember(slug: string): Promise<{ member: TeamMember; others: TeamMember[] } | null> {
+  const all = await listPublicTeam();
+  const member = all.find((m) => m.slug === slug);
+  return member ? { member, others: all.filter((m) => m.slug !== slug) } : null;
 }
 
 /** Everyone, hidden people included, for the admin editor. Admin code only. */
@@ -58,6 +76,12 @@ function toWrite(raw: unknown): { ok: true; row: TeamWrite } | { ok: false; erro
       profile_links: v.links,
       sort_order: v.sortOrder,
       published: v.published,
+      alternate_names: v.alternateNames,
+      knows_about: v.knowsAbout,
+      awards: v.awards,
+      location: v.location,
+      alumni_of: v.alumniOf,
+      alumni_url: v.alumniUrl || null,
     },
   };
 }

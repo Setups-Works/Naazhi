@@ -23,6 +23,17 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-14",
+    title: "Version 7.9.0: a page for every team member",
+    summary: "Each person on the team now has their own page, with details search engines can read.",
+    tone: "violet",
+    appVersion: "v7.9.0",
+    changes: [
+      { kind: "new", platform: "web", text: "Every team member has their own page, with a portrait, bio, profile links and a share picture. The Team page links to it." },
+      { kind: "new", platform: "web", text: "Team pages carry clear structured data about the person, so search engines can tell who they are. Admins can add where someone is based, where they studied, other names, topics and awards." },
+    ],
+  },
+  {
+    date: "2026-11-14",
     title: "Version 7.8.1: no more sign-in loop",
     summary: "If your sign-in has expired, Naazhi now takes you to the sign-in page instead of looping.",
     tone: "clay",

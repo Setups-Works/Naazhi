@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import JsonLd from "../../components/site/JsonLd";
 import { CtaPanel, PageHero } from "../../components/site/kit";
 import { Section, Surface } from "../../components/site/ui";
 import { OPERATOR } from "../../lib/legal";
-import { pageMeta, teamSchemas } from "../../lib/seo";
+import { pageMeta, teamMemberPath, teamSchemas } from "../../lib/seo";
 import { listPublicTeam } from "../../server/services/team/team.service";
 
 const SEO = {
@@ -54,13 +55,20 @@ export default async function Page() {
                       </span>
                     )}
                     <div>
-                      <h2 className="font-serif text-[22px] font-semibold leading-tight text-fg">{p.name}</h2>
+                      <h2 className="font-serif text-[22px] font-semibold leading-tight text-fg">
+                        <Link href={teamMemberPath(p.slug)} className="hover:underline">
+                          {p.name}
+                        </Link>
+                      </h2>
                       <p className="mt-0.5 text-[14.5px] text-fg-muted">{p.role}</p>
                     </div>
                   </div>
                   {p.bio && <p className="text-[15px] leading-relaxed text-fg-muted">{p.bio}</p>}
+                  <Link href={teamMemberPath(p.slug)} className="mt-auto text-[14px] font-medium text-green-fg underline" aria-label={`View ${p.name}’s profile`}>
+                    View profile
+                  </Link>
                   {p.links.length > 0 && (
-                    <ul className="mt-auto flex flex-wrap gap-x-4 gap-y-1.5 text-[14px]">
+                    <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-[14px]">
                       {p.links.map((l) => (
                         <li key={l.url}>
                           <a className="text-green-fg underline" href={l.url} rel="me noopener noreferrer" target="_blank">

@@ -17,6 +17,8 @@ export function createComposioApi(http: Http) {
     disconnect: () => unwrap(http.delete<Data<ComposioStatus>>(base)),
     /** The Google Calendar events to save in the Naazhi calendar (all-day events as dates, timed ones with their offset). */
     calendarEvents: () => unwrap(http.get<Data<{ events: ImportedGoogleEvent[]; truncated: boolean }>>(`${base}/calendar-events`)),
+    /** Saves one Google Calendar event as a journal entry on its day; the server reads the event itself. */
+    saveEventToJournal: (event_id: string) => unwrap(http.post<Data<{ id: string; entry_date: string; path: string }>>(`${base}/journal`, { event_id })),
     items: (app: ComposioAppId, view?: string, q?: string) =>
       unwrap(http.get<Data<ComposioItems>>(`${base}/items?${new URLSearchParams({ app, ...(view ? { view } : {}), ...(q ? { q } : {}) })}`)),
   };

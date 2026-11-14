@@ -2,7 +2,8 @@
 import Link from "next/link";
 import { faCalendarDays, faEnvelope, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import { COMPOSIO_APPS, composioSettingsPath, type ComposioAppId } from "../../../../lib/composio/apps";
-import { useComposioItems } from "../../../../features/integrations/composio";
+import { useComposioItems, useSaveEventToJournal } from "../../../../features/integrations/composio";
+import { useState } from "react";
 import ShownGroup, { ShownEmpty } from "./ShownGroup";
 import ToolCallLog from "../kit/ToolCallLog";
 
@@ -53,18 +54,44 @@ export default function ComposioShown({ app, view = "", query = "" }: { app: Com
           </>
         );
         const cls = "flex flex-col gap-0.5 rounded-ctl bg-hover px-3 py-2 transition-colors hover:bg-press";
+        const link = r.url ? (
+          <a href={r.url} target="_blank" rel="noopener noreferrer" aria-label={`Open in ${def.name}: ${r.title}`} className={`${cls} min-w-0 flex-1`}>
+            {body}
+          </a>
+        ) : (
+          <div className={`${cls} min-w-0 flex-1`}>{body}</div>
+        );
         return (
-          <li key={`${r.id}-${i}`}>
-            {r.url ? (
-              <a href={r.url} target="_blank" rel="noopener noreferrer" aria-label={`Open in ${def.name}: ${r.title}`} className={cls}>
-                {body}
-              </a>
-            ) : (
-              <div className={cls}>{body}</div>
-            )}
+          <li key={`${r.id}-${i}`} className="flex items-stretch gap-2">
+            {link}
+            {app === "googlecalendar" && r.id && <SaveToJournal eventId={r.id} title={r.title} />}
           </li>
         );
       })}
     </ShownGroup>
+  );
+}
+
+/** One event of a Google Calendar card → a journal entry on the event's day. The server reads the event itself; the assistant never sees it. */
+function SaveToJournal({ eventId, title }: { eventId: string; title: string }) {
+  const save = useSaveEventToJournal();
+  const [done, setDone] = useState<string | null>(null);
+  if (done)
+    return (
+      <Link href={done} className="btn btn-secondary btn-sm shrink-0 self-center text-[13px]" aria-label={`Open the journal entry for ${title}`}>
+        Saved · Open
+      </Link>
+    );
+  return (
+    <button
+      type="button"
+      className="btn btn-secondary btn-sm shrink-0 self-center text-[13px]"
+      disabled={save.isPending}
+      aria-label={`Save ${title} to your journal`}
+      title={save.isError ? save.error.message : undefined}
+      onClick={() => save.mutate(eventId, { onSuccess: (r) => setDone(r.path) })}
+    >
+      {save.isPending ? "Saving…" : save.isError ? "Try again" : "Save to journal"}
+    </button>
   );
 }

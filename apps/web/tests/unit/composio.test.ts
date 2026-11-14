@@ -10,11 +10,15 @@ import { dayAndTime } from "../../src/server/services/composio/json";
  * what Google answers and what was asked of it.
  */
 const api = vi.hoisted(() => ({ googleApi: vi.fn() }));
+const journal = vi.hoisted(() => ({ createJournalEntry: vi.fn() }));
+vi.mock("../../src/server/repositories/journal.repository", () => journal);
+vi.mock("../../src/server/db/builders", () => ({ userDb: () => ({}) }));
 vi.mock("../../src/server/services/composio/api", () => api);
 vi.mock("../../src/server/services/composio/google", () => ({ appsFor: (g: string) => g.split(" ") }));
 
 const { createCalendarEvent, sendGmail } = await import("../../src/server/services/composio/drafts");
 const { listComposioItems } = await import("../../src/server/services/composio/readers");
+const { saveEventToJournal } = await import("../../src/server/services/composio/eventToJournal");
 const { listGoogleCalendarEvents } = await import("../../src/server/services/composio/calendarImport");
 
 beforeEach(() => vi.clearAllMocks());
@@ -160,5 +164,23 @@ describe("Calendar import", () => {
       { external_id: "c", title: "(no title)", description: "", location: "", all_day: false, start: "2026-11-20T10:00:00+05:30", end: "2026-11-20T11:00:00+05:30" },
     ]);
     expect(String(api.googleApi.mock.calls[1][2])).toContain("pageToken=p2");
+  });
+});
+
+describe("Calendar event → journal", () => {
+  it("writes the event, read again from Google, into the journal on the event's own day", async () => {
+    api.googleApi.mockResolvedValue({ summary: "Kaber Vasuki concert", location: "Chennai", start: { dateTime: "2026-03-22T18:00:00+05:30" }, end: { dateTime: "2026-03-22T21:00:00+05:30" } });
+    journal.createJournalEntry.mockResolvedValue({ id: "j1", entry_date: "2026-03-22" });
+    const r = await saveEventToJournal("user-1", "ev_1");
+    expect(journal.createJournalEntry.mock.calls[0][1]).toEqual({
+      entry_date: "2026-03-22",
+      body: "Kaber Vasuki concert\n\n22 Mar 2026, 18:00 · until 21:00\n\nWhere: Chennai",
+    });
+    expect(r.entry_date).toBe("2026-03-22");
+  });
+
+  it("refuses an event id that isn't one", async () => {
+    await expect(saveEventToJournal("user-1", "../x")).rejects.toThrow("isn’t an event");
+    expect(api.googleApi).not.toHaveBeenCalled();
   });
 });

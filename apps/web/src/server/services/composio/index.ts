@@ -9,3 +9,4 @@ export { finishGoogleConnect } from "./google";
 export { listComposioItems } from "./readers";
 export { createCalendarEvent, sendGmail } from "./drafts";
 export { listGoogleCalendarEvents } from "./calendarImport";
+export { saveEventToJournal } from "./eventToJournal";

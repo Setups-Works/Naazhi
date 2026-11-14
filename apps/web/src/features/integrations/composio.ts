@@ -56,6 +56,9 @@ export function useDisconnectComposio() {
 export const useComposioItems = (app: ComposioAppId, view: string, q: string) =>
   useQuery<ComposioItems>({ queryKey: qk.composio.items(app, view, q), queryFn: () => api.items(app, view, q), staleTime: 60_000, retry: false });
 
+/** Saves a calendar event in the journal (on the event's day). */
+export const useSaveEventToJournal = () => useMutation({ mutationFn: (eventId: string) => api.saveEventToJournal(eventId) });
+
 /** Window of the import's progress for the Calendar page. */
 export type ImportResult = { count: number; truncated: boolean };
 

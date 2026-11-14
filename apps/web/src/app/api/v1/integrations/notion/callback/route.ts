@@ -4,7 +4,7 @@ import { CONNECT_RETURN_COOKIE, readConnectReturn } from "../../../../../../lib/
 import { publicPath } from "../../../../../../lib/hosts";
 import { ServiceError } from "../../../../../../server/errors";
 import { currentUser } from "../../../../../../server/session";
-import { finishNotionConnect } from "../../../../../../server/services/notion";
+import { finishNotionConnect, verifyNotionReturn } from "../../../../../../server/services/notion";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -24,11 +24,13 @@ export async function GET(req: Request) {
     if (returnTo) res.cookies.set(CONNECT_RETURN_COOKIE, "", { path: "/", maxAge: 0 });
     return res;
   };
-  const user = await currentUser();
-  if (!user) return NextResponse.redirect(new URL("/login", base));
-  if (new URL(req.url).searchParams.get("status") === "failed") return back("error", "The sign-in didn’t finish. Try again.");
+  const sp = new URL(req.url).searchParams;
+  // The person's session, or (the phone's in-app sheet has none) the signed note this sign-in carried in its address.
+  const userId = (await currentUser())?.id ?? verifyNotionReturn(sp.get("u"));
+  if (!userId) return NextResponse.redirect(new URL("/login", base));
+  if (sp.get("status") === "failed") return back("error", "The sign-in didn’t finish. Try again.");
   try {
-    await finishNotionConnect(user.id);
+    await finishNotionConnect(userId);
     return back("connected");
   } catch (e) {
     if (e instanceof ServiceError) return back("error", e.message);

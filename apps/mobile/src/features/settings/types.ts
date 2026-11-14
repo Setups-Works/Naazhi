@@ -41,7 +41,7 @@ export const SETTINGS_GROUPS: { label: string; sections: SettingsSectionInfo[] }
   {
     label: "Connections",
     sections: [
-      { key: "google", title: "Google", desc: "Gmail, Calendar and Drive accounts.", icon: "envelope", soon: true, logo: "google" },
+      { key: "google", title: "Google", desc: "Gmail, Calendar and Drive accounts.", icon: "envelope", logo: "google" },
       { key: "microsoft", title: "Microsoft", desc: "Outlook mail, calendar, OneDrive and To Do.", icon: "briefcase", soon: true, logo: "microsoft" },
       { key: "zoho", title: "Zoho", desc: "Zoho Mail, Calendar, WorkDrive and more.", icon: "layer-group", logo: "zoho" },
       { key: "health", title: "Health", desc: "Steps, sleep and heart data from your phone.", icon: "heart-pulse" },

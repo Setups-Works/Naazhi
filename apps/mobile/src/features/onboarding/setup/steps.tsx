@@ -15,6 +15,7 @@ import { useBilling } from "@/features/billing/queries";
 import { mobileEnv } from "@/config/env";
 import { api, errorMessage } from "@/lib/api";
 import { openWeb } from "@/lib/webSheet";
+import { useConnectGoogle, useConnectNotion, useGoogleStatus, useNotionStatus } from "@/features/integrations/connect";
 import { needsCheckout, normalizePhone } from "@untitled/logic";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { TextField } from "@/components/ui/TextField";
@@ -262,11 +263,14 @@ const APPS: [string, string][] = [
   ["Zoom", "Meetings and recordings"],
 ];
 
-/** Other apps Naazhi will work with. None are built yet, so each is marked "Soon" and does nothing. */
+/** Other apps Naazhi will work with. Notion connects for real; the rest are marked "Soon" and do nothing. */
 export function AppsStep() {
+  const notion = useNotionStatus();
+  const connectNotion = useConnectNotion();
   return (
     <View style={styles.gap}>
       <Head title="Want Naazhi to connect to other apps?" lead="These are completely optional. Naazhi already has the essentials, and you can add apps whenever you need them." />
+      {connectNotion.error ? <Banner kind="error">{errorMessage(connectNotion.error, "Couldn’t start the sign-in.")}</Banner> : null}
       {APPS.map(([name, what]) => (
         <View key={name} style={[styles.card, styles.row]}>
           <View style={styles.tile}>
@@ -276,11 +280,19 @@ export function AppsStep() {
             <AppText variant="bodyStrong">{name}</AppText>
             <AppText variant="small">{what}</AppText>
           </View>
-          <View style={styles.soon}>
-            <AppText variant="small" color={Palette.fgMuted}>
-              Soon
-            </AppText>
-          </View>
+          {name === "Notion" ? (
+            notion.data?.connected ? (
+              <Icon name="check" size={16} color={Palette.greenFg} />
+            ) : (
+              <Button title="Connect" kind="secondary" loading={connectNotion.isPending} disabled={!notion.data?.configured} onPress={() => connectNotion.mutate()} />
+            )
+          ) : (
+            <View style={styles.soon}>
+              <AppText variant="small" color={Palette.fgMuted}>
+                Soon
+              </AppText>
+            </View>
+          )}
         </View>
       ))}
       <AppText variant="small" color={Palette.fgSubtle}>
@@ -297,9 +309,12 @@ const ACCOUNTS: { name: string; logo: "google" | "microsoft"; covers: string }[]
 type ZohoStatus = { configured: boolean; connected: boolean };
 const ZOHO_KEY = ["zoho", "status"] as const;
 
-/** Mail and calendar accounts. Zoho connects for real (mail and calendar; more in Settings); Google and Microsoft are marked "Soon". */
+/** Mail and calendar accounts. Google and Zoho connect for real (Zoho: mail and calendar; more in Settings); Microsoft is marked "Soon". */
 export function AccountsStep() {
   const qc = useQueryClient();
+  const google = useGoogleStatus();
+  const connectGoogle = useConnectGoogle();
+  const googleOn = google.data?.apps.some((a) => a.state === "connected") ?? false;
   const [err, setErr] = useState("");
   const status = useQuery({ queryKey: ZOHO_KEY, queryFn: async () => (await api.get<{ data: ZohoStatus }>("/api/v1/integrations/zoho")).data });
   useEffect(() => {
@@ -329,6 +344,7 @@ export function AccountsStep() {
     <View style={styles.gap}>
       <Head title="Connect the tools you use every day." lead="Naazhi will use them to understand what’s going on and help you stay on top of things. Nothing gets sent, booked or shared without your say." />
       {err ? <Banner kind="error">{err}</Banner> : null}
+      {connectGoogle.error ? <Banner kind="error">{errorMessage(connectGoogle.error, "Couldn’t start the sign-in.")}</Banner> : null}
       {ACCOUNTS.map((a) => (
         <View key={a.name} style={[styles.card, styles.row]}>
           <AppLogo name={a.logo} size={36} />
@@ -336,7 +352,15 @@ export function AccountsStep() {
             <AppText variant="bodyStrong">{a.name}</AppText>
             <AppText variant="small">{a.covers}</AppText>
           </View>
-          {soon}
+          {a.logo === "google" ? (
+            googleOn ? (
+              <Icon name="check" size={16} color={Palette.greenFg} />
+            ) : (
+              <Button title="Connect" kind="secondary" loading={connectGoogle.isPending} disabled={!google.data?.configured} onPress={() => connectGoogle.mutate()} />
+            )
+          ) : (
+            soon
+          )}
         </View>
       ))}
       <View style={[styles.card, styles.row]}>

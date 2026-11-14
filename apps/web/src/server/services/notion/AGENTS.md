@@ -14,6 +14,8 @@
 | `connection.ts` | Status (asks Composio), start, finish, disconnect. |
 | `pages.ts` | List pages, import as notes (max 20 per call, 3 at a time). |
 
+**Phone sign-in.** The app opens Notion's sign-in in its web sheet, which doesn't carry the app's session to other sites, so the callback (`?u=`) also accepts a short-lived HMAC-signed note of whose sign-in it is (`signNotionReturn` / `verifyNotionReturn`, 15 minutes, keyed with `BETTER_AUTH_SECRET`). Google's callback does the same with its single-use `state` (`takeOAuthStateAny`). The web uses the session as before.
+
 **Rules:** never log page text, ids of connections or the key; a page that can't be read counts as failed, it doesn't stop the import; routes under `/api/v1/integrations/notion/*`.
 
 **Tests:** `apps/web/tests/unit/notion.test.ts`.

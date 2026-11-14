@@ -26,12 +26,12 @@ export async function GET(req: Request) {
     return res;
   };
   const user = await currentUser();
-  if (!user) return NextResponse.redirect(new URL("/login", base));
   const code = sp.get("code");
   const state = sp.get("state");
-  if (sp.get("error") || !code || !state) return back("error", "The sign-in didn’t finish. Try again.");
+  if (sp.get("error") || !code || !state) return user ? back("error", "The sign-in didn’t finish. Try again.") : NextResponse.redirect(new URL("/login", base));
   try {
-    await finishGoogleConnect(user.id, { code, state });
+    // No session (the phone's in-app sheet): the secret state from our own database says who started this sign-in.
+    await finishGoogleConnect(user?.id ?? null, { code, state });
     return back("connected");
   } catch (e) {
     if (e instanceof ServiceError) return back("error", e.message);

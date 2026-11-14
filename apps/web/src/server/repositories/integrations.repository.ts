@@ -70,3 +70,16 @@ export const takeOAuthState = (userId: string, provider: IntegrationProvider, st
         [stateHash, userId, provider],
       )).rows[0] ?? null,
   );
+
+/**
+ * Takes a sign-in attempt by its random `state` alone and says whose it is. For a browser that comes back without the person's session
+ * (the in-app sheet on the phone): the state is secret, single use and expires in ten minutes, so holding it proves who started the sign-in.
+ */
+export const takeOAuthStateAny = (provider: IntegrationProvider, stateHash: string) =>
+  withOwner(
+    async (c) =>
+      (await c.query<{ user_id: string; services: string[] }>(
+        "delete from public.integration_oauth_states where state_hash = $1 and provider = $2 and expires_at > now() returning user_id, services",
+        [stateHash, provider],
+      )).rows[0] ?? null,
+  );

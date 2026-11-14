@@ -1,5 +1,6 @@
 import "server-only";
 import type { NotionStatus } from "@untitled/types";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { serverEnv } from "../../../config/env";
 import { ConflictError, RateLimitError } from "../../errors";
 import { underLimit } from "../../rateLimit";
@@ -14,7 +15,33 @@ import { composio, notionConfigured, notionSession } from "./client";
  */
 const CONNECTS_PER_TEN_MINUTES = 10;
 
-export const notionCallbackUrl = () => `${serverEnv().authUrl.replace(/\/+$/, "")}/api/v1/integrations/notion/callback`;
+const TOKEN_TTL_SECONDS = 900;
+const sign = (payload: string) => createHmac("sha256", serverEnv().authSecret ?? "").update(`notion-return:${payload}`).digest("base64url");
+
+/**
+ * A short-lived, signed note of whose sign-in this is, carried in the callback address. The phone's in-app sheet comes back from Notion
+ * without the person's session, so the callback reads who it was from this instead. It proves nothing but "this user started a Notion
+ * sign-in in the last 15 minutes", and finishing a sign-in only asks Composio whether that user's own connection is active.
+ */
+/** Without the server's auth secret nothing can be signed, so nothing is accepted. */
+const hasSecret = () => Boolean(serverEnv().authSecret);
+
+export function signNotionReturn(userId: string, now = Date.now()): string {
+  const payload = `${userId}.${Math.floor(now / 1000) + TOKEN_TTL_SECONDS}`;
+  return `${payload}.${sign(payload)}`;
+}
+
+export function verifyNotionReturn(token: string | null, now = Date.now()): string | null {
+  if (!hasSecret()) return null;
+  const m = /^([0-9a-f-]{36})\.(\d{1,12})\.([\w-]{20,80})$/i.exec(token ?? "");
+  if (!m) return null;
+  const expected = Buffer.from(sign(`${m[1]}.${m[2]}`));
+  const given = Buffer.from(m[3]);
+  if (expected.length !== given.length || !timingSafeEqual(expected, given)) return null;
+  return Number(m[2]) * 1000 > now ? m[1] : null;
+}
+
+export const notionCallbackUrl = (userId: string) => `${serverEnv().authUrl.replace(/\/+$/, "")}/api/v1/integrations/notion/callback?u=${signNotionReturn(userId)}`;
 
 /** The person's connected Notion account at Composio, or null when there is none. */
 async function connectedAccount(userId: string): Promise<{ id: string } | null> {
@@ -45,7 +72,7 @@ export async function startNotionConnect(userId: string): Promise<string> {
   if (!(await underLimit(`notion-connect:${userId}`, CONNECTS_PER_TEN_MINUTES, 600))) throw new RateLimitError();
   if (await connectedAccount(userId).catch(() => null)) throw new ConflictError("Notion is already connected. Disconnect it first to connect another workspace.");
   try {
-    const request = await (await notionSession(userId)).authorize("notion", { callbackUrl: notionCallbackUrl() });
+    const request = await (await notionSession(userId)).authorize("notion", { callbackUrl: notionCallbackUrl(userId) });
     if (!request.redirectUrl) throw new Error("no redirect");
     return request.redirectUrl;
   } catch (e) {

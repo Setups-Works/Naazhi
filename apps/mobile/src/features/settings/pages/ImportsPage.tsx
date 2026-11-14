@@ -7,6 +7,7 @@ import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/Button";
 import { Palette, themedStyles } from "@/constants/theme";
 import { useNoteActions, useNotes } from "@/features/notes/queries";
+import { NotionImport } from "./NotionImport";
 import { Empty, Group, Row } from "./ui";
 import { usePrefsSave } from "../usePrefsSave";
 
@@ -60,6 +61,7 @@ export function ImportsPage() {
           <Button title={busy ? "Importing…" : "Choose files"} icon="file-import" loading={busy} onPress={() => void pick()} />
         </View>
       </Group>
+      <NotionImport onImported={(notes) => void change({ recentImports: [{ at: new Date().toISOString(), source: "Notion", notes, folders: 0 }, ...prefs.recentImports].slice(0, 10) })} />
       <Group title="Recent imports">
         {prefs.recentImports.length === 0 ? (
           <Empty>Nothing imported yet.</Empty>
@@ -70,7 +72,7 @@ export function ImportsPage() {
         )}
       </Group>
       <AppText variant="small" color={Palette.fgFaint}>
-        Back up everything from Your data. Importing from other services needs connections, which aren’t available yet.
+        Back up everything from Your data.
       </AppText>
     </>
   );

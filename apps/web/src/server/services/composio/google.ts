@@ -92,10 +92,12 @@ async function accountLabel(access: string): Promise<string> {
 }
 
 /** Step 2: Google sent the person back with a code. Exchange it, seal the tokens and save the connection. */
-export async function finishGoogleConnect(userId: string, p: { code: string; state: string }): Promise<void> {
+export async function finishGoogleConnect(sessionUserId: string | null, p: { code: string; state: string }): Promise<void> {
   if (!googleConfigured()) throw new ConflictError("Connecting Google isn’t set up on this server yet.");
-  const pending = await repo.takeOAuthState(userId, "google", hash(p.state));
+  // With the person's session the attempt must be theirs; without one (the phone's in-app sheet) the secret state says whose it is.
+  const pending = sessionUserId ? await repo.takeOAuthState(sessionUserId, "google", hash(p.state)).then((r) => r && { ...r, user_id: sessionUserId }) : await repo.takeOAuthStateAny("google", hash(p.state));
   if (!pending) throw new ValidationError("That sign-in link expired or was already used. Start again from Settings.");
+  const userId = pending.user_id;
   const t = await tokenCall({ grant_type: "authorization_code", code: p.code, redirect_uri: redirectUri() });
   if (!t?.access_token || !t.refresh_token) throw new ConflictError("Google didn’t finish signing you in. Try again.");
   const apps = appsFor(t.scope ?? "");

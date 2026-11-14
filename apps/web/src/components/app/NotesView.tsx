@@ -14,6 +14,7 @@ import {
   faLayerGroup,
   faChevronDown,
   faEllipsis,
+  faShareNodes,
   faFileImport,
   faFolder,
   faFolderPlus,
@@ -840,6 +841,9 @@ export default function NotesView() {
                   </Menu>
                   <button type="button" aria-label={n.pinned ? "Unpin" : "Pin"} title={n.pinned ? "Unpin" : "Pin"} onClick={() => patch(n.id, { pinned: !n.pinned })}>
                     <FA icon={faThumbtack} />
+                  </button>
+                  <button type="button" aria-label={`Share ${displayTitle(n)}`} title={n.share_token ? "Shared · manage link" : "Share with a public link"} onClick={() => setSharing(n.id)}>
+                    <FA icon={n.share_token ? faEarthAmericas : faShareNodes} />
                   </button>
                   <button type="button" aria-label={`Delete ${displayTitle(n)}`} title="Move to trash" onClick={() => remove(n.id)}>
                     <FA icon={faTrash} />

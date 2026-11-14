@@ -57,6 +57,7 @@ export const qk = {
   // Zoho: the connection (account and picked services) and the records a chat card shows (never cached across people: the keys sit under "zoho").
   zoho: { status: ["zoho", "status"] as const, items: (service: string, view: string, q: string) => ["zoho", "items", service, view, q] as const },
   // Google apps (Gmail, Calendar, Drive): which are connected, and the items a chat card shows.
+  notion: { status: ["notion", "status"] as const, pages: (q: string) => ["notion", "pages", q] as const },
   composio: {
     status: ["composio", "status"] as const,
     allItems: ["composio", "items"] as const,

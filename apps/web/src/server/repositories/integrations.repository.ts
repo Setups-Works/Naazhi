@@ -6,7 +6,7 @@ import { withOwner } from "../db/pool";
  * access to these tables, so everything goes through the integrations service, which has checked the person first. Secrets arrive
  * already sealed and are never logged.
  */
-export type IntegrationProvider = "zoho" | "google";
+export type IntegrationProvider = "zoho" | "google" | "notion";
 
 export type IntegrationRow = {
   provider: IntegrationProvider;

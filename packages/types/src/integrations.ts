@@ -40,3 +40,13 @@ export type ImportedGoogleEvent = {
   start: string;
   end: string;
 };
+
+/** Whether this server can connect Notion, and whether the signed-in person has. */
+export type NotionStatus = { configured: boolean; connected: boolean; account: string | null };
+
+/** One Notion page the person can import. `imported` is true when it already became a note. */
+export type NotionPage = { id: string; title: string; edited: string; url: string | null; imported: boolean };
+
+export type NotionPages = { pages: NotionPage[]; next: string | null };
+
+export type NotionImportResult = { imported: number; skipped: number; failed: number };

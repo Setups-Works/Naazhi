@@ -1,4 +1,5 @@
 "use client";
+import NotionImport from "./NotionImport";
 import { useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../lib/api/client";
@@ -215,11 +216,8 @@ export function ImportsPage({ prefs: initial }: { prefs: Prefs }) {
             onChange={(e) => void runImport(e.target.files)}
           />
         </AppRow>
-        <AppRow name="Notion" description="Import pages from Notion as notes.">
-          <Button variant="outline" disabled title="Needs a Notion connection">
-            Connect
-          </Button>
-        </AppRow>
+        <AppRow name="Notion" description="Import pages from Notion as notes. Pages you already imported are skipped.">{null}</AppRow>
+        <NotionImport />
       </SettingsSection>
       <p className="m-0 mt-3 px-1 text-[13.5px] text-ink-3" role="status">
         {msg || "Imports only read the files you pick, in your browser, and add them to your notes."}

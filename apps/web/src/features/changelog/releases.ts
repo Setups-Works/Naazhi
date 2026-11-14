@@ -22,6 +22,19 @@ export type Release = {
  */
 export const RELEASES: Release[] = [
   {
+    date: "2026-11-15",
+    title: "Version 7.9.1: notifications and links that arrive",
+    summary: "Tapping a notification in the app now opens the right screen, and desktop notifications and links are more dependable.",
+    tone: "amber",
+    appVersion: "v7.9.1",
+    changes: [
+      { kind: "fixed", platform: "app", text: "Tapping a notification that opens the app now takes you to the screen it names, instead of leaving you on Home." },
+      { kind: "fixed", platform: "desktop", text: "Clicking a reminder or message notification now always brings you to the right page." },
+      { kind: "fixed", platform: "desktop", text: "naazhi:// links work whatever capital letters they use." },
+      { kind: "fixed", platform: "web", text: "Messages are no longer sent to iPhones that can’t receive them yet. They still appear in your Notifications inbox." },
+    ],
+  },
+  {
     date: "2026-11-14",
     title: "Version 7.9.0: a page for every team member",
     summary: "Each person on the team now has their own page, with details search engines can read.",

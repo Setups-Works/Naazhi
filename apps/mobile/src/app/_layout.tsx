@@ -89,7 +89,7 @@ function Routes({ fresh }: { fresh: boolean }) {
   // Keeps the home-screen widgets in step with the app (and wipes them on sign-out).
   useWidgetSync(signedIn);
   // Notifications: reminders planned on the phone, push registration, and opening the right screen when one is tapped.
-  useNotificationSync(user?.id ?? null);
+  useNotificationSync(user?.id ?? null, ready && signedIn && !needsSetup);
   // Firebase Analytics: screen views and the plan, only while signed in and only if the person shares anonymous usage.
   const billing = useBilling({ enabled: signedIn });
   useAnalyticsSync(signedIn ? (user?.id ?? null) : null, billing.data?.plan?.id ?? null);

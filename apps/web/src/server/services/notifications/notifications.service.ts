@@ -20,7 +20,9 @@ export async function notifyUsers(userIds: string[], n: repo.NewNotification): P
   const saved = await repo.insertFor(ids, { ...n, url });
   if (!pushConfigured()) return { saved, pushed: false };
   try {
-    const devices = await repo.tokensFor(ids);
+    // An iPhone registers an APNs token, which Firebase rejects (only an FCM token works there); iOS push needs its own sender, so for
+    // now those phones get the inbox copy and their own planned reminders, and Firebase isn't asked to deliver to them.
+    const devices = (await repo.tokensFor(ids)).filter((d) => d.platform === "android");
     const dead = await sendPush(
       devices.map((d) => d.token),
       { title: n.title, body: n.body, url },

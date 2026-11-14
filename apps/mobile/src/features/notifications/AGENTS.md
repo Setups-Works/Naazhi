@@ -4,7 +4,9 @@
 
 1. **Messages from the server** (an admin writing to users at `/admin/messages`, a shared-journal invitation, "new in your Reader"): saved in the `notifications` table (the inbox on the Notifications screen, with an unread dot on Home's bell) and, when push is set up, sent to the phone through Firebase.
 2. **Reminders the phone plans itself** — to-dos due (8:00), a journal nudge with the streak (21:00) and events (15 minutes before). `packages/logic/src/reminders.ts` (`planReminders`, tested) decides what and when; `reminders.ts` reads the data and schedules local notifications. They are replanned whenever the app opens or returns to the foreground (at most every 10 minutes), so the text always names real tasks.
-3. **Tapping** any of them opens the in-app path it carries (`data.url`).
+3. **Tapping** any of them opens the in-app path it carries (`data.url`). A tap that launches the app (or arrives signed out) is held until the screens are up and someone is signed in, then opened.
+
+**iOS push:** the server sends through Firebase, which only accepts FCM tokens; an iPhone registers an APNs token, so iOS devices are skipped for push (inbox and local reminders still work) until an APNs sender or the Firebase iOS SDK is added.
 
 **Files:** `constants.ts` (channels, hours, lead time, limits) · `prefs.ts` (per-account switches, kept on the phone) · `setup.ts` (foreground look, Android channels, permission) · `push.ts` (register/forget the phone: `POST /api/v1/notifications/devices`, `/devices/remove`) · `reminders.ts` · `useNotificationSync.ts` (mounted once in `app/_layout.tsx`) · `queries.ts` (inbox) · `NotificationsScreen.tsx` (route `app/notifications.tsx`: the inbox only) · `NotificationSettings.tsx` (the switches, shown in **Settings → Notifications**; the Notifications screen links there).
 

@@ -1,6 +1,6 @@
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { AppState, Platform } from "react-native";
 
 import { REPLAN_MIN_MS } from "./constants";
@@ -15,10 +15,15 @@ let replanNow: (() => void) | null = null;
 /** Plans the phone's reminders again now (after a to-do is saved, so a new reminder time takes effect without reopening the app). */
 export const requestReplan = () => replanNow?.();
 
-/** A tapped notification opens the screen it names (an in-app path set by the server or the reminder planner). */
-function open(response: Notifications.NotificationResponse | null) {
+/** The screen a tap asked for, kept until the navigator can show it (a tap that launches the app arrives before any screen exists). */
+let waiting: string | null = null;
+
+/** A tapped notification names a screen (an in-app path set by the server or the reminder planner); `go` opens it or holds it. */
+function open(response: Notifications.NotificationResponse | null, go: boolean) {
   const url = response?.notification.request.content.data?.url;
-  if (typeof url === "string" && url.startsWith("/")) router.push(url as never);
+  if (typeof url !== "string" || !url.startsWith("/") || url.startsWith("//")) return;
+  if (go) router.push(url as never);
+  else waiting = url;
 }
 
 /**
@@ -26,14 +31,29 @@ function open(response: Notifications.NotificationResponse | null) {
  * signed in and the app opens or returns to the foreground, clears them on sign-out, and opens the right screen when one is tapped.
  * Mount once, near the root.
  */
-export function useNotificationSync(userId: string | null) {
+export function useNotificationSync(userId: string | null, ready = true) {
+  const canOpen = ready && userId !== null;
+  const canOpenRef = useRef(canOpen);
+  useEffect(() => {
+    canOpenRef.current = canOpen;
+  }, [canOpen]);
+
   useEffect(() => {
     if (Platform.OS === "web") return;
     void configureNotifications();
-    open(Notifications.getLastNotificationResponse());
-    const tap = Notifications.addNotificationResponseReceivedListener(open);
+    open(Notifications.getLastNotificationResponse(), false);
+    const tap = Notifications.addNotificationResponseReceivedListener((r) => open(r, canOpenRef.current));
     return () => tap.remove();
   }, []);
+
+  // Signed in and the screens are up: open what a tap asked for while the app was starting (or signed out).
+  useEffect(() => {
+    if (!canOpen || !waiting) return;
+    const url = waiting;
+    waiting = null;
+    const timer = setTimeout(() => router.push(url as never), 100);
+    return () => clearTimeout(timer);
+  }, [canOpen]);
 
   useEffect(() => {
     if (Platform.OS === "web") return;

@@ -25,7 +25,8 @@ export type DesktopSectionId = (typeof DESKTOP_SECTIONS)[number]["id"];
 /** `url` is a parsed `URL` (only these four parts are read). */
 export function deepLinkPath(url: { protocol: string; hostname: string; pathname: string; search: string }): string | null {
   if (url.protocol !== `${DESKTOP.scheme}:`) return null;
-  const section = DESKTOP_SECTIONS.find((s) => s.id === url.hostname);
+  // Hosts of a custom scheme keep their case (naazhi://Notes), so compare in lower case.
+  const section = DESKTOP_SECTIONS.find((s) => s.id === url.hostname.toLowerCase());
   if (!section) return null;
   const rest = url.pathname.replace(/\/+$/, "");
   if (rest.includes("..") || rest.includes("//")) return null;

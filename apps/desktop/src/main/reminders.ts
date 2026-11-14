@@ -17,6 +17,8 @@ const WINDOW = 24 * HOUR;
 let pending: DesktopReminder[] = [];
 const timers = new Map<string, NodeJS.Timeout>();
 const shown = new Set<string>();
+// A notification that nothing references can be garbage-collected before it is clicked, and then its click never arrives. Hold each until it is gone.
+const live = new Set<Notification>();
 let sweep: NodeJS.Timeout | null = null;
 
 const isReminder = (r: unknown): r is DesktopReminder => {
@@ -35,7 +37,14 @@ function show(r: DesktopReminder): void {
   if (shown.has(key) || !Notification.isSupported()) return;
   shown.add(key);
   const n = new Notification({ title: r.title.slice(0, 200) || config.productName, body: r.body.slice(0, 300) });
-  n.on("click", () => goTo(showMainWindow(), r.path));
+  live.add(n);
+  const release = () => live.delete(n);
+  n.on("click", () => {
+    release();
+    goTo(showMainWindow(), r.path);
+  });
+  n.on("close", release);
+  n.on("failed", release);
   n.show();
 }
 

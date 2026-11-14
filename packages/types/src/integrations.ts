@@ -29,3 +29,14 @@ export type ComposioStatus = {
 export type ComposioRow = { id: string; title: string; subtitle: string; url: string | null };
 
 export type ComposioItems = { app: ComposioAppId; view: string; title: string; rows: ComposioRow[]; openUrl: string };
+
+/** A Google Calendar event on its way into the Naazhi calendar. All-day: `start`/`end` are `YYYY-MM-DD` (the last day included). Timed: full date-times with their offset. */
+export type ImportedGoogleEvent = {
+  external_id: string;
+  title: string;
+  description: string;
+  location: string;
+  all_day: boolean;
+  start: string;
+  end: string;
+};

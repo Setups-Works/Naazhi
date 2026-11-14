@@ -15,6 +15,7 @@ vi.mock("../../src/server/services/composio/google", () => ({ appsFor: (g: strin
 
 const { createCalendarEvent, sendGmail } = await import("../../src/server/services/composio/drafts");
 const { listComposioItems } = await import("../../src/server/services/composio/readers");
+const { listGoogleCalendarEvents } = await import("../../src/server/services/composio/calendarImport");
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -126,5 +127,26 @@ describe("Drafts", () => {
     expect(raw).toContain("To: ada@example.com");
     expect(raw).toContain("Content-Type: text/plain");
     expect(raw).not.toMatch(/\r\nBcc:/);
+  });
+});
+
+describe("Calendar import", () => {
+  it("turns Google events into plain rows: all-day ends on the last day, cancelled ones are left out, every page is read", async () => {
+    api.googleApi
+      .mockResolvedValueOnce({
+        nextPageToken: "p2",
+        items: [
+          { id: "a", summary: "Holiday", start: { date: "2026-12-24" }, end: { date: "2026-12-27" } },
+          { id: "b", status: "cancelled", summary: "Gone", start: { date: "2026-12-01" }, end: { date: "2026-12-02" } },
+        ],
+      })
+      .mockResolvedValueOnce({ items: [{ id: "c", start: { dateTime: "2026-11-20T10:00:00+05:30" }, end: { dateTime: "2026-11-20T11:00:00+05:30" } }] });
+    const { events, truncated } = await listGoogleCalendarEvents("user-1");
+    expect(truncated).toBe(false);
+    expect(events).toEqual([
+      { external_id: "a", title: "Holiday", description: "", location: "", all_day: true, start: "2026-12-24", end: "2026-12-26" },
+      { external_id: "c", title: "(no title)", description: "", location: "", all_day: false, start: "2026-11-20T10:00:00+05:30", end: "2026-11-20T11:00:00+05:30" },
+    ]);
+    expect(String(api.googleApi.mock.calls[1][2])).toContain("pageToken=p2");
   });
 });

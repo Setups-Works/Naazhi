@@ -1,4 +1,4 @@
-import type { ComposioAppId, ComposioItems, ComposioStatus } from "@untitled/types";
+import type { ComposioAppId, ComposioItems, ComposioStatus, ImportedGoogleEvent } from "@untitled/types";
 import type { Http } from "./sharedJournals";
 
 /**
@@ -15,6 +15,8 @@ export function createComposioApi(http: Http) {
     /** The address of Google's approval page (one sign-in for every Google app). Open it in the browser; the person comes back to Settings. */
     start: () => unwrap(http.post<Data<{ url: string }>>(`${base}/start`, {})),
     disconnect: () => unwrap(http.delete<Data<ComposioStatus>>(base)),
+    /** The Google Calendar events to save in the Naazhi calendar (all-day events as dates, timed ones with their offset). */
+    calendarEvents: () => unwrap(http.get<Data<{ events: ImportedGoogleEvent[]; truncated: boolean }>>(`${base}/calendar-events`)),
     items: (app: ComposioAppId, view?: string, q?: string) =>
       unwrap(http.get<Data<ComposioItems>>(`${base}/items?${new URLSearchParams({ app, ...(view ? { view } : {}), ...(q ? { q } : {}) })}`)),
   };

@@ -71,7 +71,7 @@ export const isRootAdmin = (email?: string | null) => adminEmails().includes((em
 /** For pages/layouts: sends visitors to log in, and non-admins to the dashboard. */
 export async function requireAdmin() {
   const user = await currentUser();
-  if (!user) redirect("/login?next=/admin");
+  if (!user) redirect("/login?next=/admin&stale=1");
   if (!isAdmin(user)) redirect("/dashboard");
   return user;
 }

@@ -23,6 +23,17 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-14",
+    title: "Version 7.8.1: no more sign-in loop",
+    summary: "If your sign-in has expired, Naazhi now takes you to the sign-in page instead of looping.",
+    tone: "clay",
+    appVersion: "v7.8.1",
+    changes: [
+      { kind: "fixed", platform: "web", text: "An expired or unreadable sign-in no longer sends the page round in circles with “too many redirects”. You land on the sign-in page and can log in again." },
+      { kind: "fixed", platform: "desktop", text: "The desktop app no longer gets stuck on the offline screen with a redirect error when your sign-in has expired." },
+    ],
+  },
+  {
+    date: "2026-11-14",
     title: "Version 7.8.0: see who crawls the site",
     summary: "Admins can now see which search engines, AI assistants and link previews visit Naazhi.",
     tone: "mint",

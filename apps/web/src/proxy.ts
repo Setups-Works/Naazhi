@@ -86,7 +86,10 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
     to.search = `?next=${encodeURIComponent(path)}`;
     return NextResponse.redirect(to);
   }
-  if (signedIn && (path === "/login" || path === "/signup" || path === "/forgot-password")) {
+  // `stale` is added by a page that found the session cookie unusable (expired, revoked, or the server could not check it right then).
+  // Without this exception that page sends the person to sign-in, this rule sends them straight back, and the browser (or the desktop
+  // app) gives up with "too many redirects". Signing in replaces the cookie.
+  if (signedIn && !request.nextUrl.searchParams.has("stale") && (path === "/login" || path === "/signup" || path === "/forgot-password")) {
     const to = request.nextUrl.clone();
     to.pathname = homePath();
     to.search = "";

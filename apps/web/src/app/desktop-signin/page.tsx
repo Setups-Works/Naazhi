@@ -15,7 +15,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ c
   const raw = (await searchParams).code?.trim().toUpperCase() ?? "";
   const code = /^[A-HJ-NP-Z2-9]{6}$/.test(raw) ? raw : null;
   const user = await currentUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent(code ? `/desktop-signin?code=${code}` : "/desktop-signin")}`);
+  if (!user) redirect(`/login?next=${encodeURIComponent(code ? `/desktop-signin?code=${code}` : "/desktop-signin")}&stale=1`);
   return (
     <main className="grid min-h-svh place-items-center px-4">{code ? <DesktopAuthorize email={user.email} code={code} /> : <DesktopSignIn email={user.email} />}</main>
   );

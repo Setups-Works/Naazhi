@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic";
 export default async function Layout({ children }: { children: ReactNode }) {
   if (!serverConfigured()) redirect("/dashboard"); // the dashboard explains what is missing
   const user = await currentUser();
-  if (!user) redirect("/login?next=/onboarding");
+  if (!user) redirect("/login?next=/onboarding&stale=1");
   const { data } = await userDb(user.id).from("profiles").select("preferences,onboarding,phone").maybeSingle();
   const prefs = cleanPrefs(data?.preferences, CATEGORIES);
   return (

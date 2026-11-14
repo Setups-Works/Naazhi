@@ -38,7 +38,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
       </main>
     );
   const user = await currentUser();
-  if (!user) redirect("/login?next=/dashboard");
+  if (!user) redirect("/login?next=/dashboard&stale=1");
   const name = user.name || user.email.split("@")[0];
   const db = userDb(user.id);
   // Settings, onboarding progress and announcements are read with the user's own permissions. A failure must never break the app.

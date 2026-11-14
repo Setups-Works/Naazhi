@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Icon as FA } from "@/components/ui/Icon";
-import { faCheck, faCommentDots, faEye, faListOl, faTabletScreenButton, faVoteYea } from "@fortawesome/free-solid-svg-icons";
+import { faBell, faCalendarDays, faCheck, faCommentDots, faEnvelope, faEye, faFileImport, faListOl, faTabletScreenButton, faVoteYea } from "@fortawesome/free-solid-svg-icons";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { CAPABILITIES } from "../../components/site/content";
 import JsonLd from "../../components/site/JsonLd";
@@ -27,6 +27,10 @@ type Item = { icon: IconDefinition; t: string; d: string; status: Status };
  */
 const EXTRA: Item[] = [
   { icon: faTabletScreenButton, t: "iPhone and iPad app", d: "The same workspace on the App Store, in sync with the web and Android.", status: "soon" },
+  { icon: faBell, t: "Push notifications on iPhone", d: "Messages and reminders that reach your iPhone, not only Android.", status: "soon" },
+  { icon: faCalendarDays, t: "Two-way Google Calendar sync", d: "Today you import your Google events; next, edits flow both ways.", status: "soon" },
+  { icon: faFileImport, t: "Notion databases and images", d: "Bring in Notion databases and the pictures on your pages, not only the text.", status: "soon" },
+  { icon: faEnvelope, t: "Outlook and Microsoft 365", d: "Connect Outlook mail, calendar and OneDrive the way Google works now.", status: "soon" },
 ];
 const ITEMS: Item[] = [...CAPABILITIES.filter((c) => c.status !== "live").map((c) => ({ icon: c.icon, t: c.t, d: c.d, status: c.status })), ...EXTRA];
 const BUILDING = ITEMS.filter((i) => i.status === "building");

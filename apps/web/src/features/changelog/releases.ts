@@ -23,6 +23,26 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-15",
+    title: "Version 8.0.0: Google and Notion, connected",
+    summary: "Connect your Google account once for Gmail, Calendar and Drive, bring Notion pages in as notes, and use both from chat, on the web and in the app.",
+    tone: "blue",
+    appVersion: "v8.0.0",
+    changes: [
+      { kind: "new", platform: "web", text: "One Google sign-in connects Gmail, Google Calendar and Google Drive. Disconnect them together from Settings, Google." },
+      { kind: "new", platform: "web", text: "Type @ in chat and pick Gmail, Google Calendar or Google Drive to see your latest mail, your events or your files in a card." },
+      { kind: "new", platform: "web", text: "Ask chat to write an email or add an event and you get a draft card with a button. Nothing is sent or added until you press it." },
+      { kind: "new", platform: "web", text: "Calendar can import every event from your Google Calendar, from two years back to two years ahead. Importing again never adds copies." },
+      { kind: "new", platform: "web", text: "Search your calendar from chat, including past events, and press Save to journal on an event to add it to the journal on its day." },
+      { kind: "new", platform: "web", text: "Import your Notion pages as notes. Open the menu on the Notes page, or go to Settings, Imports and backup. Pages you already imported are skipped." },
+      { kind: "new", platform: "web", text: "Onboarding lets you connect Google and Notion right away, and brings you back to the step you were on." },
+      { kind: "new", platform: "app", text: "Connect Google and Notion in the app, import Notion pages as notes, and set them up in your first-run steps." },
+      { kind: "new", platform: "desktop", text: "Everything above works in the Mac and Windows apps too, because they show the same workspace." },
+      { kind: "improved", platform: "web", text: "Recent imports now lists your Notion imports, and the landing, help and integrations pages show Gmail, Calendar and Drive as live." },
+      { kind: "improved", platform: "web", text: "Notion text arrives clean, without stray tags, and a page whose note you deleted can be imported again." },
+    ],
+  },
+  {
+    date: "2026-11-15",
     title: "Version 7.9.1: notifications and links that arrive",
     summary: "Tapping a notification in the app now opens the right screen, and desktop notifications and links are more dependable.",
     tone: "amber",

@@ -201,9 +201,9 @@ export const CAPABILITIES: Capability[] = [
   {
     icon: faEnvelope,
     t: "Email",
-    d: "Gmail and Outlook threads beside your notes. Compose, reply and forward.",
+    d: "Gmail already works from chat. Next: Gmail and Outlook threads beside your notes, to compose, reply and forward.",
     tone: "clay",
-    status: "soon",
+    status: "building",
     pts: ["Gmail and Outlook threads beside your notes", "Compose, reply and forward"],
   },
   {

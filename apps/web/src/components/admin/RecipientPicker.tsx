@@ -7,7 +7,7 @@ import { Checkbox } from "../ui/checkbox";
 export type Person = { id: string; email: string; name: string };
 
 /** A searchable list of users with a checkbox each. Nothing picked means everyone, and the line above the list says so. */
-export default function RecipientPicker({ people, picked, onChange }: { people: Person[]; picked: Set<string>; onChange: (next: Set<string>) => void }) {
+export default function RecipientPicker({ people, picked, onChange, emptyLabel }: { people: Person[]; picked: Set<string>; onChange: (next: Set<string>) => void; emptyLabel?: string }) {
   const [q, setQ] = useState("");
   const shown = useMemo(() => {
     const t = q.trim().toLowerCase();
@@ -34,7 +34,7 @@ export default function RecipientPicker({ people, picked, onChange }: { people: 
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-[13.5px] text-fg-muted" aria-live="polite">
-          {picked.size ? `${picked.size} of ${people.length} picked` : `No one picked: it goes to all ${people.length} users`}
+          {picked.size ? `${picked.size} of ${people.length} picked` : emptyLabel ?? `No one picked: it goes to all ${people.length} users`}
         </span>
         <span className="flex gap-3 text-[13px]">
           <button type="button" className="text-green-fg underline underline-offset-2 disabled:opacity-50" onClick={toggleShown} disabled={!shown.length}>

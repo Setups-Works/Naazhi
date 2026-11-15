@@ -23,15 +23,23 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-15",
-    title: "Help us fix what’s confusing",
-    summary: "Naazhi can now learn where people get stuck, with everything you write kept out of sight, and you can switch it off any time.",
+    title: "Version 8.2.0: change things from chat, a new icon, and your privacy choice",
+    summary: "Chat can now change or delete your to-dos, notes and journal entries, Naazhi has a new Original icon, and you control the anonymous usage insights that help us fix what is confusing.",
     tone: "blue",
+    appVersion: "v8.2.0",
     changes: [
+      { kind: "new", platform: "web", text: "Ask chat to change or delete a to-do, a note or a journal entry. It shows the real matches, you pick one and press the button. A deleted note goes to Trash." },
+      { kind: "new", platform: "app", text: "The same in the app: chat can change or delete your to-dos, notes and journal entries after you pick the item and confirm." },
+      { kind: "new", platform: "desktop", text: "Changing and deleting from chat works in the Mac and Windows apps too." },
+      { kind: "improved", platform: "app", text: "The app’s icon is now the Original look, cream with the green mark. The white Classic icon is still there under Settings, Appearance, App icon." },
+      { kind: "improved", platform: "desktop", text: "The Mac and Windows apps use the Original icon, cream with the green mark." },
       { kind: "new", platform: "web", text: "Anonymous heatmaps and screen recordings inside the app help us find confusing screens. Your notes, journal, chats and names are hidden and never recorded." },
       { kind: "new", platform: "app", text: "The same anonymous screen recordings in the phone app, with all text hidden." },
       { kind: "new", platform: "desktop", text: "The Mac and Windows apps share the same anonymous insights as the web app." },
-      { kind: "improved", platform: "web", text: "Settings → Privacy → Share anonymous usage now covers recordings too, and turns them off at once. The Privacy Policy and Cookies pages say exactly what is used." },
-      { kind: "improved", platform: "app", text: "Share anonymous usage in Settings → Privacy turns recordings off in the app as well." },
+      { kind: "improved", platform: "web", text: "Settings, Privacy, Share anonymous usage now covers recordings too, and turns them off at once. The Privacy Policy and Cookies pages say exactly what is used." },
+      { kind: "improved", platform: "app", text: "Share anonymous usage in Settings, Privacy turns recordings off in the app as well." },
+      { kind: "new", platform: "web", text: "The integrations page has a section each for Notion, Google and Zoho, and two new pages compare Naazhi with Notion and with Obsidian, linked from the footer." },
+      { kind: "fixed", platform: "web", text: "Google no longer shows Soon in Settings, and the Email lines on the demo and menu now say Gmail works from chat." },
     ],
   },
   {

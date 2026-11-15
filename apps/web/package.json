@@ -1,7 +1,7 @@
 {
   "name": "@untitled/web",
   "private": true,
-  "version": "8.1.1",
+  "version": "8.2.0",
   "scripts": {
     "dev": "node ../../scripts/web-next.mjs dev",
     "build": "node ../../scripts/web-next.mjs build",
@@ -47,6 +47,7 @@
     "radix-ui": "^1.8.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "sanitize-html": "^2.18.2",
     "server-only": "^0.0.1",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.7.0",
@@ -61,6 +62,7 @@
     "@types/pg": "^8.23.1",
     "@types/react": "~19.2.2",
     "@types/react-dom": "~19.2.2",
+    "@types/sanitize-html": "^2.16.2",
     "postcss": "^8.5.29",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",

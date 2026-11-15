@@ -17,6 +17,8 @@
 
 **Reader in chat (`chat.v15`):** `{"kind":"rss",view,site}` show blocks draw the person's real articles (web `shown/RssShown`, app `shown/RssShown`; the site is matched against followed feeds with `feedsMatching`), and a `{"kind":"feed",title,url}` draft adds a website's feed to the Reader only after the user presses Create (`actions.ts` calls `rss.service.addFeed`, so the same limits and safe fetching apply).
 
+**Changing and deleting (`chat.v24`):** `edit_item` / `delete_item` drafts (`target` task / note / journal) let the assistant change or remove what the person already has. The assistant can't see their items, so it names one in words (`match`; a date for a journal entry). The card calls `POST /api/v1/ai/actions/targets` (`listChatTargets`: the real items, read as the signed-in person) and the person picks one and presses the button; `POST /api/v1/ai/actions` then takes `targetId`, which `findTargets` re-checks, so only an item the card offered can change. "Create all" skips these drafts. A deleted note goes to Trash (30 days); a to-do or journal entry is removed, as on its page. Web `ChatActionProposal.tsx` and app `features/chat/kit/ChatToolCalls.tsx` draw them; matching is `tasksMatching` / `notesMatching` in `packages/logic/src/showItems.ts`.
+
 **Rules**
 
 - Only this service talks to `AiProvider`s. Features call the orchestrator, not Groq/Puter.

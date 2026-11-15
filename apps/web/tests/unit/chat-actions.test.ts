@@ -130,3 +130,32 @@ describe("the Reader in chat", () => {
     expect(r.shows).toEqual([{ kind: "rss", query: "smart glass" }]);
   });
 });
+
+describe("change and delete drafts", () => {
+  const edit = '<create-item>{"kind":"edit_item","target":"task","match":"module 8","due_date":"2026-11-15"}</create-item>';
+
+  it("reads an edit and a delete draft", () => {
+    const { proposals } = parseChatActions(`Done.${edit}<create-item>{"kind":"delete_item","target":"note","match":"groceries"}</create-item>`);
+    expect(proposals.map((p) => p.action.kind)).toEqual(["edit_item", "delete_item"]);
+  });
+
+  it("drops an edit that changes nothing, a journal change without a date, and fields that don't belong to the target", () => {
+    const bad = [
+      '{"kind":"edit_item","target":"task","match":"x"}',
+      '{"kind":"edit_item","target":"journal","match":"yesterday","text":"hi"}',
+      '{"kind":"delete_item","target":"journal","match":"my entry"}',
+      '{"kind":"edit_item","target":"note","match":"x","due_date":"2026-11-15"}',
+      '{"kind":"edit_item","target":"journal","match":"2026-11-14","done":true}',
+    ];
+    for (const b of bad) expect(parseChatActions(`<create-item>${b}</create-item>`).proposals).toHaveLength(0);
+    expect(parseChatActions('<create-item>{"kind":"edit_item","target":"journal","match":"2026-11-14","text":"hi","append":true}</create-item>').proposals).toHaveLength(1);
+  });
+
+  it("marks a finished change so it can't be applied twice", () => {
+    const text = `Ok.${edit}`;
+    const p = parseChatActions(text).proposals[0]!;
+    const done = markCreated(text, 0, { kind: "edit_item", id: "abc", path: "/dashboard/todo?task=abc" }, p.action);
+    const again = parseChatActions(done).proposals[0]!;
+    expect(again.created?.id).toBe("abc");
+  });
+});

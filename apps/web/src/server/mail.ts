@@ -47,3 +47,37 @@ export async function sendEmail(to: string, content: EmailContent) {
 /** The older, simpler form: a subject, a paragraph and an optional button. New emails should be templates. */
 export const sendMail = (to: string, subject: string, text: string, action?: { label: string; url: string }) =>
   sendEmail(to, { subject, heading: subject, paragraphs: [text], action });
+
+export type CampaignMail = {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  attachments?: { filename: string; content: Buffer; contentType: string }[];
+  /** For newsletters: the one-click unsubscribe address (RFC 8058), which mail apps show as their own Unsubscribe button. */
+  unsubscribePost?: string;
+};
+
+/** Sends a campaign email that is already rendered. Throws with only provider codes in the log, like sendEmail. */
+export async function sendCampaignMail(m: CampaignMail) {
+  const url = serverEnv().smtpUrl;
+  if (!url) throw Object.assign(new Error("SMTP_URL is not set"), { code: "NO_SMTP" });
+  g.__mailer ??= nodemailer.createTransport(url);
+  try {
+    await g.__mailer.sendMail({
+      from: process.env.MAIL_FROM?.trim() || `Naazhi <${smtpUser(url) ?? "no-reply@localhost"}>`,
+      to: m.to,
+      subject: m.subject,
+      text: m.text,
+      html: m.html,
+      attachments: m.attachments,
+      ...(m.unsubscribePost
+        ? { list: { unsubscribe: { url: m.unsubscribePost, comment: "Unsubscribe" } }, headers: { "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } }
+        : {}),
+    });
+  } catch (e) {
+    const err = e as { code?: string; responseCode?: number };
+    console.error("[mail] campaign send failed", { code: err.code ?? null, responseCode: err.responseCode ?? null });
+    throw Object.assign(new Error("send failed"), { code: err.code ?? String(err.responseCode ?? "ERR") });
+  }
+}

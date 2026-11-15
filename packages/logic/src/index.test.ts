@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { addDays, monthGrid } from "./dates";
+import { tasksMatching } from "./showItems";
 import { applyOpts, DEFAULT_OPTS, inView, nextDue, nthRuleFor, recurrenceLabel, upcomingDates } from "./tasks";
 import type { HealthDay, Task } from "@untitled/types";
 import {
@@ -171,5 +172,14 @@ describe("one metric in detail", () => {
     expect(isHealthMetric("nope")).toBe(false);
     expect(metricRowText("heart", days[0]!)).toBe("48–120 bpm");
     expect(metricPrompt("sleep", "week")).toContain("the last 7 days");
+  });
+});
+
+describe("tasksMatching", () => {
+  const t = (id: string, title: string, done = false, created_at = "2026-11-01") => ({ id, title, due_date: null, done, created_at });
+  it("needs every word, shows open to-dos first, then the newest", () => {
+    const r = tasksMatching([t("a", "Finish module 8", true), t("b", "Finish module 8 notes", false, "2026-11-02"), t("c", "Buy milk"), t("d", "Module 8 quiz", false, "2026-11-05")], "module 8");
+    expect(r.items.map((x) => x.id)).toEqual(["d", "b", "a"]);
+    expect(tasksMatching([t("c", "Buy milk")], "").items).toEqual([]);
   });
 });

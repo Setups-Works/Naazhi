@@ -33,7 +33,7 @@ export default function Footer() {
             </div>
             <SocialLinks />
           </div>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-6">
             {FOOTER_COLS.map((c) => (
               <nav key={c.title} aria-label={c.title}>
                 <p className="mb-4 text-[12px] font-semibold text-fg">{c.title}</p>

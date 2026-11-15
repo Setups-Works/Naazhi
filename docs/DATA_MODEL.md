@@ -100,6 +100,9 @@ Public link for one whole journal day. One row per `(user_id, entry_date)`; `sha
 
 The people shown on the public `/team` page, managed in the admin panel (`/admin/team`). One row per person: `slug` (unique, url-safe, the page anchor and the person's `@id` fragment), `name`, `role`, `bio` (≤1000), `photo_url` (https only, optional), `profile_links` jsonb (`[{label, url}]`, https only, up to 8; also the person's `sameAs` in structured data), `sort_order`, `published`. RLS is on with **no policies**: nobody in the browser can read or write it. Admin code writes through `adminDb()` after `assertAdmin()`; the public page reads only published rows, fixed columns, on the server (`server/services/team`). Migration `20261113120000_team_members.sql`.
 
+## Email campaigns
+`email_campaigns` (an admin's newsletter or direct email: `subject`, `preheader`, `html` (≤200 000, cleaned again when sent), `kind` newsletter/direct, `audience` all/picked, `picked` user ids, `status` draft/sending/sent/failed), `email_campaign_recipients` (one row per address, written when the campaign is sent: `queued`/`sent`/`failed` plus a provider error code, never the message), `email_campaign_attachments` (name, type, size and a key in the `note-files` bucket under the admin's id) and `email_unsubscribes` (lower-case addresses that opted out of newsletters; kept after an account is deleted). All four have RLS on with **no policies**: only the admin code (owner connection, after `assertAdmin()`) reads or writes them. Migration `20261115150000_email_campaigns.sql`; written by `services/campaigns`, read by Admin → Campaigns.
+
 ## Razorpay (migration 20261111180000)
 `billing_plans.razorpay_plan_id/_key` (the matching Razorpay plan), `user_billing.provider_subscription_id/provider_status`, and `billing_events` (webhook ids handled; RLS on, no policies, owner only).
 

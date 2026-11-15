@@ -6,6 +6,7 @@ import { FaqList } from "../../components/site/Faq";
 import { faqSlug } from "../../components/site/faqGroups";
 import { ALL_INTEGRATIONS, FAQS, GROUPS } from "../../components/site/content";
 import { CtaPanel, FeatureCards, PageHero } from "../../components/site/kit";
+import ConnectionSection, { type Connection } from "../../components/site/ConnectionSection";
 import { Logo } from "../../components/site/Logo";
 import NoteRef from "../../components/site/NoteRef";
 import Phone from "../../components/site/Phone";
@@ -45,6 +46,74 @@ const STEPS = [
   },
 ] as const;
 
+/** The three connections people ask about first. Each says plainly what is live; planned parts are marked Soon. */
+const CONNECTIONS: Connection[] = [
+  {
+    id: "notion",
+    logos: ["Notion"],
+    kicker: "Notion",
+    title: "Bring all your notes",
+    quiet: "over from Notion.",
+    lead: "Move your Notion pages into Naazhi as notes in a few clicks, on the web or in the app, and keep writing where they now live.",
+    points: [
+      "You sign in on Notion’s own page and choose which pages to share, then pick the ones to import. Each becomes a note, with its text kept clean.",
+      "Import again any time: pages you already brought over are skipped, so you never get copies.",
+      "Your Notion stays as it is. Naazhi only reads what you let it.",
+      "Databases and the pictures on your pages are planned and marked Soon.",
+    ],
+    how: "open the menu on the Notes page, or go to Settings, then Imports and backup, and press Connect Notion. Search your pages, pick them and press Import.",
+  },
+  {
+    id: "google",
+    logos: ["Gmail", "Google Calendar", "Google Drive"],
+    kicker: "Google",
+    title: "One sign-in for Gmail,",
+    quiet: "Calendar and Drive.",
+    lead: "Connect your Google account once and ask about your mail, your schedule and your files from chat, on the web, the app and the desktop.",
+    points: [
+      "Type @ in chat and pick Gmail, Google Calendar or Google Drive to see your latest mail, events or files in a card.",
+      "Chat can draft an email or an event, and nothing is sent or added until you press the button.",
+      "Import your Google Calendar into Naazhi’s Calendar, from two years back to two years ahead, without copies.",
+      "Disconnect all three together from Settings, then Google.",
+    ],
+    how: "go to Settings, then Google, and press Connect Google. Leave ticked the boxes for the services you want.",
+    apps: [
+      { name: "Gmail", use: "Read mail, draft and send after you confirm" },
+      { name: "Google Calendar", use: "Your events, add one after you confirm" },
+      { name: "Google Drive", use: "Find files, including Docs and Sheets" },
+      { name: "Google Docs", use: "Open and edit documents" },
+      { name: "Google Sheets", use: "Read spreadsheets" },
+      { name: "Google Meet", use: "Meetings and notes" },
+    ],
+  },
+  {
+    id: "zoho",
+    logos: ["Zoho"],
+    kicker: "Zoho",
+    title: "Your Zoho apps,",
+    quiet: "all in one chat.",
+    lead: "Sign in to Zoho once, pick the services you want, and ask about leads, tickets, invoices, mail and events in plain words.",
+    points: [
+      "Chat reads your real records and shows them as cards, with the source named.",
+      "It can add a lead, send a Zoho Mail email or post to Cliq, only after you press Create.",
+      "People on any Zoho data centre are sent to their own automatically.",
+      "Disconnect any time from Settings, then Zoho.",
+    ],
+    how: "go to Settings, then Zoho, pick your services and sign in with Zoho.",
+    apps: [
+      { name: "Zoho CRM", use: "Leads, deals, add records" },
+      { name: "Zoho Mail", use: "Read and send mail" },
+      { name: "Zoho Desk", use: "Support tickets" },
+      { name: "Zoho Cliq", use: "Post to channels" },
+      { name: "Zoho Books", use: "Invoices, bills and products" },
+      { name: "Zoho Calendar", use: "Upcoming events" },
+      { name: "Zoho Expense", use: "Expense reports" },
+      { name: "Zoho People", use: "Team and leave" },
+      { name: "Zoho Projects", use: "Tasks and milestones" },
+    ],
+  },
+];
+
 export default function Page() {
   return (
     <main>
@@ -79,8 +148,14 @@ export default function Page() {
         lead={`Connect the tools you already use and ask about them from chat. ${LIVE} are live today, and the rest are marked so you always know.`}
       >
         <AuthLink arrow className={buttonClass("primary")} />
-        <a href="#all" className={buttonClass("secondary")}>
-          See every app
+        <a href="#notion" className={buttonClass("secondary")}>
+          Notion
+        </a>
+        <a href="#google" className={buttonClass("secondary")}>
+          Google
+        </a>
+        <a href="#zoho" className={buttonClass("secondary")}>
+          Zoho
         </a>
       </PageHero>
 
@@ -111,7 +186,11 @@ export default function Page() {
         <FeatureCards items={STEPS} cols={3} />
       </Section>
 
-      <Section id="all" tight band="soft">
+      {CONNECTIONS.map((c, i) => (
+        <ConnectionSection key={c.id} c={c} band={i % 2 === 0 ? "soft" : "plain"} />
+      ))}
+
+      <Section id="all" tight>
         <SectionHead
           kicker="Every app"
           title="What connects,"

@@ -5,10 +5,13 @@ name: Notification checks
 on:
   schedule:
     - cron: "7 * * * *"
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 jobs:
   reader-news:
+    # Not on the ten-minute schedule: that one is for campaigns only.
+    if: github.event.schedule != '*/10 * * * *'
     runs-on: ubuntu-latest
     steps:
       - name: Check for new articles
@@ -18,3 +21,16 @@ jobs:
         run: |
           if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then echo "APP_URL or CRON_SECRET is not set; skipping."; exit 0; fi
           curl --fail --silent --show-error -X POST -H "Authorization: Bearer $CRON_SECRET" "${APP_URL%/}/api/cron/reader-news"
+
+  email-campaigns:
+    # Every ten minutes: send the next batch of any newsletter that is still going out.
+    if: github.event.schedule != '7 * * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send the next batch
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then echo "APP_URL or CRON_SECRET is not set; skipping."; exit 0; fi
+          curl --fail --silent --show-error -X POST -H "Authorization: Bearer $CRON_SECRET" "${APP_URL%/}/api/cron/email-campaigns"

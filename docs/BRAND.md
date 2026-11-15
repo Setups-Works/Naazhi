@@ -39,7 +39,7 @@ The mark is a hand-drawn, single-weight monogram built from rounded Tamil-script
 | ---------------- | ------------------------------- | ----------------------------------------------------------------------------- |
 | Ink (the strokes) | **Naazhi green** `#235340`     | Sampled from the master artwork. Next to the UI's `--green-fg` `#1f5d49`.      |
 | Details (star, lines) | Same green at about 40 %    | Comes from the file's own transparency; never recolour them separately.       |
-| Ground           | **White** `#ffffff`             | The app icon and splash ground, with the mark in the theme black `#242424`. The UI canvas stays `--page`. |
+| Ground           | **White** `#ffffff`             | The splash and web favicon ground, with the mark in the theme black `#242424`. The UI canvas stays `--page`. The **phone and desktop app icon is the Original look**: the logo's cream with its green mark (`scripts/brand/build-assets.mjs`); Classic (white, black mark) is an alternate icon. |
 | Reverse          | Cream strokes on green or ink   | Use `naazhi-mark-light.png` on dark backgrounds (`--fill-dark`, photos).      |
 
 The UI never uses these two hex values: it uses its tokens (`text-green-fg`, `bg-page`). They exist for the logo files, store assets and print.

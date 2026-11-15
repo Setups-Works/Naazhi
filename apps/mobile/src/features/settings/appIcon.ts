@@ -16,11 +16,11 @@ function native(): Native | null {
 
 export type AppIconChoice = { key: string | null; label: string; image: number };
 
-/** `null` is the app's own icon (white, black mark). */
+/** `null` is the app's own icon: the Original look (cream, green mark). Classic (white, black mark) was the default before. */
 export const APP_ICONS: AppIconChoice[] = [
-  { key: null, label: "Classic", image: require("../../../assets/images/icon.png") as number },
+  { key: null, label: "Original", image: require("../../../assets/images/icon.png") as number },
+  { key: "Classic", label: "Classic", image: require("../../../assets/icons/classic.png") as number },
   { key: "Night", label: "Night", image: require("../../../assets/icons/night.png") as number },
-  { key: "Original", label: "Original", image: require("../../../assets/icons/original.png") as number },
   { key: "Forest", label: "Forest", image: require("../../../assets/icons/forest.png") as number },
   { key: "Clay", label: "Clay", image: require("../../../assets/icons/clay.png") as number },
 ];

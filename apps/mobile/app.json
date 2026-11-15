@@ -2,7 +2,7 @@
   "expo": {
     "name": "Naazhi",
     "slug": "untitled-project-mobile",
-    "version": "8.1.1",
+    "version": "8.2.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "untitled",
@@ -23,7 +23,7 @@
         "android.permission.health.READ_SLEEP"
       ],
       "adaptiveIcon": {
-        "backgroundColor": "#ffffff",
+        "backgroundColor": "#f9f4e5",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -48,7 +48,7 @@
         "expo-alternate-app-icons",
         [
           { "name": "Night", "ios": "./assets/icons/night.png", "android": { "foregroundImage": "./assets/icons/night-foreground.png", "backgroundColor": "#242424" } },
-          { "name": "Original", "ios": "./assets/icons/original.png", "android": { "foregroundImage": "./assets/icons/original-foreground.png", "backgroundColor": "#f9f4e5" } },
+          { "name": "Classic", "ios": "./assets/icons/classic.png", "android": { "foregroundImage": "./assets/icons/classic-foreground.png", "backgroundColor": "#ffffff" } },
           { "name": "Forest", "ios": "./assets/icons/forest.png", "android": { "foregroundImage": "./assets/icons/forest-foreground.png", "backgroundColor": "#235340" } },
           { "name": "Clay", "ios": "./assets/icons/clay.png", "android": { "foregroundImage": "./assets/icons/clay-foreground.png", "backgroundColor": "#b9614f" } }
         ]

@@ -92,6 +92,13 @@ export const FOOTER_COLS: { title: string; links: [string, string][] }[] = [
     ],
   },
   {
+    title: "Compare",
+    links: [
+      ["Naazhi vs Notion", "/compare/notion"],
+      ["Naazhi vs Obsidian", "/compare/obsidian"],
+    ],
+  },
+  {
     title: "Trust",
     links: [
       ["Privacy & Security", "/privacy-security"],

@@ -58,6 +58,8 @@ export const PUBLIC_PAGES: { path: string; priority: number; changeFrequency: "w
   { path: "/features/tasks", priority: 0.8, changeFrequency: "monthly" },
   { path: "/features/journal", priority: 0.8, changeFrequency: "monthly" },
   { path: "/integrations", priority: 0.8, changeFrequency: "monthly" },
+  { path: "/compare/notion", priority: 0.7, changeFrequency: "monthly" },
+  { path: "/compare/obsidian", priority: 0.7, changeFrequency: "monthly" },
 ];
 
 /**
@@ -96,6 +98,8 @@ export const SITE_NAV: { name: string; path: string; description: string }[] = [
 /** Pages with a share picture of their own (an opengraph-image file next to the page); the others use the site-wide one at /opengraph-image. */
 export const OWN_OG_PATHS: ReadonlySet<string> = new Set([
   "/",
+  "/compare/notion",
+  "/compare/obsidian",
   "/faq",
   "/integrations",
   "/features/notes",

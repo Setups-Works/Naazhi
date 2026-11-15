@@ -8,6 +8,10 @@ export * from "./composioActions";
 export const ZOHO_SERVICE_IDS = ["mail", "calendar", "cliq", "workdrive", "projects", "sign", "crm", "books", "billing", "expense", "desk", "people", "recruit"] as const;
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const recurrenceRule = z.string().regex(/^(daily|weekdays|weekly|biweekly|monthly|yearly|nth:([1-4]|last):(sun|mon|tue|wed|thu|fri|sat))$/);
+/** What a change draft can point at. A to-do or note is found by words (`match`); a journal entry by its day (`match` is a date). */
+export const CHANGE_TARGETS = ["task", "note", "journal"] as const;
+const target = z.enum(CHANGE_TARGETS);
 /** A short label a journal draft uses to point at a to-do or note draft from the same reply (see `[[text|ref]]` below). */
 const ref = z
   .string()
@@ -45,6 +49,24 @@ export const chatActionSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("zoho_cliq"), channel: z.string().trim().min(1).max(100), text: z.string().trim().min(1).max(4000) }),
   gmailSendSchema,
   gcalEventSchema,
+  /**
+   * Change or remove something the person already has. The assistant can't see their items, so it only says which one in words (`match`,
+   * or the day for a journal entry); the app finds the real items, the person picks the right one and presses the button, and the
+   * server then re-checks that item belongs to them. `text` is the new description (to-do) or text (note, journal); `append` adds it to
+   * the end instead of replacing.
+   */
+  z.object({
+    kind: z.literal("edit_item"),
+    target,
+    match: z.string().trim().min(1).max(100),
+    title: z.string().trim().min(1).max(300).optional(),
+    text: z.string().max(10_000).optional(),
+    append: z.boolean().optional(),
+    due_date: date.nullable().optional(),
+    recurrence: recurrenceRule.nullish(),
+    done: z.boolean().optional(),
+  }),
+  z.object({ kind: z.literal("delete_item"), target, match: z.string().trim().min(1).max(100) }),
 ]);
 
 export type ChatAction = z.infer<typeof chatActionSchema>;
@@ -72,6 +94,20 @@ export type ShowItem = z.infer<typeof showItemSchema>;
 export const MAX_SHOWS = 3;
 const SHOW = /<show-item>\s*([\s\S]*?)\s*<\/show-item>/g;
 
+/** Is this change draft usable? An edit must change something, and a journal entry is found by a date. */
+export function changeDraftOk(a: ChatAction): boolean {
+  if (a.kind !== "edit_item" && a.kind !== "delete_item") return true;
+  if (a.target === "journal" && !/^\d{4}-\d{2}-\d{2}$/.test(a.match)) return false;
+  if (a.kind === "delete_item") return true;
+  const t = a.target;
+  const any = a.title !== undefined || a.text !== undefined || a.due_date !== undefined || a.recurrence !== undefined || a.done !== undefined;
+  if (!any) return false;
+  // Fields that do not belong to the thing being changed would be silently ignored, so refuse the draft instead.
+  if (t === "journal") return a.title === undefined && a.due_date === undefined && a.recurrence === undefined && a.done === undefined;
+  if (t === "note") return a.due_date === undefined && a.recurrence === undefined && a.done === undefined;
+  return true;
+}
+
 /** What a draft turned into once the user confirmed it. */
 export type CreatedItem = { kind: ChatAction["kind"]; path: string; id?: string };
 
@@ -98,6 +134,7 @@ export function describeItem(a: ChatAction): string {
     return `To-do · ${clean(a.title, 120)}${due}`;
   }
   if (a.kind === "feed") return `Feed · ${clean(a.title, 80)}`;
+  if (a.kind === "edit_item" || a.kind === "delete_item") return `${a.kind === "edit_item" ? "Change" : "Delete"} ${a.target === "task" ? "to-do" : a.target === "note" ? "note" : "journal entry"} · ${clean(a.match, 80)}`;
   if (a.kind === "zoho_crm") return `Zoho CRM · ${a.module.slice(0, -1)} · ${clean(a.fields.Last_Name ?? a.fields.Account_Name ?? "", 80)}`;
   if (a.kind === "zoho_mail") return `Zoho Mail · ${clean(a.subject, 80)}`;
   if (a.kind === "zoho_cliq") return `Zoho Cliq · #${clean(a.channel, 40)}`;
@@ -125,7 +162,7 @@ const MAX_PROPOSALS = 6;
 const BLOCK = /<(create-item|created-item)>\s*([\s\S]*?)\s*<\/\1>/g;
 
 const createdSchema = z.object({
-  kind: z.enum(["note", "journal", "task", "feed", "zoho_crm", "zoho_mail", "zoho_cliq", ...COMPOSIO_DRAFT_KINDS]),
+  kind: z.enum(["note", "journal", "task", "feed", "zoho_crm", "zoho_mail", "zoho_cliq", "edit_item", "delete_item", ...COMPOSIO_DRAFT_KINDS]),
   path: z.string().max(500),
   id: z.string().max(60).optional(),
   action: chatActionSchema,
@@ -235,7 +272,7 @@ function readBlock(tag: string, json: string): { action: ChatAction; created: Cr
     const raw: unknown = parseJson(json);
     if (tag === "create-item") {
       const r = chatActionSchema.safeParse(raw);
-      return r.success ? { action: r.data, created: null } : null;
+      return r.success && changeDraftOk(r.data) ? { action: r.data, created: null } : null;
     }
     const r = createdSchema.safeParse(raw);
     return r.success ? { action: r.data.action, created: { kind: r.data.kind, path: r.data.path, id: r.data.id } } : null;

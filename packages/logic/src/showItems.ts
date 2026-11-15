@@ -32,6 +32,17 @@ export function tasksInScope<T extends ShowTask>(tasks: T[], scope: TaskScope, t
   return { items: picked.slice(0, limit), total: picked.length };
 }
 
+/** To-dos whose title or description contains every word of the query (any case), open ones first, then newest. */
+export function tasksMatching<T extends ShowTask & { description?: string | null; created_at?: string }>(tasks: T[], query: string, limit: number = SHOW_LIMITS.items) {
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const matched = tasks.filter((t) => {
+    const hay = `${t.title}\n${t.description ?? ""}`.toLowerCase();
+    return words.length > 0 && words.every((w) => hay.includes(w));
+  });
+  matched.sort((a, b) => Number(a.done) - Number(b.done) || (b.created_at ?? "").localeCompare(a.created_at ?? ""));
+  return { items: matched.slice(0, limit), total: matched.length };
+}
+
 export type ShowNote = { id: string; title: string; body: string; updated_at: string };
 
 /** Notes whose title or text contains every word of the query (any case); no query means the latest notes. Newest first. */

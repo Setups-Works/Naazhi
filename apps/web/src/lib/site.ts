@@ -168,7 +168,7 @@ export const MEGA: { featured: MegaItem[]; workspace: MegaItem[]; explore: MegaI
     { href: "/features/journal", t: "Journal", d: "A private record of your days", icon: faBookOpen, shot: "/mobile/journal-2.png" },
     { href: "/features/notes", t: "Notes", d: "Think, write and organize", icon: faPenToSquare, shot: "/mobile/notes-2.png" },
     { href: "/features/tasks", t: "Tasks", d: "Plan your day, then do it", icon: faListCheck, shot: "/mobile/todo-2.png" },
-    { href: "/#workspace", t: "Email", d: "Gmail in the workspace, on the way", icon: faEnvelope },
+    { href: "/#workspace", t: "Email", d: "Gmail from chat today, threads next", icon: faEnvelope },
     { href: "/#workspace", t: "Calendar", d: "One view of your time", icon: faCalendarDays, shot: "/mobile/calendar.png" },
     { href: "/#workspace", t: "Meetings", d: "Capture, transcribe, follow through, on the way", icon: faMicrophone },
     { href: "/integrations", t: "Integrations", d: "Connect the tools you use", icon: faPlug, shot: "/mobile/connect.png" },

@@ -149,7 +149,7 @@ const COMPARE: { label: string; values: string[] }[] = [
   { label: "Search (⌘K)", values: ["Sample data", "Live today"] },
   { label: "Chat with AI", values: ["Pick or switch off", "Live today"] },
   { label: "Health from your phone", values: ["Not in the preview", "Live today"] },
-  { label: "Email", values: ["Sample inbox", "Coming soon"] },
+  { label: "Email", values: ["Sample inbox", "Gmail from chat; threads coming"] },
   { label: "Meetings", values: ["Sample recording", "Coming soon"] },
   { label: "Automations", values: ["Sample rules", "Coming soon"] },
 ];
@@ -162,7 +162,7 @@ const DEMO_FAQS: [string, string][] = [
   ["Is anything I type saved?", "No. Everything you add in the preview lives only on this page. Refresh and it resets."],
   [
     "Is the demo the real product?",
-    "It is a faithful preview. Notes, to-do, journal and calendar are live in the product today. Email, meetings and automations are shown here as they are planned and are marked Coming soon.",
+    "It is a faithful preview. Notes, to-do, journal and calendar are live in the product today. Gmail already works from chat in the product; email threads, meetings and automations are shown here as they are planned and are marked Coming soon.",
   ],
   ["Does it use AI?", "Only if you choose to. The preview lets you switch AI off, and the real workspace works the same without it."],
   [

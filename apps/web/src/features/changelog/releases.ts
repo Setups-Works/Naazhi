@@ -23,6 +23,17 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-15",
+    title: "Version 8.1.1: a cleaner journal entry",
+    summary: "Opening a journal entry in the app now looks like the web: a flat page with a bold day title.",
+    tone: "violet",
+    appVersion: "v8.1.1",
+    changes: [
+      { kind: "improved", platform: "app", text: "A journal entry now opens as a flat page with a bold day title, like on the web, instead of a tinted card." },
+      { kind: "fixed", platform: "app", text: "The empty gap above Close, Share and Edit on a journal entry is gone." },
+    ],
+  },
+  {
+    date: "2026-11-15",
     title: "Version 8.1.0: Google and Notion, on web, app and desktop",
     summary: "Connect your Google account once for Gmail, Calendar and Drive, bring Notion pages in as notes, and use both from chat, on the web and in the app.",
     tone: "blue",

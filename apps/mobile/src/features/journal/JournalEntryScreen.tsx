@@ -12,7 +12,7 @@ import { BarButton, DetailBar } from "@/components/ui/DetailBar";
 import { Markdown } from "@/components/ui/Markdown";
 import { Screen } from "@/components/ui/Screen";
 import { ErrorState, LoadingState } from "@/components/ui/States";
-import { Palette, Radius, Tints, themedStyles } from "@/constants/theme";
+import { Font, Palette, themedStyles } from "@/constants/theme";
 import { errorMessage } from "@/lib/api";
 import { dayLabel, timeOf } from "@/lib/dates";
 
@@ -49,9 +49,9 @@ function EntryScreen({ entry }: { entry: JournalEntry }) {
         onDeleted={() => router.back()}
       />
     );
-  const tint = Tints.violet;
   return (
-    <Screen edges={["top", "left", "right", "bottom"]}>
+    // No "top" edge: this opens as a formSheet that already sits below the status bar, so adding the inset again leaves a big gap above the bar.
+    <Screen edges={["left", "right", "bottom"]}>
       <DetailBar
         label="Journal"
         onClose={() => router.back()}
@@ -62,8 +62,8 @@ function EntryScreen({ entry }: { entry: JournalEntry }) {
           </View>
         }
       />
-      <View style={[styles.page, { backgroundColor: tint.bg, borderColor: tint.line }]}>
-        <AppText variant="title">{dayLabel(entry.entry_date)}</AppText>
+      <View style={styles.page}>
+        <AppText style={styles.title}>{dayLabel(entry.entry_date)}</AppText>
         <AppText variant="small" color={Palette.fgSubtle}>
           {timeOf(entry.created_at)}
           {entry.updated_at !== entry.created_at ? ` · edited ${timeOf(entry.updated_at)}` : ""}
@@ -78,5 +78,7 @@ function EntryScreen({ entry }: { entry: JournalEntry }) {
 
 const styles = themedStyles(() => ({
   actions: { flexDirection: "row", alignItems: "center", gap: 16 },
-  page: { gap: 12, padding: 16, borderRadius: Radius.r3, borderWidth: 1 },
+  // Flat page like the web journal: no tinted card, a bold day title, and a hairline under the entry.
+  page: { gap: 12, paddingBottom: 20, borderBottomWidth: 1, borderBottomColor: Palette.line },
+  title: { ...Font.sansSemi, fontSize: 32, lineHeight: 36, letterSpacing: -0.8, color: Palette.fg },
 }));

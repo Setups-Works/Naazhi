@@ -1,6 +1,7 @@
 "use client";
 import { publicEnv } from "../../config";
 import { readPrefs } from "../prefs";
+import { clarityEvent, clarityIdentify, syncClarity } from "./clarity";
 
 /**
  * Firebase Analytics (Google Analytics 4) for the signed-in app only. Off until the Firebase web config is set, and off for anyone who
@@ -34,11 +35,13 @@ const allowed = () => readPrefs().analytics;
 export async function syncAnalytics() {
   const a = await load();
   if (a) a.fa.setAnalyticsCollectionEnabled(a.analytics, allowed());
+  await syncClarity();
 }
 
 /** The app's own user id (a random UUID) and plan, so Audiences and Custom definitions can group people. */
 export async function identify(userId: string, props: Params = {}) {
   if (!allowed()) return;
+  void clarityIdentify(userId, String(props.plan ?? "none"));
   const a = await load();
   if (!a) return;
   a.fa.setUserId(a.analytics, userId);
@@ -47,6 +50,7 @@ export async function identify(userId: string, props: Params = {}) {
 
 export async function track(name: string, params: Params = {}) {
   if (!allowed()) return;
+  if (name !== "page_view") void clarityEvent(name);
   const a = await load();
   if (a) a.fa.logEvent(a.analytics, name, params);
 }

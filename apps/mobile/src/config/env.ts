@@ -16,6 +16,8 @@ const siteOrigin = toOrigin(process.env.EXPO_PUBLIC_SITE_URL?.trim()) ?? toOrigi
 const googleIosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim() || undefined;
 
 export const mobileEnv = {
+  /** Microsoft Clarity project id (public). Recordings stay off until set. */
+  clarityProjectId: process.env.EXPO_PUBLIC_CLARITY_PROJECT_ID?.trim() || undefined,
   googleIosClientId,
   /** The web app's origin. All auth and data requests go here. */
   apiBaseUrl: toOrigin(configuredApiUrl),

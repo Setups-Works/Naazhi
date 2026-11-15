@@ -12,7 +12,7 @@ import { pageMeta, pageSchemas } from "../../lib/seo";
 const SEO = {
   name: "Cookies & Storage",
   title: "Cookies & Storage — Naazhi",
-  description: "The few cookies and browser storage Naazhi uses, why, and how to clear them. No advertising or tracking cookies.",
+  description: "The few cookies and browser storage Naazhi uses, why, and how to clear them. No advertising cookies; optional anonymous analytics only inside the app.",
   path: "/cookies",
 };
 export const metadata: Metadata = pageMeta(SEO);
@@ -42,6 +42,12 @@ const ITEMS = [
     why: "Remembers things like your chosen AI provider, whether a sidebar is open, dismissed tips and your look. They stay on your device.",
     when: "Kept until you clear your browser data or change the setting.",
   },
+  {
+    name: "Usage analytics (signed-in app)",
+    kind: "Cookies · optional, can be switched off",
+    why: "Google Analytics and Microsoft Clarity count which screens are used and record anonymous heatmaps and screen recordings, so we can improve Naazhi. Text you write is hidden and never recorded. They run only after you sign in, never on the public pages.",
+    when: "Switch off in Settings → Privacy → Share anonymous usage; they stop at once. Clarity’s cookies last up to 13 months unless you clear them.",
+  },
 ];
 
 export default function Page() {
@@ -60,7 +66,7 @@ export default function Page() {
         <FeatureCards
           items={[
             { icon: faBan, t: "No advertising cookies", d: "We don’t show ads and we don’t let advertisers set cookies here.", tone: "clay" },
-            { icon: faDatabase, t: "No analytics on this site", d: "No analytics or tracking scripts on the public pages. Inside the signed-in app, anonymous usage (never your content) can be turned off in Settings → Privacy.", tone: "blue" },
+            { icon: faDatabase, t: "No analytics on the public site", d: "No analytics or tracking scripts on the public pages. Inside the signed-in app, anonymous usage and screen recordings (all text hidden, never your content) can be turned off in Settings → Privacy.", tone: "blue" },
             { icon: faUserLock, t: "Needed to sign in", d: "The one cookie we can’t work without keeps you signed in. The rest are conveniences.", tone: "green" },
           ]}
         />

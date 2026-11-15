@@ -841,7 +841,7 @@ const LLMS_EXTRA: Record<string, [string, string]> = {
   "/privacy": ["Privacy Policy", "What is collected, including health data, how long it is kept and how to delete it."],
   "/terms": ["Terms & Conditions", "The agreement for using Naazhi."],
   "/refund-policy": ["Refund & Cancellation", "How to cancel a plan and when a refund is possible."],
-  "/cookies": ["Cookies & Storage", "The few cookies and browser storage items used. No advertising or analytics."],
+  "/cookies": ["Cookies & Storage", "The few cookies and browser storage items used. No advertising; optional anonymous analytics only inside the signed-in app."],
   "/accessibility": ["Accessibility", "How Naazhi aims to be usable by everyone, and how to report a barrier."],
   "/responsible-disclosure": ["Report a security issue", "How to report a vulnerability safely."],
   "/copyright-and-licensing": ["Copyright & Licensing", "Who owns what on the site, and how it may be used."],

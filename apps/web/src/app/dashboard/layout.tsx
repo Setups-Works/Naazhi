@@ -66,7 +66,8 @@ export default async function Layout({ children }: { children: ReactNode }) {
   return (
     <QueryProvider>
       <SettingsDataProvider value={{ account, prefs }}>
-      <div className="ap">
+      {/* data-clarity-mask: Microsoft Clarity records clicks and scrolling here but never the text people write (see lib/analytics/clarity.ts). */}
+      <div className="ap" data-clarity-mask="True">
         <AppNav
           name={name}
           email={user.email}

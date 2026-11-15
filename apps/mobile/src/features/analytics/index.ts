@@ -1,5 +1,6 @@
 import { getAnalytics, logEvent, logScreenView, setAnalyticsCollectionEnabled, setUserId, setUserProperties } from "@react-native-firebase/analytics";
 import { getRuntimePrefs } from "@/lib/preferences";
+import { clarityEvent, clarityIdentify, clarityScreen, syncClarity } from "./clarity";
 
 /**
  * Firebase Analytics for the phone. Needs the Firebase files at build time (see app.config.js); without them the native module is absent and
@@ -18,20 +19,28 @@ const safe = (run: () => unknown) => {
 };
 
 /** Start or stop collecting to match the person's setting. */
-export const syncAnalytics = () => safe(() => setAnalyticsCollectionEnabled(getAnalytics(), on()));
+export const syncAnalytics = () => {
+  safe(() => setAnalyticsCollectionEnabled(getAnalytics(), on()));
+  syncClarity();
+};
 
 export function identify(userId: string | null, props: Record<string, string | null> = {}) {
   if (!on()) return;
+  clarityIdentify(userId, props.plan ?? null);
   safe(() => setUserId(getAnalytics(), userId));
   if (userId) safe(() => setUserProperties(getAnalytics(), props));
 }
 
 export function track(name: string, params: Params = {}) {
-  if (on()) safe(() => logEvent(getAnalytics(), name, params));
+  if (on()) {
+    clarityEvent(name);
+    safe(() => logEvent(getAnalytics(), name, params));
+  }
 }
 
 const ID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|\d{4,}/gi;
 /** A screen view with ids removed from the path (/note/<uuid> reports as /note/:id). */
 export function trackScreen(pathname: string) {
+  if (on()) clarityScreen(pathname);
   if (on()) safe(() => logScreenView(getAnalytics(), { screen_name: pathname.replace(ID, ":id"), screen_class: "expo-router" }));
 }

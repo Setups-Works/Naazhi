@@ -1,4 +1,17 @@
-# Analytics (Firebase / Google Analytics 4)
+# Analytics (Firebase / Google Analytics 4 and Microsoft Clarity)
+
+Two tools, one switch, one set of call sites. **Always call `track()`, `identify()`, `trackPage()` / `trackScreen()` from the analytics module** (`lib/analytics` on web and desktop, `features/analytics` on the phone): each one feeds Firebase **and** Clarity. Never import `@microsoft/clarity`, `@microsoft/react-native-clarity` or Firebase anywhere else.
+
+## Microsoft Clarity (heatmaps, session recordings)
+
+- **Where it runs:** web, the desktop app (it shows the same web app, so nothing extra) and the phone app. Signed-in app only, never the public pages.
+- **Off until configured:** web and desktop need `NEXT_PUBLIC_CLARITY_PROJECT_ID` (the "Naazhi" web project, `ze3uk8zta4`), the phone needs `EXPO_PUBLIC_CLARITY_PROJECT_ID` (its own project, `ze3vbp8wbi`). In production both are set as GitHub repository variables, `CLARITY_PROJECT_ID` (baked into the web image by `deploy-azure-docker.yml`; an Azure app setting alone would not reach the browser) and `EXPO_PUBLIC_CLARITY_PROJECT_ID` (used by `release-android.yml`). Both are public ids; keeping web and phone in separate projects keeps their recordings apart. The phone also needs a **new native build** (not Expo Go).
+- **Privacy:** the dashboard root has `data-clarity-mask="True"`, so no text people write is recorded on web or desktop. On the phone set Clarity → Settings → Masking to **Strict**. A new screen that shows content needs no extra work on web (it sits inside the dashboard root); if you add UI outside `app/dashboard`, add `data-clarity-mask="True"` to it.
+- **Per person switch:** the same "Share anonymous usage" setting. Off stops recording at once (`consent(false)` on web, `pause()` on the phone).
+- **Code:** web `apps/web/src/lib/analytics/clarity.ts`; phone `apps/mobile/src/features/analytics/clarity.ts`. Tags set: `plan`, `platform` (`web`, `desktop`, `app`). Custom events are the `track()` names.
+- **Policies:** the Privacy Policy and Cookies pages name Clarity. If you add another tracking tool, update `app/privacy/page.tsx`, `app/cookies/page.tsx` and bump `LEGAL_UPDATED_ISO` in `lib/legal.ts` in the same PR.
+
+## Firebase / Google Analytics 4
 
 Firebase project `naazhi-bd05d`. The Firebase console menu maps to code like this:
 

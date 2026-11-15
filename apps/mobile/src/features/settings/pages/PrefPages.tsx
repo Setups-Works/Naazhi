@@ -118,7 +118,7 @@ export function HomeAssistantPrefs() {
         </Row>
       </Group>
       <Group title="Privacy">
-        <Row title="Share anonymous usage" description="Which screens and features are used, so we can improve Naazhi. Never your notes, journal, chats or files." last>
+        <Row title="Share anonymous usage" description="Which screens and features are used, and anonymous screen recordings (with all text hidden), so we can improve Naazhi. Never your notes, journal, chats or files." last>
           <Toggle label="Share anonymous usage" value={prefs.analytics} onChange={(analytics) => void change({ analytics })} />
         </Row>
       </Group>

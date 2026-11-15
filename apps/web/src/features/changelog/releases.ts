@@ -23,6 +23,19 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-15",
+    title: "Help us fix what’s confusing",
+    summary: "Naazhi can now learn where people get stuck, with everything you write kept out of sight, and you can switch it off any time.",
+    tone: "blue",
+    changes: [
+      { kind: "new", platform: "web", text: "Anonymous heatmaps and screen recordings inside the app help us find confusing screens. Your notes, journal, chats and names are hidden and never recorded." },
+      { kind: "new", platform: "app", text: "The same anonymous screen recordings in the phone app, with all text hidden." },
+      { kind: "new", platform: "desktop", text: "The Mac and Windows apps share the same anonymous insights as the web app." },
+      { kind: "improved", platform: "web", text: "Settings → Privacy → Share anonymous usage now covers recordings too, and turns them off at once. The Privacy Policy and Cookies pages say exactly what is used." },
+      { kind: "improved", platform: "app", text: "Share anonymous usage in Settings → Privacy turns recordings off in the app as well." },
+    ],
+  },
+  {
+    date: "2026-11-15",
     title: "Version 8.1.1: a cleaner journal entry",
     summary: "Opening a journal entry in the app now looks like the web: a flat page with a bold day title.",
     tone: "violet",

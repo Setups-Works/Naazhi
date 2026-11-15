@@ -53,7 +53,7 @@ export default function GeneralPage({ prefs: initial }: { prefs: Prefs }) {
       <SettingsSection title="Privacy">
         <SettingsRow
           title="Share anonymous usage"
-          description="Which screens and features are used, so we can improve Naazhi. Never your notes, journal, chats or files."
+          description="Which screens and features are used, and anonymous screen recordings (with all text hidden), so we can improve Naazhi. Never your notes, journal, chats or files."
         >
           <Switch checked={prefs.analytics} onCheckedChange={(v) => change({ analytics: v })} aria-label="Share anonymous usage" />
         </SettingsRow>

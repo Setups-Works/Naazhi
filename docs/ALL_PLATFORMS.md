@@ -48,6 +48,7 @@ Same on both
 - [ ] Same labels, empty states and errors; each side uses its own tokens
 - [ ] Works at 375 px on the web and on a small phone in the app
 - [ ] Twin bug searched for on the other surface
+- [ ] New screen or action people can use: `track("snake_case_name")` on web and app (feeds Firebase and Clarity, docs/ANALYTICS.md); no content in events; any new tool that sees users is named in the Privacy and Cookies pages
 Release
 - [ ] releases.ts entry with web / app / desktop lines; versions bumped (docs/RELEASE_FOR_AGENTS.md)
 - [ ] CURRENT_STATE.md and the folder AGENTS.md files updated
@@ -76,6 +77,10 @@ Say so in the PR and the changelog, and file the follow-up the same day:
 - The changelog line is tagged only with the platforms that have it. Never write "works in the app" for something that doesn't.
 - The Settings or onboarding text on the missing platform must not promise it (no dead buttons: use the "Soon" label or leave the control out).
 - Link the follow-up task in `docs/CURRENT_STATE.md` under the feature's row.
+
+## 6a. Analytics and recordings
+
+Firebase and Microsoft Clarity are wired into the shared `track()` / `identify()` of both platforms; the desktop app gets them through the web app. A feature does not need Clarity code: call `track()` on the one action that matters and keep UI that shows people's content inside `app/dashboard` (masked). Details and rules: `docs/ANALYTICS.md`.
 
 ## 7. Before you say it is done
 

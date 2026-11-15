@@ -51,6 +51,13 @@ export default function Page() {
                   basic technical data needed to keep the service running and secure.
                 </p>
                 <p>
+                  <strong>Anonymous usage (signed-in app only):</strong> which screens and features are used, plus anonymous screen recordings and heatmaps, so we can
+                  find what is confusing and fix it. We use Google Analytics (Firebase) and Microsoft Clarity for this on the website, the desktop app and the phone
+                  apps. Everything you write, such as notes, journal entries, chats, names and files, is hidden before it leaves your device and is never recorded.
+                  Clarity may set its own cookies in the signed-in app. You can switch all of it off at any time in Settings → Privacy → Share anonymous usage, and it
+                  stops at once. The public pages carry none of it.
+                </p>
+                <p>
                   <strong>Cookies and browser storage:</strong> on the website we use a cookie that keeps you signed in, a cookie that remembers how you last signed in, a cookie that remembers which link or site brought you (so we can tell which link a sign-up came from), and
                   browser storage for your settings. We use no advertising cookies and no third-party analytics scripts on the public pages. We count visits by source without recording anything about the visitor. Details are on our{" "}
                   <a className={link} href="/cookies">
@@ -100,7 +107,7 @@ export default function Page() {
               <>
                 <p>
                   Only the service providers that help us run {OPERATOR.product}, and only what they need: payments (Razorpay), email delivery, hosting and file
-                  storage, and sign-in (Google, if you choose it).
+                  storage, sign-in (Google, if you choose it), and anonymous usage analytics (Google Analytics and Microsoft Clarity, only while “Share anonymous usage” is on).
                 </p>
                 <p>
                   <strong>AI providers.</strong> AI is optional. If you turn it on, the text you send to the assistant, and the context it needs to answer, goes to

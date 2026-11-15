@@ -26,6 +26,8 @@ export const publicEnv = {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID?.trim() || undefined,
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID?.trim() || undefined,
   },
+  /** Microsoft Clarity project id (public: it is printed in the page). Heatmaps and recordings stay off until set. */
+  clarityProjectId: process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID?.trim() || undefined,
   sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN?.trim() || undefined,
   /** Search-console ownership tokens (public by design: they are printed in the page's <meta> tags). */
   googleSiteVerification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim() || undefined,

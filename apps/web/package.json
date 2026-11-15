@@ -14,14 +14,15 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@composio/core": "0.29.0",
     "@aws-sdk/client-s3": "^3.1147.0",
     "@azure/storage-blob": "^12.34.0",
     "@better-auth/expo": "^1.7.7",
     "@better-auth/passkey": "^1.7.7",
+    "@composio/core": "0.29.0",
     "@fortawesome/fontawesome-svg-core": "^7.3.1",
     "@fortawesome/free-solid-svg-icons": "^7.3.1",
     "@fortawesome/react-fontawesome": "^3.5.0",
+    "@microsoft/clarity": "^1.0.2",
     "@radix-ui/react-alert-dialog": "^1.1.24",
     "@radix-ui/react-dialog": "^1.2.0",
     "@radix-ui/react-dropdown-menu": "^2.1.25",

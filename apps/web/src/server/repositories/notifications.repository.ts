@@ -40,8 +40,9 @@ export const insertFor = (userIds: string[], n: NewNotification) =>
 /** Every user's id (for a message to everyone). */
 export const allUserIds = () => withOwner(async (c) => (await c.query<{ id: string }>("select id from auth.users")).rows.map((r) => r.id));
 
-export const userIdByEmail = (email: string) =>
-  withOwner(async (c) => (await c.query<{ id: string }>("select id from auth.users where lower(email) = lower($1)", [email])).rows[0]?.id ?? null);
+/** Of these ids, the ones that are real accounts (a stale picker must not make the insert fail on the foreign key). */
+export const existingUserIds = (ids: string[]) =>
+  withOwner(async (c) => (await c.query<{ id: string }>("select id from auth.users where id = any($1::uuid[])", [ids])).rows.map((r) => r.id));
 
 export const list = (userId: string, limit: number) =>
   withUser(userId, async (c) =>

@@ -313,14 +313,14 @@ export async function deleteAnnouncement(id: string): Promise<Result> {
 }
 
 /* ---------- messages to users (inbox + push) ---------- */
-export async function sendMessageToUsers(title: string, body: string, to: string): Promise<Result> {
+export async function sendMessageToUsers(title: string, body: string, to: string[]): Promise<Result> {
   try {
     const me = await assertAdmin();
-    const parsed = adminMessage.safeParse({ title, body, to: to.trim() || undefined });
+    const parsed = adminMessage.safeParse({ title, body, to });
     if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the message." };
     const r = await sendAdminMessage(parsed.data);
-    // The audit log keeps who it went to and the title, never the text of the message.
-    await audit(me, "message.send", parsed.data.to ?? "everyone", { title: parsed.data.title.slice(0, 60), saved: r.saved, pushed: r.pushed });
+    // The audit log keeps how many people it went to and the title, never the text of the message (or a list of addresses).
+    await audit(me, "message.send", parsed.data.to.length ? `${parsed.data.to.length} picked` : "everyone", { title: parsed.data.title.slice(0, 60), saved: r.saved, pushed: r.pushed });
     return {
       ok: true,
       message: `Sent to ${r.saved} ${r.saved === 1 ? "person" : "people"}.${r.pushed ? " Phones were notified." : pushConfigured() ? " No phones registered yet." : " Push isn’t set up, so it shows in their inbox in the app."}`,

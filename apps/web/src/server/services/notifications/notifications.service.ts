@@ -38,13 +38,12 @@ export async function notifyUsers(userIds: string[], n: repo.NewNotification): P
 /** Fire-and-forget version for event hooks (an invitation, new articles): it must never fail the action that caused it. */
 export const notifyQuietly = (userIds: string[], n: repo.NewNotification) => void notifyUsers(userIds, n).catch(() => undefined);
 
-/** Admin → everyone, or one person by email address. */
-export async function sendAdminMessage(input: { title: string; body: string; to?: string }) {
+/** Admin → the people picked (`to`: user ids), or everyone when none are picked. */
+export async function sendAdminMessage(input: { title: string; body: string; to?: string[] }) {
   let ids: string[];
-  if (input.to) {
-    const id = await repo.userIdByEmail(input.to);
-    if (!id) throw new NotFoundError("No one has that email address.");
-    ids = [id];
+  if (input.to?.length) {
+    ids = await repo.existingUserIds(input.to);
+    if (!ids.length) throw new NotFoundError("None of the people you picked exist any more. Reload the page.");
   } else ids = await repo.allUserIds();
   return notifyUsers(ids, { kind: "admin", title: input.title, body: input.body, url: INBOX_PATH });
 }

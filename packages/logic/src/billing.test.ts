@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { addMonth, addMonths, estimateTokens, estimatePlans, formatBalance, formatMoney, TOPUP, validTopup, formatTokens, priceLine, tokenCostCents, trialLine, trialButtonLabel, normalizePhone } from "./billing";
+import type { BillingPlan } from "@untitled/types";
+import { defaultTopup, localizePlan, plansFor, topupRange, TOPUP_USD, addMonth, addMonths, estimateTokens, estimatePlans, formatBalance, formatMoney, TOPUP, validTopup, formatTokens, priceLine, tokenCostCents, trialLine, trialButtonLabel, normalizePhone } from "./billing";
 
 describe("billing helpers", () => {
   it("formats money", () => {
@@ -67,9 +68,9 @@ describe("AI credit", () => {
 
 describe("pricing calculator", () => {
   const plans = [
-    { id: "subscription", name: "Subscription", tagline: "", price_cents: 9_900, currency: "inr", interval: "month", included_tokens: 1_000_000, token_price_cents_per_million: 0, features: [], active: true, sort: 1, trial_days: 0 },
-    { id: "payg", name: "Pay as you go", tagline: "", price_cents: 0, currency: "inr", interval: "none", included_tokens: 0, token_price_cents_per_million: 20_000, features: [], active: true, sort: 2, trial_days: 0 },
-    { id: "byo", name: "Bring your own key", tagline: "", price_cents: 0, currency: "inr", interval: "none", included_tokens: 0, token_price_cents_per_million: 0, features: [], active: true, sort: 3, trial_days: 0 },
+    { id: "subscription", name: "Subscription", tagline: "", price_cents: 9_900, currency: "inr", interval: "month", included_tokens: 1_000_000, token_price_cents_per_million: 0, features: [], active: true, sort: 1, trial_days: 0, price_cents_usd: 900, token_price_cents_per_million_usd: 0 },
+    { id: "payg", name: "Pay as you go", tagline: "", price_cents: 0, currency: "inr", interval: "none", included_tokens: 0, token_price_cents_per_million: 20_000, features: [], active: true, sort: 2, trial_days: 0, price_cents_usd: 0, token_price_cents_per_million_usd: 240 },
+    { id: "byo", name: "Bring your own key", tagline: "", price_cents: 0, currency: "inr", interval: "none", included_tokens: 0, token_price_cents_per_million: 0, features: [], active: true, sort: 3, trial_days: 0, price_cents_usd: 0, token_price_cents_per_million_usd: 0 },
   ] as Parameters<typeof estimatePlans>[1];
 
   it("prices light use on Pay as you go and recommends it over the subscription", () => {
@@ -123,5 +124,46 @@ describe("normalizePhone", () => {
   });
   it("refuses anything that is not a number", () => {
     for (const v of ["", "  ", "abc", "12345", "5876543210", "+0 123456789", "+1234", "9876543210123456", "98765 4321"]) expect(normalizePhone(v)).toBeNull();
+  });
+});
+
+describe("prices by currency", () => {
+  const mk = (o: Partial<BillingPlan> & Pick<BillingPlan, "id">): BillingPlan => ({
+    name: o.id, tagline: "", price_cents: 0, currency: "inr", interval: "none", included_tokens: 0, token_price_cents_per_million: 0,
+    price_cents_usd: 0, token_price_cents_per_million_usd: 0, features: [], active: true, sort: 1, trial_days: 0, ...o,
+  });
+  const sub = mk({ id: "subscription", price_cents: 74_900, interval: "month", included_tokens: 1_000_000, price_cents_usd: 900, trial_days: 7 });
+  const payg = mk({ id: "payg", token_price_cents_per_million: 20_000, token_price_cents_per_million_usd: 240 });
+  const byo = mk({ id: "byo" });
+
+  it("shows the rupee prices to people paying in rupees", () => {
+    const p = localizePlan(sub, "inr");
+    expect(p).toMatchObject({ currency: "inr", price_cents: 74_900 });
+    expect(priceLine(p)).toBe("₹749 / month");
+  });
+  it("swaps in the dollar prices for people paying in dollars", () => {
+    const p = localizePlan(sub, "usd");
+    expect(p).toMatchObject({ currency: "usd", price_cents: 900 });
+    expect(priceLine(p)).toBe("$9 / month");
+    expect(trialLine(p)).toBe("7 days free, then $9 / month");
+    expect(priceLine(localizePlan(payg, "usd"))).toBe("$2.40 per 1M tokens");
+  });
+  it("leaves out a plan that charges in rupees but has no dollar price yet, and keeps the free one", () => {
+    const noUsd = { ...sub, price_cents_usd: 0 };
+    expect(plansFor([noUsd, payg, byo], "usd").map((p) => p.id)).toEqual(["payg", "byo"]);
+    expect(plansFor([noUsd, payg, byo], "inr").map((p) => p.id)).toEqual(["subscription", "payg", "byo"]);
+    expect(plansFor([sub, { ...payg, token_price_cents_per_million_usd: 0 }, byo], "usd").map((p) => p.id)).toEqual(["subscription", "byo"]);
+  });
+  it("does not change the stored plan", () => {
+    localizePlan(sub, "usd");
+    expect(sub.price_cents).toBe(74_900);
+  });
+  it("has its own top-up defaults and range in dollars", () => {
+    expect(defaultTopup("usd")).toEqual(TOPUP_USD);
+    expect(defaultTopup("inr").minCents).toBe(TOPUP.minCents);
+    expect(topupRange(TOPUP_USD, "usd")).toBe("$5 to $500");
+    expect(validTopup(500, TOPUP_USD)).toBe(true);
+    expect(validTopup(450, TOPUP_USD)).toBe(false);
+    expect(validTopup(50_100, TOPUP_USD)).toBe(false);
   });
 });

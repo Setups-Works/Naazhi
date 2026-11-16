@@ -61,6 +61,7 @@ const NAMES = [
   "Apple",
   "Android",
   "Razorpay",
+  "Stripe",
   "OpenAI",
   "Anthropic",
   "OpenRouter",

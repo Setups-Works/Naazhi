@@ -6,7 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AboutStep, AccountsStep, AppsStep, AskStep, PlanStep, PrefsStep, TourStep, Head, type StepCtx } from "./steps";
 import { FLOW, OB, resumeAt, type Milestone } from "./state";
 import { dbQuery } from "@/features/chat/db";
-import { normalizePhone } from "@untitled/logic";
+import { cleanCountry, normalizePhone } from "@untitled/logic";
 import { AppText } from "@/components/ui/AppText";
 import { Button } from "@/components/ui/Button";
 import { GiftCard, captureGiftCard } from "@/components/ui/GiftCard";
@@ -33,11 +33,13 @@ export function SetupScreen() {
   const [name, setName] = useState(user?.name ?? "");
   const [prefs, setPrefs] = useState(preferences);
   const [phone, setPhone] = useState("");
+  const [country, setCountry] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [typing, setTyping] = useState(false);
   const savedName = useRef(user?.name ?? "");
   const savedPhone = useRef("");
+  const savedCountry = useRef("");
   const savedPrefs = useRef(JSON.stringify(preferences));
   const doneRef = useRef<Milestone[]>(setupState?.done ?? []);
   const card = useRef<Parameters<typeof captureGiftCard>[0] | null>(null);
@@ -56,8 +58,12 @@ export function SetupScreen() {
   // A number saved earlier (here or on the web) fills the field again.
   useEffect(() => {
     if (!user) return;
-    void dbQuery<{ phone: string | null } | null>({ table: "profiles", op: "select", columns: "phone", filters: [{ column: "user_id", op: "eq", value: user.id }], single: "maybe" })
+    void dbQuery<{ phone: string | null; country: string | null } | null>({ table: "profiles", op: "select", columns: "phone,country", filters: [{ column: "user_id", op: "eq", value: user.id }], single: "maybe" })
       .then((row) => {
+        if (row?.country) {
+          savedCountry.current = row.country;
+          setCountry((c) => c || row.country!);
+        }
         if (!row?.phone) return;
         savedPhone.current = row.phone;
         setPhone((p) => p || row.phone!);
@@ -106,6 +112,19 @@ export function SetupScreen() {
         savedPhone.current = e164;
         setPhone(e164);
       }
+      // The country (decides currency and payment provider), only once one is chosen (the About step won't continue without it).
+      const code = cleanCountry(country);
+      if (code && code !== savedCountry.current && user) {
+        const rows = await dbQuery<{ user_id: string }[]>({
+          table: "profiles",
+          op: "update",
+          values: { country: code },
+          filters: [{ column: "user_id", op: "eq", value: user.id }],
+          returning: "user_id",
+        });
+        if (!rows?.length) return false;
+        savedCountry.current = code;
+      }
       return await updateSetup({ completed: patch.completed ?? false, step: to, skippedAt: patch.skippedAt ?? null, done: doneRef.current });
     } catch {
       return false;
@@ -149,7 +168,7 @@ export function SetupScreen() {
     }
   }
 
-  const ctx: StepCtx = { first, name, setName, phone, setPhone, prefs, setPrefs, mark, setErr };
+  const ctx: StepCtx = { first, name, setName, phone, setPhone, country, setCountry, prefs, setPrefs, mark, setErr };
   const chat = step === OB.see || step === OB.task;
   const hideActions = typing && TYPING.has(step);
 
@@ -199,7 +218,7 @@ export function SetupScreen() {
               <Button title="Open my dashboard" icon="arrow-right" loading={busy} onPress={() => void finish()} />
             ) : (
               <>
-                <Button title="Continue" icon="arrow-right" loading={busy} disabled={step === OB.about && (!name.trim() || !normalizePhone(phone))} onPress={next} />
+                <Button title="Continue" icon="arrow-right" loading={busy} disabled={step === OB.about && (!name.trim() || !normalizePhone(phone) || !cleanCountry(country))} onPress={next} />
                 <View style={styles.sub}>
                   {at > 0 ? <Button title="Back" kind="ghost" onPress={back} style={styles.subBtn} /> : null}
                   {step !== OB.about && step !== OB.prefs && step !== OB.tour && step !== OB.apps && step !== OB.connect ? <Button title="Skip for now" kind="ghost" onPress={next} style={styles.subBtn} /> : null}

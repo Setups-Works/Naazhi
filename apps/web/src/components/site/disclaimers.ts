@@ -19,7 +19,9 @@ const PAGE_NOTES = {
   health:
     "Apple Health and Google Health Connect are services of Apple Inc. and Google LLC. Naazhi reads health data only with your permission, and shows it for your own reference. It is not a medical device and gives no medical advice.",
   pricing:
-    "Prices are in Indian rupees and may change; any taxes are shown at checkout. Payments are handled by Razorpay. The cost of your own AI key is billed by that provider, not by Naazhi.",
+    "Prices are in Indian rupees for India (paid through Razorpay) and in US dollars everywhere else (paid through Stripe), and may change; any taxes are shown at checkout. The cost of your own AI key is billed by that provider, not by Naazhi.",
+  payments:
+    "Visa, Mastercard, UPI, RuPay, Google Pay, Apple Pay, Razorpay and Stripe are trademarks of their owners. Their names and logos appear only to show which payment methods can be used; Naazhi is not affiliated with, sponsored or endorsed by them. Which methods you see at checkout depends on your country, your bank and the provider.",
   ai: "AI provider names (such as OpenAI, Anthropic, Google, Groq and OpenRouter) are trademarks of their owners and appear only to say which keys you can use. Naazhi is not affiliated with them.",
   legal:
     "This page is a plain-language policy for Naazhi, not legal advice. If a translation or summary elsewhere on the site differs, the policy pages govern.",
@@ -48,6 +50,7 @@ const ROUTE_NOTES: readonly { path: string; exact?: boolean; keys: readonly Page
   { path: "/privacy", keys: ["legal"] },
   { path: "/terms", keys: ["legal"] },
   { path: "/refund-policy", keys: ["legal"] },
+  { path: "/payments", keys: ["payments", "pricing"] },
   { path: "/copyright-and-licensing", keys: ["legal"] },
   { path: "/cookies", keys: ["legal"] },
   { path: "/accessibility", keys: ["legal"] },

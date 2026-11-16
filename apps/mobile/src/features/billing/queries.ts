@@ -33,6 +33,7 @@ export function useBillingActions(onError: (message: string) => void) {
         track("select_plan", { plan: planId });
       },
     }),
+    country: useMutation({ mutationFn: (code: string) => billingApi.setCountry(code), ...settle }),
     cancel: useMutation({ mutationFn: () => billingApi.cancel(), ...settle }),
     resume: useMutation({ mutationFn: () => billingApi.resume(), ...settle }),
     saveKey: useMutation({ mutationFn: (input: ByoKeyInput) => billingApi.saveKey(input), ...settle }),

@@ -7,6 +7,9 @@ import { appRouteForWebPath, isAppLink } from "@untitled/logic";
  */
 export function redirectSystemPath({ path }: { path: string; initial: boolean }): string {
   try {
+    // Stripe's page sends the phone back here after a payment (see features/billing/checkout.ts). The in-app browser handles the result itself,
+    // so the link only needs to land somewhere sensible: the plans screen, which shows the refreshed plan.
+    if (/^\/?billing-return(\?|$)/.test(path)) return "/pricing";
     const web = /^https?:\/\//i.test(path);
     if (!web && !(path.startsWith("/") && isAppLink(path))) return path;
     // A web link the app has no screen for opens Home rather than a "not found" page.

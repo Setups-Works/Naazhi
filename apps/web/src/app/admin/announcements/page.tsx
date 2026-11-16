@@ -6,7 +6,7 @@ export default async function Page() {
   if (!serverConfigured()) return <SetupNotice />;
   const { data, error } = await adminDb()
     .from("announcements")
-    .select("id,message,tone,active,created_at")
+    .select("id,message,tone,active,created_at,placement,link_label,link_href")
     .order("created_at", { ascending: false })
     .limit(50);
   return (

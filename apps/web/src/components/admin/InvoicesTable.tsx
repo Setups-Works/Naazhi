@@ -21,7 +21,7 @@ export default function InvoicesTable({ rows, query }: { rows: InvoiceAdminRow[]
     const v = await prompt({
       title: `Refund ${r.number}`,
       body: `${formatBalance(left, r.currency)} can still be refunded to ${r.bill_to_email || "this person"}. It goes back to the card, UPI or bank they paid with.`,
-      label: "Amount in rupees",
+      label: `Amount in ${r.currency === "usd" ? "dollars" : "rupees"}`,
       initial: String(left / 100),
       confirmLabel: "Refund",
       validate: (x) => (Number.isFinite(Number(x)) && Number(x) >= 1 && Math.round(Number(x) * 100) <= left ? null : `Enter an amount from 1 to ${left / 100}.`),

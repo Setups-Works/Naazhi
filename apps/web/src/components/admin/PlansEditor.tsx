@@ -29,6 +29,8 @@ function PlanForm({ plan }: { plan: BillingPlan }) {
   const [interval, setInterval_] = useState(plan.interval);
   const [included, setIncluded] = useState(String(plan.included_tokens));
   const [rate, setRate] = useState(toMajor(plan.token_price_cents_per_million));
+  const [priceUsd, setPriceUsd] = useState(toMajor(plan.price_cents_usd));
+  const [rateUsd, setRateUsd] = useState(toMajor(plan.token_price_cents_per_million_usd));
   const [features, setFeatures] = useState(plan.features.join("\n"));
   const [trial, setTrial] = useState(String(plan.trial_days));
   const [active, setActive] = useState(plan.active);
@@ -46,7 +48,7 @@ function PlanForm({ plan }: { plan: BillingPlan }) {
     trial_days: trialDays,
   });
   const numbersOk =
-    [price, rate].every((v) => v !== "" && Number.isFinite(Number(v)) && Number(v) >= 0) &&
+    [price, rate, priceUsd, rateUsd].every((v) => v !== "" && Number.isFinite(Number(v)) && Number(v) >= 0) &&
     Number.isInteger(Number(included)) &&
     Number(included) >= 0 &&
     Number.isInteger(Number(trial)) &&
@@ -67,6 +69,8 @@ function PlanForm({ plan }: { plan: BillingPlan }) {
             interval,
             included_tokens: Number(included),
             token_price_cents_per_million: toMinor(rate),
+            price_cents_usd: toMinor(priceUsd),
+            token_price_cents_per_million_usd: toMinor(rateUsd),
             features: features
               .split("\n")
               .map((f) => f.trim())
@@ -112,11 +116,14 @@ function PlanForm({ plan }: { plan: BillingPlan }) {
       </Field>
 
       <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(150px,1fr))]">
-        <Field label="Price">
+        <Field label="Price (₹, India)">
           <input className={INPUT} value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" />
         </Field>
-        <Field label="Currency">
-          <input className={INPUT} value="INR (₹)" readOnly aria-readonly />
+        <Field label="Price ($, everywhere else)">
+          <input className={INPUT} value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} inputMode="decimal" aria-describedby={`usd-${plan.id}`} />
+          <small id={`usd-${plan.id}`} className="text-[12.5px] text-fg-subtle">
+            Paid in US dollars through Stripe. 0 on a paid plan means it isn’t offered in dollars yet.
+          </small>
         </Field>
         <Field label="Billed">
           <select className={INPUT} value={interval} onChange={(e) => setInterval_(e.target.value as BillingPlan["interval"])}>
@@ -136,6 +143,9 @@ function PlanForm({ plan }: { plan: BillingPlan }) {
             </small>
           </Field>
         )}
+        <Field label="Price per 1M tokens ($)">
+          <input className={INPUT} value={rateUsd} onChange={(e) => setRateUsd(e.target.value)} inputMode="decimal" />
+        </Field>
         <Field label="Price per 1M tokens (₹)">
           <input className={INPUT} value={rate} onChange={(e) => setRate(e.target.value)} inputMode="decimal" />
           {toMinor(rate) > 0 && (

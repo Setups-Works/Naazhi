@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Naazhi 9.0.0 — what's new (Instagram story)</title>
+<style>
+  /* Same look as the launch stories (docs/BRAND.md): white ground, Naazhi green, Geist headline with an italic second part, Instrument Serif wordmark. */
+  @font-face { font-family: "Instrument Serif"; src: url("assets/InstrumentSerif-Regular.ttf"); }
+  @font-face { font-family: "Geist"; src: url("assets/Geist-Regular.ttf"); font-weight: 400; }
+  @font-face { font-family: "Geist"; src: url("assets/Geist-Medium.ttf"); font-weight: 500; }
+  @font-face { font-family: "Geist"; src: url("assets/Geist-SemiBold.ttf"); font-weight: 600; }
+  :root { --white: #ffffff; --ink: #242424; --ink-2: #5c5c5c; --ink-3: #707070; --green: #235340; --line: #e6e6e6; --tile: #f4f3ee; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { background: var(--white); }
+  body { font-family: "Geist", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .slide { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--white); color: var(--ink); }
+
+  .lockup { position: absolute; left: 80px; top: 250px; display: flex; align-items: center; gap: 16px; font-family: "Instrument Serif", serif; font-size: 46px; letter-spacing: -0.02em; line-height: 1; }
+  .lockup img { height: 60px; width: 60px; object-fit: contain; }
+
+  .copy { position: absolute; left: 80px; right: 80px; top: 370px; }
+  .eyebrow { display: block; font-size: 26px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--green); margin-bottom: 22px; }
+  .ver { font-weight: 600; font-size: 215px; line-height: 0.95; letter-spacing: -0.06em; color: var(--green); margin-left: -8px; }
+  h1 { margin-top: 30px; font-weight: 600; font-size: 96px; line-height: 1.04; letter-spacing: -0.035em; text-wrap: balance; }
+  h1 em { font-style: italic; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+
+  .list { position: absolute; left: 80px; right: 80px; top: 930px; display: grid; gap: 20px; }
+  .row { display: flex; align-items: center; gap: 28px; padding: 26px 32px; border: 2px solid var(--line); border-radius: 36px; background: var(--white); }
+  .tile { flex: none; width: 84px; height: 84px; border-radius: 24px; background: var(--tile); display: grid; place-items: center; }
+  .tile img { width: 48px; height: 48px; object-fit: contain; }
+  .tile .logos { display: flex; gap: 6px; }
+  .tile.multi { width: auto; padding: 0 20px; }
+  .tile.multi img { width: 40px; height: 40px; }
+  .row b { display: block; font-size: 38px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; }
+  .row span { display: block; margin-top: 4px; font-size: 28px; color: var(--ink-3); line-height: 1.25; }
+
+  .foot { position: absolute; left: 80px; right: 80px; bottom: 150px; display: flex; flex-direction: column; gap: 10px; }
+  .foot b { font-size: 36px; font-weight: 600; letter-spacing: -0.02em; color: var(--ink); }
+  .foot span { font-size: 32px; color: var(--ink-3); }
+</style>
+</head>
+<body>
+<section class="slide">
+  <div class="lockup"><img src="../../../apps/web/public/brand/naazhi-mark.png" alt="" />Naazhi</div>
+  <div class="copy">
+    <span class="eyebrow">What’s new</span>
+    <div class="ver">9.0.0</div>
+    <h1>International <em>payments.</em></h1>
+  </div>
+  <div class="list">
+    <div class="row">
+      <div class="tile multi"><div class="logos"><img src="../../../apps/web/public/payments/razorpay.svg" alt="" /></div></div>
+      <div><b>In India, in rupees</b><span>Pay by UPI, card or wallet through Razorpay</span></div>
+    </div>
+    <div class="row">
+      <div class="tile multi"><div class="logos"><img src="../../../apps/web/public/payments/applepay.svg" alt="" /><img src="../../../apps/web/public/payments/googlepay.svg" alt="" /></div></div>
+      <div><b>Everywhere else, in dollars</b><span>Apple Pay, Google Pay or card through Stripe</span></div>
+    </div>
+    <div class="row">
+      <div class="tile multi"><div class="logos"><img src="../../../apps/web/public/payments/visa.svg" alt="" /><img src="../../../apps/web/public/payments/mastercard.svg" alt="" /></div></div>
+      <div><b>Cards work in both</b><span>Visa and Mastercard, with invoices in your currency</span></div>
+    </div>
+    <div class="row">
+      <div class="tile"><img src="../../../apps/web/public/brand/naazhi-mark.png" alt="" /></div>
+      <div><b>Pick your country once</b><span>Asked when you set up, changeable in Settings</span></div>
+    </div>
+  </div>
+  <div class="foot"><b>See what each accepts: naazhi.app/payments</b><span>Now on the web, Android, Mac and Windows · @naazhiapp</span></div>
+  </section>
+</body>
+</html>

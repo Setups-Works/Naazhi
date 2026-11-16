@@ -40,6 +40,9 @@ import { SettingsRow, SettingsSection, Tag } from "../../features/settings/ui";
 import GiftCard, { saveGiftCard, shareGiftCard } from "./GiftCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/Tabs";
 import type { SettingsSection as SettingsTab } from "../../features/settings/tabs";
+import { useBillingActions } from "../../features/billing/queries";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { COUNTRIES } from "@untitled/logic/countries";
 import BillingPanel from "../../features/billing/BillingPanel";
 import AppearancePicker from "../../features/settings/AppearancePicker";
 import { applyLook, saveLook } from "../../lib/look";
@@ -67,6 +70,9 @@ type Account = {
   avatarUrl: string | null;
   lastSignIn: string | null;
   phone: string;
+  /** ISO alpha-2, or empty when none was chosen. Changed through the billing service (it decides the currency). */
+  country: string;
+  address: { line1: string; line2: string; city: string; region: string; postalCode: string };
 };
 
 const csv = (v: unknown) => {
@@ -122,6 +128,10 @@ export default function SettingsView({
   const [email, setEmail] = useState(account.email);
   const [phone, setPhone] = useState(account.phone);
   const [phoneMsg, setPhoneMsg] = useState<Msg>(null);
+  const [address, setAddress] = useState(account.address);
+  const [addressMsg, setAddressMsg] = useState<Msg>(null);
+  const [country, setCountryCode] = useState(account.country);
+  const [countryMsg, setCountryMsg] = useState<Msg>(null);
   const [emailMsg, setEmailMsg] = useState<Msg>(null);
   const [username, setUsername] = useState(account.displayUsername || account.username || "");
   const [usernameMsg, setUsernameMsg] = useState<Msg>(null);
@@ -294,6 +304,37 @@ export default function SettingsView({
       setPhone(v);
       setPhoneMsg({ ok: true, text: "Mobile number saved." });
       router.refresh();
+    });
+  };
+
+  const saveAddress = (e: React.FormEvent) => {
+    e.preventDefault();
+    const clean = (v: string) => v.trim() || null;
+    run("address", async () => {
+      const { error } = await sb
+        .from("profiles")
+        .upsert(
+          { address_line1: clean(address.line1), address_line2: clean(address.line2), city: clean(address.city), region: clean(address.region), postal_code: clean(address.postalCode) },
+          { onConflict: "user_id" },
+        );
+      if (error) return setAddressMsg({ ok: false, text: "Couldn’t save your address. Try again." });
+      setAddressMsg({ ok: true, text: "Address saved." });
+      router.refresh();
+    });
+  };
+
+  // The same mutation as Plans and billing: it saves the country and replaces the billing cache, so prices switch between rupees and dollars at once.
+  const { country: countryMutation } = useBillingActions((text) => setCountryMsg({ ok: false, text }));
+  const saveCountry = (code: string) => {
+    const previous = country;
+    setCountryCode(code);
+    setCountryMsg(null);
+    countryMutation.mutate(code, {
+      onSuccess: () => {
+        setCountryMsg({ ok: true, text: "Country saved. Prices now show in your currency." });
+        router.refresh();
+      },
+      onError: () => setCountryCode(previous),
     });
   };
 
@@ -476,7 +517,7 @@ export default function SettingsView({
         <div className="st-nav-foot">
           <b>{account.name || account.email.split("@")[0]}</b>
           <small>{account.email}</small>
-          <small>Member since {since}</small>
+          <small suppressHydrationWarning>Member since {since}</small>
         </div>
       </nav>
       <div className="st-main" ref={main}>
@@ -504,7 +545,7 @@ export default function SettingsView({
                   <FA icon={faLock} className="mr-1 text-[10px]" />
                   Signed in with {account.providers.map((p) => (p === "email" ? "email" : p[0].toUpperCase() + p.slice(1))).join(", ")}
                 </Tag>
-                <Tag>Member since {new Date(account.createdAt).toLocaleDateString(undefined, { month: "short", year: "numeric" })}</Tag>
+                <Tag><span suppressHydrationWarning>Member since {new Date(account.createdAt).toLocaleDateString(undefined, { month: "short", year: "numeric" })}</span></Tag>
                 {avatar && (
                   <button type="button" className="text-[13px] text-ink-3 underline underline-offset-2 hover:text-ink" disabled={busy === "avatar"} onClick={removeAvatar}>
                     Remove photo
@@ -582,6 +623,62 @@ export default function SettingsView({
               </SettingsRow>
               <Status m={emailMsg} />
             </form>
+          </SettingsSection>
+
+          <SettingsSection title="Address and country" note="Shown on your invoices and used to pick your currency.">
+            <div className="grid gap-4 p-4 sm:p-5">
+              <div className="grid gap-1.5">
+                <label htmlFor="st-country" className="text-[13px] font-medium text-ink-2">
+                  Country
+                </label>
+                <Select value={country || undefined} onValueChange={saveCountry} disabled={countryMutation.isPending}>
+                  <SelectTrigger id="st-country" aria-describedby="st-country-note" className="w-full sm:max-w-[320px]">
+                    <SelectValue placeholder="Select country" />
+                  </SelectTrigger>
+                  <SelectContent position="popper" className="max-h-[320px]">
+                    {COUNTRIES.map(([code, name]) => (
+                      <SelectItem key={code} value={code}>
+                        {name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p id="st-country-note" className="m-0 text-[13px] text-ink-3">
+                  India pays in rupees through Razorpay; every other country pays in dollars through Stripe. Saves as soon as you pick.
+                </p>
+                <Status m={countryMsg} />
+              </div>
+              <form onSubmit={saveAddress} className="grid gap-4 border-t pt-4">
+                <label className="grid gap-1.5 text-[13px] font-medium text-ink-2">
+                  Address line 1
+                  <Input value={address.line1} onChange={(e) => setAddress({ ...address, line1: e.target.value })} maxLength={120} autoComplete="address-line1" placeholder="House number and street" className="h-9" />
+                </label>
+                <label className="grid gap-1.5 text-[13px] font-medium text-ink-2">
+                  Address line 2 <span className="font-normal text-ink-3">(optional)</span>
+                  <Input value={address.line2} onChange={(e) => setAddress({ ...address, line2: e.target.value })} maxLength={120} autoComplete="address-line2" placeholder="Apartment, suite, landmark" className="h-9" />
+                </label>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <label className="grid gap-1.5 text-[13px] font-medium text-ink-2">
+                    City
+                    <Input value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} maxLength={80} autoComplete="address-level2" className="h-9" />
+                  </label>
+                  <label className="grid gap-1.5 text-[13px] font-medium text-ink-2">
+                    State / region
+                    <Input value={address.region} onChange={(e) => setAddress({ ...address, region: e.target.value })} maxLength={80} autoComplete="address-level1" className="h-9" />
+                  </label>
+                  <label className="grid gap-1.5 text-[13px] font-medium text-ink-2">
+                    PIN / ZIP code
+                    <Input value={address.postalCode} onChange={(e) => setAddress({ ...address, postalCode: e.target.value })} maxLength={20} autoComplete="postal-code" className="h-9" />
+                  </label>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button type="submit" disabled={busy === "address"}>
+                    {spin("address", "Save address")}
+                  </Button>
+                  <Status m={addressMsg} />
+                </div>
+              </form>
+            </div>
           </SettingsSection>
 
           <SettingsSection title="Welcome gift card">
@@ -758,7 +855,7 @@ export default function SettingsView({
                   <div className="st-passkey-row" key={passkey.id}>
                     <div className="st-passkey-info">
                       <b className="st-passkey-name">{passkey.name || "Passkey"}</b>
-                      <small>Added {new Date(passkey.createdAt).toLocaleDateString()}</small>
+                      <small suppressHydrationWarning>Added {new Date(passkey.createdAt).toLocaleDateString()}</small>
                     </div>
                     <button
                       className="btn btn-secondary st-passkey-remove"
@@ -788,7 +885,7 @@ export default function SettingsView({
               <dl className="st-facts">
                 <div>
                   <dt>Last sign-in</dt>
-                  <dd>
+                  <dd suppressHydrationWarning>
                     {account.lastSignIn
                       ? new Date(account.lastSignIn).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })
                       : "—"}

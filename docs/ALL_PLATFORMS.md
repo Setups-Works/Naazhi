@@ -64,6 +64,11 @@ The desktop app is a window around the web app, so most work is free. Check thes
 - **New permission** (camera, clipboard…): the shell has an allow-list in `apps/desktop/src/main/index.ts`.
 - Change both sides of `packages/types/src/desktop.ts` together, and read `apps/desktop/AGENTS.md`.
 
+## 4a. Payments and money (country-based billing)
+- Anything that shows or takes money reads `MyBilling.currency` / `provider` (set by the server from the person's country, `billingRegion()` in packages/logic/src/countries.ts); never hard-code ₹, "rupees" or "Razorpay" in UI, and format with `formatMoney(cents, currency)`.
+- Paying: India opens Razorpay (web window, app native sheet). Elsewhere the API returns `{ provider: "stripe", url }`: web navigates to it, the app opens it in the in-app browser (`apps/mobile/src/features/billing/checkout.ts`) and Stripe returns through `/billing/return` (`?app=1` hands back to `untitled://billing-return`). Desktop is the web app; check that Stripe's page and the return trip work inside the shell window.
+- Country is asked on the About screen of onboarding (web and app) and editable in Settings → Plan and billing (`POST /api/v1/billing/country`).
+
 ## 5. Sign-in flows (Google, Notion, Zoho and any new one)
 
 - The phone opens a provider's sign-in in its **web sheet**, which sends the app's login only on the **first** page. When the provider sends the person back, the request has **no session**. So a callback must not depend on the cookie alone: Google uses its single-use `state` (`takeOAuthStateAny`), Notion a signed short-lived token (`signNotionReturn`). Copy that pattern, and never trust anything else in the address.

@@ -126,6 +126,15 @@ export function serverEnv() {
       keySecret: optional("RAZORPAY_KEY_SECRET"),
       webhookSecret: optional("RAZORPAY_WEBHOOK_SECRET"),
     },
+    /** Stripe (everyone outside India pays in dollars through it). Needs a secret key and the webhook signing secret; no publishable key is used because Stripe's own hosted page takes the payment. */
+    stripe: {
+      secretKey: optional("STRIPE_SECRET_KEY"),
+      /** pk_… — public by design. When set, the phone app pays with Stripe's native payment sheet; without it the app uses Stripe's page in the in-app browser. */
+      publishableKey: optional("STRIPE_PUBLISHABLE_KEY"),
+      webhookSecret: optional("STRIPE_WEBHOOK_SECRET"),
+      /** "true" asks Stripe Tax to work out and collect VAT / sales tax at checkout. Needs Stripe Tax set up in the Stripe dashboard first. */
+      automaticTax: optional("STRIPE_AUTOMATIC_TAX") === "true",
+    },
     sentryAuthToken: optional("SENTRY_AUTH_TOKEN"),
     cronSecret: optional("CRON_SECRET"),
     /** Firebase service-account JSON (plain or base64) used to send push notifications to Android phones. Without it messages still reach the in-app inbox. */

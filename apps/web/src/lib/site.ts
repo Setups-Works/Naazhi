@@ -105,6 +105,7 @@ export const FOOTER_COLS: { title: string; links: [string, string][] }[] = [
       ["Privacy Policy", "/privacy"],
       ["Terms & Conditions", "/terms"],
       ["Refund & Cancellation", "/refund-policy"],
+      ["Payments we accept", "/payments"],
       ["Copyright & Licensing", "/copyright-and-licensing"],
       ["Cookies & Storage", "/cookies"],
       ["Accessibility", "/accessibility"],

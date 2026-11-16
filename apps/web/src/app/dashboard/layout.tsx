@@ -14,6 +14,7 @@ import ImpersonationBanner from "../../components/app/ImpersonationBanner";
 import AnalyticsProvider from "../../components/app/AnalyticsProvider";
 import AcquisitionSync from "../../components/app/AcquisitionSync";
 import ChatWidget from "../../components/app/ChatWidget";
+import CountryGate from "../../features/billing/CountryGate";
 import DesktopBridge from "../../components/app/DesktopBridge";
 import WebBrief from "../../features/notifications/WebBrief";
 import { cleanOnboarding, shouldShowOnboarding } from "../../lib/onboarding";
@@ -43,8 +44,8 @@ export default async function Layout({ children }: { children: ReactNode }) {
   const db = userDb(user.id);
   // Settings, onboarding progress and announcements are read with the user's own permissions. A failure must never break the app.
   const [profile, ann, info] = await Promise.all([
-    db.from("profiles").select("preferences,onboarding,phone").maybeSingle(),
-    db.from("announcements").select("id,message,tone").eq("active", true).order("created_at", { ascending: false }).limit(3),
+    db.from("profiles").select("preferences,onboarding,phone,country,address_line1,address_line2,city,region,postal_code").maybeSingle(),
+    db.from("announcements").select("id,message,tone").eq("active", true).in("placement", ["app", "both"]).order("created_at", { ascending: false }).limit(3),
     accountInfo(user.id),
   ]);
   const announcements = (ann.data ?? []) as { id: string; message: string; tone: string }[];
@@ -62,6 +63,14 @@ export default async function Layout({ children }: { children: ReactNode }) {
     avatarUrl: user.image,
     lastSignIn: info.lastSignIn,
     phone: typeof profile.data?.phone === "string" ? profile.data.phone : "",
+    country: typeof profile.data?.country === "string" ? profile.data.country : "",
+    address: {
+      line1: typeof profile.data?.address_line1 === "string" ? profile.data.address_line1 : "",
+      line2: typeof profile.data?.address_line2 === "string" ? profile.data.address_line2 : "",
+      city: typeof profile.data?.city === "string" ? profile.data.city : "",
+      region: typeof profile.data?.region === "string" ? profile.data.region : "",
+      postalCode: typeof profile.data?.postal_code === "string" ? profile.data.postal_code : "",
+    },
   };
   return (
     <QueryProvider>
@@ -75,6 +84,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
           prefs={prefs}
           account={account}
         />
+        {!account.country && <CountryGate />}
         <AnalyticsProvider userId={user.id} />
         <AcquisitionSync userId={user.id} />
         <DesktopBridge />

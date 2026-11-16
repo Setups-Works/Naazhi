@@ -33,14 +33,14 @@ export default function Footer() {
             </div>
             <SocialLinks />
           </div>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 2xl:grid-cols-6">
             {FOOTER_COLS.map((c) => (
               <nav key={c.title} aria-label={c.title}>
                 <p className="mb-4 text-[12px] font-semibold text-fg">{c.title}</p>
                 <ul className="flex flex-col gap-1">
                   {c.links.map(([label, href]) => (
                     <li key={label}>
-                      <Link href={href} className="block py-1.5 text-[13.5px] leading-snug lg:whitespace-nowrap text-fg-muted transition-colors hover:text-fg">
+                      <Link href={href} className="block py-1.5 text-[13.5px] leading-snug text-fg-muted transition-colors hover:text-fg">
                         {label}
                       </Link>
                     </li>

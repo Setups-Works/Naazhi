@@ -103,6 +103,9 @@ The people shown on the public `/team` page, managed in the admin panel (`/admin
 ## Email campaigns
 `email_campaigns` (an admin's newsletter or direct email: `subject`, `preheader`, `html` (≤200 000, cleaned again when sent), `kind` newsletter/direct, `audience` all/picked, `picked` user ids, `status` draft/sending/sent/failed), `email_campaign_recipients` (one row per address, written when the campaign is sent: `queued`/`sent`/`failed` plus a provider error code, never the message), `email_campaign_attachments` (name, type, size and a key in the `note-files` bucket under the admin's id) and `email_unsubscribes` (lower-case addresses that opted out of newsletters; kept after an account is deleted). All four have RLS on with **no policies**: only the admin code (owner connection, after `assertAdmin()`) reads or writes them. Migration `20261115150000_email_campaigns.sql`; written by `services/campaigns`, read by Admin → Campaigns.
 
+## Country billing (migration 20261116100000)
+`profiles.country` (ISO 3166-1 alpha-2, checked `^[A-Z]{2}$`; null = never chosen, billed as India; the owner may update it, asked on the About setup screen). `billing_plans.price_cents_usd` / `token_price_cents_per_million_usd` (US cents; 0 on a paid plan = not offered in dollars; seeded 900 and 240 as placeholders to review). `billing_settings.topup_min_cents_usd/_max_cents_usd/_options_cents_usd`. `user_billing.provider` and `billing_invoices.provider` (`razorpay` | `stripe`; `provider_subscription_id` holds either provider's id). `user_ai_credit.currency` (`inr` | `usd`: the balance's unit, changed only while it is zero) and `pending_micro` (part-cent carried for dollar usage). Invoices already had `currency`. Migration `20261116110000_stripe_native_sheet.sql`: `stripe_customers` (user → Stripe customer id; RLS on, no access for people) and `billing_plans.stripe_product_id`.
+
 ## Razorpay (migration 20261111180000)
 `billing_plans.razorpay_plan_id/_key` (the matching Razorpay plan), `user_billing.provider_subscription_id/provider_status`, and `billing_events` (webhook ids handled; RLS on, no policies, owner only).
 
@@ -124,3 +127,5 @@ Migration `20261113130000_subscription_trial.sql`: `billing_plans.trial_days`, `
 
 ## To-do reminder time
 `tasks.remind_time` (a `time`, the person's own clock): be reminded on the due date at this time. A wall-clock time, not an instant, so it stays right when the due date moves or a repeating to-do advances; the phone and desktop apps work out the moment from `due_date` and deliver it themselves. Ignored when the to-do has no due date or spans several days. Migration `20261114130000_task_remind_time.sql`.
+
+Migration `20261116120000_profile_address.sql`: `profiles.address_line1`, `address_line2`, `city`, `region`, `postal_code` (all optional text, length-checked; the owner may update them). Edited in Settings → Profile next to Country, which stays in `profiles.country` and is changed through the billing service.

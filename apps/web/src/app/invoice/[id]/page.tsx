@@ -96,7 +96,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
             )}
             <dt className="text-ink-3">Payment</dt>
             <dd className="m-0">
-              Razorpay, <span className="font-mono text-[13px]">{view.invoice.provider_payment_id}</span>
+              {i.provider === "stripe" ? "Stripe" : "Razorpay"}, <span className="font-mono text-[13px]">{view.invoice.provider_payment_id}</span>
             </dd>
             <dt className="text-ink-3">Status</dt>
             <dd className="m-0">{i.status === "refunded" ? "Refunded" : i.status === "partially_refunded" ? "Partly refunded" : "Paid"}</dd>
@@ -135,7 +135,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
         </table>
 
         {seller.invoice_footer && <p className="mt-8 mb-0 border-t pt-4 text-[13px] leading-relaxed whitespace-pre-line text-ink-3">{seller.invoice_footer}</p>}
-        <p className="mt-6 mb-0 text-[12.5px] text-ink-3">Amounts are in Indian rupees. Questions about a payment? Reply to the receipt email or contact us from the website.</p>
+        <p className="mt-6 mb-0 text-[12.5px] text-ink-3">Amounts are in {i.currency === "usd" ? "US dollars" : "Indian rupees"}{i.currency === "usd" ? ". Tax is not added unless it is shown on this invoice" : ""}. Questions about a payment? Reply to the receipt email or contact us from the website.</p>
       </article>
     </main>
   );

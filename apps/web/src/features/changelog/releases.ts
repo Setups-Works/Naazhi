@@ -22,6 +22,23 @@ export type Release = {
  */
 export const RELEASES: Release[] = [
   {
+    date: "2026-11-16",
+    title: "Version 9.0.0: pay from anywhere in the world",
+    summary: "Choose your country when you set up. India pays in rupees; everywhere else pays in US dollars. Dollar payments open once our card payments are switched on.",
+    tone: "mint",
+    appVersion: "v9.0.0",
+    changes: [
+      { kind: "new", platform: "web", text: "Setup now asks for your country. Prices, credit top-ups and invoices are in rupees for India and in US dollars everywhere else." },
+      { kind: "new", platform: "app", text: "Outside India the app pays in Stripe’s own payment sheet, with saved cards, once card payments are switched on." },
+      { kind: "new", platform: "app", text: "The same country question in the app’s setup, and your country shows in Settings, Plan and billing." },
+      { kind: "new", platform: "desktop", text: "The Mac and Windows apps show the same country and currency in Plan and billing." },
+      { kind: "improved", platform: "web", text: "The pricing page shows rupee or dollar prices, with a switch to see the other. Terms, Refund and Privacy now explain both currencies and how refunds work." },
+      { kind: "new", platform: "web", text: "Settings, My account now has an Address and country card: your street, city, state and PIN or ZIP code, and your country in one place." },
+      { kind: "improved", platform: "web", text: "Everyone now has a country. If you signed up before setup asked for it, the app asks once, and paying for a plan or credit needs it." },
+      { kind: "improved", platform: "web", text: "You can change your country in Settings while you have no active subscription or unspent credit, so a payment never ends up in the wrong currency." },
+    ],
+  },
+  {
     date: "2026-11-15",
     title: "Version 8.2.0: change things from chat, a new icon, and your privacy choice",
     summary: "Chat can now change or delete your to-dos, notes and journal entries, Naazhi has a new Original icon, and you control the anonymous usage insights that help us fix what is confusing.",

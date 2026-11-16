@@ -5,7 +5,9 @@ import { faCheck, faKey } from "@fortawesome/free-solid-svg-icons";
 import type { BillingPlan, MyBilling } from "@untitled/types";
 import { BYO_PROVIDERS, byoProvider, formatBalance, formatMoney, formatTokens, needsCheckout, priceLine, trialButtonLabel, trialLine } from "@untitled/logic/billing";
 import { useConfirm } from "../../components/ui/Confirm";
-import { useBilling, useBillingActions } from "./queries";
+import { providerName, currencyName, countryName } from "@untitled/logic/countries";
+import { useBilling, useBillingActions, useStripeReturn } from "./queries";
+import CountrySelect from "./CountrySelect";
 import { usePlanPicker } from "./razorpay";
 import TopUpDialog from "./TopUpDialog";
 import BillingHistory from "./BillingHistory";
@@ -117,7 +119,7 @@ function KeyForm({ billing, onError }: { billing: MyBilling; onError: (m: string
   );
 }
 
-function PlanCard({ plan, current, busy, autopay, trial, onChoose }: { plan: BillingPlan; current: boolean; busy: boolean; autopay: boolean; trial: boolean; onChoose: () => void }) {
+function PlanCard({ plan, current, busy, autopay, trial, provider, onChoose }: { plan: BillingPlan; current: boolean; busy: boolean; autopay: boolean; trial: boolean; provider: MyBilling["provider"]; onChoose: () => void }) {
   return (
     <article
       className="liquid-flat flex flex-col gap-3 rounded-r3 p-[18px] [backdrop-filter:var(--glass-blur)]"
@@ -152,8 +154,12 @@ function PlanCard({ plan, current, busy, autopay, trial, onChoose }: { plan: Bil
         {autopay && !current && (
           <p className="m-0 mt-2 text-[12.5px] text-fg-subtle">
             {trial
-              ? `Free for ${plan.trial_days} days. You’ll approve autopay now and nothing is charged until the trial ends. Cancel any time before then.`
-              : "Charged automatically each period by UPI AutoPay or card. Cancel any time."}
+              ? provider === "stripe"
+                ? `Free for ${plan.trial_days} days. You’ll add a card now and nothing is charged until the trial ends. Cancel any time before then.`
+                : `Free for ${plan.trial_days} days. You’ll approve autopay now and nothing is charged until the trial ends. Cancel any time before then.`
+              : provider === "stripe"
+                ? "Autopay is on: your card is charged automatically each period through Stripe. Cancel any time."
+                : "Charged automatically each period by UPI AutoPay or card. Cancel any time."}
           </p>
         )}
       </div>
@@ -185,6 +191,8 @@ export default function BillingPanel() {
   const { ask, dialog } = useConfirm();
   const b = q.data;
   const { pick, busy: picking } = usePlanPicker(b, setErr);
+  const { country } = useBillingActions(setErr);
+  useStripeReturn(setErr);
 
   if (q.isError)
     return (
@@ -296,9 +304,25 @@ export default function BillingPanel() {
       {topup && <TopUpDialog billing={b} onClose={() => setTopup(false)} />}
       {connect && <ConnectAiDialog start={connect} onClose={() => setConnect(null)} />}
 
+      <section className="grid gap-2 rounded-r3 border p-5" aria-label="Country and currency">
+        <label htmlFor="bill-country" className="text-[14px] font-medium text-ink-2">
+          Country
+        </label>
+        <div className="max-w-[360px]">
+          <div className="st-field">
+            <CountrySelect id="bill-country" value={b.country} disabled={country.isPending || !!b.country_locked} onChange={(c) => country.mutate(c)} aria-describedby="bill-country-note" />
+          </div>
+        </div>
+        <p id="bill-country-note" className="m-0 text-[13px] text-ink-3">
+          {b.country ? `${countryName(b.country)}: ` : "Not chosen yet, so you’re billed as in India: "}
+          prices are in {currencyName(b.currency)} and payments go through {providerName(b.provider)}.
+          {b.country_locked ? ` ${b.country_locked}` : " Tax is not added to these prices unless it says so at checkout."}
+        </p>
+      </section>
+
       {!b.payments_connected && (
         <p className="m-0 rounded-r2 bg-surface-muted px-3.5 py-2.5 text-[13px] text-fg-muted">
-          Payments aren’t connected yet, so choosing or changing a plan doesn’t charge you.
+          {providerName(b.provider)} payments aren’t available yet, so choosing or changing a plan doesn’t charge you.
         </p>
       )}
 
@@ -307,7 +331,7 @@ export default function BillingPanel() {
       <h2 className="m-0 mt-2 text-[15px] font-semibold">Plans</h2>
       <div className="grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(210px,1fr))]">
         {b.plans.map((p) => (
-          <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={busy} autopay={needsCheckout(b, p)} trial={b.trial_available && p.trial_days > 0} onChoose={() => pick(p)} />
+          <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={busy} autopay={needsCheckout(b, p)} trial={b.trial_available && p.trial_days > 0} provider={b.provider} onChoose={() => pick(p)} />
         ))}
       </div>
 

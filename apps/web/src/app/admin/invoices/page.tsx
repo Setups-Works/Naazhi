@@ -19,7 +19,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ q
             Invoices and refunds
           </h1>
           <p className="meta">
-            Every payment taken, newest first. A refund goes back through Razorpay to the original payment method. A credit top-up can only be
+            Every payment taken, newest first. A refund goes back to the original payment method through the provider that took it (Razorpay for rupees, Stripe for dollars). A credit top-up can only be
             refunded up to what is still unspent in the person’s balance.
           </p>
         </div>

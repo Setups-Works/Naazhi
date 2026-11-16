@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faArrowRight, faCheck } from "@fortawesome/free-solid-svg-icons";
-import { formatBalance, needsCheckout, priceLine, trialButtonLabel, trialLine } from "@untitled/logic/billing";
+import { providerName } from "@untitled/logic/countries";
+import { formatBalance, formatMoney, needsCheckout, priceLine, trialButtonLabel, trialLine } from "@untitled/logic/billing";
 import { cn } from "@/lib/cn";
 import { useBilling } from "../../billing/queries";
 import { usePlanPicker } from "../../billing/razorpay";
@@ -56,7 +57,7 @@ export function PlanScreen({ ctx }: { ctx: Ctx }) {
                   </ul>
                   {mine && p.id === "payg" && b?.payments_connected && (
                     <p className="m-0 mt-4 rounded-r2 bg-hover px-3 py-2.5 text-[14px] text-ink-2">
-                      AI balance <b className="text-ink">{formatBalance(b.credit_cents, p.currency)}</b>. AI works once you add credit (from ₹{b.topup.min_cents / 100}).
+                      AI balance <b className="text-ink">{formatBalance(b.credit_cents, p.currency)}</b>. AI works once you add credit (from {formatMoney(b.topup.min_cents, b.currency)}).
                     </p>
                   )}
                   {mine && p.id === "payg" && b?.payments_connected && (
@@ -84,7 +85,7 @@ export function PlanScreen({ ctx }: { ctx: Ctx }) {
 
       {topup && b && <TopUpDialog billing={b} onClose={() => setTopup(false)} />}
       {b && !b.payments_connected && (
-        <p className="m-0 mt-4 text-center text-[14px] text-fg-subtle">Payments aren’t connected yet, so choosing a plan is recorded and nobody is charged.</p>
+        <p className="m-0 mt-4 text-center text-[14px] text-fg-subtle">{providerName(b.provider)} payments aren’t available yet, so choosing a plan is recorded and nobody is charged.</p>
       )}
       {ctx.err && (
         <p className="form-err text-center" role="alert">

@@ -16,8 +16,9 @@ import { mobileEnv } from "@/config/env";
 import { api, errorMessage } from "@/lib/api";
 import { openWeb } from "@/lib/webSheet";
 import { useConnectGoogle, useConnectNotion, useGoogleStatus, useNotionStatus } from "@/features/integrations/connect";
-import { needsCheckout, normalizePhone } from "@untitled/logic";
+import { COUNTRIES, billingRegion, cleanCountry, currencyName, needsCheckout, normalizePhone, providerName } from "@untitled/logic";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { PickerField } from "@/components/ui/PickerField";
 import { TextField } from "@/components/ui/TextField";
 import { Palette, Radius, Space, themedStyles } from "@/constants/theme";
 import { isoDate } from "@/lib/dates";
@@ -32,6 +33,9 @@ export type StepCtx = {
   /** The mobile number as typed; saved in international form once it is valid. */
   phone: string;
   setPhone: (v: string) => void;
+  /** ISO country code ("" until chosen): decides the currency and payment provider (India: rupees, Razorpay; elsewhere: dollars, Stripe). */
+  country: string;
+  setCountry: (v: string) => void;
   prefs: SettingsPrefs;
   setPrefs: (p: SettingsPrefs) => void;
   mark: (m: Milestone) => void;
@@ -99,6 +103,12 @@ export function AboutStep({ ctx }: { ctx: StepCtx }) {
       />
       <AppText variant="small" color={Palette.fgSubtle}>
         So paying for a plan or adding credit is quick: the payment sheet opens with your number already filled in. We never share it.
+      </AppText>
+      <PickerField label="Country" value={cleanCountry(ctx.country) ?? ""} options={[{ value: "", label: "Select country" }, ...COUNTRIES.map(([value, label]) => ({ value, label }))]} onChange={(c) => c && ctx.setCountry(c)} />
+      <AppText variant="small" color={Palette.fgSubtle}>
+        {cleanCountry(ctx.country)
+          ? `Prices will be in ${currencyName(billingRegion(ctx.country).currency)}, and payments go through ${providerName(billingRegion(ctx.country).provider)}. You can change this later in Settings while you have no active subscription or credit.`
+          : "Decides your currency: rupees (Razorpay) in India, US dollars (Stripe) everywhere else."}
       </AppText>
       <TextField label="What do you do? (optional)" value={prefs.role} onChangeText={(v) => setPrefs({ ...prefs, role: v.slice(0, 80) })} maxLength={80} placeholder="It helps Naazhi tell what matters to you" />
       <View style={styles.wrap}>
@@ -401,7 +411,7 @@ export function PlanStep({ ctx }: { ctx: StepCtx }): ReactNode {
       {b && !b.payments_connected ? <Banner kind="info">Payments aren’t switched on yet, so choosing a plan doesn’t charge you.</Banner> : null}
       {b
         ? plans.map((p) => (
-            <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={picker.busy} loading={picker.loadingId === p.id} autopay={needsCheckout(b, p)} trial={b.trial_available && p.trial_days > 0} onChoose={() => void picker.pick(p)} />
+            <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={picker.busy} loading={picker.loadingId === p.id} autopay={needsCheckout(b, p)} provider={b.provider} trial={b.trial_available && p.trial_days > 0} onChoose={() => void picker.pick(p)} />
           ))
         : null}
     </View>

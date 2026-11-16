@@ -5,17 +5,19 @@ import { formatMoney, tokenCostCents, validTopup } from "@untitled/logic/billing
 import Modal from "../../components/ui/Modal";
 import { useTopUp } from "./razorpay";
 
-/** "Add AI credit": pick an amount (or type one), pay with Razorpay, and the credit is added once the payment is verified. */
+/** "Add AI credit": pick an amount (or type one), pay (Razorpay in India, Stripe elsewhere), and the credit is added once the payment is verified. */
 export default function TopUpDialog({ billing, onClose }: { billing: MyBilling; onClose: () => void }) {
   const [amount, setAmount] = useState<number>(billing.topup.options_cents[1] ?? billing.topup.min_cents);
   const [custom, setCustom] = useState("");
   const [err, setErr] = useState("");
   const { topUp, busy } = useTopUp(setErr, onClose);
+  const cur = billing.currency;
   const rate = billing.plan?.token_price_cents_per_million ?? 0;
   const typed = custom.trim() === "" ? null : Math.round(Number(custom) * 100);
   const cents = typed ?? amount;
-  const ok = validTopup(cents);
-  const per100 = formatMoney(Math.max(1, tokenCostCents(100, rate)), "inr");
+  const ok = validTopup(cents, { minCents: billing.topup.min_cents, maxCents: billing.topup.max_cents });
+  // Rupees are quoted per 100 tokens (the small number is easier to feel); dollars per million.
+  const rateText = cur === "usd" ? `${formatMoney(rate, "usd")} per 1M tokens` : `100 tokens cost ${formatMoney(Math.max(1, tokenCostCents(100, rate)), "inr")}`;
 
   return (
     <Modal label="Add AI credit" onClose={onClose} size="sm">
@@ -29,7 +31,7 @@ export default function TopUpDialog({ billing, onClose }: { billing: MyBilling; 
         <div>
           <h2 className="m-0 text-[22px] font-semibold tracking-[-0.02em]">Add AI credit</h2>
           <p className="m-0 mt-1.5 text-[14.5px] text-ink-3">
-            Tokens come off your balance as you use AI: 100 tokens cost {per100}. AI pauses when the balance reaches zero.
+            Tokens come off your balance as you use AI: {rateText}. AI pauses when the balance reaches zero.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Amount">
@@ -46,12 +48,12 @@ export default function TopUpDialog({ billing, onClose }: { billing: MyBilling; 
                 setCustom("");
               }}
             >
-              {formatMoney(o, "inr")}
+              {formatMoney(o, cur)}
             </button>
           ))}
         </div>
         <label className="grid gap-1.5 text-[13.5px] text-ink-2">
-          <span>Or enter an amount in rupees</span>
+          <span>Or enter an amount in {cur === "usd" ? "dollars" : "rupees"}</span>
           <input
             className="h-10 rounded-ctl border bg-paper px-3 text-[15px] text-ink outline-none focus:border-ink"
             inputMode="numeric"
@@ -62,7 +64,7 @@ export default function TopUpDialog({ billing, onClose }: { billing: MyBilling; 
           />
         </label>
         <p id="topup-limits" className="m-0 text-[12.5px] text-ink-3">
-          From {formatMoney(billing.topup.min_cents, "inr")} to {formatMoney(billing.topup.max_cents, "inr")} at a time, in whole rupees.
+          From {formatMoney(billing.topup.min_cents, cur)} to {formatMoney(billing.topup.max_cents, cur)} at a time, in whole {cur === "usd" ? "dollars" : "rupees"}.
         </p>
         {err && (
           <p className="form-err m-0" role="alert">
@@ -74,7 +76,7 @@ export default function TopUpDialog({ billing, onClose }: { billing: MyBilling; 
             Cancel
           </button>
           <button className="btn btn-primary btn-sm" disabled={!ok || busy}>
-            {busy ? "Opening payment…" : `Pay ${ok ? formatMoney(cents, "inr") : ""}`.trim()}
+            {busy ? "Opening payment…" : `Pay ${ok ? formatMoney(cents, cur) : ""}`.trim()}
           </button>
         </div>
       </form>

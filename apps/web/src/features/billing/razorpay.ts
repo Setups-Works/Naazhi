@@ -11,6 +11,7 @@ import { useBillingActions } from "./queries";
 import { checkoutBrand } from "./checkoutBrand";
 
 /**
+ * Paying: Razorpay's checkout window in India, Stripe's hosted page everywhere else (the server decides from the person's country).
  * Razorpay's checkout window. The server creates the subscription and checks the result; this only opens the window (the script is
  * loaded from Razorpay when you first pay) and hands what it returns back to the server. The browser never decides a plan is paid.
  */
@@ -67,6 +68,11 @@ export function usePlanPicker(billing: MyBilling | undefined, onError: (m: strin
     setPaying(true);
     try {
       const s = await api.checkout(plan.id);
+      // Outside India the payment happens on Stripe's own page: go there, and Stripe sends the person back to Settings → Plan and billing.
+      if (s.provider === "stripe") {
+        if (!s.url) throw new Error("stripe page");
+        return void window.location.assign(s.url);
+      }
       await loadCheckout();
       if (!window.Razorpay) throw new Error("checkout script");
       const rz = new window.Razorpay({
@@ -107,6 +113,10 @@ export function useTopUp(onError: (m: string) => void, onDone?: () => void) {
     setPaying(true);
     try {
       const s = await api.topup(amountCents);
+      if (s.provider === "stripe") {
+        if (!s.url) throw new Error("stripe page");
+        return void window.location.assign(s.url);
+      }
       await loadCheckout();
       if (!window.Razorpay) throw new Error("checkout script");
       const rz = new window.Razorpay({

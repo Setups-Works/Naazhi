@@ -109,7 +109,7 @@ export const templates = {
       reason: "You received this because of a payment on your Naazhi account.",
     };
   },
-  /** A charge failed. Razorpay retries a few times on its own; this tells the person so they can fix the payment method. */
+  /** A charge failed. The payment provider (Razorpay or Stripe) retries a few times on its own; this tells the person so they can fix the payment method. */
   paymentFailed: (p: { url: string }): EmailContent => ({
     subject: "Your Naazhi payment didn’t go through",
     heading: "Your payment didn’t go through",

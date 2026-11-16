@@ -67,7 +67,7 @@ export function PricingScreen() {
       {err ? <Banner kind="error">{err}</Banner> : null}
       {b && !b.payments_connected ? <Banner kind="info">Payments aren’t switched on yet, so choosing a plan doesn’t charge you.</Banner> : null}
       {b?.plans.map((p) => (
-        <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={picker.busy} loading={picker.loadingId === p.id} autopay={needsCheckout(b, p)} trial={b.trial_available && p.trial_days > 0} onChoose={() => void picker.pick(p)} />
+        <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={picker.busy} loading={picker.loadingId === p.id} autopay={needsCheckout(b, p)} provider={b.provider} trial={b.trial_available && p.trial_days > 0} onChoose={() => void picker.pick(p)} />
       ))}
       {b && b.plans.length > 0 ? (
         <>

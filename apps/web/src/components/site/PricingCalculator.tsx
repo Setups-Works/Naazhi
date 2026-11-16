@@ -103,14 +103,14 @@ export default function PricingCalculator({ plans, minTopupCents }: { plans: Bil
                   {isBest && <span className="rounded-pill bg-green-bg px-3 py-1 text-[12px] font-medium text-green-fg">Best for this much use</span>}
                 </div>
                 <p className="m-0 font-serif text-[34px] font-semibold leading-none tracking-[-0.022em] text-fg">
-                  {p.id === "byo" ? "₹0" : formatBalance(e.monthlyCents, p.currency)}
+                  {p.id === "byo" ? formatBalance(0, p.currency) : formatBalance(e.monthlyCents, p.currency)}
                   <span className="ml-2 font-sans text-[14px] font-normal tracking-normal text-fg-subtle">
                     {p.id === "byo" ? "from Naazhi" : "a month"}
                   </span>
                 </p>
                 <p className="m-0 text-[14.5px] leading-relaxed text-fg-muted">
                   {p.id === "byo" && "You pay your AI provider directly, at their rates. Naazhi doesn’t count or charge for it."}
-                  {p.id === "payg" && `Top up credit (from ${formatMoney(minTopupCents)}) and tokens come off it as you use AI. Nothing is charged for a month you don’t use it.`}
+                  {p.id === "payg" && `Top up credit (from ${formatMoney(minTopupCents, p.currency)}) and tokens come off it as you use AI. Nothing is charged for a month you don’t use it.`}
                   {p.id === "subscription" &&
                     (e.covers
                       ? `Covers it: this would use ${e.allowanceUsedPct ?? 0}% of the ${formatTokens(p.included_tokens)}-token monthly allowance.`

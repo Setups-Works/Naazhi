@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import * as WebBrowser from "expo-web-browser";
 import { createBillingApi } from "@untitled/api-client";
 import { formatMoney, needsCheckout } from "@untitled/logic";
 import type { BillingPlan, MyBilling } from "@untitled/types";
@@ -26,6 +27,55 @@ const brand = () => ({
 
 type Failure = { code?: number; description?: string };
 
+/** Where the website sends the phone back to after Stripe's page (`/billing/return?app=1`); the in-app browser watches for it and closes. */
+const STRIPE_RETURN = "untitled://billing-return";
+
+/**
+ * Outside India the payment happens on Stripe's own page, opened in the phone's in-app browser. Returns the Stripe session id when the
+ * page sent the person back as paid, or null when they closed it or cancelled. The id is only a hint: the server asks Stripe itself.
+ */
+async function payOnStripe(url: string): Promise<string | null> {
+  const r = await WebBrowser.openAuthSessionAsync(url, STRIPE_RETURN);
+  if (r.type !== "success") return null;
+  return /[?&]session_id=(cs_[A-Za-z0-9_]+)/.exec(r.url)?.[1] ?? null;
+}
+
+type Sheet = NonNullable<Extract<Awaited<ReturnType<typeof billingApi.checkout>>, { sheet: object }>["sheet"]>;
+
+/**
+ * Stripe's native payment sheet (card, Apple Pay / Google Pay, saved cards) when the server offers it. Resolves true when the person paid
+ * (or saved their card for a free trial), false when they closed the sheet. The native module is not in Expo Go, so it is loaded when
+ * first needed and a missing module becomes a friendly message instead of a crash.
+ */
+async function payInSheet(sheet: Sheet): Promise<boolean> {
+  let sdk: typeof import("@stripe/stripe-react-native");
+  try {
+    sdk = await import("@stripe/stripe-react-native");
+  } catch {
+    throw new Error("Payments need the installed Naazhi app. Update the app, or pay on the website.");
+  }
+  await sdk.initStripe({ publishableKey: sheet.publishable_key, urlScheme: "untitled" });
+  const init = await sdk.initPaymentSheet({
+    merchantDisplayName: "Naazhi",
+    customerId: sheet.customer_id,
+    customerSessionClientSecret: sheet.customer_session_secret,
+    ...(sheet.intent === "setup" ? { setupIntentClientSecret: sheet.client_secret } : { paymentIntentClientSecret: sheet.client_secret }),
+    returnURL: STRIPE_RETURN,
+    allowsDelayedPaymentMethods: false,
+    primaryButtonLabel: sheet.intent === "setup" ? "Start free trial" : `Pay ${formatMoney(sheet.amount, "usd")}`,
+    appearance: { colors: { primary: paletteFor(false).brand } },
+  });
+  if (init.error) throw new Error("Couldn’t open the payment sheet. You haven’t been charged. Try again in a moment.");
+  const res = await sdk.presentPaymentSheet();
+  if (res.error) {
+    if (res.error.code === sdk.PaymentSheetError.Canceled) return false;
+    throw new Error("That payment didn’t go through. You haven’t been charged. Try again or use another card.");
+  }
+  return true;
+}
+
+const STRIPE_UNCONFIRMED = "Your payment may have gone through but we couldn’t confirm it yet. It will appear shortly; contact us if it doesn’t.";
+
 /** `pick(plan)` for every "Choose this plan" button: opens Razorpay for a paid plan, otherwise switches at once. */
 export function usePlanPicker(billing: MyBilling | undefined, onError: (message: string) => void) {
   const qc = useQueryClient();
@@ -37,7 +87,20 @@ export function usePlanPicker(billing: MyBilling | undefined, onError: (message:
     onError("");
     setPaying(plan.id);
     try {
-      const s = await billingApi.checkout(plan.id);
+      const s = await billingApi.checkout(plan.id, "app");
+      if (s.provider === "stripe" && s.sheet) {
+        const paid = await payInSheet(s.sheet);
+        if (!paid) return void (await qc.invalidateQueries({ queryKey: qk.billing }));
+        qc.setQueryData(qk.billing, await billingApi.confirmStripe({ subscriptionId: s.sheet.reference_id }).catch(() => { throw new Error(STRIPE_UNCONFIRMED); }));
+        return;
+      }
+      if (s.provider === "stripe") {
+        const sessionId = await payOnStripe(s.url);
+        // Closed without paying: just refresh in case the webhook already applied it.
+        if (!sessionId) return void (await qc.invalidateQueries({ queryKey: qk.billing }));
+        qc.setQueryData(qk.billing, await billingApi.confirmStripe({ sessionId }).catch(() => { throw new Error(STRIPE_UNCONFIRMED); }));
+        return;
+      }
       let sdk: typeof import("react-native-razorpay").default;
       try {
         sdk = (await import("react-native-razorpay")).default;
@@ -76,7 +139,19 @@ export function useTopUp(onError: (message: string) => void) {
     onError("");
     setPaying(true);
     try {
-      const s = await billingApi.topup(amountCents);
+      const s = await billingApi.topup(amountCents, "app");
+      if (s.provider === "stripe" && s.sheet) {
+        const paid = await payInSheet(s.sheet);
+        if (!paid) return void (await qc.invalidateQueries({ queryKey: qk.billing }));
+        qc.setQueryData(qk.billing, await billingApi.confirmStripe({ paymentIntentId: s.sheet.reference_id }).catch(() => { throw new Error(STRIPE_UNCONFIRMED); }));
+        return;
+      }
+      if (s.provider === "stripe") {
+        const sessionId = await payOnStripe(s.url);
+        if (!sessionId) return void (await qc.invalidateQueries({ queryKey: qk.billing }));
+        qc.setQueryData(qk.billing, await billingApi.confirmStripe({ sessionId }).catch(() => { throw new Error(STRIPE_UNCONFIRMED); }));
+        return;
+      }
       let sdk: typeof import("react-native-razorpay").default;
       try {
         sdk = (await import("react-native-razorpay")).default;

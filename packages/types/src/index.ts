@@ -188,6 +188,9 @@ export type BillingPlan = {
   included_tokens: number;
   /** What each million tokens cost on pay as you go, in the smallest unit of `currency`. */
   token_price_cents_per_million: number;
+  /** The same two prices in US cents, for people outside India (they pay in dollars through Stripe). 0 on a paid plan means "not offered in dollars yet". Edited in Admin → Plans. */
+  price_cents_usd: number;
+  token_price_cents_per_million_usd: number;
   features: string[];
   active: boolean;
   sort: number;
@@ -213,12 +216,22 @@ export type MyBilling = {
   byo: { provider: string | null; model: string | null; hint: string | null };
   /** False until a payment provider is connected: plan changes are recorded but nobody is charged. */
   payments_connected: boolean;
+  /** The person's country (ISO 3166-1 alpha-2), or null if they never chose one (billed as India, the way every existing account always was). */
+  country: string | null;
+  /** What they pay in, and through whom. From the country alone: India is rupees through Razorpay, everyone else dollars through Stripe. Plans, prices, credit and invoices are all in this currency. */
+  currency: "inr" | "usd";
+  provider: "razorpay" | "stripe";
+  /** Why the country can't be changed right now (an active paid subscription or unspent AI credit in the current currency); null when it can. */
+  country_locked: string | null;
   /** Prepaid AI credit left for Pay as you go, in paise. Can dip a little below zero after a long reply; AI pauses at zero. */
   credit_cents: number;
   /** Everything the person has ever added, in paise: the "of ₹X" next to the balance. */
   credit_total_cents: number;
   topup: { min_cents: number; max_cents: number; options_cents: number[] };
 };
+
+/** Which payment provider took a payment (an invoice, a refund). */
+export type PaymentProviderId = "razorpay" | "stripe";
 
 /** One invoice: a payment taken for a subscription period or an AI credit top-up. Amounts in paise. */
 export type BillingInvoice = {
@@ -229,6 +242,8 @@ export type BillingInvoice = {
   amount_cents: number;
   currency: string;
   status: "paid" | "partially_refunded" | "refunded";
+  /** Who took the payment: decides how it is refunded. */
+  provider: PaymentProviderId;
   /** Total returned so far, in paise. */
   refunded_cents: number;
   period_start: string | null;
@@ -236,11 +251,41 @@ export type BillingInvoice = {
   issued_at: string;
 };
 
+/** Stripe's hosted payment page for a subscription or a credit top-up: the browser (or the phone's in-app browser) goes to `url`. */
+export type StripeRedirect = { provider: "stripe"; url: string; sheet?: undefined };
+
+/**
+ * Stripe's native payment sheet in the phone app: what `initPaymentSheet` needs. `reference_id` is the Stripe subscription (or payment
+ * intent) to hand back to the server once the sheet reports success; the server then checks it with Stripe itself.
+ */
+export type StripeSheet = {
+  provider: "stripe";
+  url?: undefined;
+  sheet: {
+    publishable_key: string;
+    customer_id: string;
+    customer_session_secret: string;
+    /** "payment" charges now; "setup" saves a card for a subscription whose free trial starts first. */
+    intent: "payment" | "setup";
+    client_secret: string;
+    reference_id: string;
+    kind: "subscription" | "topup";
+    name: string;
+    amount: number;
+    trial_days: number;
+  };
+};
+
+/** Starting to pay answers with whichever the person's country needs: Razorpay's window details, or a Stripe page to go to. */
+export type CheckoutSession = RazorpayCheckout | StripeRedirect | StripeSheet;
+
 /** What the browser needs to open Razorpay for a credit top-up. */
-export type TopupSession = { key_id: string; order_id: string; amount: number; currency: string; name: string; description: string; prefill: { name: string; email: string; contact?: string } };
+export type RazorpayTopup = { provider: "razorpay"; key_id: string; order_id: string; amount: number; currency: string; name: string; description: string; prefill: { name: string; email: string; contact?: string } };
+export type TopupSession = RazorpayTopup | StripeRedirect | StripeSheet;
 
 /** What the browser needs to open Razorpay's checkout window for a subscription (the key id is public by design). */
-export type CheckoutSession = {
+export type RazorpayCheckout = {
+  provider: "razorpay";
   key_id: string;
   subscription_id: string;
   name: string;

@@ -14,8 +14,8 @@ export default function SubscribersTable({ rows, plans }: { rows: SubscriberRow[
   const adjust = async (r: SubscriberRow) => {
     const v = await prompt({
       title: `Adjust credit for ${r.name || r.email}`,
-      body: `Balance is ${formatBalance(r.credit_cents)}. Enter rupees to add (500) or remove (-200).`,
-      label: "Amount in rupees",
+      body: `Balance is ${formatBalance(r.credit_cents, r.credit_currency)}. Enter ${r.credit_currency === "usd" ? "dollars" : "rupees"} to add (500) or remove (-200).`,
+      label: `Amount in ${r.credit_currency === "usd" ? "dollars" : "rupees"}`,
       placeholder: "500",
       confirmLabel: "Apply",
       validate: (x) => (Number.isFinite(Number(x)) && Number(x) !== 0 && Math.abs(Number(x)) <= 1_000_000 ? null : "Enter a number such as 500 or -200."),
@@ -89,7 +89,7 @@ export default function SubscribersTable({ rows, plans }: { rows: SubscriberRow[
                 <td suppressHydrationWarning>{r.period_end ? new Date(r.period_end).toLocaleDateString() : "–"}</td>
                 <td>{formatTokens(r.tokens_30d)}</td>
                 <td>
-                  {formatBalance(r.credit_cents)}{" "}
+                  {formatBalance(r.credit_cents, r.credit_currency)}{" "}
                   <button type="button" className="cursor-pointer text-[13px] text-fg-muted underline" disabled={pending} onClick={() => adjust(r)}>
                     Adjust
                   </button>

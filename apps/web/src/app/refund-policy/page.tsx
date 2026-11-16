@@ -28,7 +28,7 @@ export default function Page() {
             title: "Cancelling",
             body: (
               <p>
-                Cancel in Settings → Plan and billing. A subscription keeps working until the end of the period you already paid for, then stops renewing. Pay as you go and
+                Cancel in Settings → Plan and billing, whichever country you pay from. A subscription keeps working until the end of the period you already paid for, then stops renewing. Pay as you go and
                 bring-your-own-key plans stop at once, and you are not charged again.
               </p>
             ),
@@ -63,6 +63,26 @@ export default function Page() {
             id: "time",
             title: "How long a refund takes",
             body: <p>Approved refunds go back to the original payment method within 5 to 7 working days. Your bank may take a little longer to show it.</p>,
+          },
+          {
+            id: "currency",
+            title: "Rupees, dollars and the payment provider",
+            body: (
+              <>
+                <p>
+                  Payments from India are in Indian rupees (INR) through Razorpay, and payments from every other country are in US dollars (USD) through Stripe. A refund is
+                  made in the currency you paid in, through the same provider, to the card or account you paid with.
+                </p>
+                <p>
+                  We refund the amount you were charged. If your bank converted dollars into your own currency, the amount that reaches you can differ slightly because of
+                  exchange rates and any fees your bank keeps; we cannot control or refund those. Tax that was charged on a payment is refunded with it.
+                </p>
+                <p>
+                  A pay as you go top-up can be refunded only up to the credit you have not yet used. To move to the other currency you need to cancel any subscription and
+                  use up or ask us to clear your credit first, so a payment is never left with the wrong provider.
+                </p>
+              </>
+            ),
           },
         ]}
       />

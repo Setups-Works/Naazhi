@@ -200,10 +200,10 @@ describe("AI credit (Pay as you go)", () => {
 describe("admin: credit settings and adjustments", () => {
   it("saves top-up limits that the billing state and validation then use, and restores the defaults", async () => {
     const before = await getTopupLimits();
-    await adminSaveSettings({ topup_min_cents: 10_000, topup_max_cents: 200_000, topup_options_cents: [50_000, 10_000, 10_000] });
+    await adminSaveSettings({ topup_min_cents: 10_000, topup_max_cents: 200_000, topup_options_cents: [50_000, 10_000, 10_000], topup_min_cents_usd: 500, topup_max_cents_usd: 50_000, topup_options_cents_usd: [1_000] });
     const b = await getMyBilling(user.a);
     expect(b.topup).toEqual({ min_cents: 10_000, max_cents: 200_000, options_cents: [10_000, 50_000] });
-    await adminSaveSettings({ topup_min_cents: before.minCents, topup_max_cents: before.maxCents, topup_options_cents: [...before.optionsCents] });
+    await adminSaveSettings({ topup_min_cents: before.minCents, topup_max_cents: before.maxCents, topup_options_cents: [...before.optionsCents], topup_min_cents_usd: 500, topup_max_cents_usd: 50_000, topup_options_cents_usd: [1_000, 2_500, 5_000, 10_000] });
     expect((await getTopupLimits()).minCents).toBe(before.minCents);
   });
 
@@ -241,8 +241,8 @@ describe("invoices", () => {
   });
 
   it("refuses two invoices for one payment id at the database", async () => {
-    await createInvoice({ userId: user.b, kind: "topup", description: "x", amountCents: 100, paymentId: pay(9), ref: null, periodStart: null, periodEnd: null, billToName: "", billToEmail: "" });
-    expect(await createInvoice({ userId: user.b, kind: "topup", description: "x", amountCents: 100, paymentId: pay(9), ref: null, periodStart: null, periodEnd: null, billToName: "", billToEmail: "" })).toBeNull();
+    await createInvoice({ userId: user.b, kind: "topup", description: "x", amountCents: 100, paymentId: pay(9), ref: null, periodStart: null, periodEnd: null, billToName: "", billToEmail: "", currency: "inr", provider: "razorpay" });
+    expect(await createInvoice({ userId: user.b, kind: "topup", description: "x", amountCents: 100, paymentId: pay(9), ref: null, periodStart: null, periodEnd: null, billToName: "", billToEmail: "", currency: "inr", provider: "razorpay" })).toBeNull();
   });
 });
 

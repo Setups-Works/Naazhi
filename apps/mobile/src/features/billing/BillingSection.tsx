@@ -1,5 +1,5 @@
 import { openWeb } from "@/lib/webSheet";
-import { BYO_PROVIDERS, byoProvider, formatBalance, formatMoney, formatTokens, needsCheckout, toDate } from "@untitled/logic";
+import { BYO_PROVIDERS, COUNTRIES, byoProvider, countryName, currencyName, formatBalance, formatMoney, formatTokens, needsCheckout, providerName, toDate } from "@untitled/logic";
 import type { MyBilling } from "@untitled/types";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -127,7 +127,7 @@ function KeyForm({ billing, onError }: { billing: MyBilling; onError: (m: string
 export function BillingSection() {
   const [err, setErr] = useState("");
   const q = useBilling();
-  const { cancel, resume } = useBillingActions(setErr);
+  const { cancel, resume, country } = useBillingActions(setErr);
   const { ask, dialog } = useConfirm();
   const b = q.data;
   const picker = usePlanPicker(b, setErr);
@@ -156,14 +156,27 @@ export function BillingSection() {
               <AppText variant="heading">{formatBalance(b.credit_cents, b.plan.currency)}</AppText>
               <AppText variant="small" color={Palette.fgSubtle}>{b.credit_cents > 0 ? "Tokens come off this balance as you use AI." : "AI is paused until you add credit."}</AppText>
               {b.topup.options_cents.map((o) => (
-                <Button key={o} title={`Add ${formatMoney(o, b.plan?.currency)}`} kind="secondary" disabled={credit.busy} onPress={() => void credit.topUp(o)} />
+                <Button key={o} title={`Add ${formatMoney(o, b.currency)}`} kind="secondary" disabled={credit.busy} onPress={() => void credit.topUp(o)} />
               ))}
             </View>
           ) : null}
-          {!b.payments_connected ? <Banner kind="info">Payments aren’t connected yet, so choosing or changing a plan doesn’t charge you.</Banner> : null}
+          <View>
+            {b.country_locked ? (
+              <>
+                <AppText variant="small" color={Palette.fgMuted}>Country</AppText>
+                <AppText variant="bodyStrong">{countryName(b.country) ?? "Not chosen"}</AppText>
+              </>
+            ) : (
+              <PickerField label="Country" value={b.country ?? ""} options={[...(b.country ? [] : [{ value: "", label: "Select country" }]), ...COUNTRIES.map(([value, label]) => ({ value, label }))]} onChange={(code) => code && country.mutate(code)} />
+            )}
+            <AppText variant="small" color={Palette.fgSubtle}>
+              {b.country ? "" : "Not chosen yet, so you’re billed as in India. "}Prices are in {currencyName(b.currency)} and payments go through {providerName(b.provider)}. {b.country_locked ?? "Tax is not added to these prices unless it says so at checkout."}
+            </AppText>
+          </View>
+          {!b.payments_connected ? <Banner kind="info">{`${providerName(b.provider)} payments aren’t available yet, so choosing or changing a plan doesn’t charge you.`}</Banner> : null}
 
           {b.plans.map((p) => (
-            <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={busy} loading={picker.loadingId === p.id} autopay={needsCheckout(b, p)} trial={b.trial_available && p.trial_days > 0} onChoose={() => void picker.pick(p)} />
+            <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={busy} loading={picker.loadingId === p.id} autopay={needsCheckout(b, p)} provider={b.provider} trial={b.trial_available && p.trial_days > 0} onChoose={() => void picker.pick(p)} />
           ))}
           <BillingHistory onError={setErr} />
           <Button title="Compare plans" kind="ghost" icon="arrow-up-right-from-square" onPress={() => router.push("/pricing")} />

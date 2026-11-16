@@ -1,4 +1,5 @@
 import type { BillingPlan, MyBilling } from "@untitled/types";
+import type { Currency } from "./countries";
 
 /** AI providers a person can bring their own key for. Fixed on purpose: the server only ever calls these addresses. */
 export const BYO_PROVIDERS = [
@@ -12,6 +13,27 @@ export const BYO_PROVIDERS = [
 
 export type ByoProviderId = (typeof BYO_PROVIDERS)[number]["id"];
 export const byoProvider = (id: string) => BYO_PROVIDERS.find((p) => p.id === id) ?? null;
+
+/**
+ * The plan as a person in `currency` sees it: the dollar price columns replace the rupee ones. Plans are stored with both prices and the
+ * server returns them already localized, so the pricing page, Settings and the phone app just print `price_cents` / `currency`.
+ * A plan with no dollar price set (0) on a paid rupee plan is not offered in dollars (see `plansFor`).
+ */
+export function localizePlan(plan: BillingPlan, currency: Currency): BillingPlan {
+  if (currency === "inr") return { ...plan, currency: "inr" };
+  return { ...plan, currency: "usd", price_cents: plan.price_cents_usd, token_price_cents_per_million: plan.token_price_cents_per_million_usd };
+}
+
+/**
+ * The plans to show a person paying in `currency`. A plan that charges in rupees but has no dollar price yet is left out in dollars
+ * (never shown as "Free" by mistake); a plan that is free in rupees (Bring your own key) stays.
+ */
+export function plansFor(plans: BillingPlan[], currency: Currency): BillingPlan[] {
+  if (currency === "inr") return plans.map((p) => localizePlan(p, "inr"));
+  return plans.filter((p) => !(charges(p) && !charges({ price_cents: p.price_cents_usd, token_price_cents_per_million: p.token_price_cents_per_million_usd }))).map((p) => localizePlan(p, "usd"));
+}
+
+const charges = (p: Pick<BillingPlan, "price_cents" | "token_price_cents_per_million">) => p.price_cents > 0 || p.token_price_cents_per_million > 0;
 
 /** The number format each currency is written in; anything else uses US formatting. */
 const LOCALE: Record<string, string> = { inr: "en-IN" };
@@ -102,6 +124,15 @@ export const needsCheckout = (b: Pick<MyBilling, "payments_connected" | "plan" |
  * on the server.
  */
 export const TOPUP = { minCents: 5_000, maxCents: 1_000_000, optionsCents: [10_000, 25_000, 50_000, 100_000] } as const;
+
+/** The same defaults in dollars (cents): $5 minimum, $500 maximum. */
+export const TOPUP_USD = { minCents: 500, maxCents: 50_000, optionsCents: [1_000, 2_500, 5_000, 10_000] } as const;
+
+/** The built-in top-up limits for a currency, used until an admin sets their own. */
+export const defaultTopup = (currency: Currency): TopupLimits => (currency === "usd" ? { ...TOPUP_USD } : { ...TOPUP });
+
+/** "$5 to $500" / "₹50 to ₹10,000": the allowed top-up range as words, in the person's currency. */
+export const topupRange = (l: Pick<TopupLimits, "minCents" | "maxCents">, currency: Currency) => `${formatMoney(l.minCents, currency)} to ${formatMoney(l.maxCents, currency)}`;
 
 export type TopupLimits = { minCents: number; maxCents: number; optionsCents: readonly number[] };
 

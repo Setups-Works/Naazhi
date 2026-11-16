@@ -3,6 +3,21 @@ import { BYO_PROVIDERS } from "@untitled/logic/billing";
 
 export const planIdInput = z.object({ planId: z.enum(["subscription", "payg", "byo"]) });
 
+/** Starting to pay. `client` says where to send the person back to after Stripe's page: the website, or the phone app. */
+export const checkoutInput = planIdInput.extend({ client: z.enum(["web", "app"]).default("web") });
+
+/** Back from Stripe: a Checkout session id (the page) or a subscription / payment intent id (the phone's sheet); the server checks it with Stripe itself. */
+export const stripeConfirmInput = z
+  .object({
+    sessionId: z.string().trim().regex(/^cs_[A-Za-z0-9_]+$/, "That isn’t a Stripe session.").max(200).optional(),
+    subscriptionId: z.string().trim().regex(/^sub_[A-Za-z0-9_]+$/, "That isn’t a Stripe subscription.").max(200).optional(),
+    paymentIntentId: z.string().trim().regex(/^pi_[A-Za-z0-9_]+$/, "That isn’t a Stripe payment.").max(200).optional(),
+  })
+  .refine((v) => [v.sessionId, v.subscriptionId, v.paymentIntentId].filter(Boolean).length === 1, "Send exactly one id.");
+
+/** The person's country, an ISO 3166-1 alpha-2 code from the shared list. */
+export const countryInput = z.object({ country: z.string().trim().length(2, "Choose your country from the list.").transform((v) => v.toUpperCase()) });
+
 const providerIds = BYO_PROVIDERS.map((p) => p.id) as [string, ...string[]];
 
 export const byoKeyInput = z.object({
@@ -21,7 +36,10 @@ export const planPatchInput = z.object({
   name: z.string().trim().min(1, "A plan needs a name.").max(60).optional(),
   tagline: z.string().trim().max(200).optional(),
   price_cents: z.number().int().min(0).max(10_000_000).optional(),
-  currency: z.literal("inr").optional(), // rupees only
+  currency: z.literal("inr").optional(), // a plan's base price is in rupees; the dollar price is its own field below
+  /** The dollar price (US cents) people outside India pay. 0 on a paid plan = not offered in dollars yet. */
+  price_cents_usd: z.number().int().min(0).max(10_000_000).optional(),
+  token_price_cents_per_million_usd: z.number().int().min(0).max(100_000_000).optional(),
   interval: z.enum(["month", "year", "none"]).optional(),
   included_tokens: z.number().int().min(0).max(1_000_000_000_000).optional(),
   token_price_cents_per_million: z.number().int().min(0).max(100_000_000).optional(),
@@ -39,25 +57,43 @@ export const checkoutConfirmInput = z.object({
   signature: z.string().trim().min(1).max(200),
 });
 
-/** A top-up in paise (whole rupees); the service checks the limits. */
-export const topupInput = z.object({ amountCents: z.number().int().min(100).max(100_000_000) });
+/** A top-up in paise or cents (whole rupees or dollars); the service checks the limits in the person's own currency. */
+export const topupInput = z.object({ amountCents: z.number().int().min(100).max(100_000_000), client: z.enum(["web", "app"]).default("web") });
 export const topupConfirmInput = z.object({
   paymentId: z.string().trim().min(1).max(100),
   orderId: z.string().trim().min(1).max(100),
   signature: z.string().trim().min(1).max(200),
 });
 
-/** The top-up limits an admin may set: whole rupees, a sensible range, and one to six quick amounts inside it. */
+/** The top-up limits an admin may set, in rupees and in dollars: whole units, a sensible range, and one to six quick amounts inside it. */
+const limitsFor = (unit: string, minFloor: number) =>
+  z
+    .object({
+      min: z.number().int().min(minFloor, `The minimum is at least ${unit === "$" ? "$1" : "₹1"}.`).max(10_000_000).refine((v) => v % 100 === 0, "Use whole amounts."),
+      max: z.number().int().min(100).max(100_000_000).refine((v) => v % 100 === 0, "Use whole amounts."),
+      options: z.array(z.number().int().refine((v) => v % 100 === 0, "Use whole amounts.")).min(1, "Add at least one quick amount.").max(6, "At most six quick amounts."),
+    })
+    .superRefine((v, ctx) => {
+      if (v.max < v.min) ctx.addIssue({ code: "custom", message: "The maximum can’t be below the minimum." });
+      if (v.options.some((o) => o < v.min || o > v.max)) ctx.addIssue({ code: "custom", message: "Every quick amount must be between the minimum and the maximum." });
+    });
 export const billingSettingsInput = z
   .object({
-    topup_min_cents: z.number().int().min(100, "The minimum is at least ₹1.").max(10_000_000).refine((v) => v % 100 === 0, "Use whole rupees."),
-    topup_max_cents: z.number().int().min(100).max(100_000_000).refine((v) => v % 100 === 0, "Use whole rupees."),
-    topup_options_cents: z.array(z.number().int().refine((v) => v % 100 === 0, "Use whole rupees.")).min(1, "Add at least one quick amount.").max(6, "At most six quick amounts."),
+    topup_min_cents: z.number().int(),
+    topup_max_cents: z.number().int(),
+    topup_options_cents: z.array(z.number().int()),
+    topup_min_cents_usd: z.number().int(),
+    topup_max_cents_usd: z.number().int(),
+    topup_options_cents_usd: z.array(z.number().int()),
   })
   .superRefine((v, ctx) => {
-    if (v.topup_max_cents < v.topup_min_cents) ctx.addIssue({ code: "custom", message: "The maximum can’t be below the minimum." });
-    if (v.topup_options_cents.some((o) => o < v.topup_min_cents || o > v.topup_max_cents))
-      ctx.addIssue({ code: "custom", message: "Every quick amount must be between the minimum and the maximum." });
+    for (const [unit, min, max, options, prefix] of [
+      ["₹", v.topup_min_cents, v.topup_max_cents, v.topup_options_cents, "topup_"],
+      ["$", v.topup_min_cents_usd, v.topup_max_cents_usd, v.topup_options_cents_usd, "topup_usd_"],
+    ] as const) {
+      const r = limitsFor(unit, 100).safeParse({ min, max, options });
+      if (!r.success) for (const i of r.error.issues) ctx.addIssue({ code: "custom", message: `${unit === "$" ? "Dollars: " : "Rupees: "}${i.message}`, path: [prefix] });
+    }
   });
 
 /** An admin adjusting someone's AI credit, in paise (positive adds, negative takes away). */

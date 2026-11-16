@@ -63,7 +63,7 @@ describe("key vault", () => {
 });
 
 describe("admin credit settings", () => {
-  const ok = { topup_min_cents: 5_000, topup_max_cents: 1_000_000, topup_options_cents: [10_000, 50_000] };
+  const ok = { topup_min_cents: 5_000, topup_max_cents: 1_000_000, topup_options_cents: [10_000, 50_000], topup_min_cents_usd: 500, topup_max_cents_usd: 50_000, topup_options_cents_usd: [1_000, 5_000] };
   it("accepts whole-rupee limits with quick amounts inside them", () => {
     expect(billingSettingsInput.safeParse(ok).success).toBe(true);
   });

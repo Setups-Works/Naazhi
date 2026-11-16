@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { headers } from "next/headers";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faBan, faCheck, faCoins, faKey, faWallet } from "@fortawesome/free-solid-svg-icons";
 import type { BillingPlan } from "@untitled/types";
 import { formatMoney, formatTokens, priceLine, trialLine } from "@untitled/logic/billing";
+import { billingRegion, countryFromHeaders, currencyName, providerName } from "@untitled/logic/countries";
 import AuthLink from "../../components/auth/AuthLink";
 import { CompareTable } from "../../components/site/blocks";
 import PricingCalculator from "../../components/site/PricingCalculator";
@@ -18,7 +21,7 @@ import { getTopupLimits, listPublicPlans, paymentsLive } from "../../server/serv
 export const dynamic = "force-dynamic";
 
 const TITLE = "Pricing — Naazhi";
-const DESCRIPTION = "One workspace, three ways to pay for AI in rupees: an autopay subscription, prepaid pay as you go credit, or your own API key. Work out what you would pay with the calculator. Change or cancel any time.";
+const DESCRIPTION = "One workspace, three ways to pay for AI, in rupees in India or US dollars elsewhere: a subscription, prepaid pay as you go credit, or your own API key. Work out what you would pay with the calculator. Change or cancel any time.";
 export const metadata: Metadata = pageMeta({ title: TITLE, description: DESCRIPTION, path: "/pricing", ownImage: true });
 
 function Plan({ plan, emphasis = false }: { plan: BillingPlan; emphasis?: boolean }) {
@@ -59,10 +62,21 @@ const aiLine = (p: BillingPlan) =>
       ? "Billed by use"
       : "Your own provider";
 
-export default async function Page() {
-  const plans = await listPublicPlans().catch(() => [] as BillingPlan[]);
-  const live = paymentsLive();
-  const limits = await getTopupLimits();
+/**
+ * Prices are shown for one region at a time: India (rupees, Razorpay) or the rest of the world (US dollars, Stripe). `?region=in|intl`
+ * picks one; otherwise the visitor's country from the CDN header decides, and India is the default. Signed-in people see their own
+ * currency in Settings; this public page only needs to tell a visitor what they would pay.
+ */
+export default async function Page({ searchParams }: { searchParams: Promise<{ region?: string }> }) {
+  const q = await searchParams;
+  const h = await headers();
+  const guess = countryFromHeaders((name) => h.get(name));
+  const region = q.region === "intl" ? billingRegion("US") : q.region === "in" ? billingRegion("IN") : billingRegion(guess);
+  const { currency, provider } = region;
+  const plans = await listPublicPlans(currency).catch(() => [] as BillingPlan[]);
+  const live = paymentsLive(provider);
+  const limits = await getTopupLimits(currency);
+  const unit = currency === "usd" ? "dollars" : "rupees";
 
   const faqs: [string, string][] = [
     [
@@ -75,7 +89,7 @@ export default async function Page() {
     ],
     [
       "How does Pay as you go credit work?",
-      `You top up in whole rupees, from ${formatMoney(limits.minCents)} to ${formatMoney(limits.maxCents)} at a time, and every AI reply takes its token cost off your balance. When the balance reaches zero, AI pauses until you top up again; your notes, tasks and journal are unaffected. The rate is on the plan card above. Refunds follow our refund policy.`,
+      `You top up in whole ${unit}, from ${formatMoney(limits.minCents, currency)} to ${formatMoney(limits.maxCents, currency)} at a time, and every AI reply takes its token cost off your balance. When the balance reaches zero, AI pauses until you top up again; your notes, tasks and journal are unaffected. The rate is on the plan card above. Refunds follow our refund policy.`,
     ],
     [
       "Can I use my ChatGPT subscription?",
@@ -88,8 +102,14 @@ export default async function Page() {
     [
       live ? "How do I pay?" : "Is anyone being charged yet?",
       live
-        ? "Subscribing sets up autopay through Razorpay (UPI AutoPay, cards and more): you approve it once and each month’s charge happens on its own. Cancel any time in Settings and it stops at the end of the month you paid for."
+        ? provider === "stripe"
+          ? "Subscribing sets up autopay through Stripe: you add a card once on Stripe’s secure payment page and each month’s charge then happens on its own. Cancel any time in Settings and it stops at the end of the month you paid for. Taxes, where they apply, are shown at checkout."
+          : "Subscribing sets up autopay through Razorpay (UPI AutoPay, cards and more): you approve it once and each month’s charge happens on its own. Cancel any time in Settings and it stops at the end of the month you paid for."
         : "Not yet. Plans can be chosen in Settings, but payments aren’t switched on, so nobody is charged until we say so on this page.",
+    ],
+    [
+      "Which currency do I pay in?",
+      "It depends on the country you choose when you set up: India pays in rupees through Razorpay, and every other country pays in US dollars through Stripe. You can change your country in Settings while you have no active subscription or unspent credit. Refunds go back to the original payment method through the same provider.",
     ],
     ["Can I use the workspace without AI at all?", "Yes. AI-free mode is always available, and the workspace works the same either way."],
   ];
@@ -107,12 +127,23 @@ export default async function Page() {
         eyebrow="Pricing"
         title="Pick how you pay"
         quiet="for AI."
-        lead="Your workspace is one thing; the AI behind it is another. Subscribe with autopay, top up credit and pay for what you use, or bring your own key. Everything is in rupees, and you can change or cancel any time."
+        lead="Your workspace is one thing; the AI behind it is another. Subscribe with autopay, top up credit and pay for what you use, or bring your own key. Prices are in rupees in India and US dollars everywhere else, and you can change or cancel any time."
       >
         <AuthLink arrow className={buttonClass("primary")} />
       </PageHero>
 
       <Section tight>
+        <nav aria-label="Region" className="mb-6 flex flex-wrap items-center justify-center gap-2 text-[14px]">
+          <span className="text-fg-subtle">Prices for</span>
+          {(["in", "intl"] as const).map((r) => {
+            const on = (r === "in") === (currency === "inr");
+            return (
+              <Link key={r} href={`/pricing?region=${r}`} scroll={false} aria-current={on ? "true" : undefined} className={`rounded-pill border px-3.5 py-1.5 ${on ? "border-fg bg-fill-dark text-on-dark" : "text-fg-muted hover:text-fg"}`}>
+                {r === "in" ? "India (₹)" : "Everywhere else ($)"}
+              </Link>
+            );
+          })}
+        </nav>
         {plans.length > 0 ? (
           <Reveal stagger={0.14} className="grid gap-5 md:grid-cols-3">
             {plans.map((p, i) => (
@@ -122,16 +153,16 @@ export default async function Page() {
             ))}
           </Reveal>
         ) : (
-          <p className="text-center text-[15px] text-fg-subtle">Plans are being updated. Check back in a moment.</p>
+          <p className="text-center text-[15px] text-fg-subtle">{currency === "usd" ? "Dollar prices are being set up. Check back soon, or pick India to see rupee prices." : "Plans are being updated. Check back in a moment."}</p>
         )}
         {live && plans.length > 0 && (
           <p className="mt-5 text-center text-[13.5px] text-fg-subtle">
-            Paid in rupees through Razorpay: UPI AutoPay, cards and more. Pay as you go credit can be topped up from {formatMoney(limits.minCents)}.
+            {provider === "stripe" ? "Paid in US dollars by card through Stripe autopay. Taxes, where they apply, are shown at checkout." : "Paid in rupees through Razorpay: UPI AutoPay, cards and more."} Pay as you go credit can be topped up from {formatMoney(limits.minCents, currency)}.
           </p>
         )}
         {!live && plans.length > 0 && (
           <p className="mt-5 text-center text-[13.5px] text-fg-subtle">
-            Payments aren’t switched on yet, so choosing a plan doesn’t charge you.
+            {providerName(provider)} payments ({currencyName(currency)}) aren’t switched on yet, so choosing a plan doesn’t charge you.
           </p>
         )}
       </Section>

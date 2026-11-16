@@ -266,7 +266,17 @@ export async function getUserDetail(id: string): Promise<{ ok: true; detail: Det
 }
 
 /* ---------- announcements ---------- */
-export async function createAnnouncement(message: string, tone: string): Promise<Result> {
+/** A link on an announcement: a path on this site or an https address, with a short label. Both or neither. */
+function cleanLink(label: unknown, href: unknown): { ok: true; label: string | null; href: string | null } | { ok: false; error: string } {
+  const l = String(label ?? "").trim().slice(0, 40);
+  const h = String(href ?? "").trim().slice(0, 300);
+  if (!l && !h) return { ok: true, label: null, href: null };
+  if (!l || !h) return { ok: false, error: "Give the link both a label and an address, or leave both empty." };
+  if (!/^\/[^/\\]/.test(h) && !/^https:\/\//.test(h)) return { ok: false, error: "A link must be a path on this site (like /payments) or start with https://." };
+  return { ok: true, label: l, href: h };
+}
+
+export async function createAnnouncement(message: string, tone: string, placement: string = "app", linkLabel: string = "", linkHref: string = ""): Promise<Result> {
   try {
     const me = await assertAdmin();
     const m = String(message || "")
@@ -274,9 +284,13 @@ export async function createAnnouncement(message: string, tone: string): Promise
       .slice(0, 500);
     if (!m) return { ok: false, error: "Write a message first." };
     if (!["info", "success", "warning"].includes(tone)) return { ok: false, error: "Unknown tone." };
-    const { error } = await adminDb().from("announcements").insert({ message: m, tone, active: true });
+    if (!["app", "site", "both"].includes(placement)) return { ok: false, error: "Unknown place." };
+    const link = cleanLink(linkLabel, linkHref);
+    if (!link.ok) return link;
+    const { error } = await adminDb().from("announcements").insert({ message: m, tone, active: true, placement, link_label: link.label, link_href: link.href });
     if (error) return { ok: false, error: error.message };
-    await audit(me, "announcement.create", m.slice(0, 60), { tone });
+    await audit(me, "announcement.create", m.slice(0, 60), { tone, placement });
+    revalidatePath("/", "layout");
     revalidatePath("/admin", "layout");
     return { ok: true };
   } catch {

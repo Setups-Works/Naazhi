@@ -100,11 +100,10 @@ const lockup = (fs_, { cream = false, color } = {}) =>
 
 const swatch = (name, hex, { note = "", detail = true, h = 150 } = {}) => {
   const rgb = hex2rgb(hex), fg = readableOn(hex);
-  return `<div class="sw"><div class="chip" style="background:${hex};color:${fg};height:${h}px"><b>${name}</b><span>${hex.toUpperCase()}</span></div>${
-    detail
+  return `<div class="sw"><div class="chip" style="background:${hex};color:${fg};height:${h}px"><b>${name}</b><span>${hex.toUpperCase()}</span></div>${detail
       ? `<dl><dt>HEX</dt><dd>${hex.toUpperCase()}</dd><dt>RGB</dt><dd>${rgb.join(", ")}</dd><dt>CMYK</dt><dd>${rgb2cmyk(rgb)}</dd><dt>HSL</dt><dd>${rgb2hsl(rgb)}</dd></dl>`
       : ""
-  }${note ? `<p class="n">${note}</p>` : ""}</div>`;
+    }${note ? `<p class="n">${note}</p>` : ""}</div>`;
 };
 const cards = (items, cols = 3, cls = "") =>
   `<div class="cards c${cols} ${cls}">${items
@@ -232,10 +231,10 @@ ${cards([
 add(1, "Customer Personas", `
 <div class="cards c3 personas">
 ${[
-  ["Priya, 29", "Product designer, Chennai", "Notes in one app, tasks in another, a journal on paper.", "Wants one calm place on her phone and laptop. Writes in English and Tamil.", "faPenNib", 0],
-  ["Arun, 34", "Freelance developer", "Uses several AI tools and pastes client notes into them.", "Wants AI he controls: his own key, or none. Cares where data lives.", "faCode", 1],
-  ["Meera, 41", "Teacher and parent", "Plans lessons, keeps a private journal, shares a family journal.", "Wants it simple, private and AI-free if she chooses.", "faChalkboardUser", 4],
-].map(([n, r, pain, want, icon, t]) => `<div class="card persona" style="--tb:${TINTS[t][1]};--tf:${TINTS[t][2]}"><span class="av">${ic(icon, 26)}</span><h4>${n}</h4><small>${r}</small><p><b>Today</b> ${pain}</p><p><b>Needs</b> ${want}</p></div>`).join("")}
+    ["Priya, 29", "Product designer, Chennai", "Notes in one app, tasks in another, a journal on paper.", "Wants one calm place on her phone and laptop. Writes in English and Tamil.", "faPenNib", 0],
+    ["Arun, 34", "Freelance developer", "Uses several AI tools and pastes client notes into them.", "Wants AI he controls: his own key, or none. Cares where data lives.", "faCode", 1],
+    ["Meera, 41", "Teacher and parent", "Plans lessons, keeps a private journal, shares a family journal.", "Wants it simple, private and AI-free if she chooses.", "faChalkboardUser", 4],
+  ].map(([n, r, pain, want, icon, t]) => `<div class="card persona" style="--tb:${TINTS[t][1]};--tf:${TINTS[t][2]}"><span class="av">${ic(icon, 26)}</span><h4>${n}</h4><small>${r}</small><p><b>Today</b> ${pain}</p><p><b>Needs</b> ${want}</p></div>`).join("")}
 </div>
 <p class="note">Draft personas, not research findings. Replace with interview-based personas when available.</p>`);
 
@@ -284,12 +283,12 @@ ${cards([
 add(2, "Primary Logo", `
 <div class="stage cream">${lockup(120)}</div>
 ${two(`<p>The primary logo is the <b>lockup</b>: the mark on the left and the word <b>Naazhi</b> beside it, vertically centred. Use it in headers, footers, emails and covers.</p>`,
-`<p class="n">Wordmark: Instrument Serif 400, tracking −0.02em, ink colour. Mark height 1.3× the wordmark size. Gap 0.35×. Never stack them in the product UI.</p>`)}`);
+  `<p class="n">Wordmark: Instrument Serif 400, tracking −0.02em, ink colour. Mark height 1.3× the wordmark size. Gap 0.35×. Never stack them in the product UI.</p>`)}`);
 
 add(2, "Secondary Logo", `
 <div class="two"><div class="stage cream sm"><span class="wm" style="font-size:110px">Naazhi</span></div><div class="stage cream sm">${mk(200)}</div></div>
 ${two(`<p><b>Wordmark alone</b>: when the mark already appears nearby, for example a hero under a top bar that carries the lockup.</p>`,
-`<p><b>Mark alone</b>: avatars, favicons, app icons and tight spaces. At least 16 px on screen.</p>`)}`);
+  `<p><b>Mark alone</b>: avatars, favicons, app icons and tight spaces. At least 16 px on screen.</p>`)}`);
 
 add(2, "Logo Variations", `
 <div class="grid3">
@@ -303,12 +302,12 @@ add(2, "Logo Variations", `
 
 add(2, "Brand Symbol / Icon", `
 ${two(`<div class="stage cream tall"><img src="${L("naazhi-mark-3000.png")}" style="height:420px" alt=""></div>`,
-`<h3 class="serif">One line, three ideas</h3>
+  `<h3 class="serif">One line, three ideas</h3>
 ${cards([
-  { icon: "faNoteSticky", h: "The bubble with three lines", p: "Notes, journal and chat. The things you write." },
-  { icon: "faWandMagicSparkles", h: "The star", p: "The AI layer: present, small, optional." },
-  { icon: "faPencil", h: "Single weight, round ends", p: "Calm and personal, not corporate." },
-], 1)}`)}`);
+    { icon: "faNoteSticky", h: "The bubble with three lines", p: "Notes, journal and chat. The things you write." },
+    { icon: "faWandMagicSparkles", h: "The star", p: "The AI layer: present, small, optional." },
+    { icon: "faPencil", h: "Single weight, round ends", p: "Calm and personal, not corporate." },
+  ], 1)}`)}`);
 
 add(2, "Logo Construction", `
 ${two(
@@ -376,15 +375,15 @@ ${dos(
 add(2, "Incorrect Logo Usage", `
 <div class="grid4 bad">
 ${[
-  ["Don’t recolour", "filter:hue-rotate(160deg) saturate(2)"],
-  ["Don’t stretch", "transform:scaleX(1.6)"],
-  ["Don’t rotate", "transform:rotate(25deg)"],
-  ["Don’t add effects", "filter:drop-shadow(8px 8px 6px rgba(0,0,0,.5))"],
-  ["Don’t outline", "filter:drop-shadow(2px 0 0 #c13d3d) drop-shadow(-2px 0 0 #c13d3d) drop-shadow(0 2px 0 #c13d3d) drop-shadow(0 -2px 0 #c13d3d)"],
-  ["Don’t crop", "clip-path:inset(0 0 45% 0)"],
-  ["Don’t use low contrast", "opacity:.85;background:#3c7a63"],
-  ["Don’t put it on photos", "background:repeating-linear-gradient(45deg,#c9a98a 0 10px,#7d9b7a 10px 22px,#e3d0b5 22px 30px)"],
-].map(([t, st]) => `<div class="stage cream sm x"><div class="bx" style="${st.startsWith("background") || st.startsWith("opacity") ? st : ""}"><img class="mk" src="${MARK}" style="height:90px;${st.startsWith("background") || st.startsWith("opacity") ? "" : st}" alt=""></div><small>${ic("faXmark", 12, C.critical)} ${t}</small></div>`).join("")}
+    ["Don’t recolour", "filter:hue-rotate(160deg) saturate(2)"],
+    ["Don’t stretch", "transform:scaleX(1.6)"],
+    ["Don’t rotate", "transform:rotate(25deg)"],
+    ["Don’t add effects", "filter:drop-shadow(8px 8px 6px rgba(0,0,0,.5))"],
+    ["Don’t outline", "filter:drop-shadow(2px 0 0 #c13d3d) drop-shadow(-2px 0 0 #c13d3d) drop-shadow(0 2px 0 #c13d3d) drop-shadow(0 -2px 0 #c13d3d)"],
+    ["Don’t crop", "clip-path:inset(0 0 45% 0)"],
+    ["Don’t use low contrast", "opacity:.85;background:#3c7a63"],
+    ["Don’t put it on photos", "background:repeating-linear-gradient(45deg,#c9a98a 0 10px,#7d9b7a 10px 22px,#e3d0b5 22px 30px)"],
+  ].map(([t, st]) => `<div class="stage cream sm x"><div class="bx" style="${st.startsWith("background") || st.startsWith("opacity") ? st : ""}"><img class="mk" src="${MARK}" style="height:90px;${st.startsWith("background") || st.startsWith("opacity") ? "" : st}" alt=""></div><small>${ic("faXmark", 12, C.critical)} ${t}</small></div>`).join("")}
 </div>
 <p class="note">Also never: write the name in all caps or lower case at the start of a sentence, bounce or animate the strokes apart, or use the retired mascot and ghost artwork.</p>`);
 
@@ -424,31 +423,31 @@ ${[["Ink text", C.ink], ["Text muted", C.fgMuted], ["Text subtle", C.fgSubtle], 
 add(3, "Color Codes (HEX, RGB, CMYK, HSL)", `
 <table class="tbl codes"><thead><tr><th>Colour</th><th>Token</th><th>HEX</th><th>RGB</th><th>CMYK*</th><th>HSL</th></tr></thead><tbody>
 ${[
-  ["White", "--surface / --raised", C.white],
-  ["Paper", "--page / --paper", C.paper],
-  ["Ink", "--fg / --ink", C.ink],
-  ["Hairline", "--line", C.line],
-  ["Hairline strong", "--line-strong", C.lineStrong],
-  ["Coral", "--coral", C.coral],
-  ["Critical", "--critical", C.critical],
-  ["Success", "--success", C.success],
-  ["Overdue", "--overdue", C.overdue],
-  ["Logo green", "logo files only", C.logoGreen],
-  ["Logo cream", "logo files only", C.logoCream],
-].map(([n, tk, h]) => { const r = hex2rgb(h); return `<tr><td><i class="dot" style="background:${h}"></i>${n}</td><td><code>${tk}</code></td><td>${h.toUpperCase()}</td><td>${r.join(", ")}</td><td>${rgb2cmyk(r)}</td><td>${rgb2hsl(r)}</td></tr>`; }).join("")}
+    ["White", "--surface / --raised", C.white],
+    ["Paper", "--page / --paper", C.paper],
+    ["Ink", "--fg / --ink", C.ink],
+    ["Hairline", "--line", C.line],
+    ["Hairline strong", "--line-strong", C.lineStrong],
+    ["Coral", "--coral", C.coral],
+    ["Critical", "--critical", C.critical],
+    ["Success", "--success", C.success],
+    ["Overdue", "--overdue", C.overdue],
+    ["Logo green", "logo files only", C.logoGreen],
+    ["Logo cream", "logo files only", C.logoCream],
+  ].map(([n, tk, h]) => { const r = hex2rgb(h); return `<tr><td><i class="dot" style="background:${h}"></i>${n}</td><td><code>${tk}</code></td><td>${h.toUpperCase()}</td><td>${r.join(", ")}</td><td>${rgb2cmyk(r)}</td><td>${rgb2hsl(r)}</td></tr>`; }).join("")}
 </tbody></table>
 <p class="note">*CMYK values are straight conversions for reference. Print a proof and match by eye before a production run.</p>`);
 
 add(3, "Color Combinations", `
 <div class="combos">
 ${[
-  [C.paper, C.ink, C.ink, "Paper · ink", "Default page canvas"],
-  [C.white, C.ink, C.ink, "White · ink", "Flat cards & dialogs"],
-  [C.dark, C.onDark, C.fgSubtle, "Dark · on-dark", "Dark panels, primary button"],
-  [C.paper, C.ink, C.coral, "Paper · coral", "Warm accent & selection"],
-  ["#f0f5f0", "#2d8a5e", "#2d8a5e", "Success tint", "Tasks done, positive status"],
-  ["#f5ebe8", "#9a5a4a", "#9a5a4a", "Clay tint", "Errors, warnings, alerts"],
-].map(([bg, fg, ac, t, u]) => `<div class="combo" style="background:${bg};color:${fg}"><b style="color:${ac}">Aa</b><span>${t}</span><small>${u}</small></div>`).join("")}
+    [C.paper, C.ink, C.ink, "Paper · ink", "Default page canvas"],
+    [C.white, C.ink, C.ink, "White · ink", "Flat cards & dialogs"],
+    [C.dark, C.onDark, C.fgSubtle, "Dark · on-dark", "Dark panels, primary button"],
+    [C.paper, C.ink, C.coral, "Paper · coral", "Warm accent & selection"],
+    ["#f0f5f0", "#2d8a5e", "#2d8a5e", "Success tint", "Tasks done, positive status"],
+    ["#f5ebe8", "#9a5a4a", "#9a5a4a", "Clay tint", "Errors, warnings, alerts"],
+  ].map(([bg, fg, ac, t, u]) => `<div class="combo" style="background:${bg};color:${fg}"><b style="color:${ac}">Aa</b><span>${t}</span><small>${u}</small></div>`).join("")}
 </div>`);
 
 add(3, "Color Usage Ratio", `
@@ -578,7 +577,7 @@ add(5, "Shapes & Geometry", `
 ${[["r1", 8], ["r2", 10], ["r3", 12], ["r4", 16], ["ctl", 8]].map(([n, r]) => `<div><span style="border-radius:${r}px"></span><b>${n === "ctl" ? "ctl" : "r" + n.slice(1)}</b><small>${r + " px"}</small></div>`).join("")}
 </div>
 ${two(`<p>Cards use <b>r3 · 12 px</b>, dialogs <b>r4 · 16 px</b>, buttons <b>8 px (rounded-ctl)</b>. Small chips use 6 px. Controls are rectangular with subtle corner rounding.</p>`,
-`<p>Surfaces are flat paper with a 1 px hairline border (<code>--line #ebebeb</code>), not translucent glass. Shadows are reserved for floating layers (<code>shadow-pop</code>).</p>`)}`);
+  `<p>Surfaces are flat paper with a 1 px hairline border (<code>--line #ebebeb</code>), not translucent glass. Shadows are reserved for floating layers (<code>shadow-pop</code>).</p>`)}`);
 
 add(5, "Iconography", `
 <div class="icons">${["faNoteSticky", "faListCheck", "faBookOpen", "faComments", "faCalendarDays", "faRss", "faHeartPulse", "faMagnifyingGlass", "faShieldHalved", "faKey", "faBell", "faGear", "faUser", "faLock", "faPlus", "faCheck", "faPaperPlane", "faDownload", "faMicrophone", "faPaperclip"].map((n) => `<span>${ic(n, 30)}<small>${n.slice(2)}</small></span>`).join("")}</div>

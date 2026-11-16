@@ -1,5 +1,7 @@
 "use client";
 import { normalizePhone } from "@untitled/logic/billing";
+import { billingRegion, cleanCountry, currencyName, providerName } from "@untitled/logic/countries";
+import CountrySelect from "../../billing/CountrySelect";
 import { CATEGORIES } from "../../../lib/notes";
 import { WRITE_TONES, type WriteTone } from "../../../lib/prefs";
 import { Actions, Choice, Lead, Title, fieldClass, pill, type Ctx } from "../ui";
@@ -9,9 +11,10 @@ const TONE_LABEL: Record<(typeof WRITE_TONES)[number], string> = { direct: "Shor
 
 /** Name (needed), what you do and how Naazhi should write for you (both optional). The assistant reads the last two. */
 export function About({ ctx }: { ctx: Ctx }) {
-  const { prefs, setPrefs, display, setDisplay, phone, setPhone } = ctx;
+  const { prefs, setPrefs, display, setDisplay, phone, setPhone, country, setCountry } = ctx;
+  const region = cleanCountry(country) ? billingRegion(country) : null;
   const phoneOk = normalizePhone(phone) !== null;
-  const ready = !!display.trim() && phoneOk;
+  const ready = !!display.trim() && phoneOk && !!region;
   const go = () => {
     ctx.mark("profile");
     ctx.next();
@@ -56,6 +59,18 @@ export function About({ ctx }: { ctx: Ctx }) {
               : "So paying for a plan or adding credit is quick: the payment window opens with your number already filled in. We never share it."}
           </span>
         </label>
+
+        <div className="grid gap-2">
+          <label htmlFor="ob-country" className="text-[14.5px] font-medium text-fg">
+            Country
+          </label>
+          <CountrySelect id="ob-country" className={fieldClass} value={cleanCountry(country)} onChange={setCountry} aria-describedby="ob-country-note" />
+          <span id="ob-country-note" className="text-[13.5px] text-fg-subtle">
+            {region
+              ? `Prices will be in ${currencyName(region.currency)}, and payments go through ${providerName(region.provider)}. You can change this later in Settings while you have no active subscription or credit.`
+              : "Decides your currency: rupees (Razorpay) in India, US dollars (Stripe) everywhere else."}
+          </span>
+        </div>
 
         <div className="grid gap-2">
           <label htmlFor="ob-role" className="text-[14.5px] font-medium text-fg">

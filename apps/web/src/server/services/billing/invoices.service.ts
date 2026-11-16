@@ -9,7 +9,8 @@ import * as billing from "../../repositories/billing.repository";
 import * as repo from "../../repositories/invoices.repository";
 import { ConflictError, NotFoundError, ValidationError } from "../../errors";
 import * as razorpay from "../../providers/payments/razorpay";
-import { formatBalance } from "@untitled/logic/billing";
+import * as stripe from "../../providers/payments/stripe";
+import { formatBalance, formatMoney } from "@untitled/logic/billing";
 
 /**
  * Invoices and the billing emails. An invoice is made from a payment the service has already verified with Razorpay (a subscription
@@ -33,6 +34,9 @@ export async function issueInvoice(p: {
   ref?: string | null;
   periodStart?: string | null;
   periodEnd?: string | null;
+  /** What the payment was in, and who took it. Rupees through Razorpay unless said otherwise. */
+  currency?: "inr" | "usd";
+  provider?: "razorpay" | "stripe";
 }): Promise<BillingInvoice | null> {
   const who = await billing.getContact(p.userId);
   const inv = await repo.createInvoice({
@@ -44,6 +48,8 @@ export async function issueInvoice(p: {
     ref: p.ref ?? null,
     periodStart: p.periodStart ?? null,
     periodEnd: p.periodEnd ?? null,
+    currency: p.currency ?? "inr",
+    provider: p.provider ?? "razorpay",
     billToName: who?.name ?? "",
     billToEmail: who?.email ?? "",
   });
@@ -93,24 +99,37 @@ export const saveSeller = (s: repo.SellerDetails) => repo.saveSeller(s);
 export async function recordRefund(refundId: string, paymentId: string, amountCents: number): Promise<boolean> {
   const r = await repo.recordRefundRow(refundId, paymentId, amountCents);
   if (!r) return false;
-  if (r.kind === "topup") await billing.applyCredit(r.user_id, -r.applied, "adjust", { ref: `refund_${refundId}` }).catch(() => undefined);
+  if (r.kind === "topup") await billing.applyCredit(r.user_id, -r.applied, "adjust", { ref: `refund_${refundId}`, currency: r.currency === "usd" ? "usd" : "inr" }).catch(() => undefined);
   if (r.bill_to_email) void sendEmail(r.bill_to_email, templates.refundIssued({ number: r.number, amountCents: r.applied, currency: r.currency, url: appLink(`/invoice/${r.id}`) })).catch(() => undefined);
   return true;
 }
 
 /**
- * An admin refunds an invoice (in full or in part) through Razorpay. A top-up can only be refunded up to what is still unspent in the
+ * An admin refunds an invoice (in full or in part) through the provider that took it (Razorpay or Stripe). A top-up can only be refunded up to what is still unspent in the
  * person's balance (the rest has been used), so the balance never goes negative from a refund. Returns the amount refunded.
  */
-export async function refundInvoice(invoiceId: string, amountCents: number): Promise<number> {
+export async function refundInvoice(invoiceId: string, amountCents: number): Promise<{ amountCents: number; currency: string }> {
   const inv = await repo.getInvoiceAny(invoiceId);
   if (!inv) throw new NotFoundError("That invoice doesn’t exist.");
   const remaining = inv.amount_cents - inv.refunded_cents;
   if (!Number.isInteger(amountCents) || amountCents < 100 || amountCents > remaining)
-    throw new ValidationError(`Refund between ₹1 and ${formatBalance(remaining, inv.currency)} (what hasn’t been refunded yet).`);
+    throw new ValidationError(`Refund between ${formatMoney(100, inv.currency)} and ${formatBalance(remaining, inv.currency)} (what hasn’t been refunded yet).`);
   if (inv.kind === "topup") {
     const unspent = Math.max(0, await billing.getCredit(inv.user_id));
     if (amountCents > unspent) throw new ValidationError(`Only ${formatBalance(unspent, inv.currency)} of this top-up is unspent, so that is the most that can be refunded.`);
+  }
+  if (inv.provider === "stripe") {
+    // A subscription charge is recorded under its Stripe invoice id with the payment intent kept as the reference; a top-up under the payment intent.
+    let intent = [inv.provider_ref, inv.provider_payment_id].find((x) => x?.startsWith("pi_")) ?? null;
+    try {
+      if (!intent && inv.provider_payment_id.startsWith("in_")) intent = (await stripe.fetchInvoice(inv.provider_payment_id)).payment_intent ?? null;
+      if (!intent) throw new Error("no payment");
+      const refund = await stripe.refundPayment(intent, amountCents, { invoice: inv.number });
+      await recordRefund(refund.id, intent, amountCents);
+    } catch {
+      throw new ConflictError("Stripe couldn’t refund that payment. It may already be refunded, or too old to refund from here.");
+    }
+    return { amountCents, currency: inv.currency };
   }
   let refund: razorpay.RazorpayRefund;
   try {
@@ -119,7 +138,7 @@ export async function refundInvoice(invoiceId: string, amountCents: number): Pro
     throw new ConflictError("Razorpay couldn’t refund that payment. It may already be refunded, or too old to refund from here.");
   }
   await recordRefund(refund.id, inv.provider_payment_id, amountCents);
-  return amountCents;
+  return { amountCents, currency: inv.currency };
 }
 
 export const adminListInvoices = (search: string) => repo.listAllInvoices(search.trim().slice(0, 80));

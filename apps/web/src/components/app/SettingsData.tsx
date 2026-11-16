@@ -14,6 +14,9 @@ export type SettingsAccount = {
   lastSignIn: string | null;
   /** International form (+919876543210), or empty when none was given. */
   phone: string;
+  /** ISO alpha-2, or empty when none was chosen. Changed through the billing service (it decides the currency). */
+  country: string;
+  address: { line1: string; line2: string; city: string; region: string; postalCode: string };
 };
 
 type Data = { account: SettingsAccount; prefs: Prefs };

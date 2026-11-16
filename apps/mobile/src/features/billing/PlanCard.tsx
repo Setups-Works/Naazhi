@@ -14,6 +14,7 @@ export function PlanCard({
   busy,
   loading,
   autopay = false,
+  provider = "razorpay",
   trial = false,
   onChoose,
 }: {
@@ -23,6 +24,8 @@ export function PlanCard({
   loading: boolean;
   /** Paying through Razorpay autopay: the button says so. */
   autopay?: boolean;
+  /** Who takes the payment: Stripe pays by card on a page, Razorpay by autopay. */
+  provider?: "razorpay" | "stripe";
   /** A free trial applies to this person and plan: the price line and the button say so. */
   trial?: boolean;
   onChoose: () => void;

@@ -21,13 +21,13 @@ export default async function Layout({ children }: { children: ReactNode }) {
   if (!serverConfigured()) redirect("/dashboard"); // the dashboard explains what is missing
   const user = await currentUser();
   if (!user) redirect("/login?next=/onboarding&stale=1");
-  const { data } = await userDb(user.id).from("profiles").select("preferences,onboarding,phone").maybeSingle();
+  const { data } = await userDb(user.id).from("profiles").select("preferences,onboarding,phone,country").maybeSingle();
   const prefs = cleanPrefs(data?.preferences, CATEGORIES);
   return (
     <QueryProvider>
       <PrefsSync prefs={prefs} />
       <AcquisitionSync userId={user.id} />
-      <Onboarding name={user.name || user.email.split("@")[0]} phone={typeof data?.phone === "string" ? data.phone : ""} prefs={prefs} state={cleanOnboarding(data?.onboarding)} />
+      <Onboarding name={user.name || user.email.split("@")[0]} phone={typeof data?.phone === "string" ? data.phone : ""} country={typeof data?.country === "string" ? data.country : ""} prefs={prefs} state={cleanOnboarding(data?.onboarding)} />
       {children}
     </QueryProvider>
   );

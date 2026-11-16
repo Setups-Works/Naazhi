@@ -6,9 +6,9 @@ import { withOwner, withUser } from "../db/pool";
  * Data access for invoices and the seller details printed on them. People read their own invoices as themselves (row-level security
  * scopes it); creating one runs as the owner on purpose, from the billing service after a payment has been verified with Razorpay.
  */
-const COLS = `id, number, kind, description, amount_cents::float8 as amount_cents, currency, status, refunded_cents::float8 as refunded_cents, period_start, period_end, issued_at`;
+const COLS = `id, number, kind, description, amount_cents::float8 as amount_cents, currency, status, provider, refunded_cents::float8 as refunded_cents, period_start, period_end, issued_at`;
 
-export type InvoiceFull = BillingInvoice & { bill_to_name: string; bill_to_email: string; provider_payment_id: string };
+export type InvoiceFull = BillingInvoice & { bill_to_name: string; bill_to_email: string; provider_payment_id: string; provider_ref: string | null };
 export type InvoiceAdminRow = InvoiceFull & { user_id: string };
 
 export type NewInvoice = {
@@ -20,6 +20,9 @@ export type NewInvoice = {
   ref: string | null;
   periodStart: string | null;
   periodEnd: string | null;
+  /** What was charged in: "inr" (paise) or "usd" (cents). */
+  currency: "inr" | "usd";
+  provider: "razorpay" | "stripe";
   billToName: string;
   billToEmail: string;
 };
@@ -30,12 +33,12 @@ export const createInvoice = (n: NewInvoice) =>
     async (c) =>
       (await c.query<BillingInvoice>(
         `insert into public.billing_invoices
-           (number, user_id, kind, description, amount_cents, provider_payment_id, provider_ref, period_start, period_end, bill_to_name, bill_to_email)
+           (number, user_id, kind, description, amount_cents, provider_payment_id, provider_ref, period_start, period_end, bill_to_name, bill_to_email, currency, provider)
          values ('NZ-' || to_char(now(), 'YYYY') || '-' || lpad(nextval('public.billing_invoice_seq')::text, 6, '0'),
-                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
          on conflict (provider_payment_id) do nothing
          returning ${COLS}`,
-        [n.userId, n.kind, n.description, n.amountCents, n.paymentId, n.ref, n.periodStart, n.periodEnd, n.billToName, n.billToEmail],
+        [n.userId, n.kind, n.description, n.amountCents, n.paymentId, n.ref, n.periodStart, n.periodEnd, n.billToName, n.billToEmail, n.currency, n.provider],
       )).rows[0] ?? null,
   );
 
@@ -49,7 +52,7 @@ export const getInvoice = (userId: string, id: string) =>
   withUser(
     userId,
     async (c) =>
-      (await c.query<InvoiceFull>(`select ${COLS}, bill_to_name, bill_to_email, provider_payment_id from public.billing_invoices where user_id = $1 and id = $2`, [userId, id])).rows[0] ?? null,
+      (await c.query<InvoiceFull>(`select ${COLS}, bill_to_name, bill_to_email, provider_payment_id, provider_ref from public.billing_invoices where user_id = $1 and id = $2`, [userId, id])).rows[0] ?? null,
   );
 
 export type SellerDetails = { seller_name: string; seller_address: string; seller_tax_id: string; invoice_footer: string };
@@ -82,7 +85,7 @@ export const saveSeller = (s: SellerDetails) =>
 export const getInvoiceAny = (id: string) =>
   withOwner(
     async (c) =>
-      (await c.query<InvoiceAdminRow>(`select ${COLS}, bill_to_name, bill_to_email, provider_payment_id, user_id from public.billing_invoices where id = $1`, [id])).rows[0] ?? null,
+      (await c.query<InvoiceAdminRow>(`select ${COLS}, bill_to_name, bill_to_email, provider_payment_id, provider_ref, user_id from public.billing_invoices where id = $1`, [id])).rows[0] ?? null,
   );
 
 /** Recent invoices across everyone for the admin page, optionally narrowed by an email or invoice number. */
@@ -90,7 +93,7 @@ export const listAllInvoices = (search: string, limit = 200) =>
   withOwner(
     async (c) =>
       (await c.query<InvoiceAdminRow>(
-        `select ${COLS.split(", ").map((x) => `i.${x}`).join(", ")}, i.bill_to_name, i.bill_to_email, i.provider_payment_id, i.user_id
+        `select ${COLS.split(", ").map((x) => `i.${x}`).join(", ")}, i.bill_to_name, i.bill_to_email, i.provider_payment_id, i.provider_ref, i.user_id
          from public.billing_invoices i
          where $1 = '' or i.number ilike '%' || $1 || '%' or i.bill_to_email ilike '%' || $1 || '%' or i.bill_to_name ilike '%' || $1 || '%'
          order by i.issued_at desc limit $2`,
@@ -99,14 +102,14 @@ export const listAllInvoices = (search: string, limit = 200) =>
   );
 
 /**
- * Records a refund against the invoice of a payment, once: a second call with the same refund id changes nothing. Returns the invoice
+ * Records a refund against the invoice of a payment (matched by the payment id, or by the payment intent kept as the reference for a Stripe subscription charge), once: a second call with the same refund id changes nothing. Returns the invoice
  * and how much was applied, or null when the payment has no invoice or the refund was already recorded. The invoice never shows more
  * returned than it was paid.
  */
 export const recordRefundRow = (refundId: string, paymentId: string, amountCents: number) =>
   withOwner(async (c) => {
     const inv = (await c.query<{ id: string; user_id: string; kind: "subscription" | "topup"; number: string; amount_cents: number; currency: string; bill_to_email: string; refunded_cents: number }>(
-      "select id, user_id, kind, number, amount_cents::float8 as amount_cents, currency, bill_to_email, refunded_cents::float8 as refunded_cents from public.billing_invoices where provider_payment_id = $1 for update",
+      "select id, user_id, kind, number, amount_cents::float8 as amount_cents, currency, bill_to_email, refunded_cents::float8 as refunded_cents from public.billing_invoices where provider_payment_id = $1 or provider_ref = $1 for update",
       [paymentId],
     )).rows[0];
     if (!inv) return null;

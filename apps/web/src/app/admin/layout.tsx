@@ -25,7 +25,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
       </main>
     );
   const user = await requireAdmin();
-  const [profile, info] = await Promise.all([userDb(user.id).from("profiles").select("preferences,phone").maybeSingle(), accountInfo(user.id)]);
+  const [profile, info] = await Promise.all([userDb(user.id).from("profiles").select("preferences,phone,country,address_line1,address_line2,city,region,postal_code").maybeSingle(), accountInfo(user.id)]);
   const prefs = cleanPrefs(profile.data?.preferences, CATEGORIES);
   const account = {
     name: user.name,
@@ -38,6 +38,14 @@ export default async function Layout({ children }: { children: ReactNode }) {
     avatarUrl: user.image,
     lastSignIn: info.lastSignIn,
     phone: typeof profile.data?.phone === "string" ? profile.data.phone : "",
+    country: typeof profile.data?.country === "string" ? profile.data.country : "",
+    address: {
+      line1: typeof profile.data?.address_line1 === "string" ? profile.data.address_line1 : "",
+      line2: typeof profile.data?.address_line2 === "string" ? profile.data.address_line2 : "",
+      city: typeof profile.data?.city === "string" ? profile.data.city : "",
+      region: typeof profile.data?.region === "string" ? profile.data.region : "",
+      postalCode: typeof profile.data?.postal_code === "string" ? profile.data.postal_code : "",
+    },
   };
   return (
     <QueryProvider>

@@ -13,16 +13,18 @@ const TONES = ["violet", "blue", "amber", "mint", "clay"];
 
 export default async function Page() {
   if (!serverConfigured()) return <SetupNotice />;
-  const { plans, totals, subscribers, tokens30d, limits, razorpayStatus, seller } = await adminOverview().catch(() => ({
+  const { plans, totals, subscribers, tokens30d, limits, limitsUsd, razorpayStatus, stripeStatus, seller } = await adminOverview().catch(() => ({
     plans: null,
     totals: [],
     subscribers: [],
     tokens30d: 0,
     limits: null,
+    limitsUsd: null,
     razorpayStatus: null,
+    stripeStatus: null,
     seller: null,
   }));
-  if (!plans || !limits || !razorpayStatus || !seller)
+  if (!plans || !limits || !limitsUsd || !razorpayStatus || !stripeStatus || !seller)
     return (
       <div className="dash">
         <p className="form-err" role="alert">
@@ -42,7 +44,8 @@ export default async function Page() {
           </h1>
           <p className="meta">
             Edit what each plan costs and includes. The pricing page and Settings read these rows, so a change shows everywhere at once.
-            {paymentsLive() ? "Subscriptions are charged through Razorpay autopay, in rupees." : "Nobody is charged yet: Razorpay isn’t connected."}
+            India pays in rupees through Razorpay and every other country in US dollars through Stripe, so each plan has a price in both.
+            {paymentsLive() || paymentsLive("stripe") ? "" : " Nobody is charged yet: neither provider is connected."}
           </p>
         </div>
       </div>
@@ -65,11 +68,19 @@ export default async function Page() {
         <span className="text-fg-muted">Webhook secret: {razorpayStatus.webhook ? "set" : "missing"}</span>
         {!razorpayStatus.live && <span className="text-fg-subtle">Set RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET and RAZORPAY_WEBHOOK_SECRET to take payments.</span>}
       </section>
+      <section className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-r3 border bg-paper px-5 py-3.5 text-[14px]" aria-label="Stripe payments">
+        <b className="font-semibold">Stripe</b>
+        <span>{stripeStatus.live ? `Live${stripeStatus.mode ? ` (${stripeStatus.mode} keys)` : ""}` : "Not connected"}</span>
+        <span className="text-fg-muted">Secret key: {stripeStatus.keys ? "set" : "missing"}</span>
+        <span className="text-fg-muted">Webhook secret: {stripeStatus.webhook ? "set" : "missing"}</span>
+        <span className="text-fg-muted">Automatic tax: {stripeStatus.tax ? "on" : "off"}</span>
+        {!stripeStatus.live && <span className="text-fg-subtle">Set STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET to take dollar payments.</span>}
+      </section>
       <PlansEditor plans={plans} />
       <h2 className="h3" style={{ margin: "28px 0 12px" }}>
         AI credit (Pay as you go)
       </h2>
-      <CreditSettings limits={limits} />
+      <CreditSettings limits={limits} limitsUsd={limitsUsd} />
       <h2 className="h3" style={{ margin: "28px 0 12px" }}>
         Invoice details
       </h2>

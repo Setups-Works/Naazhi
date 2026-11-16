@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif, Noto_Sans_Tamil } from "next/font/google";
+import Script from "next/script";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import "../styles/tailwind.css";
 import "./globals.css";
@@ -7,6 +8,7 @@ import { publicEnv } from "../config/env";
 import HideInApp from "../components/HideInApp";
 import Footer from "../components/site/Footer";
 import Header from "../components/site/Header";
+import SiteBanner from "../components/site/SiteBanner";
 import InstallAppDrawer from "../components/site/InstallAppDrawer";
 import NoImageDrag from "../components/site/NoImageDrag";
 import Refresh from "../components/site/Refresh";
@@ -73,8 +75,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning className={`${geist.variable} ${mono.variable} ${serif.variable} ${tamil.variable}`}>
       <body>
         {/* App pages paint the person's colour scheme before the first frame (see lib/look.ts). */}
-        <script dangerouslySetInnerHTML={{ __html: osBootScript }} />
-        <script dangerouslySetInnerHTML={{ __html: lookBootScript(publicEnv.appUrl ? new URL(publicEnv.appUrl).host : null) }} />
+        <Script id="os-boot" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: osBootScript }} />
+        <Script id="look-boot" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: lookBootScript(publicEnv.appUrl ? new URL(publicEnv.appUrl).host : null) }} />
         <AttributionCapture />
         <JsonLd data={[organizationSchema(), brandSchema(), setupsWorksSchema(), websiteSchema(), siteNavigationSchema(), androidAppSchema(), desktopAppSchema("macOS"), desktopAppSchema("Windows"), webAppSchema()]} />
         {/* Marketing content starts hidden for its entrance animation; without JavaScript it must simply be there. */}
@@ -88,6 +90,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div aria-hidden className="fixed inset-0 -z-20 bg-surface" />
             <Refresh />
             <NoImageDrag />
+            <SiteBanner />
             <Header />
             <InstallAppDrawer />
           </HideInApp>

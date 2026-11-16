@@ -44,6 +44,10 @@
       "types": "./src/homeLayout.ts",
       "default": "./src/homeLayout.ts"
     },
+    "./countries": {
+      "types": "./src/countries.ts",
+      "default": "./src/countries.ts"
+    },
     "./billing": {
       "types": "./src/billing.ts",
       "default": "./src/billing.ts"

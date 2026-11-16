@@ -42,6 +42,7 @@ export const PUBLIC_PAGES: { path: string; priority: number; changeFrequency: "w
   { path: "/privacy", priority: 0.5, changeFrequency: "monthly" },
   { path: "/terms", priority: 0.4, changeFrequency: "monthly" },
   { path: "/refund-policy", priority: 0.4, changeFrequency: "monthly" },
+  { path: "/payments", priority: 0.4, changeFrequency: "monthly" },
   { path: "/copyright-and-licensing", priority: 0.3, changeFrequency: "monthly" },
   { path: "/about", priority: 0.5, changeFrequency: "monthly" },
   { path: "/roadmap", priority: 0.6, changeFrequency: "weekly" },
@@ -831,7 +832,7 @@ const LLMS_GROUPS: { title: string; blurb: string; paths: readonly string[] }[] 
   {
     title: "Trust and policies",
     blurb: "How data, cookies, security reports and copyright are handled.",
-    paths: ["/privacy-security", "/privacy", "/terms", "/refund-policy", "/cookies", "/accessibility", "/responsible-disclosure", "/copyright-and-licensing", "/status"],
+    paths: ["/privacy-security", "/privacy", "/terms", "/refund-policy", "/payments", "/cookies", "/accessibility", "/responsible-disclosure", "/copyright-and-licensing", "/status"],
   },
 ];
 
@@ -845,6 +846,7 @@ const LLMS_EXTRA: Record<string, [string, string]> = {
   "/privacy": ["Privacy Policy", "What is collected, including health data, how long it is kept and how to delete it."],
   "/terms": ["Terms & Conditions", "The agreement for using Naazhi."],
   "/refund-policy": ["Refund & Cancellation", "How to cancel a plan and when a refund is possible."],
+  "/payments": ["Payments we accept", "Cards, UPI and wallets, and which provider (Razorpay or Stripe) takes the payment in your country."],
   "/cookies": ["Cookies & Storage", "The few cookies and browser storage items used. No advertising; optional anonymous analytics only inside the signed-in app."],
   "/accessibility": ["Accessibility", "How Naazhi aims to be usable by everyone, and how to report a barrier."],
   "/responsible-disclosure": ["Report a security issue", "How to report a vulnerability safely."],
@@ -898,7 +900,7 @@ export function llmsText(ctx: LlmsContext = {}): string {
     "- **Type**: Personal workspace app with optional AI",
     "- **Platforms**: Web app (any modern browser) an Android app on Google Play (also a direct download from the site), and Mac and Windows apps (downloads on the site’s releases page). The iPhone and iPad app and a browser extension are planned and not available yet.",
     "- **AI**: Optional. Choose the model for each chat, add your own OpenAI, Anthropic, Google or OpenRouter key, or use the workspace with AI switched off.",
-    "- **Payments**: In Indian rupees through Razorpay (UPI AutoPay, cards and more). Plans and prices are on the pricing page and change; link to it rather than quoting a figure.",
+    "- **Payments**: In Indian rupees through Razorpay (UPI AutoPay, cards and more) for India, and in US dollars through Stripe for everywhere else. Plans and prices are on the pricing page and change; link to it rather than quoting a figure.",
     "- **Made by**: " + `${s.name} (${s.url})`,
     `- **Contact**: ${s.email}; replies within 3 working days`,
     `- **Website**: ${origin ?? "this site"}`,

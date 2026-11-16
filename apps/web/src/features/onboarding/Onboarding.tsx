@@ -10,6 +10,7 @@ import { authClient } from "../../lib/auth/client";
 import { MILESTONES, OB, RAIL, stepOfSlug, stepPath, type Milestone, type Onboarding as State } from "../../lib/onboarding";
 import { homePath } from "../../lib/hosts";
 import { normalizePhone } from "@untitled/logic/billing";
+import { cleanCountry } from "@untitled/logic/countries";
 import { writePrefs, type Prefs } from "../../lib/prefs";
 import GiftCard, { saveGiftCard, shareGiftCard } from "../../components/app/GiftCard";
 import { Welcome, Start } from "./screens/Intro";
@@ -39,13 +40,14 @@ const DONE_LABEL: Record<Milestone, string> = {
  * The screens are real: preferences are saved, the assistant answers, drafts and notes are created, a vault is imported, a plan is chosen.
  * Anything that is not built yet (mail, calendar and app connections, Notion, location) is shown as "Soon" and does nothing.
  */
-export default function Onboarding({ name, phone: savedPhoneValue, prefs: initial, state }: { name: string; phone: string; prefs: Prefs; state: State }) {
+export default function Onboarding({ name, phone: savedPhoneValue, country: savedCountryValue, prefs: initial, state }: { name: string; phone: string; country: string; prefs: Prefs; state: State }) {
   const router = useRouter();
   const sb = useMemo(api, []);
   const step = stepOfSlug(usePathname().split("/")[2]) ?? OB.welcome;
   const [display, setDisplay] = useState(name);
   const [prefs, setPrefs] = useState(initial);
   const [phone, setPhone] = useState(savedPhoneValue);
+  const [country, setCountry] = useState(savedCountryValue);
   const [done, setDone] = useState<Milestone[]>(state.done);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -55,6 +57,7 @@ export default function Onboarding({ name, phone: savedPhoneValue, prefs: initia
   const savedPrefs = useRef(JSON.stringify(initial));
   const savedName = useRef(name);
   const savedPhone = useRef(savedPhoneValue);
+  const savedCountry = useRef(savedCountryValue);
   const completed = useRef(state.completed);
 
   // A new screen starts at its heading, for keyboard and screen-reader users (unless a field on it already took focus).
@@ -76,6 +79,7 @@ export default function Onboarding({ name, phone: savedPhoneValue, prefs: initia
     // Only a valid number is saved (the About screen won't continue without one); it is stored in international form.
     const e164 = normalizePhone(phone);
     const newPhone = e164 && e164 !== savedPhone.current ? e164 : null;
+    const newCountry = cleanCountry(country) && country !== savedCountry.current ? country : null;
     if (newName) {
       const { error } = await authClient.updateUser({ name: newName });
       if (error) return false;
@@ -84,7 +88,7 @@ export default function Onboarding({ name, phone: savedPhoneValue, prefs: initia
     const onboarding: State = { completed: completed.current, step: to, skippedAt: null, done: doneRef.current, ...patch };
     const { error } = await sb
       .from("profiles")
-      .upsert({ onboarding, ...(prefsChanged ? { preferences: prefs } : {}), ...(newPhone ? { phone: newPhone } : {}) }, { onConflict: "user_id" });
+      .upsert({ onboarding, ...(prefsChanged ? { preferences: prefs } : {}), ...(newPhone ? { phone: newPhone } : {}), ...(newCountry ? { country: newCountry } : {}) }, { onConflict: "user_id" });
     if (error) return false;
     if (prefsChanged) {
       savedPrefs.current = now;
@@ -94,6 +98,7 @@ export default function Onboarding({ name, phone: savedPhoneValue, prefs: initia
       savedPhone.current = newPhone;
       setPhone(newPhone);
     }
+    if (newCountry) savedCountry.current = newCountry;
     if (patch.completed) completed.current = true;
     return true;
   }
@@ -130,7 +135,7 @@ export default function Onboarding({ name, phone: savedPhoneValue, prefs: initia
   }, [leave, router]);
 
   const first = display.trim().split(" ")[0] || "there";
-  const ctx: Ctx = { first, display, setDisplay, phone, setPhone, prefs, setPrefs, done, mark, next, back, busy, err, setErr };
+  const ctx: Ctx = { first, display, setDisplay, phone, setPhone, country, setCountry, prefs, setPrefs, done, mark, next, back, busy, err, setErr };
   const group = RAIL.findIndex((g) => g.steps.includes(step));
   const inFlow = group >= 0;
 

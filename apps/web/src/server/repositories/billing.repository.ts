@@ -9,7 +9,7 @@ import { withOwner, withUser } from "../db/pool";
  */
 
 const PLAN_COLS = `id, name, tagline, price_cents, currency, interval, included_tokens::float8 as included_tokens,
-  token_price_cents_per_million, features, active, sort, trial_days`;
+  token_price_cents_per_million, price_cents_usd, token_price_cents_per_million_usd, features, active, sort, trial_days`;
 
 export type UserBillingRow = {
   user_id: string;
@@ -20,7 +20,9 @@ export type UserBillingRow = {
   cancel_at_period_end: boolean;
   started_at: string;
   canceled_at: string | null;
-  /** The Razorpay subscription paying for this plan, when there is one. */
+  /** Who takes this person's payments: decides how a subscription is cancelled and a payment refunded, whatever their country says today. */
+  provider: "razorpay" | "stripe";
+  /** The Razorpay or Stripe subscription paying for this plan, when there is one. */
   provider_subscription_id: string | null;
   provider_status: string | null;
   /** When a free trial ends and the first payment is taken; null when not on a trial. */
@@ -36,9 +38,9 @@ export const listPlans = (opts: { activeOnly: boolean }) =>
 export const getPlan = (id: string) =>
   withOwner(async (c) => (await c.query<BillingPlan>(`select ${PLAN_COLS} from public.billing_plans where id = $1`, [id])).rows[0] ?? null);
 
-export type PlanPatch = Partial<Pick<BillingPlan, "name" | "tagline" | "price_cents" | "currency" | "interval" | "included_tokens" | "token_price_cents_per_million" | "features" | "active" | "sort" | "trial_days">>;
+export type PlanPatch = Partial<Pick<BillingPlan, "name" | "tagline" | "price_cents" | "currency" | "interval" | "included_tokens" | "token_price_cents_per_million" | "price_cents_usd" | "token_price_cents_per_million_usd" | "features" | "active" | "sort" | "trial_days">>;
 
-const PATCHABLE = new Set(["name", "tagline", "price_cents", "currency", "interval", "included_tokens", "token_price_cents_per_million", "features", "active", "sort", "trial_days"]);
+const PATCHABLE = new Set(["name", "tagline", "price_cents", "currency", "interval", "included_tokens", "token_price_cents_per_million", "price_cents_usd", "token_price_cents_per_million_usd", "features", "active", "sort", "trial_days"]);
 
 export const updatePlan = (id: string, patch: PlanPatch) =>
   withOwner(async (c) => {
@@ -58,22 +60,23 @@ export const getUserBilling = (userId: string) =>
 
 type BillingWrite = Pick<
   UserBillingRow,
-  "plan_id" | "status" | "period_start" | "period_end" | "cancel_at_period_end" | "canceled_at" | "provider_subscription_id" | "provider_status" | "trial_ends_at"
+  "plan_id" | "status" | "period_start" | "period_end" | "cancel_at_period_end" | "canceled_at" | "provider" | "provider_subscription_id" | "provider_status" | "trial_ends_at"
 >;
 
 export const saveUserBilling = (userId: string, b: BillingWrite) =>
   withOwner(async (c) => {
     await c.query(
       `insert into public.user_billing (user_id, plan_id, status, period_start, period_end, cancel_at_period_end, canceled_at,
-         provider_subscription_id, provider_status, trial_ends_at)
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         provider_subscription_id, provider_status, trial_ends_at, provider)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        on conflict (user_id) do update set plan_id = excluded.plan_id, status = excluded.status, period_start = excluded.period_start,
          period_end = excluded.period_end, cancel_at_period_end = excluded.cancel_at_period_end, canceled_at = excluded.canceled_at,
          provider_subscription_id = excluded.provider_subscription_id, provider_status = excluded.provider_status, trial_ends_at = excluded.trial_ends_at,
+         provider = excluded.provider,
          started_at = case when public.user_billing.plan_id = excluded.plan_id and public.user_billing.status = 'active'
                            then public.user_billing.started_at else now() end,
          updated_at = now()`,
-      [userId, b.plan_id, b.status, b.period_start, b.period_end, b.cancel_at_period_end, b.canceled_at, b.provider_subscription_id, b.provider_status, b.trial_ends_at],
+      [userId, b.plan_id, b.status, b.period_start, b.period_end, b.cancel_at_period_end, b.canceled_at, b.provider_subscription_id, b.provider_status, b.trial_ends_at, b.provider],
     );
   });
 
@@ -141,18 +144,21 @@ export type SubscriberRow = {
   period_end: string | null;
   cancel_at_period_end: boolean;
   tokens_30d: number;
-  /** Prepaid AI credit left, in paise. */
+  /** Prepaid AI credit left, in the smallest unit of `credit_currency`. */
   credit_cents: number;
+  credit_currency: "inr" | "usd";
+  provider: "razorpay" | "stripe";
 };
 
 export const listSubscribers = () =>
   withOwner(
     async (c) =>
       (await c.query<SubscriberRow>(
-        `select b.user_id, u.email, u.name, b.plan_id, b.status, b.period_end, b.cancel_at_period_end,
+        `select b.user_id, u.email, u.name, b.plan_id, b.status, b.period_end, b.cancel_at_period_end, b.provider,
                 coalesce((select sum(a.input_tokens + a.output_tokens) from public.ai_usage a
                           where a.user_id = b.user_id and a.created_at >= now() - interval '30 days'), 0)::float8 as tokens_30d,
-                coalesce((select c.balance_cents from public.user_ai_credit c where c.user_id = b.user_id), 0)::float8 as credit_cents
+                coalesce((select c.balance_cents from public.user_ai_credit c where c.user_id = b.user_id), 0)::float8 as credit_cents,
+                coalesce((select c.currency from public.user_ai_credit c where c.user_id = b.user_id), 'inr') as credit_currency
          from public.user_billing b join auth.users u on u.id = b.user_id
          order by b.updated_at desc limit 500`,
       )).rows,
@@ -233,13 +239,21 @@ export const setProviderStatus = (userId: string, subscriptionId: string, status
 
 /* ---------- AI credit (Pay as you go) ---------- */
 
-export const getCredit = (userId: string) =>
+export type CreditInfo = { balance: number; currency: "inr" | "usd" };
+
+/** The balance in the smallest unit of its currency, and which currency that is (a person who never topped up has 0 in rupees). */
+export const getCreditInfo = (userId: string) =>
   withUser(
     userId,
-    async (c) => Number((await c.query<{ b: string }>("select coalesce((select balance_cents from public.user_ai_credit where user_id = $1), 0)::text as b", [userId])).rows[0]!.b),
+    async (c) => {
+      const r = (await c.query<{ b: string; currency: "inr" | "usd" }>("select balance_cents::text as b, currency from public.user_ai_credit where user_id = $1", [userId])).rows[0];
+      return { balance: Number(r?.b ?? 0), currency: r?.currency ?? "inr" } satisfies CreditInfo;
+    },
   );
 
-/** The total of every top-up, in paise (the "of ₹X" beside the balance). */
+export const getCredit = async (userId: string) => (await getCreditInfo(userId)).balance;
+
+/** The total of every top-up, in the smallest unit of the person's currency (the "of ₹X" beside the balance). */
 export const getCreditTotal = (userId: string) =>
   withUser(
     userId,
@@ -248,23 +262,54 @@ export const getCreditTotal = (userId: string) =>
   );
 
 /**
- * Moves a person's balance by `delta` paise and writes the ledger line, in one transaction. With a `ref` (a Razorpay payment id) the same
- * movement is applied once: a second call returns false and changes nothing. Returns the new balance, or null when it was a repeat.
+ * Moves a person's balance by `delta` (paise or cents, per `currency`) and writes the ledger line, in one transaction. With a `ref` (a
+ * Razorpay or Stripe payment id) the same movement is applied once: a second call returns null and changes nothing. Returns the new
+ * balance, or null when it was a repeat. The balance has one currency: it can only change currency while it is zero, and a movement in
+ * the other currency on a balance that isn't zero is refused (null) rather than added to it.
  */
-export const applyCredit = (userId: string, delta: number, kind: "topup" | "usage" | "adjust", opts: { tokens?: number; ref?: string } = {}) =>
+export const applyCredit = (userId: string, delta: number, kind: "topup" | "usage" | "adjust", opts: { tokens?: number; ref?: string; currency?: "inr" | "usd" } = {}) =>
   withOwner(async (c) => {
+    const currency = opts.currency ?? "inr";
+    const have = (await c.query<{ currency: string; b: string }>("select currency, balance_cents::text as b from public.user_ai_credit where user_id = $1 for update", [userId])).rows[0];
+    if (have && have.currency !== currency && Number(have.b) !== 0) return null;
     const line = await c.query(
       "insert into public.ai_credit_ledger (user_id, kind, amount_cents, tokens, ref) values ($1, $2, $3, $4, $5) on conflict (ref) do nothing",
       [userId, kind, delta, opts.tokens ?? null, opts.ref ?? null],
     );
     if (line.rowCount === 0) return null;
     const r = await c.query<{ b: string }>(
-      `insert into public.user_ai_credit (user_id, balance_cents) values ($1, $2)
-       on conflict (user_id) do update set balance_cents = public.user_ai_credit.balance_cents + excluded.balance_cents, updated_at = now()
+      `insert into public.user_ai_credit (user_id, balance_cents, currency) values ($1, $2, $3)
+       on conflict (user_id) do update set balance_cents = public.user_ai_credit.balance_cents + excluded.balance_cents,
+         currency = excluded.currency, updated_at = now()
        returning balance_cents::text as b`,
-      [userId, delta],
+      [userId, delta, currency],
     );
     return Number(r.rows[0]!.b);
+  });
+
+/**
+ * Takes the cost of `tokens` off a dollar balance without rounding every reply up to a whole cent (a short reply costs a fraction of one).
+ * The fraction is carried in `pending_micro` (millionths of a cent) and charged once it adds up. Returns the new balance and what was
+ * charged, or null when nothing was charged yet.
+ */
+export const chargeUsageCarry = (userId: string, tokens: number, centsPerMillion: number) =>
+  withOwner(async (c) => {
+    // The arithmetic runs in the database as numeric: tokens × rate can pass what a JavaScript number holds exactly.
+    const r = await c.query<{ cost: string; balance: string }>(
+      `with cur as (select pending_micro, balance_cents from public.user_ai_credit where user_id = $1 for update),
+            tot as (select pending_micro::numeric + $2::numeric * $3::numeric as t from cur)
+       update public.user_ai_credit u
+          set pending_micro = ((select t from tot) % 1000000)::bigint,
+              balance_cents = u.balance_cents - floor((select t from tot) / 1000000)::bigint,
+              updated_at = now()
+        where u.user_id = $1
+        returning floor((select t from tot) / 1000000)::text as cost, u.balance_cents::text as balance`,
+      [userId, Math.max(0, Math.floor(tokens)), Math.max(0, Math.floor(centsPerMillion))],
+    );
+    const row = r.rows[0];
+    if (!row || row.cost === "0") return null;
+    await c.query("insert into public.ai_credit_ledger (user_id, kind, amount_cents, tokens) values ($1, 'usage', $2, $3)", [userId, `-${row.cost}`, Math.floor(tokens)]);
+    return { balance: Number(row.balance), cost: Number(row.cost) };
   });
 
 export type LedgerRow = { id: string; kind: "topup" | "usage" | "adjust"; amount_cents: number; tokens: number | null; created_at: string };
@@ -281,21 +326,66 @@ export const recentLedger = (userId: string, limit = 8) =>
 
 /* ---------- billing settings (top-up limits) ---------- */
 
-export type BillingSettings = { topup_min_cents: number; topup_max_cents: number; topup_options_cents: number[] };
+export type BillingSettings = {
+  topup_min_cents: number;
+  topup_max_cents: number;
+  topup_options_cents: number[];
+  topup_min_cents_usd: number;
+  topup_max_cents_usd: number;
+  topup_options_cents_usd: number[];
+};
 
 export const getSettings = () =>
   withOwner(
     async (c) =>
-      (await c.query<BillingSettings>("select topup_min_cents, topup_max_cents, topup_options_cents from public.billing_settings where id")).rows[0] ?? null,
+      (await c.query<BillingSettings>(
+        "select topup_min_cents, topup_max_cents, topup_options_cents, topup_min_cents_usd, topup_max_cents_usd, topup_options_cents_usd from public.billing_settings where id",
+      )).rows[0] ?? null,
   );
 
 export const saveSettings = (s: BillingSettings) =>
   withOwner(
     async (c) =>
       void (await c.query(
-        `insert into public.billing_settings (id, topup_min_cents, topup_max_cents, topup_options_cents) values (true, $1, $2, $3)
+        `insert into public.billing_settings (id, topup_min_cents, topup_max_cents, topup_options_cents, topup_min_cents_usd, topup_max_cents_usd, topup_options_cents_usd)
+         values (true, $1, $2, $3, $4, $5, $6)
          on conflict (id) do update set topup_min_cents = excluded.topup_min_cents, topup_max_cents = excluded.topup_max_cents,
-           topup_options_cents = excluded.topup_options_cents, updated_at = now()`,
-        [s.topup_min_cents, s.topup_max_cents, s.topup_options_cents],
+           topup_options_cents = excluded.topup_options_cents, topup_min_cents_usd = excluded.topup_min_cents_usd,
+           topup_max_cents_usd = excluded.topup_max_cents_usd, topup_options_cents_usd = excluded.topup_options_cents_usd, updated_at = now()`,
+        [s.topup_min_cents, s.topup_max_cents, s.topup_options_cents, s.topup_min_cents_usd, s.topup_max_cents_usd, s.topup_options_cents_usd],
       )),
   );
+
+/* ---------- country ---------- */
+
+/** The person's saved country (ISO alpha-2), or null if they never chose one. */
+export const getCountry = (userId: string) =>
+  withUser(userId, async (c) => (await c.query<{ country: string | null }>("select country from public.profiles where user_id = $1", [userId])).rows[0]?.country ?? null);
+
+/** Saves the country. Runs as the owner because the billing service has already checked that the change is allowed. */
+export const setCountry = (userId: string, country: string) =>
+  withOwner(
+    async (c) =>
+      void (await c.query(
+        "insert into public.profiles (user_id, country) values ($1, $2) on conflict (user_id) do update set country = excluded.country",
+        [userId, country],
+      )),
+  );
+
+/* ---------- Stripe customers and products (native payment sheet) ---------- */
+
+export const getStripeCustomer = (userId: string) =>
+  withOwner(async (c) => (await c.query<{ customer_id: string }>("select customer_id from public.stripe_customers where user_id = $1", [userId])).rows[0]?.customer_id ?? null);
+
+/** Remembers the person's Stripe customer; if two requests raced, the first one stands and is returned. */
+export const saveStripeCustomer = (userId: string, customerId: string) =>
+  withOwner(async (c) => {
+    await c.query("insert into public.stripe_customers (user_id, customer_id) values ($1, $2) on conflict (user_id) do nothing", [userId, customerId]);
+    return (await c.query<{ customer_id: string }>("select customer_id from public.stripe_customers where user_id = $1", [userId])).rows[0]!.customer_id;
+  });
+
+export const getStripeProduct = (planId: string) =>
+  withOwner(async (c) => (await c.query<{ stripe_product_id: string | null }>("select stripe_product_id from public.billing_plans where id = $1", [planId])).rows[0]?.stripe_product_id ?? null);
+
+export const setStripeProduct = (planId: string, productId: string) =>
+  withOwner(async (c) => void (await c.query("update public.billing_plans set stripe_product_id = $2 where id = $1 and stripe_product_id is null", [planId, productId])));

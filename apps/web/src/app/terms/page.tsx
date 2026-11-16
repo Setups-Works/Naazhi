@@ -69,10 +69,16 @@ export default function Page() {
             body: (
               <>
                 <p>
-                  Plans, prices and what each includes are shown on the pricing page. Prices are in Indian rupees unless the page says otherwise. Subscriptions renew for the next
-                  period until you cancel; a cancelled subscription runs to the end of the period you paid for.
+                  Plans, prices and what each includes are shown on the pricing page. Your country, which you choose when you set up and can change in Settings while you have no
+                  active subscription or unspent credit, decides how you pay: in India, prices are in Indian rupees (INR) and payments are taken by Razorpay; in every other
+                  country, prices are in US dollars (USD) and payments are taken by Stripe. Subscriptions renew for the next period until you cancel; a cancelled
+                  subscription runs to the end of the period you paid for.
                 </p>
-                <p>Payments are handled by a payment provider. We do not store your card details. Refunds are covered in the Refund &amp; Cancellation Policy.</p>
+                <p>
+                  Prices are shown without tax unless the page or checkout says otherwise. Where tax such as GST, VAT or sales tax applies, it is shown at checkout before you
+                  pay. Card and bank charges, currency conversion and foreign-transaction fees made by your own bank or card issuer are not ours. We do not store your card
+                  details. Refunds are covered in the Refund &amp; Cancellation Policy.
+                </p>
               </>
             ),
           },

@@ -24,7 +24,9 @@ export type CampaignSummary = Omit<Campaign, "html" | "picked"> & { queued: numb
 export type Attachment = { id: string; campaignId: string; name: string; contentType: string; sizeBytes: number; storageKey: string };
 export type Draft = { subject: string; preheader: string; html: string; kind: Kind; audience: Audience; picked: string[] };
 
-type Row = { id: string; subject: string; preheader: string; html: string; kind: Kind; audience: Audience; picked: string[]; status: Status; created_at: Date; sent_at: Date | null };
+type Row = { id: string; subject: string; preheader: string; html: string; kind: Kind; audience: Audience; picked: string[]; status: Status; created_at: Date | string; sent_at: Date | string | null };
+// The pool already turns every timestamptz into an ISO string (see db/pool.ts), so a value may arrive as a string or, in a test, a Date.
+const iso = (v: Date | string) => (typeof v === "string" ? v : v.toISOString());
 const toCampaign = (r: Row): Campaign => ({
   id: r.id,
   subject: r.subject,
@@ -34,8 +36,8 @@ const toCampaign = (r: Row): Campaign => ({
   audience: r.audience,
   picked: r.picked ?? [],
   status: r.status,
-  createdAt: r.created_at.toISOString(),
-  sentAt: r.sent_at?.toISOString() ?? null,
+  createdAt: iso(r.created_at),
+  sentAt: r.sent_at ? iso(r.sent_at) : null,
 });
 
 export const getCampaign = (id: string) =>

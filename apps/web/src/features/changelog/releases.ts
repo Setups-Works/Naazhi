@@ -23,6 +23,16 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-16",
+    title: "Version 9.0.1: campaigns open again",
+    summary: "A fix for the admin Campaigns pages, which could fail to open once a campaign had been saved.",
+    tone: "sand",
+    appVersion: "v9.0.1",
+    changes: [
+      { kind: "fixed", platform: "web", text: "Admin, Campaigns: the list and a saved campaign open again instead of showing “This page couldn’t load”." },
+    ],
+  },
+  {
+    date: "2026-11-16",
     title: "Version 9.0.0: pay from anywhere in the world",
     summary: "Choose your country when you set up. India pays in rupees; everywhere else pays in US dollars. Dollar payments open once our card payments are switched on.",
     tone: "mint",

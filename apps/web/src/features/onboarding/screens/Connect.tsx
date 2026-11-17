@@ -9,16 +9,19 @@ import { Button } from "@/components/ui/button";
 import { OB, stepPath } from "../../../lib/onboarding";
 import { useComposioStatus, useConnectComposio } from "../../integrations/composio";
 import { useConnectNotion, useNotionStatus } from "../../integrations/notion";
+import { useConnectZoho, useZohoStatus } from "../../integrations/zoho";
 import { Actions, Card, Lead, Soon, Tile, Title, type Ctx } from "../ui";
 
 /**
- * Google Workspace and Notion connect right here (the same sign-in as Settings; the person comes back to this step). Everything else is
+ * Google Workspace, Zoho and Notion connect right here (the same sign-in as Settings; the person comes back to this step). Everything else is
  * listed with what it will do and marked "Soon", and nothing marked "Soon" can be pressed.
  */
 const Connected = () => <span className="rounded-pill bg-hover px-2.5 py-0.5 text-[12.5px] font-medium text-green-fg">Connected</span>;
+/** The server has no Zoho keys yet: the same words the app's setup uses. */
+const NotSetUp = () => <span className="rounded-pill bg-hover px-2.5 py-0.5 text-[12.5px] font-medium text-ink-2">Not set up</span>;
 
-/** The outcome of a sign-in the person just came back from (`?composio=` or `?notion=` in the address), shown once. */
-function useSignInResult(param: "composio" | "notion", name: string) {
+/** The outcome of a sign-in the person just came back from (`?composio=`, `?zoho=` or `?notion=` in the address), shown once. */
+function useSignInResult(param: "composio" | "zoho" | "notion", name: string) {
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search);
@@ -49,16 +52,19 @@ export function Accounts({ ctx }: { ctx: Ctx }) {
   const connect = useConnectComposio();
   const result = useSignInResult("composio", "Google");
   const googleOn = google.data?.apps.some((a) => a.state === "connected") ?? false;
+  const zoho = useZohoStatus();
+  const connectZoho = useConnectZoho();
+  const zohoResult = useSignInResult("zoho", "Zoho");
   return (
     <div className="mx-auto w-full max-w-[640px] px-6 py-8">
       <Title>Connect the tools you use every day.</Title>
       <Lead>Naazhi will use them to understand what’s going on and help you stay on top of things.</Lead>
       <Lead className="mt-3">Nothing gets sent, booked or shared without your say.</Lead>
 
-      <Outcome result={result} />
-      {connect.error && (
+      <Outcome result={result ?? zohoResult} />
+      {(connect.error ?? connectZoho.error) && (
         <p className="m-0 mt-5 text-[14.5px] text-clay-fg" role="alert">
-          {connect.error.message}
+          {(connect.error ?? connectZoho.error)?.message}
         </p>
       )}
       <div className="mt-8 grid gap-3">
@@ -86,6 +92,20 @@ export function Accounts({ ctx }: { ctx: Ctx }) {
                   ) : (
                     <Button size="sm" disabled={connect.isPending || !google.data?.configured} onClick={() => connect.mutate({ returnTo: stepPath(OB.connect) })}>
                       {connect.isPending ? "Opening…" : "Connect"}
+                    </Button>
+                  )
+                ) : a.name === "Zoho Workplace" ? (
+                  zoho.data?.connected ? (
+                    <Connected />
+                  ) : zoho.data && !zoho.data.configured ? (
+                    <NotSetUp />
+                  ) : (
+                    <Button
+                      size="sm"
+                      disabled={connectZoho.isPending || !zoho.data}
+                      onClick={() => connectZoho.mutate({ services: ["mail", "calendar"], returnTo: stepPath(OB.connect) })}
+                    >
+                      {connectZoho.isPending ? "Opening…" : "Connect"}
                     </Button>
                   )
                 ) : (

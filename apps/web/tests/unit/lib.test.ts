@@ -22,7 +22,7 @@ describe("validate", () => {
 
 describe("safeNext (open-redirect guard)", () => {
   it("keeps same-site paths", () => expect(safeNext("/dashboard/notes?x=1")).toBe("/dashboard/notes?x=1"));
-  it.each(["https://evil.test", "//evil.test", "javascript:alert(1)", "", null, undefined])("falls back for %j", (v) =>
+  it.each(["https://evil.test", "//evil.test", "/\\evil.test", "/\\/evil.test", "/\t/evil.test", "/\n/evil.test", "javascript:alert(1)", "", null, undefined])("falls back for %j", (v) =>
     expect(safeNext(v)).toBe("/dashboard"),
   );
   it("supports a custom fallback", () => expect(safeNext("//x", "/home")).toBe("/home"));

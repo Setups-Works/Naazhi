@@ -24,7 +24,7 @@
       .ambient { position: absolute; z-index: -1; inset: -12%; background: radial-gradient(ellipse at 2% 28%, rgba(220,239,230,.92), transparent 38%), radial-gradient(ellipse at 97% 43%, rgba(236,229,242,.8), transparent 37%), radial-gradient(ellipse at 60% 100%, rgba(250,233,189,.72), transparent 43%); }
       .top { position: absolute; top: 64px; left: 80px; right: 80px; display: flex; align-items: center; justify-content: space-between; z-index: 3; }
       .wordmark { display: flex; align-items: center; gap: 14px; padding: 12px 28px 12px 20px; border: 1.5px solid rgba(255,255,255,.92); border-radius: 999px; background: rgba(255,255,255,.55); box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 6px 20px rgba(0,0,0,.04); font: 400 36px/1 var(--serif); letter-spacing: -.02em; }
-      .ghost-mark { width: 42px; height: 42px; object-fit: contain; }
+      .brand-mark { width: 42px; height: 42px; object-fit: contain; }
       .series { color: var(--quiet); font-size: 19px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; }
       .slide { position: absolute; inset: 0; display: none; }
       .slide.active { display: block; }
@@ -69,7 +69,7 @@
       .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 280px; z-index: 2; background: linear-gradient(to top, var(--page) 32%, rgba(245,244,235,0)); }
       .footer { position: absolute; bottom: 44px; left: 80px; right: 80px; display: flex; align-items: center; justify-content: space-between; z-index: 3; color: var(--quiet); font-size: 24px; }
       .handle { color: var(--green); font-size: 32px; font-weight: 600; letter-spacing: .02em; }
-      .footer-ghost { width: 64px; height: 64px; object-fit: contain; display: block; filter: drop-shadow(0 4px 14px rgba(0,0,0,.08)); }
+      .footer-mark { width: 64px; height: 64px; object-fit: contain; display: block; }
       .count { font-weight: 500; letter-spacing: .1em; }
       .controls { position: absolute; inset: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
       .controls button { width: 58px; height: 58px; margin: 18px; border: 0; border-radius: 50%; color: var(--ink); background: rgba(255,255,255,.78); font-size: 30px; cursor: pointer; pointer-events: auto; box-shadow: 0 6px 22px rgba(40,35,10,.1); }
@@ -79,7 +79,7 @@
   <body>
     <main class="story" aria-label="Instagram story slides asking for a Tamil name for the app">
       <div class="ambient"></div>
-      <header class="top"><div class="wordmark"><img class="ghost-mark" src="assets/ghost.png" alt="" /><span>untitled project</span></div><span class="series">Help us name it</span></header>
+      <header class="top"><div class="wordmark"><img class="brand-mark" src="../../apps/web/public/brand/naazhi-mark.png" alt="" /><span>Naazhi</span></div><span class="series">Help us name it</span></header>
 
       <!-- 1 · The ask -->
       <section class="slide active" data-slide="1" aria-label="We need a Tamil name">
@@ -95,7 +95,7 @@
         <div class="ask"><div><strong>Drop your idea</strong><span>Reply or use the question sticker</span></div><span class="arrow" aria-hidden="true">→</span></div>
         <div class="phone"><div class="screen-window"><img class="screen-shot" src="assets/screens/01-home.png" alt="App home screen with the journal streak, a to-do and notes" /></div><img class="phone-frame" src="assets/iphone-15-frame.png" alt="" /></div>
         <div class="fade"></div>
-        <div class="footer"><span class="handle">untitled project</span><span class="count">1 / 4</span></div>
+        <div class="footer"><span class="handle">Naazhi</span><span class="count">1 / 4</span></div>
       </section>
 
       <!-- 2 · Features: capture -->
@@ -111,7 +111,7 @@
         </div>
         <div class="phone"><div class="screen-window"><img class="screen-shot" src="assets/screens/03-notes.png" alt="Notes screen" /></div><img class="phone-frame" src="assets/iphone-15-frame.png" alt="" /></div>
         <div class="fade"></div>
-        <div class="footer"><span class="handle">untitled project</span><span class="count">2 / 4</span></div>
+        <div class="footer"><span class="handle">Naazhi</span><span class="count">2 / 4</span></div>
       </section>
 
       <!-- 3 · Features: life -->
@@ -127,7 +127,7 @@
         </div>
         <div class="phone"><div class="screen-window"><img class="screen-shot" src="assets/screens/04-journal.png" alt="Journal screen" /></div><img class="phone-frame" src="assets/iphone-15-frame.png" alt="" /></div>
         <div class="fade"></div>
-        <div class="footer"><span class="handle">untitled project</span><span class="count">3 / 4</span></div>
+        <div class="footer"><span class="handle">Naazhi</span><span class="count">3 / 4</span></div>
       </section>
 
       <!-- 4 · Features: control + final ask -->
@@ -145,7 +145,7 @@
         <div class="ask" style="top:870px"><div><strong>So, what should we call it?</strong><span>Send your Tamil name idea in a reply</span></div><span class="arrow" aria-hidden="true">→</span></div>
         <div class="phone"><div class="screen-window"><img class="screen-shot" src="assets/screens/05-chat.png" alt="AI chat screen" /></div><img class="phone-frame" src="assets/iphone-15-frame.png" alt="" /></div>
         <div class="fade"></div>
-        <div class="footer"><span class="handle">untitled project</span><span class="count">4 / 4</span></div>
+        <div class="footer"><span class="handle">Naazhi</span><span class="count">4 / 4</span></div>
       </section>
 
       <div class="controls" aria-label="Story preview controls"><button type="button" id="prev" aria-label="Previous slide">‹</button><button type="button" id="next" aria-label="Next slide">›</button></div>

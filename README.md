@@ -4,12 +4,12 @@
 
 # Naazhi
 
-Naazhi is a SaaS workspace for **notes, tasks, journal, chat, calendar, email, meetings and automations** — with an AI layer you can swap, bring your own account to, or switch off entirely. It runs as a hosted service on the web and as an iOS and Android app.
+Naazhi is a SaaS workspace for **notes, tasks, journal, chat, calendar, email, meetings and automations** — with an AI layer you can swap, bring your own account to, or switch off entirely. It runs as a hosted service on the web, as an Android app (iPhone planned) and as a Mac and Windows desktop app.
 
 - Web app and website: https://dashboard.naazhi.app
 - Mobile: Expo / React Native, same account and data as the web app
 
-> **Working on this project?** Read [`AGENTS.md`](AGENTS.md) (rules for humans _and_ AI agents), then [`docs/ONBOARDING.md`](docs/ONBOARDING.md). Plan and tasks live in Jira: https://setups-works.atlassian.net/jira/software/projects/UNT/boards
+> **Working on this project?** Read [`AGENTS.md`](AGENTS.md) (rules for humans _and_ AI agents), then [`docs/ONBOARDING.md`](docs/ONBOARDING.md). Plan and tasks live in GitHub issues.
 
 ## What's in the product
 
@@ -22,7 +22,7 @@ Naazhi is a SaaS workspace for **notes, tasks, journal, chat, calendar, email, m
 - **Admin panel** — users, usage, announcements and an audit log.
 - **Marketing site** — home, how it works, pricing, privacy & security, feature pages and a changelog.
 
-What's planned is in [`docs/PHASES.md`](docs/PHASES.md) and the Jira board.
+What's planned is in [`docs/PHASES.md`](docs/PHASES.md) and the GitHub issues.
 
 ## Repository layout
 
@@ -31,9 +31,10 @@ A pnpm/Turborepo monorepo:
 ```
 apps/web/             Next.js 16 app: marketing site, signed-in workspace, admin panel, API
 apps/mobile/          Expo Router / React Native app
-packages/api-client/  Shared API transport for web and mobile
+apps/desktop/         Electron shell for Mac and Windows around the web app
+packages/             Shared API transport, types, validation and logic for web, mobile and desktop
 db/migrations/        SQL migrations (append-only)
-docs/                 Architecture, phases, workflow, data model, security, Jira guide
+docs/                 Architecture, phases, workflow, data model, security, brand, design
 ```
 
 The backend uses PostgreSQL, Better Auth, S3-compatible object storage and Redis. Every folder has an `AGENTS.md` explaining its purpose and rules; [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md) maps what is where.
@@ -81,7 +82,7 @@ See [`.env.example`](.env.example). Never commit `.env*` files; never prefix a s
 
 ## Documentation
 
-[`docs/README.md`](docs/README.md) is the index: onboarding, architecture, phases, team workflow, current state, data model, security, conventions, Jira guide and the full backlog.
+[`docs/README.md`](docs/README.md) is the index: onboarding, architecture, phases, team workflow, current state, data model, security, conventions, brand and design language.
 
 ## Design system
 

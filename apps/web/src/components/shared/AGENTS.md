@@ -1,6 +1,6 @@
 # apps/web/src/components/shared
 
-**Purpose:** Small composites used by two or more features: `EmptyState`, `Avatar`, `AttachmentList` (images/audio/files with signed URLs), `MarkdownView` (today `components/app/Markdown.tsx`), `Pill`/`Chip`, `LocalTime`. **Owner:** whoever first needs the second copy. **Jira:** UNT-50, UNT-67.
+**Purpose:** Small composites used by two or more features: `EmptyState`, `Avatar`, `AttachmentList` (images/audio/files with signed URLs), `MarkdownView` (today `components/app/Markdown.tsx`), `Pill`/`Chip`, `LocalTime`. **Owner:** whoever first needs the second copy.
 
 ## Rules
 

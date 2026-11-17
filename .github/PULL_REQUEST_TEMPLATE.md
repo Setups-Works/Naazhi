@@ -1,8 +1,4 @@
-## Jira
-
-<!-- The PR title must start with the key: "UNT-123 Short summary". Jira links the PR automatically from the title/branch. -->
-
-Closes: [UNT-](https://setups-works.atlassian.net/browse/UNT-)
+<!-- Title: a short imperative summary, e.g. "Add note sharing to the app". -->
 
 ## What changed
 
@@ -25,7 +21,7 @@ Closes: [UNT-](https://setups-works.atlassian.net/browse/UNT-)
 
 ## Checklist
 
-- [ ] Acceptance criteria of the Jira task are met
+- [ ] The change does what the summary above says, on every platform it names
 - [ ] Layering respected (`UI → feature hook → API/server action → service → repository`); no `apps/web/src/server` imports in client code
 - [ ] No secrets, tokens or personal data in code, logs or screenshots
 - [ ] UI compared side by side with `/dashboard/todo` (fonts, glass, tints, buttons) — desktop and 375 px
@@ -36,11 +32,11 @@ Closes: [UNT-](https://setups-works.atlassian.net/browse/UNT-)
 
 ## Notes for the reviewer
 
-<!-- Risks, trade-offs, follow-ups (link new Jira tasks), anything you'd like a second opinion on. -->
+<!-- Risks, trade-offs, follow-ups (link new GitHub issues), anything you'd like a second opinion on. -->
 
 ## Platforms (docs/ALL_PLATFORMS.md)
 
-- [ ] Web: built / n/a because … / follow-up UNT-
-- [ ] App (apps/mobile): built / n/a because … / follow-up UNT-
+- [ ] Web: built / n/a because … / follow-up #
+- [ ] App (apps/mobile): built / n/a because … / follow-up #
 - [ ] Desktop: works through the web app / needs shell work / n/a
 - [ ] Twin bug searched for on the other surface

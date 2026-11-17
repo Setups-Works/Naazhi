@@ -1,6 +1,6 @@
 # apps/web/src/server/repositories
 
-**Purpose:** The only place that writes SQL queries for domain data. One file per aggregate: `notes.repository.ts`, `tasks.repository.ts`, `workspaces.repository.ts`, … **Owner:** track A. **Jira:** UNT-57.
+**Purpose:** The only place that writes SQL queries for domain data. One file per aggregate: `notes.repository.ts`, `tasks.repository.ts`, `workspaces.repository.ts`, … **Owner:** track A.
 
 ## Rules
 

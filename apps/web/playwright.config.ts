@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * End-to-end tests (UNT-33). They drive a running copy of the app, so start it first:
+ * End-to-end tests. They drive a running copy of the app, so start it first:
  *   docker compose --env-file .env.selfhost --profile app up -d --build     (or `pnpm dev:web`)
  * then, once on your machine:  pnpm exec playwright install chromium   and   pnpm test:e2e
  *

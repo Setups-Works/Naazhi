@@ -103,7 +103,7 @@ See `AGENTS.md` §3 and each folder's `AGENTS.md`. Routes today: `docs/CURRENT_S
 
 ## 10. Decisions log
 
-Record architectural decisions here with date, decision, and reason. Open decisions are tagged `decision-needed` in Jira.
+Record architectural decisions here with date, decision, and reason. Open decisions are tracked as GitHub issues labelled `decision-needed`.
 
 | Date    | Decision                                                                  | Why                                                                                    |
 | ------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
@@ -112,6 +112,6 @@ Record architectural decisions here with date, decision, and reason. Open decisi
 | 2026-10 | Groq on the server, Puter.js in the browser behind one provider interface | Cheap fast default + bring-your-own-account option                                     |
 | 2026-10 | Billing plans (subscription, pay as you go, bring your own key) with AI metered per user | One AI gate for every provider; payments can be added later without touching features |
 | 2026-11 | Website and app served from separate hosts (`naazhi.app`, `dashboard.naazhi.app`), web deployed as a Docker image to Azure | Clean addresses, one codebase, simple self-hosting |
-| _open_  | Final route structure (`(app)` group vs `/dashboard/*`)                   | Jira UNT-49                                                                            |
-| _open_  | Embedding provider for semantic search                                    | Jira UNT-86                                                                            |
-| _open_  | Transcription provider and email-sending provider                         | Jira UNT-88, UNT-91                                                                    |
+| _open_  | Final route structure (`(app)` group vs `/dashboard/*`)                   | Open                                                                                   |
+| _open_  | Embedding provider for semantic search                                    | Open                                                                                   |
+| _open_  | Transcription provider and email-sending provider                         | Open                                                                                   |

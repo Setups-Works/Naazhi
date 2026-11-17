@@ -539,7 +539,7 @@ add(4, "Typography Hierarchy", `
 <div><span>Section label</span><p class="eyebrow">Upcoming</p></div>
 <div><span>Body</span><p style="font-size:15px">Plan the week, then write down how it went.</p></div>
 <div><span>Small</span><p style="font-size:13px;color:${C.fgMuted}">Due tomorrow · Repeats weekly</p></div>
-<div><span>Mono</span><p style="font-family:var(--mono);font-size:13.5px">⌘K · 12:30 · UNT-49</p></div>
+<div><span>Mono</span><p style="font-family:var(--mono);font-size:13.5px">⌘K · 12:30 · v9.0.2</p></div>
 </div>`);
 
 add(4, "Line Height & Letter Spacing", `

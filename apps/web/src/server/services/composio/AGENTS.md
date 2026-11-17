@@ -1,6 +1,6 @@
 # services/composio
 
-**Owner:** track C. **Phase 3.** **Jira:** UNT-70 (service), UNT-71 (page), UNT-82 (chat), UNT-94 (Slack/GitHub), UNT-96 (admin health).
+**Owner:** track C. **Phase 3.**
 
 **Built:** Gmail, Google Calendar and Google Drive for every person with **one Google sign-in** (our own OAuth, no third-party broker; the folder keeps the name `composio` from when it used Composio). Connect and disconnect in Settings → Google (one button for all), chat cards (`<show-item>{"kind":"composio"}`), and the `gmail_send` / `gcal_event` drafts that act only after the person presses the button.
 

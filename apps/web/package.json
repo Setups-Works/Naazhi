@@ -1,7 +1,7 @@
 {
   "name": "@untitled/web",
   "private": true,
-  "version": "9.0.2",
+  "version": "9.1.0",
   "scripts": {
     "dev": "node ../../scripts/web-next.mjs dev",
     "build": "node ../../scripts/web-next.mjs build",
@@ -41,7 +41,7 @@
     "gsap": "^3.15.0",
     "ioredis": "^6.0.0",
     "lucide-react": "^1.71.0",
-    "next": "^16.3.8",
+    "next": "^16.4.6",
     "nodemailer": "^10.0.15",
     "pg": "^8.23.1",
     "radix-ui": "^1.8.1",
@@ -51,7 +51,7 @@
     "server-only": "^0.0.1",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.7.0",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.0",

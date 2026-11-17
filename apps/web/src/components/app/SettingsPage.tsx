@@ -76,7 +76,7 @@ const GROUPS: { label: string; tiles: Tile[] }[] = [
       {
         k: "invites",
         label: "Invites & earnings",
-        desc: "Invite friends and track what you’ve earned.",
+        desc: "Invite friends and see what you’ve earned.",
         icon: faUserPlus,
         soon: ["Get a personal invite link to share", "See who signed up and what you’ve earned", "Withdraw your earnings once you pass the minimum"],
       },
@@ -98,7 +98,7 @@ const GROUPS: { label: string; tiles: Tile[] }[] = [
     tiles: [
       { k: "youdo", label: "YouDo", desc: "Automations that run on a schedule or when an email arrives.", icon: faBolt, soon: ["Describe an automation in a sentence", "Start from examples like a morning read or a Friday wrap-up", "See how many runs you have left this month"] },
       { k: "skills", label: "Skills", desc: "Slash commands and saved prompts.", icon: faTerminal },
-      { k: "keys", label: "API keys", desc: "Use your own AI and transcription provider keys.", icon: faKey },
+      { k: "keys", label: "API keys", desc: "Use your own AI provider keys.", icon: faKey },
     ],
   },
   {
@@ -123,7 +123,7 @@ const GROUPS: { label: string; tiles: Tile[] }[] = [
   {
     label: "About",
     tiles: [
-      { k: "apps", label: "Get apps & extension", desc: "Naazhi on your phone.", icon: faMobileScreen },
+      { k: "apps", label: "Get apps & extension", desc: "Naazhi on your phone and computer.", icon: faMobileScreen },
       { k: "legal", label: "Legal", desc: "Terms, privacy and refund policy.", icon: faFileLines },
     ],
   },

@@ -2,7 +2,7 @@
 
 **Purpose:** Next.js App Router: pages, layouts and route handlers. **Thin.** Fetch/compose, render a feature, return. Business rules belong in `apps/web/src/server/services`, UI in `apps/web/src/features` / `apps/web/src/components`.
 
-**Owner:** shared; each subfolder names its track. **Jira:** UNT-49 (final route structure).
+**Owner:** shared; each subfolder names its track.
 
 ## Today
 

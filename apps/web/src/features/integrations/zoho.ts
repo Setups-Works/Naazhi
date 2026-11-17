@@ -2,6 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ZohoItems, ZohoStatus } from "../../lib/zoho";
 import { qk } from "../../lib/query/keys";
+import { rememberConnectReturn } from "../../lib/connectReturn";
 
 /**
  * Data layer for the Zoho connection (Settings) and the Zoho cards in chat. The browser only ever talks to our own /api/v1 routes;
@@ -16,15 +17,17 @@ async function call<T>(url: string, init?: RequestInit): Promise<T> {
 
 export const useZohoStatus = () => useQuery({ queryKey: qk.zoho.status, queryFn: () => call<ZohoStatus>("/api/v1/integrations/zoho"), staleTime: 60_000 });
 
-/** Sends the person to Zoho's own page to approve the services they picked. */
+/** Sends the person to Zoho's own page to approve the services they picked. They come back to Settings, or to `returnTo`. */
 export function useConnectZoho() {
   return useMutation({
-    mutationFn: async (services: string[]) => {
+    mutationFn: async (input: string[] | { services: string[]; returnTo?: string }) => {
+      const { services, returnTo } = Array.isArray(input) ? { services: input, returnTo: undefined } : input;
       const { url } = await call<{ url: string }>("/api/v1/integrations/zoho/start", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ services }),
       });
+      if (returnTo) rememberConnectReturn(returnTo);
       window.location.assign(url);
     },
   });

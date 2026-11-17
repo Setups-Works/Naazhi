@@ -13,4 +13,3 @@
 - View membership logic lives in `lib/tasks.ts` (`inView`) — keep it pure and unit-tested.
 - Shortcuts only fire when not typing and no dialog is open.
 
-**Jira:** UNT-61 (migrate), UNT-65 (subtasks, labels, reminders, board DnD), UNT-91 (reminder notifications), UNT-89 (automations).

@@ -1,6 +1,6 @@
 # services/automation
 
-**Owner:** track C. **Phase 5.** **Jira:** UNT-89 (engine), UNT-90 (UI), UNT-94 (Slack/GitHub), UNT-91 (notifications).
+**Owner:** track C. **Phase 5.**
 
 **Responsibilities:** store automations (`trigger` + `conditions` + `actions` as validated JSON), evaluate triggers (schedule, task events, Composio triggers), execute actions (create task/note, notify, draft email, run an AI action), record every run in `automation_runs`.
 

@@ -11,7 +11,7 @@ import { draftToRow } from "./utils";
  * Data layer for calendar events, on TanStack Query (same pattern as `features/tasks/queries.ts`). Reads are cached and refreshed by
  * realtime; writes update the cache first, roll back on error and refetch when settled. Components use these hooks, never `api()`.
  * Tasks with due dates come from `useTasks()` so the calendar and the To-do page always show the same data.
- * TODO(UNT-72): when the Google sync service lands, only the queryFn / mutationFn bodies change.
+ * TODO: when the Google sync service lands, only the queryFn / mutationFn bodies change.
  */
 
 const COLS = "id,external_id,calendar_id,title,description,location,start_at,end_at,all_day,color,created_at,updated_at";

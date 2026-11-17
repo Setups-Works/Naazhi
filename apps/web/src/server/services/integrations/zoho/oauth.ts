@@ -104,10 +104,15 @@ async function profileLabel(accounts: string, access: string): Promise<string> {
 }
 
 /** Step 2: Zoho sent the person back with a code. Exchange it, seal the tokens and save the connection. */
-export async function finishZohoConnect(userId: string, p: { code: string; state: string; accountsServer: string | null }): Promise<void> {
+export async function finishZohoConnect(sessionUserId: string | null, p: { code: string; state: string; accountsServer: string | null }): Promise<void> {
   if (!zohoConfigured()) throw new ConflictError("Zoho isn’t set up on this server yet.");
-  const pending = await repo.takeOAuthState(userId, "zoho", hash(p.state));
+  // With the person's session the attempt must be theirs; without one (the phone's in-app sheet, or the desktop app's sign-in in the
+  // system browser) the secret, single-use state says whose it is, the same way Google's sign-in works.
+  const pending = sessionUserId
+    ? await repo.takeOAuthState(sessionUserId, "zoho", hash(p.state)).then((r) => r && { ...r, user_id: sessionUserId })
+    : await repo.takeOAuthStateAny("zoho", hash(p.state));
   if (!pending) throw new ValidationError("That sign-in link expired or was already used. Start again from Settings.");
+  const userId = pending.user_id;
   const accounts = (isZohoAccountsServer(p.accountsServer) ? p.accountsServer : cfg().accountsServer).replace(/\/+$/, "");
   if (!isZohoAccountsServer(accounts)) throw new ValidationError("Zoho sent us to a data center we don’t recognise.");
   const t = await tokenCall(accounts, { grant_type: "authorization_code", code: p.code, redirect_uri: redirectUri() });

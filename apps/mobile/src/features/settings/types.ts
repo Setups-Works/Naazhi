@@ -33,7 +33,7 @@ export const SETTINGS_GROUPS: { label: string; sections: SettingsSectionInfo[] }
   {
     label: "Account",
     sections: [
-      { key: "profile", title: "My account", desc: "Your name, photo, email and username.", icon: "user" },
+      { key: "profile", title: "My account", desc: "Your name, photo, mobile number, email and username.", icon: "user" },
       { key: "billing", title: "Plans & billing", desc: "Your plan, payments and AI access.", icon: "wallet" },
       { key: "invites", title: "Invites & earnings", desc: "Invite friends and see what you’ve earned.", icon: "user-plus", soon: true },
     ],
@@ -72,7 +72,7 @@ export const SETTINGS_GROUPS: { label: string; sections: SettingsSectionInfo[] }
   {
     label: "Privacy & security",
     sections: [
-      { key: "security", title: "Security", desc: "Password and signed-in devices.", icon: "shield-halved" },
+      { key: "security", title: "Security", desc: "Password, passkeys and signed-in devices.", icon: "shield-halved" },
       { key: "data", title: "Your data", desc: "Download a copy of everything you’ve written.", icon: "database" },
       { key: "danger", title: "Delete account", desc: "Permanently delete your account and data.", icon: "trash" },
     ],
@@ -80,7 +80,7 @@ export const SETTINGS_GROUPS: { label: string; sections: SettingsSectionInfo[] }
   {
     label: "About",
     sections: [
-      { key: "apps", title: "Get apps & extension", desc: "Naazhi on your phone and the web.", icon: "mobile-screen" },
+      { key: "apps", title: "Get apps & extension", desc: "Naazhi on your phone and computer.", icon: "mobile-screen" },
       { key: "about", title: "About & updates", desc: "Version and app updates.", icon: "circle-info" },
       { key: "legal", title: "Legal", desc: "Terms, privacy and refund policy.", icon: "file-lines" },
     ],

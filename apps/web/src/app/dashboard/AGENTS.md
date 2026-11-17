@@ -1,6 +1,6 @@
 # apps/web/src/app/dashboard — the signed-in app shell
 
-**Purpose:** Layout and pages for the user panel. **Owner:** track B (features) with track A for the shell. **Jira:** UNT-49 (route structure), then feature migrations UNT-60/61/62/81.
+**Purpose:** Layout and pages for the user panel. **Owner:** track B (features) with track A for the shell.
 
 ## Today
 
@@ -13,5 +13,5 @@
 
 - This folder contains routing glue only. Feature UI lives in `apps/web/src/features/<name>` (today still in `apps/web/src/components/app/*`).
 - Keep the layout's server work cheap — it runs on every navigation. No heavy queries.
-- When the route structure changes (UNT-49), keep redirects from old URLs.
-- Nothing here may assume a single user once workspaces land (UNT-54): resolve the active workspace in the layout and pass it down.
+- When the route structure changes, keep redirects from old URLs.
+- Nothing here may assume a single user once workspaces land: resolve the active workspace in the layout and pass it down.

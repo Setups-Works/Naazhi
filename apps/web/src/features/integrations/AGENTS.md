@@ -10,4 +10,3 @@
 - We store connection ids and a display label only — **never tokens**.
 - Expired/error states are first-class UI ("Reconnect").
 
-**Jira:** UNT-70 (service), UNT-71 (page), UNT-94, UNT-96 (admin health).

@@ -10,8 +10,13 @@ import { serverEnv } from "../config/env";
 export function sameOrigin(req: Request) {
   const origin = req.headers.get("origin");
   if (!origin) return true;
-  const allowed = new URL(serverEnv().authUrl).host;
-  return new URL(origin).host === allowed || new URL(origin).host === req.headers.get("host");
+  let host: string;
+  try {
+    host = new URL(origin).host; // "null" (sandboxed frames, some redirects) and junk are refused, not a 500
+  } catch {
+    return false;
+  }
+  return host === new URL(serverEnv().authUrl).host || host === req.headers.get("host");
 }
 
 export const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { "cache-control": "no-store" } });

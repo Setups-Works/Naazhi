@@ -6,7 +6,7 @@
 
 ```
 services/<domain>/
-  AGENTS.md            responsibilities, public functions, tables, Jira keys
+  AGENTS.md            responsibilities, public functions, tables
   <domain>.service.ts  exported async functions (the public API of the domain)
   <domain>.schema.ts   Zod schemas for inputs/outputs shared with API routes
   errors.ts            domain errors (optional)

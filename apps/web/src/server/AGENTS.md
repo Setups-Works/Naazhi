@@ -21,4 +21,4 @@ server/
 
 ## Today
 
-Only `providers/ai/*` exists (contract, registry, Groq/Puter stubs). The repository/service pattern is created by **UNT-57** with notes as the reference; read it before adding a new service.
+Only `providers/ai/*` exists (contract, registry, Groq/Puter stubs). The repository/service pattern uses notes as the reference; read it before adding a new service.

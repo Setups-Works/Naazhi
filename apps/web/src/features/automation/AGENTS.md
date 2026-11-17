@@ -10,4 +10,3 @@
 - Runs are idempotent and isolated: one failing action never blocks others; every run is recorded.
 - Disabling takes effect immediately. Guard against loops (an automation triggering itself).
 
-**Jira:** UNT-89 (engine), UNT-90 (UI), UNT-94 (Slack/GitHub).

@@ -7,7 +7,7 @@
 | `api/`          | `builder.ts` (typed query builder), `client.ts` (browser `api()`: `from`, `storage`)                     | yes                                                          |
 | `composio/`     | Integration vocabulary and types                                                                         | yes                                                          |
 | `ai/`           | Client-safe list of AI options shown in the composer                                                     | yes                                                          |
-| `auth/`         | `client.ts` (Better Auth browser client), `redirect.ts` (`safeNext`); roles/permissions helpers (UNT-58) | yes                                                          |
+| `auth/`         | `client.ts` (Better Auth browser client), `redirect.ts` (`safeNext`); roles/permissions helpers | yes                                                          |
 | `utils/`        | Generic helpers (planned home for `dates`, `validate`, formatting)                                       | yes                                                          |
 | `*.ts` (legacy) | `dates`, `prefs`, `notes`, `tasks`, `chat`, `insights`, `workspace` (types), `site`, `logos`, `validate` | yes — feature helpers move to their feature folder over time |
 

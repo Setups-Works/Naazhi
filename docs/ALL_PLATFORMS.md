@@ -12,7 +12,7 @@ Naazhi ships on **three surfaces**, and a feature or a bug fix is not done until
 
 ## 1. The rule
 
-1. **Decide the platforms first.** Before coding, write in the PR description (or the Jira task) one line each for Web, App and Desktop: *built*, *not needed (why)* or *follow-up UNT-n*. "Forgot" is not an answer.
+1. **Decide the platforms first.** Before coding, write in the PR description (or the GitHub issue) one line each for Web, App and Desktop: *built*, *not needed (why)* or *follow-up #n*. "Forgot" is not an answer.
 2. **Put what can be shared in the shared packages**, so the three can't drift: types in `packages/types`, pure rules in `packages/logic`, Zod schemas in `packages/validation`, API calls in `packages/api-client`. The web and the app then differ only in how they draw things.
 3. **The server is one.** An API route, service or migration serves every surface. Never build a feature that only the web's cookie session can call: the phone sends its own session, and the phone's in-app browser **does not carry it to other websites** (see "Sign-in flows" below).
 4. **Fix a bug where it lives, then look for its twin.** Search the other surface for the same code path (`git grep` the component name, the API route, the copy) before you call a bug fixed.
@@ -37,8 +37,8 @@ Naazhi ships on **three surfaces**, and a feature or a bug fix is not done until
 
 ```
 Platforms
-- [ ] Web: built / n/a because … / follow-up UNT-
-- [ ] App (apps/mobile): built / n/a because … / follow-up UNT-
+- [ ] Web: built / n/a because … / follow-up #
+- [ ] App (apps/mobile): built / n/a because … / follow-up #
 - [ ] Desktop: works through the web app / needs shell work (menus, tray, naazhi:// link, notification, sign-in) / n/a
 Server and shared code
 - [ ] Logic, types, validation and API calls are in packages/* where both can use them

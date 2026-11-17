@@ -23,6 +23,22 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-17",
+    title: "Version 9.1.0: Zoho in setup, and a safer Naazhi",
+    summary: "Connect Zoho during setup on the web, finish connecting Zoho from the phone and desktop apps, and a round of security updates across the board.",
+    tone: "green",
+    appVersion: "v9.1.0",
+    changes: [
+      { kind: "new", platform: "web", text: "Setup on the web now connects Zoho Mail and Calendar right on the accounts step, like the app, and brings you back to the step you were on." },
+      { kind: "fixed", platform: "app", text: "Connecting Zoho from the app now finishes instead of stopping at a sign-in page." },
+      { kind: "fixed", platform: "desktop", text: "Connecting Zoho from the Mac and Windows apps now finishes in your browser without asking you to sign in there first." },
+      { kind: "improved", platform: "web", text: "Security updates: the web server is on a patched version, links after signing in can only lead to Naazhi pages, and Naazhi can’t be shown inside other websites." },
+      { kind: "improved", platform: "web", text: "Limits on sign-in and password reset now count each visitor on their own, so one person can’t lock others out." },
+      { kind: "improved", platform: "app", text: "Settings describes each section the same way as the website: My account mentions your mobile number and Security mentions passkeys." },
+      { kind: "improved", platform: "desktop", text: "The Open in browser menu item only ever opens Naazhi’s own pages." },
+    ],
+  },
+  {
+    date: "2026-11-17",
     title: "Version 9.0.2: country and address in the app, steadier chat typing",
     summary: "The phone app gets the country and address settings, the chat box stays above the keyboard, and Zoho Mail links open the right message.",
     tone: "sand",

@@ -1,6 +1,6 @@
 # apps/web/src/components/ui — primitives
 
-**Purpose:** The design-system building blocks every screen uses. **Owner:** track A (with B reviewing). **Jira:** UNT-50.
+**Purpose:** The design-system building blocks every screen uses. **Owner:** track A (with B reviewing).
 
 **Done (built on Radix, so focus trap, Escape, arrow-key nav and portals come for free):**
 

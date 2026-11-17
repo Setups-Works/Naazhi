@@ -1,7 +1,7 @@
 name: E2E
 
 # Heavier checks that need the whole stack: database tests (row-level security) and the Playwright journey.
-# Run it by hand from the Actions tab (UNT-33). It is not required for merging.
+# Run it by hand from the Actions tab. It is not required for merging.
 on:
   workflow_dispatch:
 

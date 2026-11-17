@@ -21,4 +21,3 @@
 - Mobile (< 640px) defaults to the Agenda view.
 - Wrapped in `ClientOnly` on `/dashboard/calendar` to prevent hydration mismatches.
 
-**Jira:** UNT-72 (service), UNT-73 (feature), UNT-76 (daily brief), UNT-82 (AI reads calendar).

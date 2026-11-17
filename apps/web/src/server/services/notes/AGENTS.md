@@ -1,6 +1,6 @@
 # services/notes — the reference implementation
 
-**Owner:** track A builds the pattern, track B migrates the feature. **Phase 1–2.** **Jira:** UNT-57 (pattern), UNT-60 (migration), UNT-64 (v2), UNT-67 (attachments).
+**Owner:** track A builds the pattern, track B migrates the feature. **Phase 1–2.**
 
 **Responsibilities:** list/search/create/update/delete notes, pin and categorise, reorder (`sort_order`), manage attachments, expose history (`note_versions`), enforce workspace permissions, later tags/backlinks/trash.
 

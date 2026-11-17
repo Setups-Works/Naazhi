@@ -16,4 +16,3 @@
 - Week start comes from user preferences (`weekdayIndex`).
 - `?d=YYYY-MM-DD` deep-links a day (used by universal search).
 
-**Jira:** UNT-62 (migrate), UNT-66 (templates, prompts, mood, weekly review), UNT-69/93 (insights).

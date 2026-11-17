@@ -1,6 +1,6 @@
 import { app, Menu, shell, type MenuItemConstructorOptions } from "electron";
 import { DESKTOP_SECTIONS } from "@untitled/types";
-import { config, platform } from "./config";
+import { config, isAppUrl, platform } from "./config";
 import { goTo } from "./navigation";
 import { checkForUpdates } from "./updater";
 import { mainWindow, showMainWindow } from "./window";
@@ -77,7 +77,7 @@ export function buildMenu(): void {
     {
       role: "help",
       submenu: [
-        { label: "Open in browser", click: () => void shell.openExternal(mainWindow()?.webContents.getURL().startsWith(config.appOrigin) ? mainWindow()!.webContents.getURL() : config.appUrl) },
+        { label: "Open in browser", click: () => { const url = mainWindow()?.webContents.getURL() ?? ""; void shell.openExternal(isAppUrl(url) ? url : config.appUrl); } },
         ...(mac ? [] : ([{ label: "Check for updates…", click: checkForUpdates }, { type: "separator" }, { label: `About ${config.productName} ${app.getVersion()}`, click: () => app.showAboutPanel() }] satisfies MenuItemConstructorOptions[])),
       ],
     },

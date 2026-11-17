@@ -1,5 +1,5 @@
 /*
- * Tailwind v4, adopted incrementally (UNT-50 follow-up).
+ * Tailwind v4, adopted incrementally.
  *
  * Only the theme and utilities layers are loaded — NOT Tailwind's preflight reset — so importing this file changes nothing on
  * screen: the legacy rules in globals.css keep styling every screen until it is converted.

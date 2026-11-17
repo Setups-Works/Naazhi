@@ -1,6 +1,6 @@
 # apps/web/src/app/api/v1 — REST API
 
-**Purpose:** The versioned HTTP API used by the UI, background jobs, webhooks and (Puter) browser AI flows. **Not built yet** — foundation is **UNT-56** (Phase 1, track A).
+**Purpose:** The versioned HTTP API used by the UI, background jobs, webhooks and (Puter) browser AI flows. **Not built yet** as a shared foundation (Phase 1, track A); routes today are written one by one.
 
 ## Layout (target)
 
@@ -27,4 +27,3 @@ api/v1/
 - Version in the path. Breaking changes → `/api/v2`, not edits to v1.
 - Never return secrets, other users' data, or raw database errors.
 
-**Jira:** UNT-56 (foundation), UNT-57 (reference implementation), UNT-59 (jobs), UNT-70 (Composio), UNT-80 (AI chat).

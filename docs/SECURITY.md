@@ -1,6 +1,6 @@
 # Security
 
-Rules for everyone (and every AI agent). The checklist at the bottom is finished in Phase 6 (UNT-99).
+Rules for everyone (and every AI agent). The checklist at the bottom is finished in Phase 6.
 
 ## Principles
 
@@ -36,7 +36,7 @@ Rotation: change the value in `.env.selfhost` / your secret manager and recreate
 - `BETTER_AUTH_TRUSTED_ORIGINS` is a comma-separated list merged into Better Auth's trusted origins. Set it to `exp://**` when testing OAuth from Expo Go against a deployed backend; server config also normalizes a plain `exp://` value to that wildcard pattern.
 - Forgot-password uses Better Auth email OTPs: six digits, five-minute expiry, three attempts, hashed at rest, and limited to three requests per minute. The UI uses a generic response so it does not reveal whether an email has an account. OTPs are sent through the configured SMTP transport and must never be logged.
 - The desktop app signs in with Google through the person's browser: `/desktop-signin` (needs a session) makes a Better Auth one-time token (hashed at rest, 3 minutes, single use) and opens `naazhi://auth?token=…`; the app trades it for its own session cookie. Never log the token. The shell itself runs with context isolation and the sandbox, validates every message from the page and opens off-site links in the browser (docs/DESKTOP.md).
-- Redirect targets (`?next=`) are validated by `safeNext` (same-site relative paths only).
+- Redirect targets (`?next=`) are validated by `safeNext` (same-site relative paths only; backslashes and control characters are refused, since browsers turn `/\evil` into `//evil`).
 - Admin = `app_metadata.role = 'admin'` or an email in `ADMIN_EMAILS`. Every `/admin/*` page and server action re-checks on the server (`requireAdmin` / `assertAdmin`). Admins can't demote/ban/delete themselves or `ADMIN_EMAILS` accounts.
 - Account deletion and "reset workspace" remove rows **and** storage files.
 
@@ -56,7 +56,7 @@ Rotation: change the value in `.env.selfhost` / your secret manager and recreate
 
 ## Uploads
 
-- 10 MB limit (bucket) plus type checks in UI; Phase 2 adds server-side MIME validation and rejects executables (UNT-67).
+- 10 MB limit (bucket) plus type checks in UI; Phase 2 adds server-side MIME validation and rejects executables.
 - Never render uploaded HTML/SVG inline; images and audio use `<img>`/`<audio>` via signed URLs; other files open in a new tab with `rel="noopener noreferrer"`.
 
 ## Plans, usage and saved API keys
@@ -71,14 +71,20 @@ Full design: `docs/BILLING.md`.
 
 ## AI and tools (Phase 4)
 
-- Tool output and external content are data, not instructions (prompt-injection rules in the prompt library, UNT-84).
-- **Any write action by the AI (send mail, create/delete events or tasks) requires explicit user confirmation** with a preview (UNT-82).
-- Log tool calls to the audit log; meter usage; cap per-user spend (UNT-83).
+- Tool output and external content are data, not instructions (prompt-injection rules in the prompt library).
+- **Any write action by the AI (send mail, create/delete events or tasks) requires explicit user confirmation** with a preview.
+- Log tool calls to the audit log; meter usage; cap per-user spend.
 - Don't send more context to a provider than the feature needs; document what each provider receives.
 
 ## Web hardening (Phase 6)
 
-CSP and security headers, Cloudflare WAF + rate limits, dependency audit, secret scanning in CI, bot protection on auth endpoints (UNT-98, UNT-99).
+**In place:** every response carries `X-Frame-Options: SAMEORIGIN`, `frame-ancestors 'self'; base-uri 'self'; object-src 'none'`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin` and HSTS (two years), and no `X-Powered-By` (`apps/web/next.config.mjs`). Uploaded files keep their own sandbox CSP (the storage route), so the page policy is not sent there.
+
+**Still to do:** a full script CSP (it must allow Firebase, Clarity, Razorpay, Stripe and Puter.js and be tested against each), Cloudflare WAF, secret scanning in CI, bot protection on auth endpoints.
+
+**Client addresses for rate limits.** Per-address limits (sign-in, password reset, desktop sign-in codes, visit counting) use `clientIp()` (`apps/web/src/server/clientIp.ts`): the header named in `CLIENT_IP_HEADER` when set, otherwise the right-most `x-forwarded-for` entry (the one our proxy added; the left-most is whatever the client sent). The auth route hands Better Auth the same address in `x-naazhi-client-ip` (`withAuthIp()`, always overwriting what the visitor sent, port removed). Production on Azure App Service sets `CLIENT_IP_HEADER=x-client-ip`: Azure's front end writes it and overwrites any value the visitor sends.
+
+**Dependencies.** Run `corepack pnpm audit --prod` before a release. Transitive floors for packages we don't depend on directly go in `overrides` in `pnpm-workspace.yaml`.
 
 ## Reporting and incidents
 
@@ -88,7 +94,8 @@ Found a vulnerability or leaked secret? Tell the tech lead immediately, rotate f
 
 - [ ] Every table has RLS + tests; no unintended anon access
 - [ ] Service-role usage reviewed (list below)
-- [ ] CSP / headers deployed; cookies `Secure`, `HttpOnly`, `SameSite=Lax`
+- [ ] CSP / headers deployed (security headers done; full script CSP open); cookies `Secure`, `HttpOnly`, `SameSite=Lax`
+- [x] `CLIENT_IP_HEADER` set in production (`x-client-ip`, Azure App Service)
 - [ ] Rate limits on auth, AI, upload and share endpoints
 - [ ] Share links, uploads and admin actions reviewed
 - [ ] AI tool confirmation + injection tests in CI
@@ -108,3 +115,25 @@ Found a vulnerability or leaked secret? Tell the tech lead immediately, rotate f
 
 ## Invoices and emails
 An invoice is created only from a payment the server has verified with Razorpay. `/invoice/<id>` is owner-only (the query runs as the signed-in person) and `noindex`. Emails are drawn from one layout with every value escaped, never log their content, and never block a payment. The admin email preview is sandboxed and sends nothing.
+
+## Audit log
+
+### 2026-11-17 — repository review (web, app, desktop)
+
+Reviewed: every route handler's auth, the `/api/v1/db` query builder (identifiers checked against the schema and quoted, values bound, run as the user under RLS), owner-role database use, admin pages and server actions (`requireAdmin` in the layout, `assertAdmin` in every action), cron and webhook gates (timing-safe), share-token lookups, the storage route, the desktop shell (context isolation, sandbox, exact-origin checks, permission allow-list), tracked files for secrets and key files (none), and production dependencies.
+
+Fixed:
+
+- **Next.js 16.3.8 → 16.4.x**: two critical unauthenticated remote-code-execution advisories (Image Optimization with SVG; `use cache` with typed arrays) and a Server Actions denial of service. zod raised to 4.6.7 (memory exhaustion); node-forge and `@grpc/grpc-js` floored through `overrides`. `pnpm audit --prod`: 2 critical and 11 high → 0 critical, 0 high.
+- **Open redirect** in `safeNext` through `/\evil.test` and tab/newline tricks.
+- **Rate limits keyed on a spoofable address** (left-most `x-forwarded-for`) on desktop sign-in and visit counting; Better Auth's limits fell into one shared bucket. `clientIp()` and `CLIENT_IP_HEADER`.
+- **No security headers**: added (see Web hardening).
+- **Zoho sign-in from the phone and desktop** required a browser session the in-app sheet doesn't carry; it now uses the single-use state, like Google.
+- `sameOrigin` returned a 500 for a malformed `Origin` (`null`); it now refuses it. The desktop "Open in browser" menu used a prefix match instead of the exact-origin check.
+
+Open (not fixed in this pass):
+
+- Full script CSP.
+- Settings shows the `?msg=` text from sign-in returns (Google, Zoho, Notion). It is escaped, but anyone can craft a link that shows their own words on our page; show only known messages by code.
+- The admin "Send password reset" builds its link from the request's `x-forwarded-host`; take the address from configuration instead.
+- 7 moderate and 1 low dependency advisories remain (dev and phone tooling).

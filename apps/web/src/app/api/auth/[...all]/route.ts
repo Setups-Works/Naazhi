@@ -1,5 +1,6 @@
 import { toNextJsHandler } from "better-auth/next-js";
 import { auth } from "../../../../server/auth";
+import { withAuthIp } from "../../../../server/clientIp";
 import { pool } from "../../../../server/db/pool";
 import { adminEmails } from "../../../../server/session";
 import { audit, isRootAdmin, type AppUser } from "../../../../server/session";
@@ -28,7 +29,7 @@ function record(value: unknown): Record<string, unknown> {
   return typeof value === "object" && value !== null ? (value as Record<string, unknown>) : {};
 }
 
-export const GET = handlers.GET;
+export const GET = async (request: Request) => handlers.GET(await withAuthIp(request));
 
 export async function POST(request: Request) {
   const path = new URL(request.url).pathname.split("/api/auth/")[1] ?? "";
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
     }
   }
 
-  const response = await handlers.POST(request);
+  const response = await handlers.POST(await withAuthIp(request));
   if (session && response.ok && auditedMutations.has(targetPath)) {
     const actor: Pick<AppUser, "id" | "email"> = { id: session.user.id, email: session.user.email };
     const target = typeof body.userId === "string" ? body.userId : typeof body.email === "string" ? body.email : null;

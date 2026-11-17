@@ -11,6 +11,5 @@
 - Redirect targets go through `safeNext()`. Don't build redirect URLs from raw query params.
 - `/api/v1/auth-config` tells the sign-in page whether the server is configured and Google is enabled; keep the friendly setup notice.
 - `AuthLink` / `useAuthState` are cookie-hinted + Better Auth-confirmed so static marketing pages can show "Dashboard" vs "Get started" without becoming dynamic. Don't read `cookies()` in the root layout (it would make every page dynamic).
-- Roles: see `apps/web/src/lib/auth` (RBAC, UNT-58).
+- Roles: see `apps/web/src/lib/auth` (RBAC).
 
-**Jira:** UNT-58 (RBAC), UNT-53 (env), UNT-99 (security review).

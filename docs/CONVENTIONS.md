@@ -23,7 +23,7 @@ Small rules that keep a three-developer codebase readable. When in doubt, match 
 | API route   | `apps/web/src/app/api/v1/<resource>/route.ts`                        | `notes/route.ts`                      |
 | Migration   | `<timestamp>_<snake_name>.sql`                              | `20261101000000_workspaces.sql`       |
 | CSS class   | feature prefix + role                                       | `nt-card`, `tv-sec`, `cx-msg`         |
-| Jira branch | `feature/UNT-n-name`                                        | `feature/UNT-60-notes-feature-module` |
+| Branch      | `feature/short-name`, `fix/short-name`                      | `feature/notes-feature-module`        |
 
 ## API and errors
 
@@ -34,11 +34,11 @@ Small rules that keep a three-developer codebase readable. When in doubt, match 
 
 ## UI language
 
-The full contract (fonts, tokens, glass surfaces, buttons, reference screens, common mistakes) is in `docs/DESIGN_LANGUAGE.md` — read it before touching UI. Summary:
+The full contract (fonts, tokens, surfaces, buttons, reference screens, common mistakes) is in `docs/DESIGN_LANGUAGE.md` — read it before touching UI. Summary:
 
-- Hand-written CSS with tokens in `apps/web/src/app/globals.css`: cream canvas, ink text, forest-green accent; tints `violet blue green amber clay sand mint gold` applied with `at-<tint>` classes (cards take `--ab`, `--abl`, `--abf`).
-- Type: Instrument Serif for display headings, Geist for UI, Geist Mono for counters.
-- Shape: pill buttons, generous radii, hairline inset rings instead of borders.
+- Tokens live in `apps/web/src/app/globals.css` (`:root`) and `apps/web/src/styles/tailwind.css` (`@theme`): paper and ink in three schemes (light, cream, charcoal), the person's accent, tints `violet blue green amber clay sand mint gold` applied with `at-<tint> tint`.
+- Type: Geist 600 for titles (`font-serif font-semibold` is the display role), Geist for UI, Geist Mono for counters; Instrument Serif (`font-brand`) only for the Naazhi wordmark.
+- Shape: flat raised cards with a 1 px hairline and no shadow, 8 px control corners, 12 px card corners; shadows only on floating layers.
 - Reuse components: `Modal`, `Menu`, `useConfirm()`, `usePrompt()`, `ClientOnly`. Never use native `alert/confirm/prompt`.
 - Mobile first. Check 375 px: no horizontal scroll, tap targets ≥ 40 px, bottom sheets for popovers (existing CSS does this at ≤ 700 px).
 - Respect `data-density="compact"` and `data-motion="reduce"` set on `<html>` from user preferences.
@@ -51,9 +51,9 @@ The full contract (fonts, tokens, glass surfaces, buttons, reference screens, co
 - Optimistic updates: `cancelQueries` → snapshot with `getQueriesData` → `setQueriesData` → roll back in `onError` → `invalidateQueries` in `onSettled`. Reference: `apps/web/src/features/tasks/queries.ts`.
 - Realtime: call `useRealtimeInvalidate(table, [keys])` (`apps/web/src/hooks`); it debounces invalidation when rows change. The table needs the notify trigger from migration `20261007080000_realtime.sql`.
 - Overlays/menus/tabs use the Radix wrappers in `apps/web/src/components/ui` — don't build custom ones.
-- Don't put business rules in components — if you catch yourself writing one, it belongs in a service (even if the service is a TODO — leave a comment referencing the Jira task).
+- Don't put business rules in components — if you catch yourself writing one, it belongs in a service (even if the service is a TODO — leave a comment referencing the GitHub issue).
 
-## Testing (UNT-33)
+## Testing
 
 | Command            | What it runs                                                                                                                                                              | Needs                                                   |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |

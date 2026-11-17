@@ -1,6 +1,6 @@
 /**
  * Feature flags. A flag is `true` once the feature is shipped and safe for every user.
- * Flip a flag here when the matching Jira epic is done — UI should read the flag instead of guessing.
+ * Flip a flag here when the matching feature ships — UI should read the flag instead of guessing.
  * (Per-user or per-plan gating lives in the database later; these are global switches.)
  */
 export const FEATURES = {

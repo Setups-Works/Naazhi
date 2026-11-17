@@ -1,6 +1,6 @@
 # services/calendar
 
-**Owner:** track C. **Phase 3.** **Jira:** UNT-72 (service), UNT-73 (UI), UNT-76 (daily brief), UNT-82 (AI reads calendar), UNT-89 (triggers).
+**Owner:** track C. **Phase 3.**
 
 **Responsibilities:** list/create/update/delete events through Composio Google Calendar tools; cache events in `calendar_events` for fast reads; incremental sync job plus trigger-driven refresh; free/busy helpers for the AI and the daily brief.
 

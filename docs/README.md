@@ -12,11 +12,13 @@ Start with the root **`AGENTS.md`** (rules for humans and AI agents), then:
 | [DATA_MODEL.md](DATA_MODEL.md)                 | Tables, RLS, storage, migrations                                       |
 | [SECURITY.md](SECURITY.md)                     | Secrets, RLS, uploads, sharing, AI safety, checklist                   |
 | [CONVENTIONS.md](CONVENTIONS.md)               | Naming, UI patterns, errors, testing                                   |
-| [AI_WORKFLOW.md](AI_WORKFLOW.md)               | How AI agents take Jira tasks to PRs safely (and what is automated)    |
+| [AI_WORKFLOW.md](AI_WORKFLOW.md)               | How AI agents take a task to a PR safely (and what is automated)       |
 | [RELEASE_FOR_AGENTS.md](RELEASE_FOR_AGENTS.md) | **Agents:** how to bump the version, write the changelog, tag and push |
 | [RELEASING.md](RELEASING.md)                   | How the Android APK is built and how people get the update             |
-| [JIRA_GUIDE.md](JIRA_GUIDE.md)                 | How tasks are written and worked                                       |
-| [JIRA_BACKLOG.md](JIRA_BACKLOG.md)             | The whole plan, offline                                                |
+| [ALL_PLATFORMS.md](ALL_PLATFORMS.md)           | Every change on web, app and desktop: the checklist                    |
+| [DESKTOP.md](DESKTOP.md)                       | The Mac and Windows app                                                |
+| [BRAND.md](BRAND.md)                           | Name, logo, voice                                                      |
+| [DESIGN_LANGUAGE.md](DESIGN_LANGUAGE.md)       | Fonts, colours, surfaces, buttons — read before any UI                 |
 
 Every `apps/web/src/**` folder also has its own `AGENTS.md`.
 

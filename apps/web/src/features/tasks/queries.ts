@@ -15,7 +15,7 @@ import type { Task, TaskList } from "../../lib/workspace";
  * Components never query tasks directly; they use these hooks.
  *
  * Today the queries go through the generic `/api/v1/db` endpoint (PostgreSQL row-level security protects them). When dedicated
- * task endpoints (UNT-56/57/61) land, only the `queryFn` / `mutationFn` bodies change — components and cache logic stay the same.
+ * task endpoints land, only the `queryFn` / `mutationFn` bodies change — components and cache logic stay the same.
  */
 
 import { readPrefs } from "../../lib/prefs";

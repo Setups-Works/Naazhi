@@ -82,7 +82,7 @@ PostgreSQL 16 (Docker). **All tables have Row-Level Security enabled.** Migratio
 - UUID primary keys (`gen_random_uuid()`), `user_id uuid default auth.uid()` on user-owned rows so clients can't spoof ownership.
 - Index every column you filter or sort by in lists (e.g. `(user_id, due_date)`).
 - A policy of `auth.uid() is not null` is **not** access control.
-- Google (Gmail, Calendar, Drive) tokens are stored sealed (AES-256-GCM, bound to the user id) in `user_integrations` with provider `google`; the Composio tables from the first UNT-70 migration are dropped by `20261115120000_google_direct.sql`.
+- Google (Gmail, Calendar, Drive) tokens are stored sealed (AES-256-GCM, bound to the user id) in `user_integrations` with provider `google`; the Composio tables from the first Composio migration are dropped by `20261115120000_google_direct.sql`.
 
 ## RSS reader
 

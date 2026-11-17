@@ -1,4 +1,5 @@
 import "server-only";
+import { AUTH_IP_HEADER } from "./clientIp";
 import { betterAuth } from "better-auth";
 import { expo } from "@better-auth/expo";
 import { nextCookies } from "better-auth/next-js";
@@ -39,6 +40,8 @@ function create() {
       database: { generateId: "uuid" },
       // With the website and the app on sibling hosts, one cookie on the parent domain lets the website tell you are signed in.
       ...(env.authCookieDomain ? { crossSubDomainCookies: { enabled: true, domain: env.authCookieDomain } } : {}),
+      // Rate limits are per address. The auth route puts our own reading of it (clientIp(), from CLIENT_IP_HEADER) in this header.
+      ipAddress: { ipAddressHeaders: [AUTH_IP_HEADER] },
     },
     trustedOrigins: [
       env.authUrl,

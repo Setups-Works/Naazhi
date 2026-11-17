@@ -2,7 +2,7 @@
 
 You are working on **Naazhi** (the product name, logo and voice are in `docs/BRAND.md`): one workspace for notes, tasks, journal, chat, calendar, email, meetings and automations, with an AI layer that can be swapped (Groq, Puter.js, bring-your-own) or switched off. Three developers build it in parallel, each using AI agents. This file is the contract that keeps everyone's code consistent. Folder-level `AGENTS.md` files add detail — **read the one in every folder you touch.**
 
-> Source of truth: **Jira project UNT** for _what to build and who owns it_ · **this repo's docs** for _how to build it_ · **the code** for _what exists today_. If they disagree, say so in your PR instead of guessing.
+> Source of truth: **GitHub issues** for _what to build and who owns it_ · **this repo's docs** for _how to build it_ · **the code** for _what exists today_. If they disagree, say so in your PR instead of guessing.
 
 ## 1. Stack
 
@@ -44,13 +44,10 @@ packages/
   api-client/     Platform-independent API transport shared by web and mobile
 db/migrations/     SQL migrations (append-only)
 docker-compose.yml The local service stack
-docs/              Architecture, phases, workflow, data model, security, Jira guide
-db/migrations/         SQL migrations (append-only).
-docker-compose.yml     the whole local/production stack.
-docs/                  Architecture, phases, workflow, data model, security, Jira guide.
+docs/              Architecture, phases, workflow, data model, security, brand, design
 ```
 
-**Today the web code is partly in the old locations** (`apps/web/src/components/app/*`, `apps/web/src/lib/*`). New code follows the layout above; existing code moves feature by feature via Jira tasks (see `docs/CURRENT_STATE.md`). Don't mass-move files outside a task.
+**Today the web code is partly in the old locations** (`apps/web/src/components/app/*`, `apps/web/src/lib/*`). New code follows the layout above; existing code moves feature by feature in planned tasks (see `docs/CURRENT_STATE.md`). Don't mass-move files outside a task.
 
 ## 4. Architecture rules (non-negotiable)
 
@@ -83,19 +80,19 @@ docs/                  Architecture, phases, workflow, data model, security, Jir
 
 ## 7. Workflow
 
-1. Pick a **Jira task** (UNT-n). Read its description fully — it lists scope, acceptance criteria and the files involved.
-2. Branch from `main`: `feature/UNT-n-short-name` (`fix/…` for bugs).
+1. Pick a **GitHub issue** (or a task the user gave you). Read it fully — scope, acceptance criteria and the files involved.
+2. Branch from `main`: `feature/short-name` (`fix/…` for bugs).
 3. Read the folder `AGENTS.md` files for the folders you'll touch. Plan before coding if the task is Size M/L.
 4. Implement in small commits. Add/adjust tests when logic is non-trivial.
 5. Run `corepack pnpm typecheck` and `corepack pnpm build`. Test the feature in the browser at desktop and 375 px width.
 6. Update docs: the folder `AGENTS.md`, `docs/CURRENT_STATE.md`, `docs/DATA_MODEL.md` if you changed behaviour or schema.
-7. Open a PR titled `UNT-n <summary>` using the template. Move the Jira issue to _In Review_. Another developer reviews; squash-merge to `main`.
+7. Open a PR with a short imperative title using the template, and link the issue (`Closes #n`). Another developer reviews; squash-merge to `main`.
 
-Full details: `docs/TEAM_AND_WORKFLOW.md`. Writing tasks: `docs/JIRA_GUIDE.md`.
+Full details: `docs/TEAM_AND_WORKFLOW.md`.
 
 ## 8. Definition of done
 
-**Every feature and every bug fix covers web, the phone app and desktop (or says why not): read `docs/ALL_PLATFORMS.md` before you start and fill its checklist in the PR.** Acceptance criteria met · typecheck and build pass · works on mobile · accessible by keyboard · RLS in place and verified for new tables · no secrets or PII in logs · docs updated · PR reviewed · Jira moved to Done.
+**Every feature and every bug fix covers web, the phone app and desktop (or says why not): read `docs/ALL_PLATFORMS.md` before you start and fill its checklist in the PR.** Acceptance criteria met · typecheck and build pass · works on mobile · accessible by keyboard · RLS in place and verified for new tables · no secrets or PII in logs · docs updated · PR reviewed · issue closed.
 
 ## 9. Things AI agents get wrong here — avoid them
 
@@ -145,11 +142,9 @@ Three developers and several AI agents write UI here. To keep it one product, th
 | `docs/DESIGN_LANGUAGE.md`   | **You build or change any UI** — fonts, colours, glass, buttons, tints, reference screens, mistakes to avoid, how it is enforced                                                |
 | `docs/BRAND.md`             | **You write copy, make an asset, or use the name or logo** — the name Naazhi, the mark, wordmark and lockup, colours of the logo files, clear space, do and don't, voice, which technical names stay |
 | `docs/CONVENTIONS.md`       | Naming, UI patterns, error handling, testing                                                                                                                                    |
-| `docs/AI_WORKFLOW.md`       | **You are an AI agent taking a Jira task** — the exact loop, the Jira helper (`node scripts/jira/jira.mjs`) and what you must not do (never merge; never handle tokens in chat) |
+| `docs/AI_WORKFLOW.md`       | **You are an AI agent taking a task** — the loop from issue to PR and what you must not do (never merge; never handle tokens in chat) |
 | `docs/ALL_PLATFORMS.md`     | **You add a feature or fix a bug** — it must land on web, the phone app and desktop: the checklist, where each platform's code lives, desktop and sign-in specifics |
 | `docs/RELEASE_FOR_AGENTS.md` | **You are asked to release, bump the version, write the changelog, tag or push** — the exact checklist (version files, changelog entry, migrations first, commit → push → tag, watching the runs) |
-| `docs/JIRA_GUIDE.md`        | You write or refine tasks                                                                                                                                                       |
-| `docs/JIRA_BACKLOG.md`      | You want the full task list offline                                                                                                                                             |
 
 <!-- BEGIN:nextjs-agent-rules -->
 

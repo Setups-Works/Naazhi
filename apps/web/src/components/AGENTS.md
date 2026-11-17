@@ -4,12 +4,12 @@
 
 | Subfolder     | For                                                                                         | Status                                                             |
 | ------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| `ui/`         | Primitives: Button, Input, Select, Switch, Tabs, Toast, Modal, Menu, Confirm/Prompt dialogs | planned (UNT-50) — today `Modal`, `Menu`, `Confirm` live in `app/` |
+| `ui/`         | Primitives: Button, Input, Select, Switch, Tabs, Toast, Modal, Menu, Confirm/Prompt dialogs | planned — today `Modal`, `Menu`, `Confirm` live in `app/` |
 | `layout/`     | Page scaffolding: shells, containers, sidebars, headers                                     | planned                                                            |
 | `navigation/` | Top bars, tabs, breadcrumbs, command/search triggers                                        | planned (`AppNav` moves here)                                      |
 | `shared/`     | Cross-feature composites: empty states, avatars, attachment lists, markdown renderer        | planned                                                            |
 
-## Today (legacy locations — move only as part of a Jira task)
+## Today (legacy locations — move only as part of a planned task)
 
 - Marketing site: **`landing/`** (the liquid-glass kit, motion and home sections — see `landing/AGENTS.md`), plus `PageKit.tsx` (hero / feature cards / call to action for the sub-pages), `SiteChrome.tsx` (header and footer), `HeroApp.tsx`, `MegaPreview.tsx`, `NotFoundFun.tsx`, `HideInApp.tsx`; `demo/`, `demos/`.
 - `auth/` — login/signup form, shell, `AuthLink`, `useAuthState`.

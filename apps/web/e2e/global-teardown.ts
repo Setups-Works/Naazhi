@@ -1,7 +1,7 @@
 import pg from "pg";
 
 /**
- * Test data is cleaned up after each run (UNT-33 acceptance criterion): the journey test signs up as e2e-<stamp>@example.test,
+ * Test data is cleaned up after each run: the journey test signs up as e2e-<stamp>@example.test,
  * and deleting that user cascades to everything they created (notes, tasks, sessions, profile).
  * Needs DATABASE_URL (same variable the app uses); without it the throwaway accounts are left for you to delete.
  */

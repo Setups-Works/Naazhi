@@ -2,7 +2,7 @@
 
 **Does (planned):** create/start a meeting, record audio in the browser or upload it, take notes from a template, see transcript + summary + action items, create tasks from them. **Track B (UI) + C (pipeline). Phase 5.**
 
-**Backed by:** `meetings`, `meeting_transcripts`, bucket `note-files`; processing by the background job in `apps/web/src/server/jobs` and the AI orchestrator (UNT-88).
+**Backed by:** `meetings`, `meeting_transcripts`, bucket `note-files`; processing by the background job in `apps/web/src/server/jobs` and the AI orchestrator.
 
 **Rules**
 
@@ -11,4 +11,3 @@
 - Link to a calendar event when there is one. Action items → tasks only after user review.
 - Transcripts are sensitive: never log their content.
 
-**Jira:** UNT-87 (feature), UNT-88 (pipeline).

@@ -13,6 +13,5 @@
 - Content is markdown rendered with our safe renderer — never `dangerouslySetInnerHTML`.
 - Autosave is debounced; never lose text on failure (keep local state, show "Couldn't save").
 - Reorder uses `sort_order` midpoints — don't renumber everything.
-- Attachments go through the shared attachments service (UNT-67) once it exists.
+- Attachments go through the shared attachments service once it exists.
 
-**Jira:** UNT-57 (reference service), UNT-60 (migrate), UNT-64 (tags/backlinks/trash), UNT-85 (AI actions), UNT-63 (search).

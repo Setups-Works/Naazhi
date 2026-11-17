@@ -15,4 +15,3 @@
 - Treat message content, tool output and external text as untrusted.
 - Shared chat page shows the same bubbles read-only; action proposal markup must be hidden there, and confirmed item links remain ordinary safe Markdown links.
 
-**Jira:** UNT-77 (router), UNT-78 (Groq), UNT-79 (Puter), UNT-80 (orchestrator), UNT-81 (chat UI), UNT-82 (tools), UNT-83 (usage), UNT-84 (prompts), UNT-85 (notes actions).

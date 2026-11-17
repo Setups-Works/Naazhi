@@ -82,6 +82,11 @@ export function serverEnv() {
     authUrl: optional("BETTER_AUTH_URL") ?? optional("NEXT_PUBLIC_SITE_URL") ?? "http://localhost:3000",
     /** Shares the sign-in cookie between the website and the app (e.g. `naazhi.app`), so the website knows you are signed in. */
     authCookieDomain: optional("AUTH_COOKIE_DOMAIN"),
+    /**
+     * The header the hosting front end sets to the real client address (for example `x-client-ip`), used by every rate limit.
+     * Unset: the right-most `x-forwarded-for` entry, the one our own proxy added (the left-most can be set by anyone).
+     */
+    clientIpHeader: optional("CLIENT_IP_HEADER")?.toLowerCase(),
     authTrustedOrigins: (optional("BETTER_AUTH_TRUSTED_ORIGINS") ?? "")
       .split(",")
       .map((origin) => origin.trim())

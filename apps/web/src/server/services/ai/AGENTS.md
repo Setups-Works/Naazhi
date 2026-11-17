@@ -1,8 +1,8 @@
 # services/ai — AI orchestrator
 
-**Owner:** track C. **Phase 4.** **Jira:** UNT-77 router · UNT-80 orchestrator · UNT-82 tools · UNT-83 usage · UNT-84 prompts · UNT-86 semantic search.
+**Owner:** track C. **Phase 4.**
 
-**Done (UNT-80 first slice, UNT-84 first prompt):** `chat.ts` → `startChatReply()` reads the conversation as the signed-in user, streams the provider's answer and saves it as an assistant message; rate limit per user per minute (Redis); `prompts/chat.ts` holds the versioned system prompt. Chat organises a diary-style or planning message (prompt `chat.v3`) into up to six drafts — one journal entry holding the whole message, a to-do per dated action, a note per "later" item — shown as cards; `POST /api/v1/ai/actions` (`{messageId, which: index | "all"}`) creates them only after the user presses Create, and marks each created draft in the message so it can't be created twice (`lib/chat-actions.ts`, tests in `apps/web/tests/unit/chat-actions.test.ts`). Providers are listed by `GET /api/v1/ai/status`. **Not yet:** usage metering, general tools, auto-title, regenerate/stop, attachments sent to the model, client-runtime (Puter) hand-off.
+**Done:** `chat.ts` → `startChatReply()` reads the conversation as the signed-in user, streams the provider's answer and saves it as an assistant message; rate limit per user per minute (Redis); `prompts/chat.ts` holds the versioned system prompt. Chat organises a diary-style or planning message (prompt `chat.v3`) into up to six drafts — one journal entry holding the whole message, a to-do per dated action, a note per "later" item — shown as cards; `POST /api/v1/ai/actions` (`{messageId, which: index | "all"}`) creates them only after the user presses Create, and marks each created draft in the message so it can't be created twice (`lib/chat-actions.ts`, tests in `apps/web/tests/unit/chat-actions.test.ts`). Providers are listed by `GET /api/v1/ai/status`. **Not yet:** usage metering, general tools, auto-title, regenerate/stop, attachments sent to the model, client-runtime (Puter) hand-off.
 
 **Responsibilities**
 

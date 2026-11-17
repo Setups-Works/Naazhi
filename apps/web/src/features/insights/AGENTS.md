@@ -10,4 +10,3 @@
 - `analyse()` stays pure and unit-tested. Heavier/AI-written insights run in jobs and always show the underlying numbers.
 - Opt-in for anything emailed or AI-generated.
 
-**Jira:** UNT-69 (page v1), UNT-76 (daily brief), UNT-93 (AI weekly review).

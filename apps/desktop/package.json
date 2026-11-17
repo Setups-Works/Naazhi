@@ -1,6 +1,6 @@
 {
   "name": "desktop",
-  "version": "9.0.2",
+  "version": "9.1.0",
   "private": true,
   "description": "Naazhi for Mac and Windows: a native window around the hosted web app.",
   "author": "Setups Works",

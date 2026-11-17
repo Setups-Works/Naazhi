@@ -1,6 +1,6 @@
 # apps/web/src/components/navigation
 
-**Purpose:** Navigation chrome: app top bar and tabs, workspace switcher trigger, notification bell, command/search trigger, breadcrumbs. **Owner:** track A. **Jira:** UNT-49, UNT-55, UNT-92.
+**Purpose:** Navigation chrome: app top bar and tabs, workspace switcher trigger, notification bell, command/search trigger, breadcrumbs. **Owner:** track A.
 
 Today: `AppNav` (tabs, universal search button, account menu, settings popup) lives in `apps/web/src/components/app/AppNav.tsx`; the marketing header is `SiteChrome.tsx` + `Client.tsx`. `AppNav` moves here.
 

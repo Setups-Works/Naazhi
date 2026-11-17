@@ -1,6 +1,6 @@
 # services/tasks
 
-**Owner:** track B (rules) with track A reviewing. **Phase 2.** **Jira:** UNT-61, UNT-65, UNT-91 (reminders), UNT-89 (automation triggers).
+**Owner:** track B (rules) with track A reviewing. **Phase 2.**
 
 **Responsibilities:** CRUD for tasks and lists; complete/uncomplete; cancel/archive; reschedule; bulk operations; **recurrence** — completing a repeating task creates exactly one next task **atomically and idempotently** (use a transaction or an idempotency key; a double click must not create two).
 

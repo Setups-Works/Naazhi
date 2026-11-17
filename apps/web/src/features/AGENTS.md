@@ -6,7 +6,7 @@
 
 ```
 features/<name>/
-  AGENTS.md          what it does, tables, API routes, owner, status, Jira keys
+  AGENTS.md          what it does, tables, API routes, owner, status
   components/        feature UI (may import apps/web/src/components/*)
   hooks/             data hooks (call /api/v1 or server actions)
   lib/               pure helpers for this feature (+ unit tests)
@@ -18,12 +18,12 @@ features/<name>/
 
 - A feature may import `apps/web/src/components`, `apps/web/src/hooks`, `apps/web/src/lib`, `apps/web/src/types`, `apps/web/src/config` — **never another feature's internals**. Cross-feature needs go through its `index.ts` (or a shared hook/type).
 - Features never import `apps/web/src/server/**`.
-- Migrating existing code: move components + helpers in one PR per feature, no behaviour change, parity checklist in the PR (Jira: UNT-60 notes, UNT-61 tasks, UNT-62 journal, UNT-81 chat/AI, UNT-69 insights, UNT-63 search).
+- Migrating existing code: move components + helpers in one PR per feature, no behaviour change, parity checklist in the PR.
 
 | Feature                                           | Track                 | Phase | State                                          |
 | ------------------------------------------------- | --------------------- | ----- | ---------------------------------------------- |
 | `auth`                                            | A                     | 0–1   | built (in `components/auth`, `server/auth.ts`) |
-| `workspace`                                       | A                     | 1     | planned (UNT-55)                               |
+| `workspace`                                       | A                     | 1     | planned                               |
 | `notes`, `tasks`, `journal`, `search`, `insights` | B                     | 2     | built in legacy location → migrate             |
 | `collaboration` (shared journals)                 | B                     | 2     | built (`features/collaboration`)               |
 | `billing` (plans, usage, own key)                | A                     | 6     | built (`features/billing`, `docs/BILLING.md`; payments not connected) |

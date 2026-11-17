@@ -23,6 +23,7 @@ export const qk = {
   journal: {
     all: ["journal"] as const,
     home: (today: string) => ["journal", "home", today] as const, // today's latest entries (Home card)
+    week: (today: string) => ["journal", "week", today] as const, // which of the last 7 days have an entry (Home strip)
     day: (date: string) => ["journal", "day", date] as const,
     counts: ["journal", "counts"] as const,
     share: (date: string) => ["journal", "day-share", date] as const,

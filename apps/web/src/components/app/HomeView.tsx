@@ -1,20 +1,15 @@
 "use client";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
+  faArrowRight,
   faBookOpen,
-  faEnvelope,
   faCalendarDays,
-  faChartColumn,
-  faPaperPlane,
   faComment,
-  faMicrophone,
-  faArrowUpRightFromSquare,
-  faCalendarDay,
-  faComments,
+  faFire,
   faHeartPulse,
   faListCheck,
   faNewspaper,
@@ -27,7 +22,6 @@ import { fmtDuration } from "@untitled/logic/health";
 import { api } from "../../lib/api/client";
 import { qk } from "../../lib/query/keys";
 import { useRealtimeInvalidate } from "../../hooks/useRealtimeInvalidate";
-import { useDraftText } from "../../hooks/useDraft";
 import { useTaskActions } from "../../features/tasks/queries";
 import { useCalendarEvents } from "../../features/calendar/queries";
 import { groupEventsByDay } from "../../features/calendar/utils";
@@ -40,32 +34,37 @@ import { useBilling } from "../../features/billing/queries";
 import { fmtTime } from "../../lib/prefs";
 import { useHomeLayout, type HomeColumn } from "../../features/home/useHomeLayout";
 import DragHandle from "../../features/home/DragHandle";
+import QuickAdd, { type QuickAddHandle } from "../../features/home/QuickAdd";
+import ProgressRing from "../../features/home/ProgressRing";
+import { journalWeek } from "../../features/home/journalWeek";
+import { recentItems, type RecentKind } from "../../features/home/recent";
 import TaskRow from "./TaskRow";
 import InsightsCard from "./InsightsCard";
 import HomeTip from "./HomeTip";
 
-// Stable empty values so a still-loading query doesn't create a new array on every render.
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+
+// Stable empty values so a still-loading query doesn't create a new array on every render.
 
 const EMPTY_TASKS: Task[] = [];
 const EMPTY_CHATS: Chat[] = [];
 const EMPTY_NOTES: Pick<Note, "id" | "title" | "updated_at">[] = [];
 const EMPTY_ENTRIES: { id: string; body: string; created_at: string }[] = [];
 
-const ask = (q: string) => `/dashboard/chat?ask=${encodeURIComponent(q)}`;
-const QUICK = [
-  { href: ask("Check my email and tell me what needs a reply."), t: "Check my email", icon: faEnvelope },
-  { href: ask("What is on my calendar today?"), t: "Today’s calendar", icon: faCalendarDays },
-  { href: ask("Plan my day from my tasks and calendar."), t: "Plan my day", icon: faListCheck },
-  { href: ask("Summarize my week: tasks done, notes and journal entries."), t: "Summarize my week", icon: faChartColumn },
-  { href: ask("Draft an email for me."), t: "Draft an email", icon: faPaperPlane },
+const KIND: Record<RecentKind, { label: string; icon: IconDefinition; tone: string }> = {
+  note: { label: "Note", icon: faPenToSquare, tone: "at-blue" },
+  chat: { label: "Chat", icon: faComment, tone: "at-mint" },
+  journal: { label: "Journal", icon: faBookOpen, tone: "at-violet" },
+};
+const FILTERS: { id: RecentKind | "all"; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "note", label: "Notes" },
+  { id: "chat", label: "Chats" },
+  { id: "journal", label: "Journal" },
 ];
 
-/** A quiet glass panel: small tinted icon, a label, an optional link to the full screen. */
+/** A card on Home: a muted icon, the title, optional quiet text at the right, a way to the full screen, and the drag grip. */
 function Panel({
   icon,
   title,
@@ -90,13 +89,13 @@ function Panel({
     <Card className={className}>
       <CardHeader className="flex flex-row items-center gap-2">
         {icon && <FA icon={icon} className="w-3.5 text-[13px] text-fg-subtle" />}
-        <CardTitle className="text-[15.5px] leading-none tracking-[-0.01em]">{title}</CardTitle>
+        <CardTitle className="text-[15px] leading-none tracking-[-0.01em]">{title}</CardTitle>
         {hint && <small className="text-[13px] text-fg-subtle">{hint}</small>}
         {meta && <small className="ml-auto text-[13px] text-fg-subtle">{meta}</small>}
         {href && (
-          <Button asChild variant="ghost" size="sm" className="ml-auto text-fg-subtle">
-            <Link href={href}>Open</Link>
-          </Button>
+          <Link href={href} aria-label={`Open ${title}`} className={`ap-icon size-7 text-fg-subtle ${meta ? "" : "ml-auto"}`}>
+            <FA icon={faArrowRight} className="text-[12px]" />
+          </Link>
         )}
         <span className={href || meta ? "" : "ml-auto"}>{drag}</span>
       </CardHeader>
@@ -105,16 +104,14 @@ function Panel({
   );
 }
 
-const Empty = ({ children }: { children: ReactNode }) => <p className="m-0 py-1 text-[13.5px] text-fg-subtle">{children}</p>;
 
 export default function HomeView({ name }: { name: string }) {
   const sb = useMemo(api, []);
   const qc = useQueryClient();
   const today = useMemo(() => isoDate(), []);
   const [err, setErr] = useState("");
-  // Unsent text survives a refresh. The journal box shares its draft with today's page on the Journal screen.
-  const [journal, setJournal] = useDraftText(`journal:${today}`);
-  const [title, setTitle] = useDraftText("home:task");
+  const composer = useRef<QuickAddHandle>(null);
+  const [recentFilter, setRecentFilter] = useState<RecentKind | "all">("all");
 
   // Each card is its own query: cached, refreshed on focus, and kept in sync with the To-do page
   // (tasks share the ["tasks"] key prefix, so a mutation anywhere updates every screen).
@@ -141,7 +138,7 @@ export default function HomeView({ name }: { name: string }) {
         .select("id,body,created_at")
         .eq("entry_date", today)
         .order("created_at", { ascending: false })
-        .limit(3);
+        .limit(6);
       if (error) throw error;
       return data as { id: string; body: string; created_at: string }[];
     },
@@ -149,7 +146,7 @@ export default function HomeView({ name }: { name: string }) {
   const chatsQ = useQuery({
     queryKey: qk.chats.recent,
     queryFn: async () => {
-      const { data, error } = await sb.from("chats").select("id,title,updated_at").order("updated_at", { ascending: false }).limit(5);
+      const { data, error } = await sb.from("chats").select("id,title,updated_at").order("updated_at", { ascending: false }).limit(6);
       if (error) throw error;
       return data as Chat[];
     },
@@ -157,9 +154,18 @@ export default function HomeView({ name }: { name: string }) {
   const notesQ = useQuery({
     queryKey: qk.notes.home,
     queryFn: async () => {
-      const { data, error } = await sb.from("notes").select("id,title,updated_at").is("deleted_at", null).order("updated_at", { ascending: false }).limit(4);
+      const { data, error } = await sb.from("notes").select("id,title,updated_at").is("deleted_at", null).order("updated_at", { ascending: false }).limit(6);
       if (error) throw error;
       return data as Pick<Note, "id" | "title" | "updated_at">[];
+    },
+  });
+  // Which of the last seven days have an entry (the journal strip). Dates only, never the text.
+  const weekQ = useQuery({
+    queryKey: qk.journal.week(today),
+    queryFn: async () => {
+      const { data, error } = await sb.from("journal_entries").select("entry_date").gte("entry_date", addDays(today, -60)).limit(2000);
+      if (error) throw error;
+      return (data ?? []).map((r) => r.entry_date as string);
     },
   });
   // The badge shows the plan from Plan and billing (not the old `profiles.plan` column, which stays "free" for everyone).
@@ -191,20 +197,9 @@ export default function HomeView({ name }: { name: string }) {
       const { error } = await sb.from("journal_entries").insert({ entry_date: today, body });
       if (error) throw error;
     },
-    onError: (_e, body) => {
-      setErr("Couldn’t save that entry.");
-      setJournal(body);
-    },
+    onError: () => setErr("Couldn’t save that entry. Try again."),
     onSettled: () => qc.invalidateQueries({ queryKey: qk.journal.all }),
   });
-
-  function addEntry(e: React.FormEvent) {
-    e.preventDefault();
-    const body = journal.trim();
-    if (!body) return;
-    setJournal("");
-    addEntryMutation.mutate(body);
-  }
 
   const todays = tasks.filter((t) => t.due_date === today);
   const doneToday = todays.filter((t) => t.done).length;
@@ -220,231 +215,224 @@ export default function HomeView({ name }: { name: string }) {
 
   // Same actions as the To-do page: ticking a task here also updates the To-do page's cache, and repeating tasks schedule their next run.
   const toggle = (t: Task) => taskActions.toggle(t);
-  function add(e: React.FormEvent) {
-    e.preventDefault();
-    const v = title.trim();
-    if (!v) return;
-    setTitle("");
-    taskActions.add({ title: v, description: "", due_date: today, priority: 5, list_id: null, recurrence: null });
-  }
+  const addTask = (v: string) => taskActions.add({ title: v, description: "", due_date: today, priority: 5, list_id: null, recurrence: null });
   const { layout, dragging, handleProps } = useHomeLayout();
   const drag = (id: string, label: string) => <DragHandle label={label} {...handleProps(id)} />;
   const first = name.split(" ")[0];
   const date = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
 
+  const recent = recentItems(notes, chats, entries, recentFilter);
+  const week = journalWeek(weekQ.data ?? [], today);
+  const dayLetter = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString(undefined, { weekday: "narrow" });
+  const left = todays.filter((t) => !t.done).length;
+  const summary = [
+    overdue.length ? `${overdue.length} overdue` : null,
+    left ? `${left} left today` : todays.length ? "Today’s to-dos are done" : null,
+    upcoming.length ? `${upcoming.length} due this week` : null,
+    entries.length ? `${entries.length} journal ${entries.length === 1 ? "entry" : "entries"} today` : null,
+  ].filter(Boolean);
+  const quiet = "m-0 flex items-center gap-2 py-1 text-[13.5px] text-fg-subtle";
+
   const cards: Record<string, ReactNode> = {
     invites:
       invites > 0 ? (
-        <Panel
-          drag={drag("invites", "Shared journals")}
-          icon={faUserGroup}
-          title="Shared journals"
-          href="/dashboard/journal/collaborate"
-          className="max-[900px]:order-2"
-        >
+        <Panel drag={drag("invites", "Shared journals")} icon={faUserGroup} title="Shared journals" href="/dashboard/journal/collaborate">
           <p className="m-0 text-[13.5px] text-fg-muted">
             {invites} {invites === 1 ? "invitation is" : "invitations are"} waiting for your answer.
           </p>
         </Panel>
       ) : null,
     today: (
-      <section aria-label="Today" className="flex flex-col gap-4">
-        <div>
-          <div className="flex items-center justify-between text-[13.5px] text-fg-subtle tabular-nums">
-            <span>
-              {doneToday} of {todays.length} tasks done today
-            </span>
-            <span>{pct}%</span>
-          </div>
-          <Progress value={pct} className="mt-2" aria-label="Today’s progress" />
-        </div>
-
-        <form
-          onSubmit={add}
-          className="flex h-11 items-center gap-2.5 rounded-r2 bg-raised px-4 shadow-[inset_0_0_0_1px_var(--line-2)] focus-within:shadow-[inset_0_0_0_1px_var(--line-3)]"
-        >
-          <FA icon={faPlus} className="text-[12px] text-fg-subtle" />
-          <Input
-            className="h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-0 text-[14.5px] focus-visible:ring-0"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Add a task for today…"
-            maxLength={300}
-            aria-label="Add a task for today"
-          />
-        </form>
-
-        <Panel title="Focus" meta={`${overdue.length} overdue · ${todays.length} today`} drag={drag("today", "Today")} className="min-h-[260px]">
-          {overdue.length > 0 && (
-            <>
-              <div className="mb-1 flex items-center gap-1.5 text-[13.5px] text-overdue">
-                <FA icon={faChevronDown} className="text-[10px]" /> Overdue
-              </div>
-              <ul className="m-0 mb-3 list-none p-0">
-                {overdue.map((t) => (
-                  <TaskRow key={t.id} task={t} today={today} mode="overdue" onToggle={toggle} />
-                ))}
-              </ul>
-            </>
-          )}
-          <div className="mb-1 flex items-center gap-1.5 text-[13.5px] text-fg-muted">
-            <FA icon={faChevronDown} className="text-[10px]" /> Today
-          </div>
-          <ul className="m-0 list-none p-0">
-            {todays.map((t) => (
-              <TaskRow key={t.id} task={t} today={today} mode="today" onToggle={toggle} />
-            ))}
-          </ul>
-          {ready && todays.length === 0 && <Empty>No tasks for today</Empty>}
-        </Panel>
-      </section>
-    ),
-    journal: (
-      <Card aria-label="Today’s journal" className="min-h-[320px] gap-0 max-[900px]:order-3">
-        <CardHeader className="flex flex-row items-center gap-2 pb-2">
-          <CardTitle className="text-[15.5px] leading-none tracking-[-0.01em]">Today’s journal</CardTitle>
-          <span className="ml-auto flex items-center gap-1">
-            <Button asChild variant="ghost" size="icon" className="size-7 text-fg-subtle">
-              <Link href="/dashboard/journal" aria-label="Open journal">
-                <FA icon={faArrowUpRightFromSquare} className="text-[13px]" />
-              </Link>
-            </Button>
-            {drag("journal", "Today’s journal")}
-          </span>
+      <Card aria-label="Your day" className="gap-0">
+        <CardHeader className="flex flex-row items-center gap-2">
+          <FA icon={faListCheck} className="w-3.5 text-[13px] text-fg-subtle" />
+          <CardTitle className="text-[15px] leading-none tracking-[-0.01em]">Your day</CardTitle>
+          <Link href="/dashboard/todo" aria-label="Open To-do" className="ap-icon ml-auto size-7 text-fg-subtle">
+            <FA icon={faArrowRight} className="text-[12px]" />
+          </Link>
+          {drag("today", "Your day")}
         </CardHeader>
-        <CardContent className="flex-1">
-          {entries.length > 0 ? (
-            <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
-              {entries.map((en) => (
-                <li key={en.id} className="flex gap-3 text-[13.5px]">
-                  <time className="shrink-0 text-fg-subtle tabular-nums">{fmtTime(en.created_at)}</time>
-                  <span className="line-clamp-2 text-fg-muted">{en.body || "Voice or attachment"}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="m-0 grid h-full min-h-[150px] place-items-center text-center text-[14px] text-fg-subtle">Write your first entry for today</p>
-          )}
+        <CardContent className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-6 max-[560px]:grid-cols-1 max-[560px]:justify-items-center">
+          <div className="flex flex-col items-center gap-2 pt-1">
+            <ProgressRing value={pct}>
+              <span className="font-serif text-[26px] leading-none font-semibold tracking-[-0.02em] tabular-nums">{todays.length ? `${pct}%` : "–"}</span>
+              <span className="mt-1 block text-[11.5px] text-fg-subtle">{todays.length ? `${doneToday} of ${todays.length}` : "No to-dos"}</span>
+            </ProgressRing>
+          </div>
+          <div className="w-full min-w-0">
+            {overdue.length > 0 && (
+              <>
+                <div className="mb-1 flex items-center gap-1.5 text-[13px] font-medium text-overdue">
+                  <FA icon={faChevronDown} className="text-[10px]" /> Overdue
+                </div>
+                <ul className="m-0 mb-3 list-none p-0">
+                  {overdue.map((t) => (
+                    <TaskRow key={t.id} task={t} today={today} mode="overdue" onToggle={toggle} />
+                  ))}
+                </ul>
+              </>
+            )}
+            {todays.length > 0 && (
+              <>
+                <div className="mb-1 flex items-center gap-1.5 text-[13px] font-medium text-fg-muted">
+                  <FA icon={faChevronDown} className="text-[10px]" /> Due today
+                </div>
+                <ul className="m-0 list-none p-0">
+                  {todays.map((t) => (
+                    <TaskRow key={t.id} task={t} today={today} mode="today" onToggle={toggle} />
+                  ))}
+                </ul>
+              </>
+            )}
+            {ready && todays.length === 0 && overdue.length === 0 && (
+              <div className="flex h-full min-h-[112px] flex-col items-start justify-center gap-3">
+                <p className="m-0 text-[15px] font-medium text-fg">You’re clear for today.</p>
+                <p className="m-0 -mt-1.5 text-[13.5px] text-fg-subtle">Add a to-do above, or plan the day with Naazhi.</p>
+                <button type="button" onClick={() => composer.current?.open("task")} className="chip cursor-pointer">
+                  <FA icon={faPlus} className="text-[11px]" /> Add a to-do
+                </button>
+              </div>
+            )}
+          </div>
         </CardContent>
-        <form onSubmit={addEntry} className="flex items-center gap-2 border-t p-2">
-          <Button asChild variant="secondary" size="icon" className="size-9 rounded-pill text-fg-muted">
-            <Link href="/dashboard/journal" aria-label="Record a voice entry">
-              <FA icon={faMicrophone} className="text-[14px]" />
-            </Link>
-          </Button>
-          <Input
-            className="h-9 min-w-0 flex-1 rounded-none border-0 bg-transparent px-1 text-[14.5px] focus-visible:ring-0"
-            value={journal}
-            onChange={(e) => setJournal(e.target.value)}
-            maxLength={50000}
-            placeholder="Start writing…"
-            aria-label="New journal entry"
-            disabled={!ready}
-          />
-          {journal.trim() && <Button size="sm">Add</Button>}
-        </form>
       </Card>
     ),
-    notes: (
-      <Panel drag={drag("notes", "Notes")} icon={faPenToSquare} title="Notes" href="/dashboard/notes">
-        {notes.length === 0 ? (
-          <Empty>No notes yet</Empty>
-        ) : (
-          <ul className="m-0 flex list-none flex-col p-0">
-            {notes.map((n) => (
-              <li key={n.id}>
-                <Link
-                  href="/dashboard/notes"
-                  className="flex items-baseline justify-between gap-3 rounded-r1 px-2 py-2 text-[13.5px] hover:bg-surface-muted"
+    recent: (
+      <Card aria-label="Jump back in" className="gap-0">
+        <CardHeader className="flex flex-row flex-wrap items-center gap-x-2 gap-y-3">
+          <CardTitle className="text-[15px] leading-none tracking-[-0.01em]">Jump back in</CardTitle>
+          <span className="ml-auto flex items-center gap-2">
+            <span role="radiogroup" aria-label="Show" className="flex items-center gap-[3px] rounded-ctl bg-hover p-[3px]">
+              {FILTERS.map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={recentFilter === f.id}
+                  onClick={() => setRecentFilter(f.id)}
+                  className="h-6 cursor-pointer rounded-tab px-2 text-[12.5px] font-medium text-fg-muted transition-colors duration-(--control) ease-(--ease) hover:text-fg aria-checked:bg-raised aria-checked:text-fg aria-checked:shadow-e1"
                 >
-                  <span className="truncate">{n.title || "Untitled"}</span>
-                  <small className="shrink-0 text-fg-subtle">{ago(n.updated_at)}</small>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Panel>
-    ),
-    chats: (
-      <Card aria-label="Recent chats" className="min-h-[320px] gap-0 max-[900px]:order-3">
-        <CardHeader className="flex flex-row items-center gap-2 pb-2">
-          <FA icon={faComment} className="w-3.5 text-[13px] text-fg-subtle" />
-          <CardTitle className="text-[15.5px] leading-none tracking-[-0.01em]">Recent chats</CardTitle>
-          <span className="ml-auto">{drag("chats", "Chats")}</span>
+                  {f.label}
+                </button>
+              ))}
+            </span>
+            {drag("recent", "Jump back in")}
+          </span>
         </CardHeader>
-        <CardContent className="flex-1">
-          {ready && chats.length === 0 ? (
-            <Empty>No chats yet</Empty>
+        <CardContent className="pt-0">
+          {ready && recent.length === 0 ? (
+            <p className={`${quiet} py-4`}>
+              {recentFilter === "journal" ? "Nothing written today yet." : recentFilter === "chat" ? "No chats yet." : recentFilter === "note" ? "No notes yet." : "Nothing here yet. Write a note or start a chat."}
+            </p>
           ) : (
             <ul className="m-0 list-none p-0">
-              {chats.map((c) => (
-                <li key={c.id} className="border-b border-line last:border-0">
-                  <Link href={`/dashboard/chat?c=${c.id}`} className="flex items-baseline justify-between gap-3 py-2.5 text-[14px] hover:text-fg-muted">
-                    <span className="truncate">{c.title}</span>
-                    <small className="shrink-0 text-[13px] text-fg-faint">{ago(c.updated_at)}</small>
+              {recent.map((r) => (
+                <li key={`${r.kind}:${r.id}`}>
+                  <Link href={r.href} className="-mx-2 flex items-center gap-3 rounded-r2 px-2 py-2 hover:bg-hover">
+                    <span className={`${KIND[r.kind].tone} tint grid size-8 shrink-0 place-items-center rounded-r1 text-[13px]`}>
+                      <FA icon={KIND[r.kind].icon} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[14px] text-fg">{r.title}</span>
+                      <span className="block text-[12.5px] text-fg-subtle">{KIND[r.kind].label}</span>
+                    </span>
+                    <time className="shrink-0 text-[12.5px] text-fg-faint tabular-nums">{r.kind === "journal" ? fmtTime(r.at) : ago(r.at)}</time>
                   </Link>
                 </li>
               ))}
             </ul>
           )}
         </CardContent>
-        <CardFooter className="border-t p-0">
-          <Link href="/dashboard/chat?new=1" className="flex w-full items-center gap-2 px-[18px] py-3 text-[14px] text-fg-muted hover:text-fg">
-            <FA icon={faPlus} className="text-[12px]" /> New chat
+        <CardFooter className="flex flex-wrap gap-2 border-t px-[18px] py-3">
+          <Link href="/dashboard/notes?new=1" className="chip">
+            <FA icon={faPenToSquare} className="text-[12px]" /> New note
+          </Link>
+          <Link href="/dashboard/chat?new=1" className="chip">
+            <FA icon={faComment} className="text-[12px]" /> New chat
           </Link>
         </CardFooter>
       </Card>
     ),
+    journal: (
+      <Panel drag={drag("journal", "Journal")} icon={faBookOpen} title="Journal" href="/dashboard/journal" hint={week.streak > 1 ? undefined : "this week"}>
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="m-0 flex items-center gap-1.5 text-[13.5px] text-fg-muted">
+            {week.streak > 1 ? (
+              <>
+                <FA icon={faFire} className="text-[12px] text-coral" /> {week.streak}-day streak
+              </>
+            ) : (
+              `${week.days.filter((d) => d.wrote).length} of 7 days written`
+            )}
+          </p>
+          <span className="text-[12.5px] text-fg-subtle">{entries.length ? `${entries.length} today` : "Not yet today"}</span>
+        </div>
+        <ol className="m-0 mt-3 grid list-none grid-cols-7 gap-1.5 p-0" aria-label="The last seven days">
+          {week.days.map((d) => (
+            <li key={d.date} className="flex flex-col items-center gap-1.5">
+              <span className={`text-[11.5px] ${d.today ? "font-semibold text-fg" : "text-fg-subtle"}`} aria-hidden>
+                {dayLetter(d.date)}
+              </span>
+              <span
+                title={d.wrote ? "Written" : "Not written"}
+                className={`grid aspect-square w-full max-w-8 place-items-center rounded-r1 ${d.wrote ? "bg-fill-dark" : d.today ? "bg-hover shadow-[inset_0_0_0_1.5px_var(--line-3)]" : "bg-hover"}`}
+              >
+                <span className="sr-only">
+                  {new Date(`${d.date}T12:00:00`).toLocaleDateString(undefined, { weekday: "long" })}: {d.wrote ? "written" : "not written"}
+                </span>
+              </span>
+            </li>
+          ))}
+        </ol>
+        <button type="button" onClick={() => composer.current?.open("journal")} className="chip mt-4 w-full cursor-pointer justify-center">
+          <FA icon={faPenToSquare} className="text-[12px]" /> {entries.length ? "Add another entry" : "Write today’s entry"}
+        </button>
+      </Panel>
+    ),
     insights: <InsightsCard handle={drag("insights", "Personality insights")} />,
     schedule: (
-      <Panel
-        drag={drag("schedule", "Schedule")}
-        title="Upcoming"
-        meta="Next 7 days"
-        className="max-[900px]:order-2"
-      >
-        {events.length === 0 && upcoming.length === 0 && <Empty>No tasks for the next 7 days</Empty>}
-        {events.length > 0 && (
-          <ul className="m-0 flex list-none flex-col gap-2 p-0">
-            {events.slice(0, 5).map((ev) => (
-              <li key={ev.id} className="flex items-baseline gap-3 text-[13.5px]">
-                <time className="w-[52px] shrink-0 text-fg-subtle tabular-nums">{ev.all_day ? "All day" : fmtTime(ev.start_at)}</time>
-                <span className="truncate">{ev.title}</span>
+      <Panel drag={drag("schedule", "Up next")} icon={faCalendarDays} title="Up next" href="/dashboard/calendar">
+        {events.length === 0 && upcoming.length === 0 ? (
+          <p className={quiet}>Nothing planned this week.</p>
+        ) : (
+          <ol className="relative m-0 list-none p-0 before:absolute before:top-2 before:bottom-2 before:left-[5px] before:w-px before:bg-line">
+            {events.slice(0, 4).map((ev) => (
+              <li key={ev.id} className="relative flex gap-3 pb-3 pl-6 last:pb-0">
+                <span className="absolute top-[7px] left-0 size-[11px] rounded-full bg-fill-dark ring-[3px] ring-raised" aria-hidden />
+                <div className="min-w-0">
+                  <p className="m-0 truncate text-[14px] text-fg">{ev.title}</p>
+                  <p className="m-0 text-[12.5px] text-fg-subtle">Today · {ev.all_day ? "All day" : fmtTime(ev.start_at)}</p>
+                </div>
               </li>
             ))}
-          </ul>
-        )}
-        {upcoming.length > 0 && (
-          <>
-            <div className="mt-3 mb-1 text-[13px] text-fg-subtle">Due this week</div>
-            <ul className="m-0 list-none p-0">
-              {upcoming.slice(0, 4).map((t) => (
-                <TaskRow key={t.id} task={t} today={today} mode="upcoming" onToggle={toggle} />
-              ))}
-            </ul>
-          </>
+            {upcoming.slice(0, 4).map((t) => (
+              <li key={t.id} className="relative flex gap-3 pb-3 pl-6 last:pb-0">
+                <span className="absolute top-[7px] left-0 size-[11px] rounded-full bg-raised ring-[1.5px] ring-line-strong" aria-hidden />
+                <div className="min-w-0">
+                  <p className="m-0 truncate text-[14px] text-fg">{t.title}</p>
+                  <p className="m-0 text-[12.5px] text-fg-subtle">
+                    Due {new Date(`${t.due_date}T12:00:00`).toLocaleDateString(undefined, { weekday: "long" })}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
         )}
       </Panel>
     ),
     reader: (
-      <Panel
-        drag={drag("reader", "Reader")}
-        icon={faNewspaper}
-        title="Reader"
-        href="/dashboard/workspace/reader"
-        hint={unread > 0 ? `${unread} unread` : undefined}
-        className="max-[900px]:order-4"
-      >
+      <Panel drag={drag("reader", "Reader")} icon={faNewspaper} title="Reader" href="/dashboard/workspace/reader" hint={unread > 0 ? `${unread} unread` : undefined}>
         {articlesQ.isPending ? (
-          <Empty>Loading…</Empty>
+          <p className={quiet}>Loading…</p>
         ) : latest.length === 0 ? (
-          <Empty>No articles yet. Add a feed in the Reader.</Empty>
+          <Link href="/dashboard/workspace/reader" className={`${quiet} hover:text-fg`}>
+            <FA icon={faPlus} className="text-[11px]" /> Follow a feed to see articles here
+          </Link>
         ) : (
           <ul className="m-0 flex list-none flex-col p-0">
             {latest.map((a) => (
               <li key={a.id}>
-                <Link href="/dashboard/workspace/reader" className="block rounded-r1 px-2 py-2 hover:bg-surface-muted">
+                <Link href="/dashboard/workspace/reader" className="-mx-2 block rounded-r1 px-2 py-2 hover:bg-hover">
                   <span className="line-clamp-2 text-[13.5px] leading-snug text-fg">{a.title}</span>
                   <small className="mt-0.5 block truncate text-[12px] text-fg-subtle">
                     {a.feed_title} · {ago(a.published_at)}
@@ -457,45 +445,36 @@ export default function HomeView({ name }: { name: string }) {
       </Panel>
     ),
     health: (
-      <Panel
-        drag={drag("health", "Health")}
-        icon={faHeartPulse}
-        title="Health"
-        href="/dashboard/health"
-        hint="today"
-        className="max-[900px]:order-6"
-      >
+      <Panel drag={drag("health", "Health")} icon={faHeartPulse} title="Health" href="/dashboard/health" hint="today">
         {health && (health.steps !== null || health.sleep_minutes !== null) ? (
           <dl className="m-0 grid grid-cols-2 gap-3">
             <div>
               <dt className="text-[12px] text-fg-subtle">Steps</dt>
-              <dd className="m-0 font-serif font-semibold text-[26px] leading-tight tracking-[-0.02em]">{(health.steps ?? 0).toLocaleString()}</dd>
+              <dd className="m-0 font-serif text-[26px] leading-tight font-semibold tracking-[-0.02em] tabular-nums">{(health.steps ?? 0).toLocaleString()}</dd>
             </div>
             <div>
               <dt className="text-[12px] text-fg-subtle">Sleep</dt>
-              <dd className="m-0 font-serif font-semibold text-[26px] leading-tight tracking-[-0.02em]">
+              <dd className="m-0 font-serif text-[26px] leading-tight font-semibold tracking-[-0.02em] tabular-nums">
                 {health.sleep_minutes ? fmtDuration(health.sleep_minutes) : "–"}
               </dd>
             </div>
           </dl>
         ) : (
-          <Empty>Connect Health on your phone to see steps and sleep.</Empty>
+          <p className={quiet}>Connect Health on your phone to see steps and sleep.</p>
         )}
       </Panel>
     ),
   };
-  /** Cards that share a row in the main column (two across); everything else spans the column. */
-  const HALF = new Set(["journal", "chats"]);
   /** One column of cards, each in a wrapper the drag code can measure. */
   const column = (col: HomeColumn) => (
-    <div data-home-col={col} className={col === "main" ? "grid min-w-0 grid-cols-2 content-start gap-[18px] max-[900px]:grid-cols-1" : "flex min-w-0 flex-col gap-[18px]"}>
+    <div data-home-col={col} className="flex min-w-0 flex-col gap-[18px]">
       {layout[col].map((id) =>
         cards[id] ? (
           <div
             key={id}
             data-drag-id={id}
             data-dragging={dragging === id}
-            className={`rounded-r3 [&>*]:h-full ${col === "main" && !HALF.has(id) ? "col-span-2 max-[900px]:col-span-1" : ""} transition-[transform,box-shadow] duration-200 ease-(--ease) data-[dragging=true]:relative data-[dragging=true]:z-10 data-[dragging=true]:scale-[1.015] data-[dragging=true]:shadow-e3 data-[dragging=true]:transition-none motion-reduce:transition-none`}
+            className={`rounded-r3 transition-[transform,box-shadow] duration-200 ease-(--ease) data-[dragging=true]:relative data-[dragging=true]:z-10 data-[dragging=true]:scale-[1.015] data-[dragging=true]:shadow-e3 data-[dragging=true]:transition-none motion-reduce:transition-none`}
           >
             {cards[id]}
           </div>
@@ -505,35 +484,24 @@ export default function HomeView({ name }: { name: string }) {
   );
 
   return (
-    <div className="mx-auto w-full max-w-[1040px] pb-16 max-[700px]:pb-24">
-      <header className="mt-6 mb-7 max-[700px]:mt-2 max-[700px]:mb-5">
-        <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-1">
-          <h1 className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 font-serif text-[clamp(28px,3vw,32px)] leading-[1.1] font-semibold tracking-[-0.022em] text-balance">
-            <span>
-              {greeting()}, {first}
-            </span>
-            {planLabel && (
-              <Badge variant="secondary" className="rounded-xs font-normal tracking-normal text-fg-muted">
-                {planLabel}
-              </Badge>
-            )}
-          </h1>
-          <p className="m-0 pb-1 text-[13.5px] text-fg-subtle">{date}</p>
+    <div className="mx-auto w-full max-w-[1080px] pb-16 max-[700px]:pb-24">
+      <header className="mt-4 mb-1 max-[700px]:mt-1">
+        <p className="m-0 flex items-center gap-2 text-[14px] text-fg-subtle">
+          {greeting()}, {first}
+          {planLabel && (
+            <Badge variant="secondary" className="rounded-xs font-normal tracking-normal text-fg-muted">
+              {planLabel}
+            </Badge>
+          )}
+        </p>
+        <h1 className="m-0 mt-1 font-serif text-[clamp(30px,4vw,44px)] leading-[1.08] font-semibold tracking-[-0.03em] text-balance">{date}</h1>
+        <p className="m-0 mt-2 text-[14.5px] text-fg-muted">{summary.length ? summary.join(" · ") : "A clear day. Add something, or ask Naazhi to plan it."}</p>
+        <div className="mt-5">
+          <QuickAdd ref={composer} today={today} onTask={addTask} onJournal={(body) => addEntryMutation.mutate(body)} disabled={!ready} />
         </div>
-        <nav
-          aria-label="Quick actions"
-          className="mt-5 flex flex-wrap gap-2 max-[700px]:-mx-3.5 max-[700px]:mt-4 max-[700px]:flex-nowrap max-[700px]:overflow-x-auto max-[700px]:px-3.5 max-[700px]:pb-1 max-[700px]:[scrollbar-width:none]"
-        >
-          {QUICK.map((q) => (
-            <Button key={q.t} asChild variant="outline" size="lg" className="shrink-0 font-normal">
-              <Link href={q.href}>
-                <FA icon={q.icon} className="text-[12px] text-fg-subtle" /> {q.t}
-              </Link>
-            </Button>
-          ))}
-        </nav>
-        <HomeTip />
       </header>
+
+      <HomeTip />
 
       {(err || loadFailed) && (
         <p className="form-err" role="alert">
@@ -541,7 +509,7 @@ export default function HomeView({ name }: { name: string }) {
         </p>
       )}
 
-      <div className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-[18px] max-[900px]:grid-cols-1">
+      <div className="mt-2 grid grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] gap-[18px] max-[900px]:grid-cols-1">
         {column("main")}
         {column("side")}
       </div>

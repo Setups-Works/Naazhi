@@ -38,6 +38,8 @@ export default function InsightsCard({ handle }: { handle?: ReactNode }) {
   const [data, setData] = useState<{ tasks: InTask[]; entries: InEntry[]; notes: InNote[] } | null>(null);
   const [err, setErr] = useState(false);
   const [page, setPage] = useState(0);
+  // Home shows the type and the top three traits as bars; the radar chart is one press away, so the card stays short.
+  const [chart, setChart] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -134,19 +136,30 @@ export default function InsightsCard({ handle }: { handle?: ReactNode }) {
               <i key={t}>{t}</i>
             ))}
           </div>
-          <Radar axes={result.axes} />
-          <ul className="ap-legend">
-            {[...result.axes]
-              .sort((a, b) => b.value - a.value)
-              .slice(0, 3)
-              .map((a) => (
-                <li key={a.key}>
-                  <b>{a.label}</b>
-                  <span>{a.why}</span>
-                  <em>{a.value}</em>
-                </li>
-              ))}
-          </ul>
+          {chart ? (
+            <Radar axes={result.axes} />
+          ) : (
+            <ul className="m-0 mt-1 grid w-full list-none gap-3 self-stretch p-0">
+              {[...result.axes]
+                .sort((a, b) => b.value - a.value)
+                .slice(0, 3)
+                .map((a) => (
+                  <li key={a.key} title={a.why}>
+                    <div className="flex items-baseline justify-between gap-3 text-[13px]">
+                      <b className="font-medium text-fg">{a.label}</b>
+                      <span className="text-fg-subtle tabular-nums">{a.value}</span>
+                    </div>
+                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-pill bg-hover" aria-hidden>
+                      <div className="h-full rounded-pill bg-accent" style={{ width: `${Math.max(4, Math.min(100, a.value))}%` }} />
+                    </div>
+                    <p className="m-0 mt-1 truncate text-[12px] text-fg-subtle">{a.why}</p>
+                  </li>
+                ))}
+            </ul>
+          )}
+          <button type="button" aria-expanded={chart} onClick={() => setChart((v) => !v)} className="mt-1 cursor-pointer self-start text-[13px] text-fg-muted underline-offset-4 hover:text-fg hover:underline">
+            {chart ? "Hide chart" : "Show all eight traits"}
+          </button>
         </div>
       ) : (
         <div className="ap-pers ap-obs">

@@ -4,8 +4,8 @@ import { cleanOrder, moveItem } from "@untitled/logic/homeLayout";
 
 /** The Home cards by column, in their default order. A person's own order is saved in this browser. */
 export const HOME_COLUMNS = {
-  main: ["invites", "today", "journal", "chats", "notes"],
-  side: ["schedule", "insights", "reader", "health"],
+  main: ["invites", "today", "recent"],
+  side: ["schedule", "journal", "health", "reader", "insights"],
 } as const;
 
 export type HomeColumn = keyof typeof HOME_COLUMNS;

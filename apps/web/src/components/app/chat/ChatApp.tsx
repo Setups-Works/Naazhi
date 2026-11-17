@@ -632,6 +632,7 @@ export default function ChatApp({ name }: { name: string }) {
 
         {connectOpen && <ConnectAiDialog onClose={() => setConnectOpen(false)} />}
         <ChatLayout
+          welcome={!activeId}
           footer={
             activeId ? (
             <>

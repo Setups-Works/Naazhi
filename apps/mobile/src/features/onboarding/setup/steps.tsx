@@ -382,7 +382,11 @@ export function AccountsStep() {
         {z?.connected ? (
           <Icon name="check" size={16} color={Palette.greenFg} />
         ) : z && !z.configured ? (
-          soon
+          <View style={styles.soon}>
+            <AppText variant="small" color={Palette.fgMuted}>
+              Not set up
+            </AppText>
+          </View>
         ) : (
           <Button title="Connect" kind="secondary" loading={connect.isPending} disabled={!z} onPress={() => connect.mutate()} />
         )}

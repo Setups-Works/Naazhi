@@ -8,7 +8,7 @@ process.env.TZ = "UTC";
 const withDb = Boolean(process.env.RUN_DB_TESTS);
 if (withDb && !process.env.DATABASE_URL) {
   try {
-    process.loadEnvFile(".env.local"); // same variables the app uses; real environment variables (CI) win
+    process.loadEnvFile("../../.env.local"); // the repo's one .env.local, the same variables the app uses; real environment variables (CI) win
   } catch {
     /* no .env.local: DATABASE_URL must come from the environment */
   }

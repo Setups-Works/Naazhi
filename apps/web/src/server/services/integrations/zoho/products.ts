@@ -62,6 +62,13 @@ const clock = (ms: unknown) => {
   return Number.isFinite(n) && n > 0 ? new Date(n).toISOString().slice(0, 16).replace("T", " ") + " UTC" : "";
 };
 
+/** Opens that very message in Zoho Mail (its folder, then the message), falling back to the inbox if Zoho gave no id. */
+const mailLink = (host: string, r: Record<string, unknown>) => {
+  const id = str(r.messageId);
+  const folder = str(r.folderId) || "inbox";
+  return id ? `${host}/zm/#mail/folder/${folder}/p/${id}` : `${host}/zm/#mail/folder/inbox`;
+};
+
 const mail: Reader = async (ctx, view, query) => {
   const host = productHost("mail", ctx.zone);
   const id = await mailAccount(ctx);
@@ -73,7 +80,7 @@ const mail: Reader = async (ctx, view, query) => {
     .slice(0, LIMIT)
     .map((m) => {
       const r = obj(m);
-      return row(str(r.messageId), str(r.subject) || "(no subject)", dot(str(r.sender) || str(r.fromAddress), clock(r.receivedTime ?? r.receivedtime)), `${host}/zm/#mail/folder/inbox`);
+      return row(str(r.messageId), str(r.subject) || "(no subject)", dot(str(r.sender) || str(r.fromAddress), clock(r.receivedTime ?? r.receivedtime)), mailLink(host, r));
     });
 };
 

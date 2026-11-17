@@ -6,7 +6,7 @@ import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { giftShareText, normalizePhone, toDate } from "@untitled/logic";
+import { COUNTRIES, cleanCountry, giftShareText, normalizePhone, toDate } from "@untitled/logic";
 import { BackHandler, Pressable, Share, View } from "react-native";
 
 import { AppText } from "@/components/ui/AppText";
@@ -21,6 +21,8 @@ import { PageHeader, SectionLabel } from "@/components/ui/PageHeader";
 import { Screen } from "@/components/ui/Screen";
 import { Sheet } from "@/components/ui/Sheet";
 import { TextField } from "@/components/ui/TextField";
+import { PickerField } from "@/components/ui/PickerField";
+import { useBillingActions } from "@/features/billing/queries";
 import { Palette, Radius, Space, Tints, themedStyles } from "@/constants/theme";
 import { mobileEnv } from "@/config/env";
 import { dbQuery } from "@/features/chat/db";
@@ -88,6 +90,20 @@ export function SettingsScreen() {
     queryFn: async () =>
       (await dbQuery<{ phone: string | null } | null>({ table: "profiles", op: "select", columns: "phone", filters: [{ column: "user_id", op: "eq", value: user!.id }], single: "maybe" }))?.phone ?? "",
   });
+  // The country and postal address, kept on the same profile row (shared with the website's Settings, My account).
+  const placeQ = useQuery({
+    queryKey: ["profile", "place", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const r = await dbQuery<{ country: string | null; address_line1: string | null; address_line2: string | null; city: string | null; region: string | null; postal_code: string | null } | null>({
+        table: "profiles", op: "select", columns: "country,address_line1,address_line2,city,region,postal_code", filters: [{ column: "user_id", op: "eq", value: user!.id }], single: "maybe",
+      });
+      return { country: r?.country ?? "", line1: r?.address_line1 ?? "", line2: r?.address_line2 ?? "", city: r?.city ?? "", region: r?.region ?? "", postalCode: r?.postal_code ?? "" };
+    },
+  });
+  const [addressDraft, setAddressDraft] = useState<{ line1: string; line2: string; city: string; region: string; postalCode: string } | null>(null);
+  const address = addressDraft ?? { line1: placeQ.data?.line1 ?? "", line2: placeQ.data?.line2 ?? "", city: placeQ.data?.city ?? "", region: placeQ.data?.region ?? "", postalCode: placeQ.data?.postalCode ?? "" };
+  const setAddressField = (k: keyof typeof address, v: string) => setAddressDraft({ ...address, [k]: v });
   const [phoneDraft, setPhoneDraft] = useState<string | null>(null);
   const phone = phoneDraft ?? phoneQ.data ?? "";
   const [nameDraft, setNameDraft] = useState<string | null>(null);
@@ -207,6 +223,33 @@ export function SettingsScreen() {
       setPhoneDraft(null);
       setNotice({ kind: "success", text: "Mobile number saved." });
       await phoneQ.refetch();
+    });
+  }
+
+  async function saveAddress() {
+    if (!user) return;
+    const clean = (v: string) => v.trim() || null;
+    await perform("address", async () => {
+      const rows = await dbQuery<{ user_id: string }[]>({
+        table: "profiles", op: "update",
+        values: { address_line1: clean(address.line1), address_line2: clean(address.line2), city: clean(address.city), region: clean(address.region), postal_code: clean(address.postalCode) },
+        filters: [{ column: "user_id", op: "eq", value: user.id }], returning: "user_id",
+      });
+      if (!rows?.length) throw new Error("Couldn’t save your address. Try again.");
+      setAddressDraft(null);
+      setNotice({ kind: "success", text: "Address saved." });
+      await placeQ.refetch();
+    });
+  }
+
+  // The same save as Plans and billing: the server decides if the change is allowed (not with a paid plan or credit in another currency) and answers with the new billing state.
+  const { country: countryMutation } = useBillingActions((text) => setNotice({ kind: "error", text }));
+  function saveCountry(code: string) {
+    countryMutation.mutate(code, {
+      onSuccess: () => {
+        setNotice({ kind: "success", text: "Country saved. Prices now show in your currency." });
+        void placeQ.refetch();
+      },
     });
   }
 
@@ -481,6 +524,20 @@ export function SettingsScreen() {
               <TextField label="Email" value={email} onChangeText={setEmailDraft} maxLength={254} autoCapitalize="none" keyboardType="email-address" autoComplete="email" />
               <Button title="Change email" kind="secondary" loading={busy === "email"} onPress={() => void saveEmail()} />
               <AppText variant="small" color={Palette.fgSubtle} style={styles.hint}>Sign-in method: {(account?.providers ?? []).map(providerName).join(", ") || "—"}</AppText>
+            </Field>
+          </Panel>
+          <Panel title="Address and country">
+            <Field>
+              <PickerField label="Country" value={cleanCountry(placeQ.data?.country) ?? ""} options={[{ value: "", label: "Select country" }, ...COUNTRIES.map(([value, label]) => ({ value, label }))]} onChange={(c) => c && saveCountry(c)} />
+              <AppText variant="small" color={Palette.fgSubtle} style={styles.hint}>Decides your currency: rupees in India, US dollars everywhere else. Saves as soon as you pick.</AppText>
+            </Field>
+            <Field>
+              <TextField label="Address line 1" value={address.line1} onChangeText={(v) => setAddressField("line1", v)} maxLength={120} autoComplete="street-address" placeholder="House number and street" />
+              <TextField label="Address line 2 (optional)" value={address.line2} onChangeText={(v) => setAddressField("line2", v)} maxLength={120} placeholder="Apartment, suite, landmark" />
+              <TextField label="City" value={address.city} onChangeText={(v) => setAddressField("city", v)} maxLength={80} />
+              <TextField label="State / region" value={address.region} onChangeText={(v) => setAddressField("region", v)} maxLength={80} />
+              <TextField label="PIN / ZIP code" value={address.postalCode} onChangeText={(v) => setAddressField("postalCode", v)} maxLength={20} autoComplete="postal-code" />
+              <Button title="Save address" kind="secondary" loading={busy === "address"} disabled={addressDraft === null} onPress={() => void saveAddress()} />
             </Field>
           </Panel>
           <Panel title="Welcome gift card">

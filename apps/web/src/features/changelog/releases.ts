@@ -22,6 +22,19 @@ export type Release = {
  */
 export const RELEASES: Release[] = [
   {
+    date: "2026-11-17",
+    title: "Version 9.0.2: country and address in the app, steadier chat typing",
+    summary: "The phone app gets the country and address settings, the chat box stays above the keyboard, and Zoho Mail links open the right message.",
+    tone: "sand",
+    appVersion: "v9.0.2",
+    changes: [
+      { kind: "new", platform: "app", text: "Settings now has an Address and country section, so you can pick your country and save your postal address from the app." },
+      { kind: "fixed", platform: "app", text: "The chat box and its toolbar now stay above the keyboard on Android and tablets." },
+      { kind: "fixed", platform: "app", text: "Setup shows “Not set up” instead of “Soon” for Zoho when it isn’t available yet." },
+      { kind: "fixed", platform: "web", text: "Zoho Mail results now open that exact message instead of the inbox." },
+    ],
+  },
+  {
     date: "2026-11-16",
     title: "Version 9.0.1: campaigns open again",
     summary: "A fix for the admin Campaigns pages, which could fail to open once a campaign had been saved.",

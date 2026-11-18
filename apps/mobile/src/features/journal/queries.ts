@@ -3,6 +3,7 @@ import type { ItemResponse, JournalEntry, ListResponse } from "@untitled/types";
 
 import { api } from "@/lib/api";
 import { qk } from "@/lib/queryKeys";
+import { notePositiveMoment } from "@/features/review/reviewPrompt";
 
 export function useJournal() {
   return useQuery({
@@ -33,6 +34,7 @@ export function useJournalActions() {
   const create = useMutation({
     mutationFn: (e: { entry_date: string; body: string; kind?: "text" | "voice" }) =>
       api.post<ItemResponse<JournalEntry>>("/api/v1/journal", e),
+    onSuccess: () => notePositiveMoment("journal_saved"),
     onSettled: refresh,
   });
   const update = useMutation({

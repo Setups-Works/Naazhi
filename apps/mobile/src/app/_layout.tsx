@@ -1,5 +1,6 @@
 import { useAcquisitionSync } from "@/features/acquisition/useAcquisitionSync";
 import { useAnalyticsSync } from "@/features/analytics/useAnalyticsSync";
+import { useReviewSessions } from "@/features/review/reviewPrompt";
 import { useBilling } from "@/features/billing/queries";
 import { useNotificationSync } from "@/features/notifications";
 import { useWidgetSync } from "@/features/widgets";
@@ -95,6 +96,8 @@ function Routes({ fresh }: { fresh: boolean }) {
   useAnalyticsSync(signedIn ? (user?.id ?? null) : null, billing.data?.plan?.id ?? null);
   // Where this person came from (the Google Play install referrer), noted once on the first launch.
   useAcquisitionSync(signedIn ? (user?.id ?? null) : null);
+  // Visits count toward when the Play review card may appear (features/review).
+  useReviewSessions(ready && signedIn && !needsSetup);
 
   // After a look change: open the screen the person was on (a tab directly, anything else on top of Home).
   useEffect(() => {

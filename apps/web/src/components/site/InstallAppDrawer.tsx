@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import { GOOGLE_PLAY_URL } from "../../lib/site";
+import { ANDROID_OPEN_APP_URL } from "../../lib/site";
 import { buttonClass } from "./ui";
 
 const KEY = "naazhi.installDrawer.dismissedAt";
@@ -24,7 +24,8 @@ function wantsDrawer(): boolean {
 }
 
 /**
- * A bottom drawer on the public site for people on an Android phone: "Get the Naazhi app", linking to Google Play. Closing it hides it
+ * A bottom drawer on the public site for people on an Android phone: "Get the Naazhi app". Its button opens the app when it is installed
+ * and Google Play when it isn't (an Android intent link with a Play fallback, ANDROID_OPEN_APP_URL). Closing it hides it
  * for two weeks. The server renders nothing (it can't know the device), so there is no hydration mismatch. There is no iPhone app, so
  * nothing is offered there.
  */
@@ -68,8 +69,10 @@ export default function InstallAppDrawer() {
           <FA icon={faXmark} />
         </button>
       </div>
-      <a href={GOOGLE_PLAY_URL} target="_blank" rel="noopener noreferrer" onClick={close} className={`${buttonClass("primary")} mt-3 w-full`}>
-        Install from Google Play
+      {/* Shown only on Android phones, so the intent link is safe here: it opens the app if installed, otherwise Google Play. Same tab,
+          because Chrome hands intent links to the system rather than loading them as a page. */}
+      <a href={ANDROID_OPEN_APP_URL} onClick={close} className={`${buttonClass("primary")} mt-3 w-full`}>
+        Open in the app
       </a>
     </aside>
   );

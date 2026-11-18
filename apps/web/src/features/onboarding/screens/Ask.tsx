@@ -94,6 +94,8 @@ export function Ask({ ctx, mode }: { ctx: Ctx; mode: "see" | "task" }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ chatId: id, provider, localDate: isoDate() }),
       });
+      // Our AI needs a plan, and the plan is chosen at the end of setup: say so here instead of sending people to Settings mid-setup.
+      if (res.status === 403) throw new Error("Naazhi’s AI needs a plan, which you’ll choose at the end of setup. Skip this step for now, or pick a model you connected yourself.");
       if (!res.ok || !res.body) {
         const j = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(j.error ?? "reply");

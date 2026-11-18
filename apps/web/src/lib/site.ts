@@ -26,8 +26,18 @@ export const X_HANDLE = "@naazhiapp";
 export const X_URL = "https://x.com/naazhiapp";
 export const INSTAGRAM_URL = "https://www.instagram.com/naazhi.app/";
 
+/** The Android app's id (apps/mobile/app.json `android.package`) and the scheme its links use (`expo.scheme`). */
+export const ANDROID_PACKAGE = "com.setupsworks.naazhi";
+export const ANDROID_APP_SCHEME = "untitled";
+
 /** The Android app's page on Google Play. */
-export const GOOGLE_PLAY_URL = "https://play.google.com/store/apps/details?id=com.setupsworks.naazhi";
+export const GOOGLE_PLAY_URL = `https://play.google.com/store/apps/details?id=${ANDROID_PACKAGE}`;
+
+/**
+ * An Android intent link: Chrome on Android opens the installed app, or goes to Google Play when it isn't installed. Only for Android
+ * browsers; anywhere else it does nothing, so use GOOGLE_PLAY_URL there.
+ */
+export const ANDROID_OPEN_APP_URL = `intent://#Intent;scheme=${ANDROID_APP_SCHEME};package=${ANDROID_PACKAGE};S.browser_fallback_url=${encodeURIComponent(GOOGLE_PLAY_URL)};end`;
 
 export const FEATURES = [
   { href: "/universal-search", t: "Universal Search", d: "Find anything across notes, tasks, mail and meetings." },

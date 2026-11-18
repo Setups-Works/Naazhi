@@ -36,7 +36,7 @@
 | Pay as you go (`payg`)     | us, billed after use           | none                                                      | Tokens counted and priced at `token_price_cents_per_million` |
 | Bring your own key (`byo`) | the person, directly to their provider | none                                              | Never counted; the person's key is used                  |
 
-A person with **no plan row** keeps AI exactly as before (our key, rate limited) and their use is only counted. Nothing in the app forces a choice.
+A person with **no plan** (never chosen, or ended) gets **no AI on our key**: `aiAccessFor` refuses with `NO_PLAN` ("Choose a plan to use Naazhi’s AI…"). The rest of the workspace works without a plan. Models the person connected themselves in the model picker (their own API key, their ChatGPT sign-in) and Puter.js (their own Puter account, in the browser) are paid by them and keep working without a plan.
 
 **Nothing here is hard-coded.** Prices, allowances, the token rate, names, taglines, feature lines, order and availability all live in `billing_plans` and are edited in **Admin → Plans**. The pricing page, Settings and the phone app read the same rows. The seed values in the migration are placeholders in rupees (₹749 a month, ₹150 per 1M tokens), not announced prices. Amounts are stored in paise (the smallest unit); ``formatMoney`` formats them (`en-IN` for INR). The only things in code are the three plan ids (also a check constraint) and the list of own-key providers.
 
@@ -46,6 +46,7 @@ A person with **no plan row** keeps AI exactly as before (our key, rate limited)
 - **Cancel:** a subscription sets `cancel_at_period_end` and runs to the end of its period; `pay as you go` and `byo` stop immediately (`status = 'canceled'`). **Resume** clears `cancel_at_period_end`.
 - **Rollover:** a period that has ended is settled the next time anything reads the person's billing (`settled()`): a cancelled subscription lapses, anything else renews for the next period. There is no cron job; keep it that way unless a payment provider needs one.
 - **AI access** (`aiAccessFor(userId)`) runs before every AI request and either returns how to answer it or throws a friendly `ForbiddenError`:
+  - no active plan → "Choose a plan to use Naazhi’s AI…".
   - `byo` without a saved key → "Add your API key…"; with a key → the key is opened for that one request.
   - `subscription` at or over its allowance → "You’ve used this period’s AI allowance…".
   - anything else → our provider, with a `record()` that counts the tokens.

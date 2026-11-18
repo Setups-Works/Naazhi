@@ -46,11 +46,11 @@ afterAll(async () => {
 });
 
 describe("plans", () => {
-  it("starts with no plan and AI as before", async () => {
+  it("starts with no plan, and no plan means no AI on our key", async () => {
     const b = await getMyBilling(user.a);
     expect(b).toMatchObject({ plan: null, status: "none", payments_connected: false });
     expect(b.plans.map((p) => p.id)).toEqual(["subscription", "payg", "byo"]);
-    expect((await aiAccessFor(user.a)).mode).toBe("server");
+    await expect(aiAccessFor(user.a)).rejects.toBeInstanceOf(ForbiddenError);
   });
 
   it("chooses a subscription with a period, and refuses choosing it twice", async () => {

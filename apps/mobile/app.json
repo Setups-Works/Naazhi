@@ -2,7 +2,7 @@
   "expo": {
     "name": "Naazhi",
     "slug": "untitled-project-mobile",
-    "version": "9.2.0",
+    "version": "9.3.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "untitled",
@@ -13,6 +13,7 @@
     },
     "android": {
       "package": "com.setupsworks.naazhi",
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.setupsworks.naazhi",
       "blockedPermissions": ["com.google.android.gms.permission.AD_ID"],
       "permissions": [
         "android.permission.health.READ_STEPS",

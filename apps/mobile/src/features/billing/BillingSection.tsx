@@ -21,7 +21,7 @@ const day = (iso: string) => toDate(iso).toLocaleDateString(undefined, { month: 
 
 /** One line about where the current plan stands: when it renews or ends, or what this period has used. */
 function standing(b: MyBilling): string {
-  if (!b.plan) return b.status === "canceled" ? "Your last plan has ended. Choose a plan below to start again." : "You haven’t chosen a plan yet. AI works as it always has until you do.";
+  if (!b.plan) return b.status === "canceled" ? "Your last plan has ended. Choose a plan below to start again." : "You haven’t chosen a plan yet. Choose one below to use AI, or connect your own key in the model picker.";
   if (b.plan.id === "subscription" && b.trial_ends_at)
     return b.cancel_at_period_end ? `Free trial ends on ${day(b.trial_ends_at)}. You won’t be charged.` : `Free trial. You’re charged on ${day(b.trial_ends_at)} unless you cancel first.`;
   if (b.plan.id === "subscription" && b.period_end)

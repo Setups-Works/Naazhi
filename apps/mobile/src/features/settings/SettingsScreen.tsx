@@ -7,7 +7,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { COUNTRIES, cleanCountry, giftShareText, normalizePhone, toDate } from "@untitled/logic";
-import { BackHandler, Pressable, Share, View } from "react-native";
+import { BackHandler, Platform, Pressable, Share, View } from "react-native";
 
 import { AppText } from "@/components/ui/AppText";
 import { AppLogo } from "@/components/ui/AppLogo";
@@ -40,6 +40,7 @@ import { ZohoPage } from "./pages/ZohoPage";
 import { useAccountSettings } from "./queries";
 import { SETTINGS_GROUPS, SETTINGS_SECTIONS, type SettingsPrefs, type SettingsSection } from "./types";
 import { useUpdate } from "@/features/updates/UpdateProvider";
+import { openPlayReviews } from "@/features/review/reviewPrompt";
 import { useAppState, useAuth } from "@/providers/AppState";
 import { shareImageWithText } from "@/lib/shareImage";
 import { createUploadId } from "@/lib/uploadId";
@@ -674,6 +675,13 @@ export function SettingsScreen() {
               <AppText variant="small" color={Palette.fgSubtle}>Updates for this app come from the store on your phone.</AppText>
             )}
           </Panel>
+          {Platform.OS === "android" ? (
+            <Panel title="Enjoying Naazhi?">
+              <AppText variant="small" color={Palette.fgSubtle}>A review on Google Play helps other people find Naazhi.</AppText>
+              {/* Opens the Play listing: Google doesn't allow a button to open the in-app review card (features/review). */}
+              <Button title="Rate Naazhi on Google Play" kind="secondary" icon="star" onPress={() => void openPlayReviews()} />
+            </Panel>
+          ) : null}
         </>
       ) : null}
 

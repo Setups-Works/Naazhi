@@ -20,7 +20,7 @@ import type { CheckoutSession, TopupSession } from "@untitled/types";
  * `admin*` functions (the admin panel checks the caller first). Razorpay takes every payment (rupees in India, US dollars elsewhere);
  * until it is connected, a change is recorded and applies at once and nobody is charged.
  *
- * Rules: no plan chosen = AI works as before and use is only counted; Subscription = AI up to the plan's token allowance each period;
+ * Rules: no plan (never chosen, or ended) = no AI on our key; Subscription = AI up to the plan's token allowance each period;
  * Pay as you go = AI with every token counted and priced; Bring your own key = AI through the person's own key, never counted.
  * A subscription cancels at the end of its period; the other plans stop at once. Plans renew a month at a time, and a lapsed
  * period rolls forward the next time anything reads it.
@@ -556,6 +556,10 @@ export async function removeByoKey(userId: string): Promise<MyBilling> {
   return getMyBilling(userId);
 }
 
+/** Said when someone without a plan asks our AI for something. */
+export const NO_PLAN =
+  "Choose a plan to use Naazhi’s AI: a subscription, Pay as you go credit, or your own API key. Go to Settings → Plan and billing, or connect your own key in the model picker.";
+
 export type AiAccess = {
   mode: "server" | "byo";
   planId: PlanId | null;
@@ -572,6 +576,9 @@ export type AiAccess = {
 export async function aiAccessFor(userId: string): Promise<AiAccess> {
   const row = await settled(userId);
   const planId = row?.status === "active" ? row.plan_id : null;
+  // Our AI is paid for: no plan (never chosen, or ended) means no AI on our key. A model the person connected themselves (their own key or
+  // ChatGPT sign-in, in the model picker) doesn't come through here, so it keeps working without a plan.
+  if (!planId) throw new ForbiddenError(NO_PLAN);
   // Pay as you go is always prepaid: tokens come off the person's credit and AI pauses when it is gone, whether or not
   // Razorpay is connected yet (until then an admin adds credit with Adjust).
   const prepaid = planId === "payg";

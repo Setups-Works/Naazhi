@@ -23,6 +23,20 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-18",
+    title: "Version 9.3.0: AI with a plan, open the app from the website, rate Naazhi",
+    summary: "Naazhi’s AI now comes with a plan or your own key, the website on Android opens the app when you have it, and the app can ask for a Google Play review at a good moment.",
+    tone: "violet",
+    appVersion: "v9.3.0",
+    changes: [
+      { kind: "improved", platform: "web", text: "Naazhi’s AI now needs a plan: a subscription, Pay as you go credit, or your own API key. Notes, tasks, journal and the rest of your workspace stay free." },
+      { kind: "improved", platform: "app", text: "AI in the app follows the same rule: choose a plan, or connect your own key in the model picker." },
+      { kind: "improved", platform: "web", text: "On an Android phone, the Get the Naazhi app drawer now opens the app if it’s installed, and Google Play if it isn’t." },
+      { kind: "new", platform: "app", text: "After you’ve used Naazhi for a while, the app may show Google Play’s review card right after you finish something. It asks rarely and never more than a few times." },
+      { kind: "new", platform: "app", text: "Settings → About has a Rate Naazhi on Google Play button." },
+    ],
+  },
+  {
+    date: "2026-11-18",
     title: "Version 9.2.0: pay through Razorpay from anywhere, and a new Home",
     summary: "Razorpay now takes payments from every country, in rupees in India and US dollars everywhere else, and Home shows your day at a glance.",
     tone: "gold",

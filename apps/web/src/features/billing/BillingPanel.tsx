@@ -21,7 +21,7 @@ function standing(b: MyBilling): string {
   if (!b.plan)
     return b.status === "canceled"
       ? "Your last plan has ended. Choose a plan below to start again."
-      : "You haven’t chosen a plan yet. AI works as it always has until you do.";
+      : "You haven’t chosen a plan yet. Choose one below to use AI, or connect your own key in the model picker.";
   if (b.plan.id === "subscription" && b.trial_ends_at)
     return b.cancel_at_period_end
       ? `Your free trial ends on ${day(b.trial_ends_at)} and you won’t be charged. You keep everything until then.`
@@ -225,7 +225,7 @@ export default function BillingPanel() {
         <div className="border-l pl-8 max-[700px]:border-l-0 max-[700px]:pl-0">
           <h3 className="m-0 mb-2 text-[14px] font-medium text-ink-2">Includes</h3>
           <ul className="m-0 flex list-none flex-col divide-y divide-line p-0">
-            {(b.plan?.features.length ? b.plan.features : ["AI works as it always has until you choose a plan"]).map((f) => (
+            {(b.plan?.features.length ? b.plan.features : ["AI needs a plan: choose one below"]).map((f) => (
               <li key={f} className="flex items-start gap-2 py-2 text-[14px]">
                 <FA icon={faCheck} className="mt-1 text-[11px] text-green-fg" />
                 {f}

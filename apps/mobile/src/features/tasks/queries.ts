@@ -7,6 +7,7 @@ import { dbQuery } from "@/features/chat/db";
 import { requestReplan } from "@/features/notifications/useNotificationSync";
 import { api } from "@/lib/api";
 import { qk } from "@/lib/queryKeys";
+import { notePositiveMoment } from "@/features/review/reviewPrompt";
 
 // Same reads the web makes: the generic /api/v1/db door for lists of everything, the REST endpoints for writes.
 const TASK_COLS = "id,title,description,priority,list_id,due_date,remind_time,done,done_at,cancelled,archived,recurrence,created_at";
@@ -109,6 +110,10 @@ export function useTaskActions(today: string) {
       return { before };
     },
     onError: rollback,
+    // Finishing a task is a good moment: it may be when the Play review card appears (features/review).
+    onSuccess: (_data, t) => {
+      if (!t.done) notePositiveMoment("task_done");
+    },
     onSettled: refresh,
   });
 

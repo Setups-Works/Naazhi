@@ -4,6 +4,7 @@ import type { ItemResponse, ListResponse, Note, Tone } from "@untitled/types";
 import { dbQuery } from "@/features/chat/db";
 import { api } from "@/lib/api";
 import { qk } from "@/lib/queryKeys";
+import { notePositiveMoment } from "@/features/review/reviewPrompt";
 
 export function useNotes() {
   return useQuery({
@@ -30,7 +31,7 @@ export type NoteInput = { title: string; body: string; pinned?: boolean; color?:
 export function useNoteActions() {
   const qc = useQueryClient();
   const refresh = () => qc.invalidateQueries({ queryKey: qk.notes });
-  const create = useMutation({ mutationFn: (n: NoteInput) => api.post<ItemResponse<Note>>("/api/v1/notes", n), onSettled: refresh });
+  const create = useMutation({ mutationFn: (n: NoteInput) => api.post<ItemResponse<Note>>("/api/v1/notes", n), onSuccess: () => notePositiveMoment("note_created"), onSettled: refresh });
   const update = useMutation({
     mutationFn: ({ id, ...changes }: Partial<NoteInput> & { id: string }) => api.patch<ItemResponse<Note>>(`/api/v1/notes/${id}`, changes),
     onSettled: refresh,

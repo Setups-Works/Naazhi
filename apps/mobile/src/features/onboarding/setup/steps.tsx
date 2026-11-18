@@ -33,7 +33,7 @@ export type StepCtx = {
   /** The mobile number as typed; saved in international form once it is valid. */
   phone: string;
   setPhone: (v: string) => void;
-  /** ISO country code ("" until chosen): decides the currency and payment provider (India: rupees, Razorpay; elsewhere: dollars, Stripe). */
+  /** ISO country code ("" until chosen): decides the currency and payment provider (India: rupees; elsewhere: dollars; both through Razorpay). */
   country: string;
   setCountry: (v: string) => void;
   prefs: SettingsPrefs;
@@ -108,7 +108,7 @@ export function AboutStep({ ctx }: { ctx: StepCtx }) {
       <AppText variant="small" color={Palette.fgSubtle}>
         {cleanCountry(ctx.country)
           ? `Prices will be in ${currencyName(billingRegion(ctx.country).currency)}, and payments go through ${providerName(billingRegion(ctx.country).provider)}. You can change this later in Settings while you have no active subscription or credit.`
-          : "Decides your currency: rupees (Razorpay) in India, US dollars (Stripe) everywhere else."}
+          : "Decides your currency: rupees in India, US dollars everywhere else. Payments go through Razorpay."}
       </AppText>
       <TextField label="What do you do? (optional)" value={prefs.role} onChangeText={(v) => setPrefs({ ...prefs, role: v.slice(0, 80) })} maxLength={80} placeholder="It helps Naazhi tell what matters to you" />
       <View style={styles.wrap}>
@@ -415,7 +415,7 @@ export function PlanStep({ ctx }: { ctx: StepCtx }): ReactNode {
       {b && !b.payments_connected ? <Banner kind="info">Payments aren’t switched on yet, so choosing a plan doesn’t charge you.</Banner> : null}
       {b
         ? plans.map((p) => (
-            <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={picker.busy} loading={picker.loadingId === p.id} autopay={needsCheckout(b, p)} provider={b.provider} trial={b.trial_available && p.trial_days > 0} onChoose={() => void picker.pick(p)} />
+            <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={picker.busy} loading={picker.loadingId === p.id} autopay={needsCheckout(b, p)} trial={b.trial_available && p.trial_days > 0} onChoose={() => void picker.pick(p)} />
           ))
         : null}
     </View>

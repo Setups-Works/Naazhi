@@ -9,11 +9,10 @@ import * as billing from "../../repositories/billing.repository";
 import * as repo from "../../repositories/invoices.repository";
 import { ConflictError, NotFoundError, ValidationError } from "../../errors";
 import * as razorpay from "../../providers/payments/razorpay";
-import * as stripe from "../../providers/payments/stripe";
 import { formatBalance, formatMoney } from "@untitled/logic/billing";
 
 /**
- * Invoices and the billing emails. An invoice is made from a payment the service has already verified with Razorpay (a subscription
+ * Invoices and the billing emails. An invoice is made from a payment the service has already verified with Razorpay (rupees or dollars) (a subscription
  * charge or an AI credit top-up), once per payment, and the person is emailed the receipt. Emails never block or fail a payment: a mail
  * problem is swallowed, and the invoice is always there in Settings → Plans & billing. Never log amounts, names or addresses.
  */
@@ -105,7 +104,7 @@ export async function recordRefund(refundId: string, paymentId: string, amountCe
 }
 
 /**
- * An admin refunds an invoice (in full or in part) through the provider that took it (Razorpay or Stripe). A top-up can only be refunded up to what is still unspent in the
+ * An admin refunds an invoice (in full or in part) through Razorpay, in the currency it was paid in. A top-up can only be refunded up to what is still unspent in the
  * person's balance (the rest has been used), so the balance never goes negative from a refund. Returns the amount refunded.
  */
 export async function refundInvoice(invoiceId: string, amountCents: number): Promise<{ amountCents: number; currency: string }> {
@@ -118,19 +117,8 @@ export async function refundInvoice(invoiceId: string, amountCents: number): Pro
     const unspent = Math.max(0, await billing.getCredit(inv.user_id));
     if (amountCents > unspent) throw new ValidationError(`Only ${formatBalance(unspent, inv.currency)} of this top-up is unspent, so that is the most that can be refunded.`);
   }
-  if (inv.provider === "stripe") {
-    // A subscription charge is recorded under its Stripe invoice id with the payment intent kept as the reference; a top-up under the payment intent.
-    let intent = [inv.provider_ref, inv.provider_payment_id].find((x) => x?.startsWith("pi_")) ?? null;
-    try {
-      if (!intent && inv.provider_payment_id.startsWith("in_")) intent = (await stripe.fetchInvoice(inv.provider_payment_id)).payment_intent ?? null;
-      if (!intent) throw new Error("no payment");
-      const refund = await stripe.refundPayment(intent, amountCents, { invoice: inv.number });
-      await recordRefund(refund.id, intent, amountCents);
-    } catch {
-      throw new ConflictError("Stripe couldn’t refund that payment. It may already be refunded, or too old to refund from here.");
-    }
-    return { amountCents, currency: inv.currency };
-  }
+  // Stripe is no longer connected: a payment it took (before it was removed) is refunded from Stripe's own dashboard.
+  if (inv.provider === "stripe") throw new ConflictError("This payment was taken by Stripe, which we no longer use. Refund it from the Stripe dashboard.");
   let refund: razorpay.RazorpayRefund;
   try {
     refund = await razorpay.refundPayment(inv.provider_payment_id, amountCents, { invoice: inv.number });

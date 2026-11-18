@@ -3,17 +3,8 @@ import { BYO_PROVIDERS } from "@untitled/logic/billing";
 
 export const planIdInput = z.object({ planId: z.enum(["subscription", "payg", "byo"]) });
 
-/** Starting to pay. `client` says where to send the person back to after Stripe's page: the website, or the phone app. */
-export const checkoutInput = planIdInput.extend({ client: z.enum(["web", "app"]).default("web") });
-
-/** Back from Stripe: a Checkout session id (the page) or a subscription / payment intent id (the phone's sheet); the server checks it with Stripe itself. */
-export const stripeConfirmInput = z
-  .object({
-    sessionId: z.string().trim().regex(/^cs_[A-Za-z0-9_]+$/, "That isn’t a Stripe session.").max(200).optional(),
-    subscriptionId: z.string().trim().regex(/^sub_[A-Za-z0-9_]+$/, "That isn’t a Stripe subscription.").max(200).optional(),
-    paymentIntentId: z.string().trim().regex(/^pi_[A-Za-z0-9_]+$/, "That isn’t a Stripe payment.").max(200).optional(),
-  })
-  .refine((v) => [v.sessionId, v.subscriptionId, v.paymentIntentId].filter(Boolean).length === 1, "Send exactly one id.");
+/** Starting to pay for a plan. Older app builds also send `client`; it is ignored. */
+export const checkoutInput = planIdInput;
 
 /** The person's country, an ISO 3166-1 alpha-2 code from the shared list. */
 export const countryInput = z.object({ country: z.string().trim().length(2, "Choose your country from the list.").transform((v) => v.toUpperCase()) });
@@ -58,7 +49,7 @@ export const checkoutConfirmInput = z.object({
 });
 
 /** A top-up in paise or cents (whole rupees or dollars); the service checks the limits in the person's own currency. */
-export const topupInput = z.object({ amountCents: z.number().int().min(100).max(100_000_000), client: z.enum(["web", "app"]).default("web") });
+export const topupInput = z.object({ amountCents: z.number().int().min(100).max(100_000_000) });
 export const topupConfirmInput = z.object({
   paymentId: z.string().trim().min(1).max(100),
   orderId: z.string().trim().min(1).max(100),

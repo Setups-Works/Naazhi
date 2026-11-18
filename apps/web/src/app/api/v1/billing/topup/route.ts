@@ -5,5 +5,5 @@ import { topupInput } from "../../../../../server/services/billing/billing.schem
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-/** Starts adding AI credit: answers with what Razorpay's window needs (India) or the Stripe page to go to (everyone else). */
-export const POST = handler({ write: true, body: topupInput }, ({ userId, body }) => startTopup(userId, body.amountCents, body.client));
+/** Starts adding AI credit: answers with what Razorpay's window needs, in rupees (India) or US dollars (everyone else). */
+export const POST = handler({ write: true, body: topupInput }, ({ userId, body }) => startTopup(userId, body.amountCents));

@@ -44,7 +44,7 @@ export default function Page() {
                 </p>
                 <p>
                   <strong>Plan and payments:</strong> your plan, your country (which decides your currency and payment provider), credit top-ups, invoices and
-                  payment status. Payments from India are taken in rupees by Razorpay, and payments from every other country in US dollars by Stripe. Card, UPI and bank
+                  payment status. Razorpay takes every payment: in rupees from India and in US dollars from every other country. Card, UPI and bank
                   details are entered on the provider’s own payment page and are never seen or stored by us. Each provider receives the name, email address and, for
                   Razorpay, the mobile number you gave us, plus the amount and plan, so it can take and refund the payment; each handles that data under its own privacy
                   policy.
@@ -109,7 +109,7 @@ export default function Page() {
             body: (
               <>
                 <p>
-                  Only the service providers that help us run {OPERATOR.product}, and only what they need: payments (Razorpay for India, Stripe everywhere else), email delivery, hosting and file
+                  Only the service providers that help us run {OPERATOR.product}, and only what they need: payments (Razorpay), email delivery, hosting and file
                   storage, sign-in (Google, if you choose it), and anonymous usage analytics (Google Analytics and Microsoft Clarity, only while “Share anonymous usage” is on).
                 </p>
                 <p>

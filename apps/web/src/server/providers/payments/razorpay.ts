@@ -80,29 +80,35 @@ export const createPlan = (p: { name: string; amount: number; currency: string; 
     item: { name: p.name.slice(0, 80), amount: p.amount, currency: p.currency.toUpperCase() },
   });
 
-/** `startAt` (Unix seconds) delays the first charge: that is how a free trial works. Razorpay still asks for a mandate now. */
-export const createSubscription = (s: { planId: string; interval: "month" | "year"; userId: string; startAt?: number }) =>
+/**
+ * `startAt` (Unix seconds) delays the first charge: that is how a free trial works. Razorpay still asks for a mandate now. The currency is
+ * kept in the notes so a webhook can tell a dollar subscription from a rupee one without fetching its plan.
+ */
+export const createSubscription = (s: { planId: string; interval: "month" | "year"; userId: string; currency: "inr" | "usd"; startAt?: number }) =>
   call<RazorpaySubscription>("POST", "/subscriptions", {
     plan_id: s.planId,
     // Razorpay needs an end; this is ten years either way and a person can cancel at any time.
     total_count: s.interval === "year" ? 10 : 120,
     customer_notify: 1,
-    notes: { user_id: s.userId },
+    notes: { user_id: s.userId, currency: s.currency },
     ...(s.startAt ? { start_at: s.startAt } : {}),
   });
 
 export type RazorpayOrder = { id: string; amount: number; currency: string; status: string; notes?: Record<string, string> | unknown[] };
 export type RazorpayPayment = { id: string; order_id: string | null; amount: number; currency: string; status: string; notes?: Record<string, string> | unknown[] };
 
-/** A one-time payment (credit top-up). The amount is in paise; `notes` carry who it is for and what it is for. */
-export const createOrder = (o: { amount: number; receipt: string; notes: Record<string, string> }) =>
-  call<RazorpayOrder>("POST", "/orders", { amount: o.amount, currency: "INR", receipt: o.receipt.slice(0, 40), notes: o.notes });
+/**
+ * A one-time payment (credit top-up). The amount is in the currency's smallest unit (paise or cents); dollars need international payments
+ * switched on in the Razorpay dashboard. `notes` carry who it is for and what it is for.
+ */
+export const createOrder = (o: { amount: number; currency: "inr" | "usd"; receipt: string; notes: Record<string, string> }) =>
+  call<RazorpayOrder>("POST", "/orders", { amount: o.amount, currency: o.currency.toUpperCase(), receipt: o.receipt.slice(0, 40), notes: o.notes });
 
 export const fetchPayment = (id: string) => call<RazorpayPayment>("GET", `/payments/${encodeURIComponent(id)}`);
 
 export type RazorpayRefund = { id: string; payment_id: string; amount: number; status: string };
 
-/** Returns money to the customer's original payment method. `amount` is in paise; the refund id makes a repeat of the same call safe to record. */
+/** Returns money to the customer's original payment method, in the payment's own currency. `amount` is in its smallest unit; the refund id makes a repeat of the same call safe to record. */
 export const refundPayment = (paymentId: string, amountCents: number, notes: Record<string, string>) =>
   call<RazorpayRefund>("POST", `/payments/${encodeURIComponent(paymentId)}/refund`, { amount: amountCents, speed: "normal", notes });
 

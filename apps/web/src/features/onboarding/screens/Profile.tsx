@@ -68,7 +68,7 @@ export function About({ ctx }: { ctx: Ctx }) {
           <span id="ob-country-note" className="text-[13.5px] text-fg-subtle">
             {region
               ? `Prices will be in ${currencyName(region.currency)}, and payments go through ${providerName(region.provider)}. You can change this later in Settings while you have no active subscription or credit.`
-              : "Decides your currency: rupees (Razorpay) in India, US dollars (Stripe) everywhere else."}
+              : "Decides your currency: rupees in India, US dollars everywhere else. Payments go through Razorpay."}
           </span>
         </div>
 

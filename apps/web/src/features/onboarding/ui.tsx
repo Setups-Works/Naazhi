@@ -14,7 +14,7 @@ export type Ctx = {
   /** The mobile number as typed; saved in international form once it is valid (needed on the About screen). */
   phone: string;
   setPhone: (v: string) => void;
-  /** ISO country code chosen on the About screen ("" until chosen). It decides the currency and payment provider shown later (India: rupees, Razorpay; elsewhere: dollars, Stripe). */
+  /** ISO country code chosen on the About screen ("" until chosen). It decides the currency and payment provider shown later (India: rupees; elsewhere: dollars; both through Razorpay). */
   country: string;
   setCountry: (v: string) => void;
   prefs: Prefs;

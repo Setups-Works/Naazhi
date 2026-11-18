@@ -70,8 +70,8 @@ export default function Page() {
             body: (
               <>
                 <p>
-                  Payments from India are in Indian rupees (INR) through Razorpay, and payments from every other country are in US dollars (USD) through Stripe. A refund is
-                  made in the currency you paid in, through the same provider, to the card or account you paid with.
+                  Payments from India are in Indian rupees (INR), and payments from every other country are in US dollars (USD), both through Razorpay. A refund is
+                  made in the currency you paid in, through Razorpay, to the card or account you paid with.
                 </p>
                 <p>
                   We refund the amount you were charged. If your bank converted dollars into your own currency, the amount that reaches you can differ slightly because of

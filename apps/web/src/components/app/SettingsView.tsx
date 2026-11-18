@@ -644,7 +644,7 @@ export default function SettingsView({
                   </SelectContent>
                 </Select>
                 <p id="st-country-note" className="m-0 text-[13px] text-ink-3">
-                  India pays in rupees through Razorpay; every other country pays in dollars through Stripe. Saves as soon as you pick.
+                  India pays in rupees; every other country pays in dollars. Both go through Razorpay. Saves as soon as you pick.
                 </p>
                 <Status m={countryMsg} />
               </div>

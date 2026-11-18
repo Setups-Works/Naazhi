@@ -6,7 +6,7 @@ import type { BillingPlan, MyBilling } from "@untitled/types";
 import { BYO_PROVIDERS, byoProvider, formatBalance, formatMoney, formatTokens, needsCheckout, priceLine, trialButtonLabel, trialLine } from "@untitled/logic/billing";
 import { useConfirm } from "../../components/ui/Confirm";
 import { providerName, currencyName, countryName } from "@untitled/logic/countries";
-import { useBilling, useBillingActions, useStripeReturn } from "./queries";
+import { useBilling, useBillingActions } from "./queries";
 import CountrySelect from "./CountrySelect";
 import { usePlanPicker } from "./razorpay";
 import TopUpDialog from "./TopUpDialog";
@@ -119,7 +119,7 @@ function KeyForm({ billing, onError }: { billing: MyBilling; onError: (m: string
   );
 }
 
-function PlanCard({ plan, current, busy, autopay, trial, provider, onChoose }: { plan: BillingPlan; current: boolean; busy: boolean; autopay: boolean; trial: boolean; provider: MyBilling["provider"]; onChoose: () => void }) {
+function PlanCard({ plan, current, busy, autopay, trial, currency, onChoose }: { plan: BillingPlan; current: boolean; busy: boolean; autopay: boolean; trial: boolean; currency: MyBilling["currency"]; onChoose: () => void }) {
   return (
     <article
       className="liquid-flat flex flex-col gap-3 rounded-r3 p-[18px] [backdrop-filter:var(--glass-blur)]"
@@ -154,11 +154,11 @@ function PlanCard({ plan, current, busy, autopay, trial, provider, onChoose }: {
         {autopay && !current && (
           <p className="m-0 mt-2 text-[12.5px] text-fg-subtle">
             {trial
-              ? provider === "stripe"
+              ? currency === "usd"
                 ? `Free for ${plan.trial_days} days. You’ll add a card now and nothing is charged until the trial ends. Cancel any time before then.`
                 : `Free for ${plan.trial_days} days. You’ll approve autopay now and nothing is charged until the trial ends. Cancel any time before then.`
-              : provider === "stripe"
-                ? "Autopay is on: your card is charged automatically each period through Stripe. Cancel any time."
+              : currency === "usd"
+                ? "Your card is charged automatically each period, in US dollars. Cancel any time."
                 : "Charged automatically each period by UPI AutoPay or card. Cancel any time."}
           </p>
         )}
@@ -192,7 +192,6 @@ export default function BillingPanel() {
   const b = q.data;
   const { pick, busy: picking } = usePlanPicker(b, setErr);
   const { country } = useBillingActions(setErr);
-  useStripeReturn(setErr);
 
   if (q.isError)
     return (
@@ -331,7 +330,7 @@ export default function BillingPanel() {
       <h2 className="m-0 mt-2 text-[15px] font-semibold">Plans</h2>
       <div className="grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(210px,1fr))]">
         {b.plans.map((p) => (
-          <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={busy} autopay={needsCheckout(b, p)} trial={b.trial_available && p.trial_days > 0} provider={b.provider} onChoose={() => pick(p)} />
+          <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={busy} autopay={needsCheckout(b, p)} trial={b.trial_available && p.trial_days > 0} currency={b.currency} onChoose={() => pick(p)} />
         ))}
       </div>
 

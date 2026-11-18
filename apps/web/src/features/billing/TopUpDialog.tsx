@@ -5,7 +5,7 @@ import { formatMoney, tokenCostCents, validTopup } from "@untitled/logic/billing
 import Modal from "../../components/ui/Modal";
 import { useTopUp } from "./razorpay";
 
-/** "Add AI credit": pick an amount (or type one), pay (Razorpay in India, Stripe elsewhere), and the credit is added once the payment is verified. */
+/** "Add AI credit": pick an amount (or type one), pay through Razorpay (rupees in India, dollars elsewhere), and the credit is added once the payment is verified. */
 export default function TopUpDialog({ billing, onClose }: { billing: MyBilling; onClose: () => void }) {
   const [amount, setAmount] = useState<number>(billing.topup.options_cents[1] ?? billing.topup.min_cents);
   const [custom, setCustom] = useState("");

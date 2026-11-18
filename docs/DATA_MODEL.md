@@ -106,6 +106,9 @@ The people shown on the public `/team` page, managed in the admin panel (`/admin
 ## Country billing (migration 20261116100000)
 `profiles.country` (ISO 3166-1 alpha-2, checked `^[A-Z]{2}$`; null = never chosen, billed as India; the owner may update it, asked on the About setup screen). `billing_plans.price_cents_usd` / `token_price_cents_per_million_usd` (US cents; 0 on a paid plan = not offered in dollars; seeded 900 and 240 as placeholders to review). `billing_settings.topup_min_cents_usd/_max_cents_usd/_options_cents_usd`. `user_billing.provider` and `billing_invoices.provider` (`razorpay` | `stripe`; `provider_subscription_id` holds either provider's id). `user_ai_credit.currency` (`inr` | `usd`: the balance's unit, changed only while it is zero) and `pending_micro` (part-cent carried for dollar usage). Invoices already had `currency`. Migration `20261116110000_stripe_native_sheet.sql`: `stripe_customers` (user → Stripe customer id; RLS on, no access for people) and `billing_plans.stripe_product_id`.
 
+## Razorpay for every country (migration 20261118100000)
+Razorpay takes dollar payments too, so Stripe is no longer used for new payments (its columns and `stripe_customers` stay for history). `billing_plans.razorpay_plan_id_usd/_key_usd` (the Razorpay plan for the dollar price; the rupee one stays in `razorpay_plan_id/_key`). `user_billing.currency` (`inr` | `usd`: what the subscription bills in, kept even if the person's country changes; old Stripe rows set to `usd`).
+
 ## Razorpay (migration 20261111180000)
 `billing_plans.razorpay_plan_id/_key` (the matching Razorpay plan), `user_billing.provider_subscription_id/provider_status`, and `billing_events` (webhook ids handled; RLS on, no policies, owner only).
 

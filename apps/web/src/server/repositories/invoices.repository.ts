@@ -102,7 +102,7 @@ export const listAllInvoices = (search: string, limit = 200) =>
   );
 
 /**
- * Records a refund against the invoice of a payment (matched by the payment id, or by the payment intent kept as the reference for a Stripe subscription charge), once: a second call with the same refund id changes nothing. Returns the invoice
+ * Records a refund against the invoice of a payment (matched by the payment id, or by the reference kept with it), once: a second call with the same refund id changes nothing. Returns the invoice
  * and how much was applied, or null when the payment has no invoice or the refund was already recorded. The invoice never shows more
  * returned than it was paid.
  */

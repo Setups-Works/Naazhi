@@ -21,7 +21,6 @@ Rules for everyone (and every AI agent). The checklist at the bottom is finished
 | `GROQ_API_KEY`                                   | AI / integrations services           | server only (Phase 3–4)                                  |
 | `CRON_SECRET`                                     | protects `/api/v1/jobs/*`            | server only                                              |
 | `SENTRY_*`, `NEXT_PUBLIC_POSTHOG_KEY`             | observability                        | DSN/keys are public identifiers; auth tokens server only |
-| Stripe keys                                       | billing                              | server only (Phase 6)                                    |
 
 Rotation: change the value in `.env.selfhost` / your secret manager and recreate the containers (rotating `BETTER_AUTH_SECRET` signs everyone out); hosting dashboard → Environment Variables; Vercel → Environment Variables; then redeploy **without build cache** (NEXT_PUBLIC values are baked at build). A pasted value containing characters like “…” or spaces breaks every request — the app now detects this and says which variable is wrong.
 
@@ -80,7 +79,7 @@ Full design: `docs/BILLING.md`.
 
 **In place:** every response carries `X-Frame-Options: SAMEORIGIN`, `frame-ancestors 'self'; base-uri 'self'; object-src 'none'`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin` and HSTS (two years), and no `X-Powered-By` (`apps/web/next.config.mjs`). Uploaded files keep their own sandbox CSP (the storage route), so the page policy is not sent there.
 
-**Still to do:** a full script CSP (it must allow Firebase, Clarity, Razorpay, Stripe and Puter.js and be tested against each), Cloudflare WAF, secret scanning in CI, bot protection on auth endpoints.
+**Still to do:** a full script CSP (it must allow Firebase, Clarity, Razorpay and Puter.js and be tested against each), Cloudflare WAF, secret scanning in CI, bot protection on auth endpoints.
 
 **Client addresses for rate limits.** Per-address limits (sign-in, password reset, desktop sign-in codes, visit counting) use `clientIp()` (`apps/web/src/server/clientIp.ts`): the header named in `CLIENT_IP_HEADER` when set, otherwise the right-most `x-forwarded-for` entry (the one our proxy added; the left-most is whatever the client sent). The auth route hands Better Auth the same address in `x-naazhi-client-ip` (`withAuthIp()`, always overwriting what the visitor sent, port removed). Production on Azure App Service sets `CLIENT_IP_HEADER=x-client-ip`: Azure's front end writes it and overwrites any value the visitor sends.
 
@@ -107,11 +106,11 @@ Found a vulnerability or leaked secret? Tell the tech lead immediately, rotate f
 
 `apps/web/src/server/session.ts` `adminDb()` / `withOwner()` (admin panel, share page, announcements, audit) · `apps/web/src/server/repositories/billing.repository.ts` (writes to plans, a person's plan, usage and saved keys; reached only from `services/billing` after the caller is checked) · `apps/web/src/app/admin/plans/actions.ts` · `apps/web/src/app/admin/actions.ts` · `apps/web/src/app/dashboard/settings/actions.ts` (delete account) · `apps/web/src/app/share/[token]/page.tsx`.
 
-## Stripe webhook
-`/api/webhooks/stripe` is unauthenticated by design: the `Stripe-Signature` header (HMAC-SHA256 of `<t>.<raw body>` with `STRIPE_WEBHOOK_SECRET`, timing-safe, five-minute tolerance against replays) is the only gate, checked before the body is parsed. Event ids (`evt_…`) are claimed once in `billing_events`; a failed handler releases its claim so Stripe retries. Subscription state is re-read from Stripe, never trusted from the event. The return trip from Stripe's page carries only a session id, which `POST /api/v1/billing/stripe/confirm` re-fetches from Stripe and accepts only if `client_reference_id` and `metadata.user_id` are the caller. Card details are entered on Stripe's page and never reach us; the publishable key (public by design) is only handed to the phone app for its native payment sheet; the sheet's return trip sends a subscription or payment-intent id that the server re-fetches and checks against the caller. The provider is stored per subscription, so changing `profiles.country` (writable by the owner) cannot redirect an existing subscription or refund to another provider.
+## Stripe (removed)
+Stripe no longer takes payments: the webhook, the confirm route and the provider module were removed (migration `20261118100000_razorpay_international.sql`). Old rows keep `provider = 'stripe'` for history; the service refuses to change a Stripe subscription or refund a Stripe invoice (support does it in the Stripe dashboard). Remove `STRIPE_*` from the hosting settings.
 
 ## Razorpay webhook
-`/api/webhooks/razorpay` is unauthenticated by design: the HMAC signature over the raw body is the only gate (timing-safe compare), events are claimed once by id and refused if older than two days. Key secret and webhook secret are server-only; the checkout call is verified by signature and by asking Razorpay who the subscription belongs to.
+`/api/webhooks/razorpay` is unauthenticated by design: the HMAC signature over the raw body is the only gate (timing-safe compare), events are claimed once by id and refused if older than two days. It handles rupee and dollar payments alike; a subscription's currency is stored on `user_billing.currency`, so editing `profiles.country` cannot move a running subscription or balance to the other currency. Key secret and webhook secret are server-only; the checkout call is verified by signature and by asking Razorpay who the subscription belongs to.
 
 ## Invoices and emails
 An invoice is created only from a payment the server has verified with Razorpay. `/invoice/<id>` is owner-only (the query runs as the signed-in person) and `noindex`. Emails are drawn from one layout with every value escaped, never log their content, and never block a payment. The admin email preview is sandboxed and sends nothing.

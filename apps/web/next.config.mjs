@@ -3,7 +3,7 @@ import path from "node:path";
 /**
  * Security headers on every response (docs/SECURITY.md → Web hardening). Framing is limited to our own pages (the file preview
  * frames same-origin files), HTTPS is remembered for two years, and browsers don't guess content types. A full script CSP is a
- * separate step: it has to allow Firebase, Clarity, Razorpay, Stripe and Puter.js and be tested against each.
+ * separate step: it has to allow Firebase, Clarity, Razorpay and Puter.js and be tested against each.
  */
 const pageCsp = { key: "Content-Security-Policy", value: "frame-ancestors 'self'; base-uri 'self'; object-src 'none'" };
 const securityHeaders = [

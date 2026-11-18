@@ -66,7 +66,7 @@ The desktop app is a window around the web app, so most work is free. Check thes
 
 ## 4a. Payments and money (country-based billing)
 - Anything that shows or takes money reads `MyBilling.currency` / `provider` (set by the server from the person's country, `billingRegion()` in packages/logic/src/countries.ts); never hard-code ₹, "rupees" or "Razorpay" in UI, and format with `formatMoney(cents, currency)`.
-- Paying: India opens Razorpay (web window, app native sheet). Elsewhere the API returns `{ provider: "stripe", url }`: web navigates to it, the app opens it in the in-app browser (`apps/mobile/src/features/billing/checkout.ts`) and Stripe returns through `/billing/return` (`?app=1` hands back to `untitled://billing-return`). Desktop is the web app; check that Stripe's page and the return trip work inside the shell window.
+- Paying: every country opens Razorpay (web window, app native sheet, `apps/mobile/src/features/billing/checkout.ts`); the server sets the currency (rupees in India, US dollars elsewhere) and the window shows it. Desktop is the web app, so the same Razorpay window opens inside the shell; its card-check and net-banking popups open as a child window there (`isPaymentPopup` in `apps/desktop/src/main/window.ts`).
 - Country is asked on the About screen of onboarding (web and app) and editable in Settings → Plan and billing (`POST /api/v1/billing/country`).
 
 ## 5. Sign-in flows (Google, Notion, Zoho and any new one)

@@ -70,8 +70,8 @@ export default function Page() {
               <>
                 <p>
                   Plans, prices and what each includes are shown on the pricing page. Your country, which you choose when you set up and can change in Settings while you have no
-                  active subscription or unspent credit, decides how you pay: in India, prices are in Indian rupees (INR) and payments are taken by Razorpay; in every other
-                  country, prices are in US dollars (USD) and payments are taken by Stripe. Subscriptions renew for the next period until you cancel; a cancelled
+                  active subscription or unspent credit, decides how you pay: in India, prices are in Indian rupees (INR); in every other country, prices are in US dollars
+                  (USD). Payments in both currencies are taken by Razorpay. Subscriptions renew for the next period until you cancel; a cancelled
                   subscription runs to the end of the period you paid for.
                 </p>
                 <p>

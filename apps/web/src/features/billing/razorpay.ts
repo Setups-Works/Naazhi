@@ -3,7 +3,7 @@ import { track } from "../../lib/analytics";
 import { useState } from "react";
 import { createBillingApi } from "@untitled/api-client";
 import type { BillingPlan, MyBilling } from "@untitled/types";
-import { needsCheckout } from "@untitled/logic/billing";
+import { formatMoney, needsCheckout } from "@untitled/logic/billing";
 import { useQueryClient } from "@tanstack/react-query";
 import { http, restMessage } from "../../lib/api/rest";
 import { qk } from "../../lib/query/keys";
@@ -11,8 +11,7 @@ import { useBillingActions } from "./queries";
 import { checkoutBrand } from "./checkoutBrand";
 
 /**
- * Paying: Razorpay's checkout window in India, Stripe's hosted page everywhere else (the server decides from the person's country).
- * Razorpay's checkout window. The server creates the subscription and checks the result; this only opens the window (the script is
+ * Paying: Razorpay's checkout window, in rupees in India and US dollars everywhere else (the server decides from the person's country). The server creates the subscription and checks the result; this only opens the window (the script is
  * loaded from Razorpay when you first pay) and hands what it returns back to the server. The browser never decides a plan is paid.
  */
 type CheckoutResult = { razorpay_payment_id: string; razorpay_subscription_id: string; razorpay_signature: string };
@@ -68,18 +67,13 @@ export function usePlanPicker(billing: MyBilling | undefined, onError: (m: strin
     setPaying(true);
     try {
       const s = await api.checkout(plan.id);
-      // Outside India the payment happens on Stripe's own page: go there, and Stripe sends the person back to Settings → Plan and billing.
-      if (s.provider === "stripe") {
-        if (!s.url) throw new Error("stripe page");
-        return void window.location.assign(s.url);
-      }
       await loadCheckout();
       if (!window.Razorpay) throw new Error("checkout script");
       const rz = new window.Razorpay({
         key: s.key_id,
         subscription_id: s.subscription_id,
         ...checkoutBrand(),
-        description: s.trial_days > 0 ? `${s.name}: ${s.trial_days} days free, then ₹${s.amount / 100} / month` : `${s.name} (₹${s.amount / 100})`,
+        description: s.trial_days > 0 ? `${s.name}: ${s.trial_days} days free, then ${formatMoney(s.amount, s.currency)} / month` : `${s.name} (${formatMoney(s.amount, s.currency)})`,
         prefill: s.prefill,
         handler: (r) => {
           api
@@ -113,10 +107,6 @@ export function useTopUp(onError: (m: string) => void, onDone?: () => void) {
     setPaying(true);
     try {
       const s = await api.topup(amountCents);
-      if (s.provider === "stripe") {
-        if (!s.url) throw new Error("stripe page");
-        return void window.location.assign(s.url);
-      }
       await loadCheckout();
       if (!window.Razorpay) throw new Error("checkout script");
       const rz = new window.Razorpay({

@@ -19,6 +19,20 @@ export function openExternally(url: string): void {
   }
 }
 
+/**
+ * A popup Razorpay's checkout opens for a payment step (bank or card verification). It starts blank or on a razorpay.com page and may then
+ * move to the bank's own page inside that popup. It gets no preload and no Node access, like any web page.
+ */
+export function isPaymentPopup(url: string): boolean {
+  if (url === "" || url === "about:blank") return true;
+  try {
+    const { protocol, hostname } = new URL(url);
+    return protocol === "https:" && (hostname === "razorpay.com" || hostname.endsWith(".razorpay.com"));
+  } catch {
+    return false;
+  }
+}
+
 /** Shows the window (creating it if it was closed on macOS) and brings it to the front. */
 export function showMainWindow(): BrowserWindow {
   const win = mainWindow() ?? createMainWindow();
@@ -69,8 +83,20 @@ export function createMainWindow(): BrowserWindow {
     if (main === win) main = null;
   });
 
-  // Links the app opens: its own pages stay in this window, everything else goes to the browser.
+  // Links the app opens: its own pages stay in this window, everything else goes to the browser. Razorpay's checkout is the exception:
+  // card checks (3-D Secure) and net banking open in a popup that must stay tied to this page to report back, so it opens as a child.
   win.webContents.setWindowOpenHandler(({ url }) => {
+    if (isPaymentPopup(url))
+      return {
+        action: "allow",
+        overrideBrowserWindowOptions: {
+          parent: win,
+          width: 520,
+          height: 720,
+          autoHideMenuBar: true,
+          webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false },
+        },
+      };
     if (isAppUrl(url)) void win.loadURL(url);
     else openExternally(url);
     return { action: "deny" };

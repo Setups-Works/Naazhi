@@ -1,7 +1,7 @@
 {
   "name": "mobile",
   "main": "index.ts",
-  "version": "9.1.0",
+  "version": "9.2.0",
   "dependencies": {
     "@better-auth/expo": "^1.7.7",
     "@expo-google-fonts/geist": "^0.4.2",
@@ -14,7 +14,6 @@
     "@react-native-firebase/analytics": "27.1.1",
     "@react-native-firebase/app": "27.1.1",
     "@react-native-google-signin/google-signin": "^17.0.0",
-    "@stripe/stripe-react-native": "^0.85.1",
     "@tanstack/react-query": "^5.104.1",
     "@untitled/api-client": "workspace:*",
     "@untitled/logic": "workspace:*",

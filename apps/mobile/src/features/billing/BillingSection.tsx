@@ -176,7 +176,7 @@ export function BillingSection() {
           {!b.payments_connected ? <Banner kind="info">{`${providerName(b.provider)} payments aren’t available yet, so choosing or changing a plan doesn’t charge you.`}</Banner> : null}
 
           {b.plans.map((p) => (
-            <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={busy} loading={picker.loadingId === p.id} autopay={needsCheckout(b, p)} provider={b.provider} trial={b.trial_available && p.trial_days > 0} onChoose={() => void picker.pick(p)} />
+            <PlanCard key={p.id} plan={p} current={b.plan?.id === p.id} busy={busy} loading={picker.loadingId === p.id} autopay={needsCheckout(b, p)} trial={b.trial_available && p.trial_days > 0} onChoose={() => void picker.pick(p)} />
           ))}
           <BillingHistory onError={setErr} />
           <Button title="Compare plans" kind="ghost" icon="arrow-up-right-from-square" onPress={() => router.push("/pricing")} />

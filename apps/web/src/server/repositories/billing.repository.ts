@@ -20,9 +20,11 @@ export type UserBillingRow = {
   cancel_at_period_end: boolean;
   started_at: string;
   canceled_at: string | null;
-  /** Who takes this person's payments: decides how a subscription is cancelled and a payment refunded, whatever their country says today. */
+  /** Who takes this person's payments. Always Razorpay for new rows; "stripe" remains on subscriptions started before Stripe was removed. */
   provider: "razorpay" | "stripe";
-  /** The Razorpay or Stripe subscription paying for this plan, when there is one. */
+  /** What the subscription bills in. A running subscription keeps it whatever the person's country says today. */
+  currency: "inr" | "usd";
+  /** The provider's subscription paying for this plan, when there is one. */
   provider_subscription_id: string | null;
   provider_status: string | null;
   /** When a free trial ends and the first payment is taken; null when not on a trial. */
@@ -60,23 +62,23 @@ export const getUserBilling = (userId: string) =>
 
 type BillingWrite = Pick<
   UserBillingRow,
-  "plan_id" | "status" | "period_start" | "period_end" | "cancel_at_period_end" | "canceled_at" | "provider" | "provider_subscription_id" | "provider_status" | "trial_ends_at"
+  "plan_id" | "status" | "period_start" | "period_end" | "cancel_at_period_end" | "canceled_at" | "provider" | "currency" | "provider_subscription_id" | "provider_status" | "trial_ends_at"
 >;
 
 export const saveUserBilling = (userId: string, b: BillingWrite) =>
   withOwner(async (c) => {
     await c.query(
       `insert into public.user_billing (user_id, plan_id, status, period_start, period_end, cancel_at_period_end, canceled_at,
-         provider_subscription_id, provider_status, trial_ends_at, provider)
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+         provider_subscription_id, provider_status, trial_ends_at, provider, currency)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        on conflict (user_id) do update set plan_id = excluded.plan_id, status = excluded.status, period_start = excluded.period_start,
          period_end = excluded.period_end, cancel_at_period_end = excluded.cancel_at_period_end, canceled_at = excluded.canceled_at,
          provider_subscription_id = excluded.provider_subscription_id, provider_status = excluded.provider_status, trial_ends_at = excluded.trial_ends_at,
-         provider = excluded.provider,
+         provider = excluded.provider, currency = excluded.currency,
          started_at = case when public.user_billing.plan_id = excluded.plan_id and public.user_billing.status = 'active'
                            then public.user_billing.started_at else now() end,
          updated_at = now()`,
-      [userId, b.plan_id, b.status, b.period_start, b.period_end, b.cancel_at_period_end, b.canceled_at, b.provider_subscription_id, b.provider_status, b.trial_ends_at, b.provider],
+      [userId, b.plan_id, b.status, b.period_start, b.period_end, b.cancel_at_period_end, b.canceled_at, b.provider_subscription_id, b.provider_status, b.trial_ends_at, b.provider, b.currency],
     );
   });
 
@@ -192,19 +194,27 @@ export const userIdForSubscription = (subscriptionId: string) =>
       null,
   );
 
-export const getPlanProvider = (id: string) =>
+/** The cached Razorpay plan for a plan's price in one currency (rupees and dollars each have their own pair of columns). */
+export const getPlanProvider = (id: string, currency: "inr" | "usd") =>
   withOwner(
     async (c) =>
       (await c.query<{ razorpay_plan_id: string | null; razorpay_plan_key: string | null }>(
-        "select razorpay_plan_id, razorpay_plan_key from public.billing_plans where id = $1",
+        currency === "usd"
+          ? "select razorpay_plan_id_usd as razorpay_plan_id, razorpay_plan_key_usd as razorpay_plan_key from public.billing_plans where id = $1"
+          : "select razorpay_plan_id, razorpay_plan_key from public.billing_plans where id = $1",
         [id],
       )).rows[0] ?? null,
   );
 
-export const setPlanProvider = (id: string, razorpayPlanId: string, key: string) =>
+export const setPlanProvider = (id: string, currency: "inr" | "usd", razorpayPlanId: string, key: string) =>
   withOwner(
     async (c) =>
-      void (await c.query("update public.billing_plans set razorpay_plan_id = $2, razorpay_plan_key = $3 where id = $1", [id, razorpayPlanId, key])),
+      void (await c.query(
+        currency === "usd"
+          ? "update public.billing_plans set razorpay_plan_id_usd = $2, razorpay_plan_key_usd = $3 where id = $1"
+          : "update public.billing_plans set razorpay_plan_id = $2, razorpay_plan_key = $3 where id = $1",
+        [id, razorpayPlanId, key],
+      )),
   );
 
 /** Who is paying, for the payment window's prefilled name, email and mobile number (the number is the one given in setup, if any). */
@@ -371,21 +381,3 @@ export const setCountry = (userId: string, country: string) =>
         [userId, country],
       )),
   );
-
-/* ---------- Stripe customers and products (native payment sheet) ---------- */
-
-export const getStripeCustomer = (userId: string) =>
-  withOwner(async (c) => (await c.query<{ customer_id: string }>("select customer_id from public.stripe_customers where user_id = $1", [userId])).rows[0]?.customer_id ?? null);
-
-/** Remembers the person's Stripe customer; if two requests raced, the first one stands and is returned. */
-export const saveStripeCustomer = (userId: string, customerId: string) =>
-  withOwner(async (c) => {
-    await c.query("insert into public.stripe_customers (user_id, customer_id) values ($1, $2) on conflict (user_id) do nothing", [userId, customerId]);
-    return (await c.query<{ customer_id: string }>("select customer_id from public.stripe_customers where user_id = $1", [userId])).rows[0]!.customer_id;
-  });
-
-export const getStripeProduct = (planId: string) =>
-  withOwner(async (c) => (await c.query<{ stripe_product_id: string | null }>("select stripe_product_id from public.billing_plans where id = $1", [planId])).rows[0]?.stripe_product_id ?? null);
-
-export const setStripeProduct = (planId: string, productId: string) =>
-  withOwner(async (c) => void (await c.query("update public.billing_plans set stripe_product_id = $2 where id = $1 and stripe_product_id is null", [planId, productId])));

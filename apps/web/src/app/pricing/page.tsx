@@ -63,7 +63,7 @@ const aiLine = (p: BillingPlan) =>
       : "Your own provider";
 
 /**
- * Prices are shown for one region at a time: India (rupees, Razorpay) or the rest of the world (US dollars, Stripe). `?region=in|intl`
+ * Prices are shown for one region at a time: India (rupees) or the rest of the world (US dollars), both paid through Razorpay. `?region=in|intl`
  * picks one; otherwise the visitor's country from the CDN header decides, and India is the default. Signed-in people see their own
  * currency in Settings; this public page only needs to tell a visitor what they would pay.
  */
@@ -74,7 +74,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
   const region = q.region === "intl" ? billingRegion("US") : q.region === "in" ? billingRegion("IN") : billingRegion(guess);
   const { currency, provider } = region;
   const plans = await listPublicPlans(currency).catch(() => [] as BillingPlan[]);
-  const live = paymentsLive(provider);
+  const live = paymentsLive();
   const limits = await getTopupLimits(currency);
   const unit = currency === "usd" ? "dollars" : "rupees";
 
@@ -102,14 +102,14 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
     [
       live ? "How do I pay?" : "Is anyone being charged yet?",
       live
-        ? provider === "stripe"
-          ? "Subscribing sets up autopay through Stripe: you add a card once on Stripe’s secure payment page and each month’s charge then happens on its own. Cancel any time in Settings and it stops at the end of the month you paid for. Taxes, where they apply, are shown at checkout."
+        ? currency === "usd"
+          ? "Subscribing sets up autopay through Razorpay: you add a card once in Razorpay’s secure payment window and each month’s charge, in US dollars, then happens on its own. Cancel any time in Settings and it stops at the end of the month you paid for."
           : "Subscribing sets up autopay through Razorpay (UPI AutoPay, cards and more): you approve it once and each month’s charge happens on its own. Cancel any time in Settings and it stops at the end of the month you paid for."
         : "Not yet. Plans can be chosen in Settings, but payments aren’t switched on, so nobody is charged until we say so on this page.",
     ],
     [
       "Which currency do I pay in?",
-      "It depends on the country you choose when you set up: India pays in rupees through Razorpay, and every other country pays in US dollars through Stripe. You can change your country in Settings while you have no active subscription or unspent credit. Refunds go back to the original payment method through the same provider.",
+      "It depends on the country you choose when you set up: India pays in rupees and every other country pays in US dollars, both through Razorpay. You can change your country in Settings while you have no active subscription or unspent credit. Refunds go back to the original payment method.",
     ],
     ["Can I use the workspace without AI at all?", "Yes. AI-free mode is always available, and the workspace works the same either way."],
   ];
@@ -157,7 +157,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
         )}
         {live && plans.length > 0 && (
           <p className="mt-5 text-center text-[13.5px] text-fg-subtle">
-            {provider === "stripe" ? "Paid in US dollars by card through Stripe autopay. Taxes, where they apply, are shown at checkout." : "Paid in rupees through Razorpay: UPI AutoPay, cards and more."} Pay as you go credit can be topped up from {formatMoney(limits.minCents, currency)}.
+            {currency === "usd" ? "Paid in US dollars by card through Razorpay autopay." : "Paid in rupees through Razorpay: UPI AutoPay, cards and more."} Pay as you go credit can be topped up from {formatMoney(limits.minCents, currency)}.
           </p>
         )}
         {!live && plans.length > 0 && (

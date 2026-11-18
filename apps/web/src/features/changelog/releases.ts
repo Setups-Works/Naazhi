@@ -22,6 +22,21 @@ export type Release = {
  */
 export const RELEASES: Release[] = [
   {
+    date: "2026-11-18",
+    title: "Version 9.2.0: pay through Razorpay from anywhere, and a new Home",
+    summary: "Razorpay now takes payments from every country, in rupees in India and US dollars everywhere else, and Home shows your day at a glance.",
+    tone: "gold",
+    appVersion: "v9.2.0",
+    changes: [
+      { kind: "improved", platform: "web", text: "Outside India you now pay in US dollars through Razorpay’s secure window, the same way people in India pay in rupees." },
+      { kind: "improved", platform: "app", text: "Outside India the app pays in US dollars in Razorpay’s payment sheet, the same as in India." },
+      { kind: "fixed", platform: "desktop", text: "Card checks and bank pages during a payment now open in a small window inside the Mac and Windows apps, so the payment finishes." },
+      { kind: "new", platform: "web", text: "Home is now about your day: a short summary, a quick add bar for to-dos and journal entries, today’s tasks with a progress ring, and what’s up next." },
+      { kind: "new", platform: "web", text: "Jump back in to recent notes, chats and today’s journal from one list on Home, with your journal week and streak beside it." },
+      { kind: "improved", platform: "web", text: "The chat welcome screen fits on one screen, from small windows to phones." },
+    ],
+  },
+  {
     date: "2026-11-17",
     title: "Version 9.1.0: Zoho in setup, and a safer Naazhi",
     summary: "Connect Zoho during setup on the web, finish connecting Zoho from the phone and desktop apps, and a round of security updates across the board.",

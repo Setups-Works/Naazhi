@@ -1,25 +1,24 @@
 import "server-only";
 import type { BillingPlan, MyBilling, PlanId } from "@untitled/types";
 import { addMonths, byoProvider, defaultTopup, localizePlan, plansFor, tokenCostCents, topupRange, validTopup, type TopupLimits } from "@untitled/logic/billing";
-import { billingRegion, cleanCountry, currencyName, regionForProvider, type BillingRegion, type Currency, type PaymentProvider } from "@untitled/logic/countries";
+import { billingRegion, cleanCountry, currencyName, regionForCurrency, type BillingRegion, type Currency } from "@untitled/logic/countries";
 import { isEnabled } from "../../../config/features";
 import { serverEnv } from "../../../config/env";
 import * as razorpay from "../../providers/payments/razorpay";
 import type { RazorpaySubscription } from "../../providers/payments/razorpay";
-import * as stripe from "../../providers/payments/stripe";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "../../errors";
 import * as repo from "../../repositories/billing.repository";
 import type { UserBillingRow } from "../../repositories/billing.repository";
 import { openKey, sealKey } from "./keyVault";
-import { appLink, getSeller, issueInvoice, notifyBilling, recordRefund } from "./invoices.service";
+import { getSeller, issueInvoice, notifyBilling, recordRefund } from "./invoices.service";
 import { templates } from "../../email/templates";
 import type { PlanPatchInput } from "./billing.schema";
 import type { CheckoutSession, TopupSession } from "@untitled/types";
 
 /**
  * Plans and billing rules. People choose, switch and cancel their own plan here; admins edit plans and assign plans through the
- * `admin*` functions (the admin panel checks the caller first). No payment provider is connected yet (`payments` is off), so a
- * change is recorded and applies at once and nobody is charged.
+ * `admin*` functions (the admin panel checks the caller first). Razorpay takes every payment (rupees in India, US dollars elsewhere);
+ * until it is connected, a change is recorded and applies at once and nobody is charged.
  *
  * Rules: no plan chosen = AI works as before and use is only counted; Subscription = AI up to the plan's token allowance each period;
  * Pay as you go = AI with every token counted and priced; Bring your own key = AI through the person's own key, never counted.
@@ -29,12 +28,14 @@ import type { CheckoutSession, TopupSession } from "@untitled/types";
 
 const now = () => new Date();
 /**
- * Payments are live for a provider only when the switch is on AND that provider's secrets are all set (Razorpay: key id, key secret,
- * webhook secret; Stripe: secret key, webhook secret). Which provider a person uses comes from their country (`billingRegion`).
- * Until their provider is live, plan changes are free and recorded, as before, and every pay button says "not available yet".
+ * Payments are live only when the switch is on AND Razorpay's secrets are all set (key id, key secret, webhook secret). Razorpay takes
+ * every payment: rupees from India, US dollars from everywhere else (the person's country decides, `billingRegion`). Until it is live,
+ * plan changes are free and recorded, as before, and every pay button says "not available yet".
  */
-export const paymentsLive = (provider: PaymentProvider = "razorpay") =>
-  isEnabled("payments") && (provider === "stripe" ? stripe.stripeConfigured() : razorpay.razorpayConfigured());
+export const paymentsLive = () => isEnabled("payments") && razorpay.razorpayConfigured();
+/** Said to someone whose subscription was started through Stripe before it was removed: we can no longer change it from here. */
+const LEGACY_STRIPE = "Your subscription was set up through Stripe, which we no longer use. Contact support and we’ll cancel or move it for you.";
+const legacyStripe = (row: UserBillingRow | null) => row?.status === "active" && row.provider === "stripe" && !!row.provider_subscription_id;
 const isPaid = (plan: Pick<BillingPlan, "id" | "price_cents" | "interval">) => plan.id === "subscription" && plan.price_cents > 0 && plan.interval !== "none";
 const iso = (unix: number | null | undefined) => (unix ? new Date(unix * 1000).toISOString() : null);
 /** The top-up limits in a currency: the admin's settings, or the built-in defaults when the settings row isn't there. */
@@ -47,19 +48,19 @@ export async function getTopupLimits(currency: Currency = "inr"): Promise<TopupL
 }
 
 /**
- * How this person pays right now. Normally their country decides (India: rupees, Razorpay; elsewhere: dollars, Stripe). But money
- * already in flight keeps its provider whatever the country says: someone with an active paid subscription stays with the provider
- * that bills it, and someone holding AI credit stays in the currency it is held in. `locked` says why the country can't be changed.
+ * How this person pays right now. Normally their country decides (India: rupees; elsewhere: US dollars; both through Razorpay). But money
+ * already in flight keeps its currency whatever the country says: someone with an active paid subscription stays in the currency it
+ * bills in, and someone holding AI credit stays in the currency it is held in. `locked` says why the country can't be changed.
  */
 async function regionFor(userId: string, row: UserBillingRow | null): Promise<{ region: BillingRegion; country: string | null; locked: string | null }> {
   const [country, credit] = await Promise.all([repo.getCountry(userId), repo.getCreditInfo(userId)]);
-  const paid = row?.status === "active" && row.provider_subscription_id ? row.provider : null;
+  const paid = row?.status === "active" && row.provider_subscription_id ? row.currency : null;
   if (paid) {
-    const region = regionForProvider(paid);
+    const region = regionForCurrency(paid);
     return { region, country, locked: `Your subscription is billed in ${currencyName(region.currency)}. Cancel it and let it end before you change your country.` };
   }
   if (credit.balance !== 0) {
-    const region = billingRegion(credit.currency === "usd" ? "US" : "IN");
+    const region = regionForCurrency(credit.currency);
     return { region, country, locked: `You have AI credit in ${currencyName(credit.currency)}. Use it up before you change your country, or ask support to move it.` };
   }
   return { region: billingRegion(country), country, locked: null };
@@ -76,7 +77,7 @@ async function settled(userId: string): Promise<UserBillingRow | null> {
   const row = await repo.getUserBilling(userId);
   if (!row || row.status !== "active" || !row.period_end || new Date(row.period_end) > now()) return row;
   const end = new Date(row.period_end);
-  // A plan paid through Razorpay renews and ends on the provider's word (the webhook), not on our clock.
+  // A plan paid through a provider renews and ends on the provider's word (the webhook), not on our clock.
   if (row.provider_subscription_id && !row.cancel_at_period_end) return row;
   if (row.cancel_at_period_end) {
     const next = { ...row, status: "canceled" as const, canceled_at: end.toISOString(), cancel_at_period_end: false };
@@ -106,7 +107,7 @@ export async function getMyBilling(userId: string): Promise<MyBilling> {
   const rawPlan = live ? (plans.find((p) => p.id === live.plan_id) ?? null) : null;
   const plan = rawPlan ? localizePlan(rawPlan, region.currency) : null;
   const subPlan = plans.find((p) => p.id === "subscription" && p.active);
-  const connected = paymentsLive(region.provider);
+  const connected = paymentsLive();
   const trialAvailable = !!subPlan && subPlan.trial_days > 0 && connected && !(await repo.hasUsedTrial(userId));
   const since = live?.period_start ?? new Date(Date.UTC(now().getUTCFullYear(), now().getUTCMonth(), 1)).toISOString();
   const [tokens, credit, creditTotal, limits] = await Promise.all([repo.tokensSince(userId, since), repo.getCredit(userId), repo.getCreditTotal(userId), getTopupLimits(region.currency)]);
@@ -151,6 +152,7 @@ export async function setCountry(userId: string, input: string): Promise<MyBilli
 async function activate(userId: string, planId: PlanId, opts: { requireActive: boolean }) {
   const plan = await repo.getPlan(planId);
   if (!plan || (opts.requireActive && !plan.active)) throw new ValidationError("That plan isn’t available.");
+  const currency = billingRegion(await repo.getCountry(userId)).currency;
   const start = now();
   const end = periodEnd(plan, start);
   await repo.saveUserBilling(userId, {
@@ -161,18 +163,19 @@ async function activate(userId: string, planId: PlanId, opts: { requireActive: b
     cancel_at_period_end: false,
     canceled_at: null,
     provider: "razorpay",
+    currency,
     provider_subscription_id: null,
     provider_status: null,
     trial_ends_at: null,
   });
 }
 
-/** Stops a paid subscription right away, at whichever provider bills it (used when someone moves to a plan that doesn't charge a subscription). */
+/** Stops a paid subscription right away (used when someone moves to a plan that doesn't charge a subscription). */
 async function endProviderSubscription(row: UserBillingRow | null) {
   if (!row?.provider_subscription_id || row.status !== "active") return;
+  if (legacyStripe(row)) throw new ConflictError(LEGACY_STRIPE);
   try {
-    if (row.provider === "stripe") await stripe.cancelNow(row.provider_subscription_id);
-    else await razorpay.cancelSubscription(row.provider_subscription_id, false);
+    await razorpay.cancelSubscription(row.provider_subscription_id, false);
   } catch {
     throw new ConflictError(PROVIDER_DOWN);
   }
@@ -187,7 +190,7 @@ export async function choosePlan(userId: string, planId: PlanId): Promise<MyBill
     const plan = await repo.getPlan(planId);
     const { region } = await regionFor(userId, row);
     // A paid subscription is only ever started through checkout, where the payment happens; it is never switched on by this call.
-    if (plan && paymentsLive(region.provider) && isPaid(localizePlan(plan, region.currency))) throw new ValidationError("Subscribe through checkout to start this plan.");
+    if (plan && paymentsLive() && isPaid(localizePlan(plan, region.currency))) throw new ValidationError("Subscribe through checkout to start this plan.");
     await endProviderSubscription(row);
     await activate(userId, planId, { requireActive: true });
   }
@@ -199,14 +202,13 @@ export async function cancelPlan(userId: string): Promise<MyBilling> {
   const row = await settled(userId);
   if (!row || row.status !== "active") throw new ConflictError("You don’t have a plan to cancel.");
   if (row.cancel_at_period_end) throw new ConflictError("This plan is already set to cancel.");
+  if (legacyStripe(row)) throw new ConflictError(LEGACY_STRIPE);
   if (row.provider_subscription_id) {
     // Stop charging at the end of the paid period (or, during a free trial, before the first one); the person keeps the plan until then.
     // A subscription that hasn't started charging can only be cancelled at once, so a trial is cancelled now and kept until it ends.
     const trialing = !!row.trial_ends_at && new Date(row.trial_ends_at) > now();
     try {
-      // Stripe keeps a trial running to its end and then does not charge; Razorpay can only cancel an un-started subscription at once.
-      if (row.provider === "stripe") await stripe.setCancelAtPeriodEnd(row.provider_subscription_id, true);
-      else await razorpay.cancelSubscription(row.provider_subscription_id, !trialing);
+      await razorpay.cancelSubscription(row.provider_subscription_id, !trialing);
     } catch {
       throw new ConflictError(PROVIDER_DOWN);
     }
@@ -219,14 +221,8 @@ export async function cancelPlan(userId: string): Promise<MyBilling> {
 export async function resumePlan(userId: string): Promise<MyBilling> {
   const row = await settled(userId);
   if (!row || row.status !== "active" || !row.cancel_at_period_end) throw new ConflictError("There’s nothing to resume.");
-  // Stripe can take a scheduled cancellation back. Razorpay can't, so a Razorpay plan is started again from checkout once it has ended.
-  if (row.provider_subscription_id && row.provider === "stripe") {
-    try {
-      await stripe.setCancelAtPeriodEnd(row.provider_subscription_id, false);
-    } catch {
-      throw new ConflictError(PROVIDER_DOWN);
-    }
-  } else if (row.provider_subscription_id)
+  // Razorpay can't take a cancellation back, so a paid plan is started again from checkout once it has ended.
+  if (row.provider_subscription_id)
     throw new ConflictError("A cancelled subscription can’t be resumed. It ends on the date shown; you can subscribe again after that.");
   await repo.saveUserBilling(userId, { ...row, cancel_at_period_end: false });
   return getMyBilling(userId);
@@ -234,57 +230,30 @@ export async function resumePlan(userId: string): Promise<MyBilling> {
 
 /* ---------- Razorpay ---------- */
 
-/** A Razorpay plan that carries this plan's current price. Created on first use, and again whenever an admin changes the price. */
-async function razorpayPlanFor(plan: BillingPlan): Promise<string> {
-  const key = `${plan.price_cents}:inr:${plan.interval}`;
-  const have = await repo.getPlanProvider(plan.id);
+/**
+ * A Razorpay plan that carries this plan's current price in one currency. Created on first use, and again whenever an admin changes that
+ * price. Rupees and dollars each have their own cached plan, because a Razorpay plan has a single amount and currency.
+ */
+async function razorpayPlanFor(plan: BillingPlan, currency: Currency): Promise<string> {
+  const key = `${plan.price_cents}:${currency}:${plan.interval}`;
+  const have = await repo.getPlanProvider(plan.id, currency);
   if (have?.razorpay_plan_id && have.razorpay_plan_key === key) return have.razorpay_plan_id;
-  const made = await razorpay.createPlan({ name: plan.name, amount: plan.price_cents, currency: "inr", interval: plan.interval === "year" ? "year" : "month" });
-  await repo.setPlanProvider(plan.id, made.id, key);
+  const made = await razorpay.createPlan({ name: plan.name, amount: plan.price_cents, currency, interval: plan.interval === "year" ? "year" : "month" });
+  await repo.setPlanProvider(plan.id, currency, made.id, key);
   return made.id;
 }
 
-/** Where Stripe's page sends the person back to. `/billing/return` finishes the trip on the web, or hands the phone back to the app. */
-const stripeReturn = (client: "web" | "app", outcome: "success" | "cancel") =>
-  `${appLink("/billing/return")}?status=${outcome}${client === "app" ? "&app=1" : ""}${outcome === "success" ? "&session_id={CHECKOUT_SESSION_ID}" : ""}`;
-
 /**
- * Whether this request should use Stripe's native payment sheet: the phone app asks for it, a publishable key is set, and automatic tax
- * is off (the sheet doesn't collect the address Stripe Tax needs, so with tax on the app uses Stripe's page instead).
+ * Step 1 of paying for a subscription: creates the Razorpay subscription and returns what its checkout window needs. The currency comes
+ * from the person's country (or the currency they are already billed in): rupees in India, US dollars everywhere else, at the plan's
+ * rupee or dollar price to match.
  */
-const sheetKey = (client: "web" | "app") => {
-  const st = serverEnv().stripe;
-  return client === "app" && st.publishableKey && !st.automaticTax ? st.publishableKey : null;
-};
-
-/** The person's Stripe customer (made on first use) and a short-lived session that lets the sheet show their saved cards. */
-async function stripeCustomerFor(userId: string) {
-  let id = await repo.getStripeCustomer(userId);
-  if (!id) {
-    const who = await repo.getContact(userId);
-    id = await repo.saveStripeCustomer(userId, (await stripe.createCustomer({ userId, email: who?.email ?? "", name: who?.name ?? "" })).id);
-  }
-  return { customer_id: id, customer_session_secret: (await stripe.createCustomerSession(id)).client_secret };
-}
-
-/** The Stripe product that carries a plan's dollar prices, created once. */
-async function stripeProductFor(plan: BillingPlan): Promise<string> {
-  const have = await repo.getStripeProduct(plan.id);
-  if (have) return have;
-  await repo.setStripeProduct(plan.id, (await stripe.createProduct(plan.name)).id);
-  return (await repo.getStripeProduct(plan.id))!;
-}
-
-/**
- * Step 1 of paying for a subscription. India: creates the Razorpay subscription and returns what its checkout window needs. Elsewhere:
- * creates a Stripe Checkout page in dollars and returns its address. Which one comes from the person's country (or the provider already
- * billing them); the price is the plan's rupee or dollar price to match.
- */
-export async function startCheckout(userId: string, planId: PlanId, client: "web" | "app" = "web"): Promise<CheckoutSession> {
+export async function startCheckout(userId: string, planId: PlanId): Promise<CheckoutSession> {
   const row = await settled(userId);
   const { region, country } = await regionFor(userId, row);
   if (!country) throw new ValidationError("Choose your country first, in Settings, My account, so you are charged in the right currency.");
-  if (!paymentsLive(region.provider)) throw new ConflictError("Payments aren’t switched on yet.");
+  if (!paymentsLive()) throw new ConflictError("Payments aren’t switched on yet.");
+  if (legacyStripe(row)) throw new ConflictError(LEGACY_STRIPE);
   const raw = await repo.getPlan(planId);
   if (!raw || !raw.active) throw new ValidationError("That plan isn’t available.");
   const plan = localizePlan(raw, region.currency);
@@ -294,55 +263,14 @@ export async function startCheckout(userId: string, planId: PlanId, client: "web
   // One free trial per person, ever: the first charge is pushed back by the plan's trial days.
   const trialDays = plan.trial_days > 0 && !(await repo.hasUsedTrial(userId)) ? plan.trial_days : 0;
   const who = await repo.getContact(userId);
-  if (region.provider === "stripe") {
-    const pk = sheetKey(client);
-    if (pk) {
-      try {
-        const cust = await stripeCustomerFor(userId);
-        const sub = await stripe.createSheetSubscription({
-          customerId: cust.customer_id,
-          userId,
-          productId: await stripeProductFor(raw),
-          amountCents: plan.price_cents,
-          interval: plan.interval === "year" ? "year" : "month",
-          trialDays,
-        });
-        const intent = typeof sub.pending_setup_intent === "object" && sub.pending_setup_intent ? sub.pending_setup_intent : null;
-        const inv = typeof sub.latest_invoice === "object" && sub.latest_invoice ? sub.latest_invoice : null;
-        const pay = inv && typeof inv.payment_intent === "object" && inv.payment_intent ? inv.payment_intent : null;
-        const secret = trialDays > 0 ? intent?.client_secret : pay?.client_secret;
-        if (!secret) throw new ConflictError(PROVIDER_DOWN);
-        return { provider: "stripe", sheet: { publishable_key: pk, ...cust, intent: trialDays > 0 ? "setup" : "payment", client_secret: secret, reference_id: sub.id, kind: "subscription", name: plan.name, amount: plan.price_cents, trial_days: trialDays } };
-      } catch (e) {
-        if (e instanceof stripe.StripeError) throw new ConflictError(PROVIDER_DOWN);
-        throw e;
-      }
-    }
-    try {
-      const session = await stripe.createSubscriptionCheckout({
-        userId,
-        email: who?.email ?? "",
-        productName: plan.name,
-        amountCents: plan.price_cents,
-        interval: plan.interval === "year" ? "year" : "month",
-        trialDays,
-        successUrl: stripeReturn(client, "success"),
-        cancelUrl: stripeReturn(client, "cancel"),
-      });
-      if (!session.url) throw new ConflictError(PROVIDER_DOWN);
-      return { provider: "stripe", url: session.url };
-    } catch (e) {
-      if (e instanceof stripe.StripeError) throw new ConflictError(PROVIDER_DOWN);
-      throw e;
-    }
-  }
   const keyId = razorpay.razorpayKeyId();
   if (!keyId) throw new ConflictError("Payments aren’t switched on yet.");
   try {
     const sub = await razorpay.createSubscription({
-      planId: await razorpayPlanFor(raw),
+      planId: await razorpayPlanFor(plan, region.currency),
       interval: plan.interval === "year" ? "year" : "month",
       userId,
+      currency: region.currency,
       startAt: trialDays ? Math.floor(Date.now() / 1000) + trialDays * 86_400 : undefined,
     });
     return {
@@ -352,7 +280,7 @@ export async function startCheckout(userId: string, planId: PlanId, client: "web
       name: plan.name,
       description: plan.tagline,
       amount: plan.price_cents,
-      currency: "INR",
+      currency: region.currency.toUpperCase(),
       trial_days: trialDays,
       prefill: { name: who?.name ?? "", email: who?.email ?? "", ...(who?.phone ? { contact: who.phone } : {}) },
     };
@@ -362,6 +290,12 @@ export async function startCheckout(userId: string, planId: PlanId, client: "web
   }
 }
 
+/** What a Razorpay subscription bills in: from its notes (set when we create it), else what the row already says, else rupees (older subscriptions). */
+function subscriptionCurrency(sub: RazorpaySubscription, row: UserBillingRow | null): Currency {
+  const noted = Array.isArray(sub.notes) ? undefined : sub.notes?.currency;
+  return noted === "usd" || noted === "inr" ? noted : (row?.currency ?? "inr");
+}
+
 /**
  * Turns a Razorpay subscription's state into the person's plan row. Used by both the browser's "payment done" call and the webhook,
  * so it only ever sets absolute state and a repeat (or an old event arriving late) changes nothing.
@@ -369,6 +303,7 @@ export async function startCheckout(userId: string, planId: PlanId, client: "web
 async function applySubscription(userId: string, sub: RazorpaySubscription) {
   const row = await repo.getUserBilling(userId);
   const mine = row?.provider_subscription_id === sub.id;
+  const currency = subscriptionCurrency(sub, mine ? row : null);
   if (sub.status === "active" || sub.status === "authenticated") {
     const plan = await repo.getPlan("subscription");
     if (!plan) return;
@@ -387,6 +322,7 @@ async function applySubscription(userId: string, sub: RazorpaySubscription) {
       cancel_at_period_end: mine ? (row?.cancel_at_period_end ?? false) : false,
       canceled_at: null,
       provider: "razorpay",
+      currency,
       provider_subscription_id: sub.id,
       provider_status: sub.status,
       trial_ends_at: trial,
@@ -417,7 +353,7 @@ async function applySubscription(userId: string, sub: RazorpaySubscription) {
  * done" call and Razorpay's `subscription.charged` webhook. An invoice is unique per payment, so the second caller changes nothing and
  * the person gets one receipt. Without the first path, a webhook that was never set up or never delivered meant no invoice and no email.
  */
-async function issueSubscriptionInvoice(userId: string, sub: RazorpaySubscription, paymentId: string, amountCents: number) {
+async function issueSubscriptionInvoice(userId: string, sub: RazorpaySubscription, paymentId: string, amountCents: number, currency: Currency) {
   const plan = await repo.getPlan("subscription");
   await issueInvoice({
     userId,
@@ -428,6 +364,7 @@ async function issueSubscriptionInvoice(userId: string, sub: RazorpaySubscriptio
     ref: sub.id,
     periodStart: iso(sub.current_start),
     periodEnd: iso(sub.current_end),
+    currency,
   });
 }
 
@@ -453,7 +390,8 @@ export async function confirmCheckout(userId: string, input: { paymentId: string
   try {
     if (trial) throw new Error("trial");
     const pay = await razorpay.fetchPayment(input.paymentId);
-    if (pay.status === "captured" && pay.currency === "INR" && Number.isInteger(pay.amount) && pay.amount > 0) await issueSubscriptionInvoice(userId, sub, pay.id, pay.amount);
+    const currency = paidCurrency(pay.currency);
+    if (pay.status === "captured" && currency && Number.isInteger(pay.amount) && pay.amount > 0) await issueSubscriptionInvoice(userId, sub, pay.id, pay.amount, currency);
   } catch {
     /* the webhook will invoice it; a receipt problem must never fail a payment that went through */
   }
@@ -462,12 +400,14 @@ export async function confirmCheckout(userId: string, input: { paymentId: string
   return getMyBilling(userId);
 }
 
-/** After a new paid subscription starts, stops the one it replaces (at its own provider) so the person isn't charged twice. */
+/** After a new paid subscription starts, stops the one it replaces so the person isn't charged twice. */
 async function stopOldSubscription(old: UserBillingRow | null, newId: string) {
-  if (!old?.provider_subscription_id || old.provider_subscription_id === newId || old.status !== "active") return;
-  if (old.provider === "stripe") await stripe.cancelNow(old.provider_subscription_id).catch(() => undefined);
-  else await razorpay.cancelSubscription(old.provider_subscription_id, false).catch(() => undefined);
+  if (!old?.provider_subscription_id || old.provider_subscription_id === newId || old.status !== "active" || old.provider !== "razorpay") return;
+  await razorpay.cancelSubscription(old.provider_subscription_id, false).catch(() => undefined);
 }
+
+/** The currency of a payment Razorpay reports, when it is one we sell in ("INR" or "USD"); null otherwise. */
+const paidCurrency = (c: string | undefined): Currency | null => (c === "INR" ? "inr" : c === "USD" ? "usd" : null);
 
 const SUBSCRIPTION_EVENTS = new Set([
   "subscription.authenticated",
@@ -525,8 +465,9 @@ export async function handleWebhook(eventId: string, event: WebhookEvent) {
     if (sub && SUBSCRIPTION_EVENTS.has(type)) await applySubscription(userId, sub);
     // A charge was taken (the first one and every renewal): that is what the invoice is for.
     const pay = event.payload?.payment?.entity;
-    if (type === "subscription.charged" && sub && pay?.id && typeof pay.amount === "number" && pay.amount > 0) {
-      await issueSubscriptionInvoice(userId, sub, pay.id, pay.amount).catch(() => undefined);
+    const payCurrency = paidCurrency(pay?.currency);
+    if (type === "subscription.charged" && sub && pay?.id && payCurrency && typeof pay.amount === "number" && pay.amount > 0) {
+      await issueSubscriptionInvoice(userId, sub, pay.id, pay.amount, payCurrency).catch(() => undefined);
     }
     // The subscription is over (cancelled, ran its course, or stopped after failed payments).
     if (type === "subscription.cancelled" || type === "subscription.completed" || type === "subscription.expired" || type === "subscription.halted") {
@@ -542,52 +483,23 @@ export async function handleWebhook(eventId: string, event: WebhookEvent) {
 /* ---------- AI credit top-ups (one-time Razorpay payments) ---------- */
 
 /**
- * Step 1 of a top-up: India gets a Razorpay order (rupees), everyone else a Stripe Checkout page (dollars). The amount is checked
- * against the limits in the person's own currency, in whole units.
+ * Step 1 of a top-up: a Razorpay order in the person's currency (rupees in India, US dollars elsewhere). The amount is checked against the
+ * limits in that currency, in whole units.
  */
-export async function startTopup(userId: string, amountCents: number, client: "web" | "app" = "web"): Promise<TopupSession> {
+export async function startTopup(userId: string, amountCents: number): Promise<TopupSession> {
   const row = await settled(userId);
   const { region, country } = await regionFor(userId, row);
   if (!country) throw new ValidationError("Choose your country first, in Settings, My account, so you are charged in the right currency.");
-  if (!paymentsLive(region.provider)) throw new ConflictError("Payments aren’t switched on yet.");
+  if (!paymentsLive()) throw new ConflictError("Payments aren’t switched on yet.");
   const limits = await getTopupLimits(region.currency);
   if (!validTopup(amountCents, limits)) throw new ValidationError(`Choose a whole-${region.currency === "usd" ? "dollar" : "rupee"} amount from ${topupRange(limits, region.currency)}.`);
   if (row?.status !== "active" || row.plan_id !== "payg") throw new ConflictError("Choose the Pay as you go plan to add credit.");
   const who = await repo.getContact(userId);
-  if (region.provider === "stripe") {
-    const pk = sheetKey(client);
-    if (pk) {
-      try {
-        const cust = await stripeCustomerFor(userId);
-        const pi = await stripe.createTopupIntent({ customerId: cust.customer_id, userId, amountCents });
-        if (!pi.client_secret) throw new ConflictError(PROVIDER_DOWN);
-        return { provider: "stripe", sheet: { publishable_key: pk, ...cust, intent: "payment", client_secret: pi.client_secret, reference_id: pi.id, kind: "topup", name: "Naazhi AI credit", amount: amountCents, trial_days: 0 } };
-      } catch (e) {
-        if (e instanceof stripe.StripeError) throw new ConflictError(PROVIDER_DOWN);
-        throw e;
-      }
-    }
-    try {
-      const session = await stripe.createTopupCheckout({
-        userId,
-        email: who?.email ?? "",
-        productName: "Naazhi AI credit",
-        amountCents,
-        successUrl: stripeReturn(client, "success"),
-        cancelUrl: stripeReturn(client, "cancel"),
-      });
-      if (!session.url) throw new ConflictError(PROVIDER_DOWN);
-      return { provider: "stripe", url: session.url };
-    } catch (e) {
-      if (e instanceof stripe.StripeError) throw new ConflictError(PROVIDER_DOWN);
-      throw e;
-    }
-  }
   const keyId = razorpay.razorpayKeyId();
   if (!keyId) throw new ConflictError("Payments aren’t switched on yet.");
   try {
-    const order = await razorpay.createOrder({ amount: amountCents, receipt: `topup_${userId.slice(0, 8)}_${Date.now()}`, notes: { user_id: userId, kind: "topup" } });
-    return { provider: "razorpay", key_id: keyId, order_id: order.id, amount: amountCents, currency: "INR", name: "Naazhi AI credit", description: "Pay as you go", prefill: { name: who?.name ?? "", email: who?.email ?? "", ...(who?.phone ? { contact: who.phone } : {}) } };
+    const order = await razorpay.createOrder({ amount: amountCents, currency: region.currency, receipt: `topup_${userId.slice(0, 8)}_${Date.now()}`, notes: { user_id: userId, kind: "topup" } });
+    return { provider: "razorpay", key_id: keyId, order_id: order.id, amount: amountCents, currency: region.currency.toUpperCase(), name: "Naazhi AI credit", description: "Pay as you go", prefill: { name: who?.name ?? "", email: who?.email ?? "", ...(who?.phone ? { contact: who.phone } : {}) } };
   } catch (e) {
     if (e instanceof razorpay.RazorpayError) throw new ConflictError(PROVIDER_DOWN);
     throw e;
@@ -607,12 +519,14 @@ async function creditPayment(userId: string, paymentId: string): Promise<boolean
     throw new ConflictError(PROVIDER_DOWN);
   }
   const notes = Array.isArray(pay.notes) ? {} : (pay.notes ?? {});
-  if (pay.status !== "captured" || pay.currency !== "INR" || notes.kind !== "topup" || notes.user_id !== userId) return false;
+  const currency = paidCurrency(pay.currency);
+  if (pay.status !== "captured" || !currency || notes.kind !== "topup" || notes.user_id !== userId) return false;
   // A captured payment is credited whatever the limits are now: the person paid it, so an admin tightening the limits later can't strand it.
   if (!Number.isInteger(pay.amount) || pay.amount < 100) return false;
-  const added = (await repo.applyCredit(userId, pay.amount, "topup", { ref: paymentId, currency: "inr" })) !== null;
+  // Credited in the currency it was paid in. A balance in the other currency that isn't zero refuses it (null), so the two never mix.
+  const added = (await repo.applyCredit(userId, pay.amount, "topup", { ref: paymentId, currency })) !== null;
   // The invoice (and its emailed receipt) is made once, the first time this payment is credited.
-  if (added) await issueInvoice({ userId, kind: "topup", description: "AI credit top-up", amountCents: pay.amount, paymentId, ref: pay.order_id }).catch(() => undefined);
+  if (added) await issueInvoice({ userId, kind: "topup", description: "AI credit top-up", amountCents: pay.amount, paymentId, ref: pay.order_id, currency }).catch(() => undefined);
   return added;
 }
 
@@ -621,188 +535,6 @@ export async function confirmTopup(userId: string, input: { paymentId: string; o
   if (!razorpay.verifyOrderSignature(input.orderId, input.paymentId, input.signature)) throw new ForbiddenError("We couldn’t verify that payment.");
   await creditPayment(userId, input.paymentId);
   return getMyBilling(userId);
-}
-
-/* ---------- Stripe (everyone outside India, US dollars) ---------- */
-
-const UUID = /^[0-9a-f-]{36}$/i;
-
-type StripeEvent = { id?: string; type?: string; data?: { object?: unknown } };
-
-/** A Stripe subscription's state as the person's plan row. Only ever sets absolute state, so a repeat or a late event changes nothing. */
-async function applyStripeSubscription(userId: string, sub: stripe.StripeSubscription, opts: { adopt: boolean }) {
-  const row = await repo.getUserBilling(userId);
-  const mine = row?.provider_subscription_id === sub.id;
-  const free = !row || row.status !== "active" || !row.provider_subscription_id;
-  if (sub.status === "trialing" || sub.status === "active" || sub.status === "past_due") {
-    // A subscription we don't know yet only takes over the plan row when asked to (the person's own checkout), never from a stray event.
-    if (!mine && !free && !opts.adopt) return;
-    const plan = await repo.getPlan("subscription");
-    if (!plan) return;
-    const { start: ps, end: pe } = stripe.periodOf(sub);
-    const trial = sub.status === "trialing" && sub.trial_end && sub.trial_end * 1000 > Date.now() ? iso(sub.trial_end) : null;
-    const start = trial ? now().toISOString() : (iso(ps) ?? now().toISOString());
-    const end = trial ?? iso(pe) ?? periodEnd(plan, new Date(start))?.toISOString() ?? null;
-    // Never move a period backwards (webhooks can arrive out of order).
-    const keepEnd = mine && row?.period_end && end && new Date(row.period_end) > new Date(end) ? row.period_end : end;
-    const keepStart = mine && row?.period_end && keepEnd === row.period_end ? row.period_start : start;
-    await repo.saveUserBilling(userId, {
-      plan_id: "subscription",
-      status: "active",
-      period_start: keepStart,
-      period_end: keepEnd,
-      cancel_at_period_end: sub.cancel_at_period_end,
-      canceled_at: null,
-      provider: "stripe",
-      provider_subscription_id: sub.id,
-      provider_status: sub.status,
-      trial_ends_at: trial,
-    });
-    return;
-  }
-  if (!mine || !row) return;
-  if (sub.status === "canceled" || sub.status === "unpaid" || sub.status === "incomplete_expired") {
-    await repo.saveUserBilling(userId, { ...row, status: "canceled", cancel_at_period_end: false, canceled_at: row.canceled_at ?? now().toISOString(), provider_status: sub.status });
-    return;
-  }
-  await repo.saveUserBilling(userId, { ...row, provider_status: sub.status });
-}
-
-/** The invoice (and emailed receipt) for one Stripe subscription charge, once per Stripe invoice whichever of the return trip or the webhook gets there first. */
-async function issueStripeInvoice(userId: string, inv: stripe.StripeInvoice) {
-  if (inv.currency !== "usd" || !Number.isInteger(inv.amount_paid) || inv.amount_paid <= 0) return;
-  const plan = await repo.getPlan("subscription");
-  const line = inv.lines?.data?.[0]?.period;
-  await issueInvoice({
-    userId,
-    kind: "subscription",
-    description: `${plan?.name ?? "Subscription"}, ${plan?.interval === "year" ? "yearly" : "monthly"}`,
-    amountCents: inv.amount_paid,
-    paymentId: inv.id,
-    ref: inv.payment_intent ?? null,
-    periodStart: iso(line?.start ?? inv.period_start),
-    periodEnd: iso(line?.end ?? inv.period_end),
-    currency: "usd",
-    provider: "stripe",
-  });
-}
-
-/** Adds a paid Stripe top-up to the balance, once (the payment intent id is the ledger's unique reference). */
-async function creditStripeIntent(userId: string, p: { amount: number; currency: string | null | undefined; intent: string; ref: string }): Promise<boolean> {
-  if (p.currency !== "usd" || !Number.isInteger(p.amount) || p.amount < 100) return false;
-  const added = (await repo.applyCredit(userId, p.amount, "topup", { ref: p.intent, currency: "usd" })) !== null;
-  if (added) await issueInvoice({ userId, kind: "topup", description: "AI credit top-up", amountCents: p.amount, paymentId: p.intent, ref: p.ref, currency: "usd", provider: "stripe" }).catch(() => undefined);
-  return added;
-}
-
-const creditStripeTopup = (userId: string, s: stripe.StripeSession) =>
-  s.payment_status === "paid" && s.payment_intent ? creditStripeIntent(userId, { amount: s.amount_total ?? 0, currency: s.currency, intent: s.payment_intent, ref: s.id }) : Promise.resolve(false);
-
-/** Applies a finished Stripe Checkout page for this person: a subscription becomes their plan, a paid top-up becomes credit. */
-async function applyStripeSession(userId: string, s: stripe.StripeSession) {
-  if (s.status !== "complete") return;
-  if (s.mode === "subscription" && s.subscription) {
-    const old = await repo.getUserBilling(userId);
-    const sub = await stripe.fetchSubscription(s.subscription);
-    await applyStripeSubscription(userId, sub, { adopt: true });
-    // The trial is spent the moment it starts (not when checkout opens), so closing the page doesn't burn it.
-    if (sub.status === "trialing") await repo.markTrialUsed(userId, "subscription", sub.id).catch(() => undefined);
-    // The first charge: invoice it now rather than wait for the webhook. A trial has nothing to invoice yet.
-    if (s.invoice && s.payment_status === "paid" && (s.amount_total ?? 0) > 0) await stripe.fetchInvoice(s.invoice).then((inv) => issueStripeInvoice(userId, inv)).catch(() => undefined);
-    await stopOldSubscription(old, sub.id);
-  } else if (s.mode === "payment" && s.metadata?.kind === "topup") {
-    await creditStripeTopup(userId, s);
-  }
-}
-
-/**
- * Back from Stripe: the Checkout page (a session id), or the phone's native sheet (a subscription id or a payment intent id). The id is
- * untrusted; we ask Stripe for the object ourselves and check it was made for this person, so a forged or someone else's id grants nothing.
- */
-export async function confirmStripe(userId: string, input: { sessionId?: string; subscriptionId?: string; paymentIntentId?: string }): Promise<MyBilling> {
-  const deny = () => new ForbiddenError("We couldn’t verify that payment.");
-  try {
-    if (input.subscriptionId) {
-      if (!/^sub_[A-Za-z0-9_]+$/.test(input.subscriptionId)) throw deny();
-      const sub = await stripe.fetchSubscriptionExpanded(input.subscriptionId);
-      if (sub.metadata?.user_id !== userId) throw deny();
-      // The sheet only reports success once the card is saved or paid; Stripe says whether the subscription really started.
-      if (sub.status !== "active" && sub.status !== "trialing") throw new ConflictError("That payment hasn’t completed. You haven’t been charged.");
-      const old = await repo.getUserBilling(userId);
-      await applyStripeSubscription(userId, sub, { adopt: true });
-      if (sub.status === "trialing") await repo.markTrialUsed(userId, "subscription", sub.id).catch(() => undefined);
-      const inv = typeof sub.latest_invoice === "object" ? sub.latest_invoice : null;
-      if (inv) await issueStripeInvoice(userId, { ...inv, payment_intent: typeof inv.payment_intent === "object" ? inv.payment_intent?.id : inv.payment_intent }).catch(() => undefined);
-      await stopOldSubscription(old, sub.id);
-    } else if (input.paymentIntentId) {
-      if (!/^pi_[A-Za-z0-9_]+$/.test(input.paymentIntentId)) throw deny();
-      const pi = await stripe.fetchPaymentIntent(input.paymentIntentId);
-      if (pi.metadata?.user_id !== userId || pi.metadata?.kind !== "topup") throw deny();
-      if (pi.status === "succeeded") await creditStripeIntent(userId, { amount: pi.amount ?? 0, currency: pi.currency, intent: pi.id, ref: pi.id });
-    } else if (input.sessionId) {
-      if (!/^cs_[A-Za-z0-9_]+$/.test(input.sessionId)) throw deny();
-      const session = await stripe.fetchSession(input.sessionId);
-      if (session.client_reference_id !== userId || session.metadata?.user_id !== userId) throw deny();
-      await applyStripeSession(userId, session);
-    } else throw deny();
-  } catch (e) {
-    if (e instanceof stripe.StripeError) throw new ConflictError(PROVIDER_DOWN);
-    throw e;
-  }
-  return getMyBilling(userId);
-}
-
-/**
- * Stripe's webhook (the route has verified the signature and its timestamp). Safe to receive twice or out of order: the event id is
- * claimed once, the handlers only set absolute state (subscriptions are re-read from Stripe rather than trusted from the event), and a
- * failure gives the claim back so Stripe's retry runs again.
- */
-export async function handleStripeEvent(event: StripeEvent) {
-  const id = event.id;
-  const type = event.type ?? "";
-  if (!id || !(await repo.claimEvent(id, type))) return;
-  try {
-    const obj = event.data?.object as Record<string, unknown> | undefined;
-    if (!obj) return;
-    if (type === "checkout.session.completed" || type === "checkout.session.async_payment_succeeded") {
-      const s = obj as unknown as stripe.StripeSession;
-      const userId = s.client_reference_id;
-      if (userId && UUID.test(userId)) await applyStripeSession(userId, { ...s, status: s.status ?? "complete" });
-      return;
-    }
-    if (type === "payment_intent.succeeded") {
-      // A top-up paid in the phone's native sheet (or on a Checkout page): credited even if the app was closed before it could confirm.
-      const pi = obj as unknown as stripe.StripeIntent;
-      const uid = pi.metadata?.user_id;
-      if (pi.metadata?.kind === "topup" && uid && UUID.test(uid)) await creditStripeIntent(uid, { amount: pi.amount ?? 0, currency: pi.currency, intent: pi.id, ref: pi.id });
-      return;
-    }
-    if (type === "refund.created" || type === "refund.updated" || type === "charge.refund.updated") {
-      const r = obj as unknown as stripe.StripeRefund;
-      if (r.status === "succeeded" && r.id && r.payment_intent && Number.isInteger(r.amount)) await recordRefund(r.id, r.payment_intent, r.amount);
-      return;
-    }
-    const subId = type.startsWith("customer.subscription.") ? (obj.id as string | undefined) : (obj.subscription as string | null | undefined);
-    if (!subId) return;
-    const sub = await stripe.fetchSubscription(subId);
-    const noted = sub.metadata?.user_id;
-    const userId = (await repo.userIdForSubscription(subId)) ?? (noted && UUID.test(noted) ? noted : null);
-    if (!userId) return;
-    if (type === "invoice.payment_failed") {
-      await repo.setProviderStatus(userId, subId, "payment_failed");
-      await notifyBilling(userId, (url) => templates.paymentFailed({ url }));
-      return;
-    }
-    await applyStripeSubscription(userId, sub, { adopt: false });
-    if (type === "invoice.paid") await issueStripeInvoice(userId, obj as unknown as stripe.StripeInvoice).catch(() => undefined);
-    if (type === "customer.subscription.deleted") {
-      const plan = await repo.getPlan("subscription");
-      await notifyBilling(userId, (url) => templates.subscriptionEnded({ planName: plan?.name ?? "Subscription", url }));
-    }
-  } catch (e) {
-    await repo.releaseEvent(id).catch(() => undefined);
-    throw e;
-  }
 }
 
 export async function saveByoKey(userId: string, input: { provider: string; model: string; apiKey: string }): Promise<MyBilling> {
@@ -866,7 +598,7 @@ export async function aiAccessFor(userId: string): Promise<AiAccess> {
   };
   if (prepaid && credit && credit.balance <= 0)
     throw new ForbiddenError(
-      paymentsLive((await regionFor(userId, row)).region.provider)
+      paymentsLive()
         ? "You’re out of AI credit. Top up in Settings → Plan and billing to keep going."
         : "You’re out of AI credit. Top-ups aren’t open yet, so ask the team to add credit, or switch plan in Settings → Plan and billing.",
     );
@@ -907,9 +639,7 @@ export async function adminOverview() {
     webhook: Boolean(r.webhookSecret),
     mode: r.keyId?.startsWith("rzp_live_") ? ("live" as const) : r.keyId ? ("test" as const) : null,
   };
-  const st = serverEnv().stripe;
-  const stripeStatus = { live: paymentsLive("stripe"), keys: Boolean(st.secretKey), webhook: Boolean(st.webhookSecret), mode: stripe.stripeMode(), tax: st.automaticTax };
-  return { plans, totals, subscribers, tokens30d, limits, limitsUsd, razorpayStatus, stripeStatus, seller };
+  return { plans, totals, subscribers, tokens30d, limits, limitsUsd, razorpayStatus, seller };
 }
 
 export async function adminSaveSettings(input: import("zod").infer<typeof import("./billing.schema").billingSettingsInput>) {

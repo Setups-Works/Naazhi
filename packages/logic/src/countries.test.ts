@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COUNTRIES, billingRegion, cleanCountry, countryFromHeaders, countryName, currencyForCountry, providerForCountry, regionForProvider } from "./countries";
+import { COUNTRIES, billingRegion, cleanCountry, countryFromHeaders, countryName, currencyForCountry, providerForCountry, regionForCurrency } from "./countries";
 
 describe("country → currency and payment provider", () => {
   it("bills India in rupees through Razorpay", () => {
@@ -7,17 +7,17 @@ describe("country → currency and payment provider", () => {
     expect(billingRegion("in")).toEqual({ currency: "inr", provider: "razorpay" });
     expect(billingRegion(" In ")).toEqual({ currency: "inr", provider: "razorpay" });
   });
-  it("bills every other country in dollars through Stripe", () => {
-    for (const c of ["US", "GB", "DE", "AE", "SG", "BR", "AU", "PK", "LK"]) expect(billingRegion(c)).toEqual({ currency: "usd", provider: "stripe" });
+  it("bills every other country in dollars, also through Razorpay", () => {
+    for (const c of ["US", "GB", "DE", "AE", "SG", "BR", "AU", "PK", "LK"]) expect(billingRegion(c)).toEqual({ currency: "usd", provider: "razorpay" });
     expect(currencyForCountry("CA")).toBe("usd");
-    expect(providerForCountry("JP")).toBe("stripe");
+    expect(providerForCountry("JP")).toBe("razorpay");
   });
   it("treats nobody-who-chose-yet as India, the way every older account has been billed", () => {
     for (const c of [null, undefined, "", "ZZ", "India", "XX", "1"]) expect(billingRegion(c)).toEqual({ currency: "inr", provider: "razorpay" });
   });
-  it("keeps a person with a paid plan on the provider that bills it", () => {
-    expect(regionForProvider("stripe").currency).toBe("usd");
-    expect(regionForProvider("razorpay").currency).toBe("inr");
+  it("keeps money already held in a currency in that currency", () => {
+    expect(regionForCurrency("usd")).toEqual({ currency: "usd", provider: "razorpay" });
+    expect(regionForCurrency("inr")).toEqual({ currency: "inr", provider: "razorpay" });
   });
 });
 

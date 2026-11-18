@@ -2,20 +2,20 @@
  * Countries (ISO 3166-1 alpha-2) and the one rule that turns a country into how a person pays. Shared by the web app, the phone app and
  * the server, so a price, a button and a payment provider can never disagree about it.
  *
- * India pays in rupees through Razorpay; every other country pays in US dollars through Stripe. Nothing else in the codebase should
- * compare a country to "IN": call `billingRegion()`.
+ * Razorpay takes every payment: India pays in rupees, every other country pays in US dollars (Razorpay international payments).
+ * Nothing else in the codebase should compare a country to "IN": call `billingRegion()`.
  */
 
 export type Currency = "inr" | "usd";
-export type PaymentProvider = "razorpay" | "stripe";
+export type PaymentProvider = "razorpay";
 export type BillingRegion = { currency: Currency; provider: PaymentProvider };
 
-/** The country whose people pay in rupees through Razorpay. */
+/** The country whose people pay in rupees. */
 export const HOME_COUNTRY = "IN";
 
 export const REGIONS: Record<"in" | "intl", BillingRegion> = {
   in: { currency: "inr", provider: "razorpay" },
-  intl: { currency: "usd", provider: "stripe" },
+  intl: { currency: "usd", provider: "razorpay" },
 };
 
 /** [code, name]. Every ISO 3166-1 country and territory a person might live in, sorted by name. */
@@ -75,7 +75,7 @@ export const isCountryCode = (input: unknown): input is string => cleanCountry(i
 export const countryName = (code: string | null | undefined) => (code ? (NAMES.get(code.toUpperCase()) ?? null) : null);
 
 /**
- * How a person in `country` pays: India → rupees through Razorpay, everywhere else → US dollars through Stripe.
+ * How a person in `country` pays: India → rupees, everywhere else → US dollars, both through Razorpay.
  * A person who hasn't chosen a country (everyone who signed up before this existed, and visitors we can't place) is treated as India,
  * which is how every existing account has always been billed. An unknown code is treated the same way rather than guessed at.
  */
@@ -84,14 +84,14 @@ export function billingRegion(country: string | null | undefined): BillingRegion
   return code && code !== HOME_COUNTRY ? REGIONS.intl : REGIONS.in;
 }
 
-/** The region a payment provider serves: used for a person who already pays through one, whatever their country says today. */
-export const regionForProvider = (p: PaymentProvider): BillingRegion => (p === "stripe" ? REGIONS.intl : REGIONS.in);
+/** The region for money already held in a currency: used for a running subscription or a balance, whatever the country says today. */
+export const regionForCurrency = (c: Currency): BillingRegion => (c === "usd" ? REGIONS.intl : REGIONS.in);
 
 export const currencyForCountry = (country: string | null | undefined): Currency => billingRegion(country).currency;
 export const providerForCountry = (country: string | null | undefined): PaymentProvider => billingRegion(country).provider;
 /** "rupees" / "US dollars", for sentences. */
 export const currencyName = (c: Currency) => (c === "usd" ? "US dollars" : "rupees");
-export const providerName = (p: PaymentProvider) => (p === "stripe" ? "Stripe" : "Razorpay");
+export const providerName = (_p: PaymentProvider) => "Razorpay";
 
 /** A guess at the visitor's country from the header a CDN adds, or null. Used only to pick which prices the public pricing page shows first. */
 export function countryFromHeaders(get: (name: string) => string | null | undefined): string | null {

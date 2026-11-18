@@ -60,6 +60,6 @@ Unsigned builds work for trying it out; to ship to people, set the Mac and Windo
 
 ## Limits to know
 
-- Links that leave the app's own address open in the person's browser. A connection flow that redirects through another site (for example connecting Zoho) therefore finishes in the browser, not in the window: check each such flow before announcing the desktop app.
+- Links that leave the app's own address open in the person's browser. A connection flow that redirects through another site (for example connecting Zoho) therefore finishes in the browser, not in the window: check each such flow before announcing the desktop app. One exception: Razorpay checkout popups (blank or `*.razorpay.com`, for card 3-D Secure and net banking) open as a sandboxed child window, because the payment must report back to the page that opened it (`isPaymentPopup` in `apps/desktop/src/main/window.ts`).
 - The window needs the network. Offline notes and tasks are a later phase.
 - Mac App Store and Microsoft Store are not targeted (a shell that loads a remote site doesn't suit store review); people download from the GitHub Release.

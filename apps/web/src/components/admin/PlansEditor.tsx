@@ -122,7 +122,7 @@ function PlanForm({ plan }: { plan: BillingPlan }) {
         <Field label="Price ($, everywhere else)">
           <input className={INPUT} value={priceUsd} onChange={(e) => setPriceUsd(e.target.value)} inputMode="decimal" aria-describedby={`usd-${plan.id}`} />
           <small id={`usd-${plan.id}`} className="text-[12.5px] text-fg-subtle">
-            Paid in US dollars through Stripe. 0 on a paid plan means it isn’t offered in dollars yet.
+            Paid in US dollars through Razorpay. 0 on a paid plan means it isn’t offered in dollars yet.
           </small>
         </Field>
         <Field label="Billed">

@@ -10,7 +10,7 @@ import { buttonClass, Section, StatusChip, Surface } from "../../components/site
 const SEO = {
   name: "Context Graph",
   title: "Context Graph — Naazhi",
-  description: "See how your notes, tasks, emails, meetings and journal entries connect to each other.",
+  description: "Naazhi’s context graph shows how your notes, tasks, emails, meetings and journal entries connect, so you can follow one idea across all of them.",
   path: "/context-graph",
 };
 export const metadata: Metadata = pageMeta({ ...SEO, ownImage: true });

@@ -12,7 +12,7 @@ import { pageMeta, pageSchemas } from "../../lib/seo";
 const SEO = {
   name: "Responsible Disclosure",
   title: "Report a Security Issue — Naazhi",
-  description: "Found a vulnerability in Naazhi? How to report it safely, what is in scope, and what to expect from us.",
+  description: "Found a security vulnerability in Naazhi? How to report it safely and privately, what is in scope, and what to expect from us after you report it.",
   path: "/responsible-disclosure",
 };
 export const metadata: Metadata = pageMeta(SEO);

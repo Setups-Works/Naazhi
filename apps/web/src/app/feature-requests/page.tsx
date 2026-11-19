@@ -14,7 +14,7 @@ import { pageMeta, pageSchemas } from "../../lib/seo";
 const SEO = {
   name: "Request a Feature",
   title: "Request a Feature — Naazhi",
-  description: "Tell us what Naazhi should do next. How to send a feature request, what to include, and what happens to it.",
+  description: "Tell us what Naazhi should do next: how to send a feature request, what to include so we can act on it, and what happens to your idea after you send it.",
   path: "/feature-requests",
 };
 export const metadata: Metadata = pageMeta(SEO);

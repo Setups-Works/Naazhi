@@ -7,7 +7,7 @@ import { pageMeta, pageSchemas } from "../../lib/seo";
 const SEO = {
   name: "Terms & Conditions",
   title: "Terms & Conditions — Naazhi",
-  description: "The rules for using Naazhi: your account, your content, plans and payments, and what we each expect.",
+  description: "Naazhi terms of service: the rules for your account and your content, how plans and payments work, and what you and we each agree to.",
   path: "/terms",
 };
 export const metadata: Metadata = pageMeta(SEO);

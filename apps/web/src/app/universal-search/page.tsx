@@ -10,7 +10,7 @@ import { buttonClass, Kbd, Section, StatusChip, Surface, type Status } from "../
 const SEO = {
   name: "Universal Search",
   title: "Universal Search — Naazhi",
-  description: "Find anything across your notes, tasks, journal, email, calendar and meetings from one search box.",
+  description: "Find anything across your notes, tasks, journal, email, calendar and meetings from one search box in Naazhi, instead of searching each app on its own.",
   path: "/universal-search",
 };
 export const metadata: Metadata = pageMeta({ ...SEO, ownImage: true });

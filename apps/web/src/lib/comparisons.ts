@@ -32,7 +32,7 @@ export const COMPARISONS: Record<Comparison["slug"], Comparison> = {
     path: "/compare/notion",
     seo: {
       title: "Naazhi vs Notion — an honest comparison",
-      description: "Naazhi and Notion side by side: notes, tasks, journal, calendar, AI, connected apps and teams. Where each is stronger, and how to move your Notion pages into Naazhi.",
+      description: "Naazhi and Notion side by side: notes, tasks, journal, calendar, AI and connected apps, where each is stronger, and how to move your Notion pages over.",
     },
     hero: {
       title: "Naazhi vs Notion,",

@@ -21,7 +21,7 @@ import { buttonClass, Section, Surface } from "../../components/site/ui";
 const SEO = {
   name: "Early users",
   title: "Early users — Naazhi",
-  description: "Be one of the first to shape Naazhi. Early users get a direct line to the team.",
+  description: "Be one of the first to shape Naazhi, the workspace for notes, tasks and a private journal. Early users get a direct line to the team that builds it.",
   path: "/early-users",
 };
 export const metadata: Metadata = pageMeta({ ...SEO, ownImage: true });

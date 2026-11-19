@@ -35,7 +35,7 @@ import { DESKTOP_DOWNLOADS, DESKTOP_RELEASES_PAGE } from "../../lib/desktopDownl
 
 const TITLE = "Download — Naazhi";
 const DESCRIPTION =
-  "Get Naazhi on your phone and your computer. The Android app is on Google Play, the Mac and Windows apps are a download away, the web app works everywhere, and the iPhone and iPad app and a browser extension are coming soon.";
+  "Download Naazhi for Android from Google Play, for Mac and Windows, or use it on the web. The iPhone and iPad app and a browser extension are coming soon.";
 export const metadata: Metadata = pageMeta({ title: TITLE, description: DESCRIPTION, path: "/download", ownImage: true });
 
 const RELEASE = `${GITHUB_REPO}/releases/latest`;

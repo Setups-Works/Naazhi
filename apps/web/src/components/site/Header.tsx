@@ -27,7 +27,8 @@ export default function Header() {
     <header data-site-chrome className="sticky top-0 z-50">
       {/* The frosted bar is its own layer: a backdrop filter on the header itself would make the full-screen mobile menu size to the bar. */}
       <div aria-hidden className="absolute inset-0 -z-10 border-b border-line bg-surface/75 backdrop-blur-xl" />
-      <div className={`${WRAP} flex h-[60px] items-center justify-between gap-6`}>
+      {/* data-nosnippet: menu labels are not what a search snippet should quote (Google reads it on div/span/section only). */}
+      <div data-nosnippet className={`${WRAP} flex h-[60px] items-center justify-between gap-6`}>
         <Link href="/" className="flex shrink-0 items-center gap-2.5 font-brand text-[23px] tracking-[-0.02em]">
           <BrandMark size={28} />
           Naazhi

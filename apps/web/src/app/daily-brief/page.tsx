@@ -11,7 +11,7 @@ import { buttonClass, Kicker, Lead, Section, StatusChip, Surface } from "../../c
 const SEO = {
   name: "Daily Brief",
   title: "Daily Brief — Naazhi",
-  description: "Start the day knowing what matters: your events, tasks, email and journal in one brief, with or without AI.",
+  description: "Start the day knowing what matters: Naazhi’s daily brief puts your events, tasks, email and journal in one short summary, with or without AI.",
   path: "/daily-brief",
 };
 export const metadata: Metadata = pageMeta({ ...SEO, ownImage: true });

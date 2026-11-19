@@ -208,6 +208,19 @@ export const SETUPS_WORKS = {
     name: "Nitheesh Rajendran",
     jobTitle: "Founder & CEO",
     url: "https://setups.works/about/nitheesh-rajendran",
+    /** His personal site, which publishes the Person node (https://nitheeshdr.in/#person) his knowledge panel is built on. */
+    portfolio: "https://nitheeshdr.in",
+    /**
+     * The founder's own public identifiers, stated on his Naazhi team page (never on the company) so Google can match that page to the
+     * knowledge panel it already has for him. Put the panel's link here as https://www.google.com/search?kgmid=/g/… (from the panel's
+     * Share button), plus any Wikidata item. Profile links he enters in Admin → Team are added on top of these.
+     */
+    sameAs: [
+      "https://www.wikidata.org/wiki/Q140500455",
+      // His knowledge panel: the permanent kgmid URL, then the share link (setups.works and nitheeshdr.in list the same two).
+      "https://www.google.com/search?kgmid=/g/11mvs7d_hp",
+      "https://share.google/ZDfPNUlpU4z1mW2uW",
+    ] as string[],
   },
   sameAs: [
     "https://x.com/setupsworks",
@@ -222,6 +235,20 @@ export const SETUPS_WORKS = {
 
 const setupsWorksRef = () => ({ "@id": SETUPS_WORKS.id });
 
+/**
+ * The founder as one person across the three sites: the @id setups.works publishes, with his portfolio and its Person node as sameAs, so
+ * naazhi.app, setups.works and nitheeshdr.in all point at the entity his knowledge panel is about.
+ */
+const founderRef = (): Json => ({
+  "@type": "Person",
+  "@id": SETUPS_WORKS.founder.id,
+  name: SETUPS_WORKS.founder.name,
+  jobTitle: `${SETUPS_WORKS.founder.jobTitle}, ${SETUPS_WORKS.name}`,
+  url: SETUPS_WORKS.founder.url,
+  sameAs: [SETUPS_WORKS.founder.portfolio, `${SETUPS_WORKS.founder.portfolio}/#person`, ...SETUPS_WORKS.founder.sameAs],
+  worksFor: setupsWorksRef(),
+});
+
 /** Setups Works as an organization in its own right, with a way to reach it. */
 export const setupsWorksSchema = (): Json => {
   const s = SETUPS_WORKS;
@@ -230,8 +257,8 @@ export const setupsWorksSchema = (): Json => {
     "@context": "https://schema.org",
     "@type": "Organization",
     "@id": s.id,
+    // No legalName: Google asks for it only when it differs from `name`.
     name: s.name,
-    legalName: s.name,
     alternateName: s.alternateName,
     description: s.description,
     slogan: s.slogan,
@@ -288,6 +315,8 @@ export const organizationSchema = (): Json =>
     ],
     knowsAbout: ["Notes", "To-do lists", "Journaling", "AI chat", "Calendar", "Personal knowledge management"],
     brand: brandRef(),
+    // Naazhi is a Setups Works product, founded by its founder. setups.works and nitheeshdr.in state the same two edges back.
+    founder: founderRef(),
     parentOrganization: setupsWorksRef(),
   });
 
@@ -381,7 +410,9 @@ export function softwareSchema({
     offers: freeOffer(absoluteUrl("/pricing")),
     brand: brandRef(),
     publisher: absoluteUrl("/#organization") ? orgRef() : { "@type": "Organization", name: SITE_NAME },
+    // Built by Setups Works (creator, copyright) and led by its founder (author).
     creator: setupsWorksRef(),
+    author: founderRef(),
     copyrightHolder: setupsWorksRef(),
     // One entity per platform, below.
     hasPart: [{ "@id": absoluteUrl("/#android-app") }, { "@id": absoluteUrl("/#mac-app") }, { "@id": absoluteUrl("/#windows-app") }, { "@id": absoluteUrl("/#web-app") }],
@@ -600,6 +631,14 @@ export type TeamPerson = { slug: string; name: string; role: string; bio: string
   alumniUrl?: string | null;
 };
 
+/**
+ * Whether a team member is the Setups Works founder, matched by name (the team list lives in the database). His Naazhi profile then also
+ * points at his Setups Works profile and the identifiers in SETUPS_WORKS.founder, so the two sites and his knowledge panel describe one
+ * person.
+ */
+export const isSetupsWorksFounder = (p: Pick<TeamPerson, "name">) =>
+  p.name.replace(/\s+/g, " ").trim().toLowerCase() === SETUPS_WORKS.founder.name.toLowerCase();
+
 /** The address of one person's block on the Team page; also their @id in structured data. */
 export const teamPersonId = (slug: string) => absoluteUrl(`/team#${slug}`);
 
@@ -629,6 +668,11 @@ export function wikidataIdOf(links: readonly { url: string }[]): string | undefi
  */
 function personNode(p: TeamPerson, pageId: string | undefined, orgId: string | undefined): Json {
   const own = absoluteUrl(teamMemberPath(p.slug));
+  const founder = isSetupsWorksFounder(p);
+  // The founder's Setups Works profile and knowledge-panel identifiers join the links the admin entered (no duplicates).
+  const sameAs = [...new Set([...p.links.map((l) => l.url), ...(founder ? [SETUPS_WORKS.founder.url, SETUPS_WORKS.founder.portfolio, ...SETUPS_WORKS.founder.sameAs] : [])])];
+  const employers = [orgId ? { "@id": orgId } : undefined, founder ? setupsWorksRef() : undefined].filter((x) => x !== undefined);
+  const wikidata = wikidataIdOf(sameAs.map((url) => ({ url })));
   return drop({
     "@context": "https://schema.org",
     "@type": "Person",
@@ -638,15 +682,16 @@ function personNode(p: TeamPerson, pageId: string | undefined, orgId: string | u
     description: p.bio || undefined,
     image: p.photoUrl ? { "@type": "ImageObject", url: p.photoUrl, contentUrl: p.photoUrl, caption: p.name } : undefined,
     url: own,
-    sameAs: p.links.length ? p.links.map((l) => l.url) : undefined,
+    sameAs: sameAs.length ? sameAs : undefined,
     // The facts below are only stated when an admin entered them, and the profile page shows the same facts in plain text.
     alternateName: p.alternateNames?.length ? p.alternateNames : undefined,
     knowsAbout: p.knowsAbout?.length ? p.knowsAbout : undefined,
     homeLocation: p.location ? { "@type": "Place", name: p.location } : undefined,
     alumniOf: p.alumniOf ? drop({ "@type": "Organization", name: p.alumniOf, url: p.alumniUrl || undefined }) : undefined,
     award: p.awards?.length ? p.awards : undefined,
-    identifier: wikidataIdOf(p.links) ? { "@type": "PropertyValue", propertyID: "Wikidata", value: wikidataIdOf(p.links) } : undefined,
-    worksFor: orgId ? { "@id": orgId } : undefined,
+    identifier: wikidata ? { "@type": "PropertyValue", propertyID: "Wikidata", value: wikidata } : undefined,
+    // Naazhi, and for the founder also Setups Works (his page says so in plain text).
+    worksFor: employers.length > 1 ? employers : employers[0],
     mainEntityOfPage: pageId ? { "@id": pageId } : undefined,
   });
 }
@@ -681,7 +726,17 @@ export function teamMemberSchemas(p: TeamPerson): (Json | undefined)[] {
     }),
     personNode(p, profileId, orgId),
     orgId
-      ? drop({ "@context": "https://schema.org", "@type": "Organization", "@id": orgId, name: SITE_NAME, url: absoluteUrl("/"), parentOrganization: setupsWorksRef(), employee: { "@id": teamPersonId(p.slug) } })
+      ? drop({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "@id": orgId,
+          name: SITE_NAME,
+          url: absoluteUrl("/"),
+          parentOrganization: setupsWorksRef(),
+          employee: { "@id": teamPersonId(p.slug) },
+          // Stated only when the role entered in Admin → Team says so, which the page shows.
+          founder: isSetupsWorksFounder(p) && /founder/i.test(p.role) ? { "@id": teamPersonId(p.slug) } : undefined,
+        })
       : undefined,
     breadcrumbSchema(crumbs),
   ];

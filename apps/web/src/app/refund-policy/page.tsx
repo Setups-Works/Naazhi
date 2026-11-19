@@ -7,7 +7,7 @@ import { pageMeta, pageSchemas } from "../../lib/seo";
 const SEO = {
   name: "Refund & Cancellation Policy",
   title: "Refund & Cancellation Policy — Naazhi",
-  description: "How to cancel a Naazhi plan, when you can get a refund, and how long refunds take.",
+  description: "Naazhi refund policy: how to cancel a plan, when you can get a refund, how to ask for one, and how long a refund takes to reach your bank or card.",
   path: "/refund-policy",
 };
 export const metadata: Metadata = pageMeta(SEO);

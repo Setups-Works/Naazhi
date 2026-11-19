@@ -12,7 +12,7 @@ import { getStatusReport } from "../../server/services/status/status.service";
 const SEO = {
   name: "Status",
   title: "Status — Naazhi",
-  description: "Whether Naazhi is working right now: the website, sign-in and your workspace, checked live.",
+  description: "Is Naazhi down? See whether the website, sign-in and your workspace are working right now, checked live each time you open this page.",
   path: "/status",
 };
 // A live reading is out of date as soon as it is cached, so it stays out of search results.

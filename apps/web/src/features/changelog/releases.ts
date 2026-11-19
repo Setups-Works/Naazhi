@@ -22,6 +22,17 @@ export type Release = {
  */
 export const RELEASES: Release[] = [
   {
+    date: "2026-11-19",
+    title: "Clearer search results and team pages",
+    summary: "Naazhi’s pages describe themselves better in Google, and the team page shows who stands behind Naazhi.",
+    tone: "blue",
+    changes: [
+      { kind: "improved", platform: "web", text: "Sixteen pages, from Pricing to Status, now have clear, complete descriptions in search results." },
+      { kind: "improved", platform: "web", text: "Search results quote the page itself, not the menu, footer or announcement banner." },
+      { kind: "improved", platform: "web", text: "The founder’s team page now shows his role at Setups Works, the company that builds Naazhi." },
+    ],
+  },
+  {
     date: "2026-11-18",
     title: "Version 9.3.0: AI with a plan, open the app from the website, rate Naazhi",
     summary: "Naazhi’s AI now comes with a plan or your own key, the website on Android opens the app when you have it, and the app can ask for a Google Play review at a good moment.",

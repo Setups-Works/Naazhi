@@ -17,7 +17,8 @@ import { buttonClass, WRAP } from "./ui";
 export default function Footer() {
   return (
     <footer data-site-chrome className="border-t border-line bg-surface-muted/50 pt-[clamp(40px,6vw,72px)] pb-8">
-      <div className={WRAP}>
+      {/* data-nosnippet keeps the link columns, numbered notes and legal line out of search snippets; links are still crawled. */}
+      <div data-nosnippet className={WRAP}>
         <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(0,2.8fr)] xl:gap-14">
           <div className="flex flex-col items-start gap-4">
             <Link href="/" className="flex items-center gap-2.5 font-brand text-[26px] tracking-[-0.02em]">

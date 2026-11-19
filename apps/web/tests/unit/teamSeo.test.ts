@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { teamMemberDescription, teamMemberPath, teamMemberSchemas, teamPersonId, teamSchemas, wikidataIdOf, type TeamPerson } from "../../src/lib/seo";
+import { isSetupsWorksFounder, SETUPS_WORKS, teamMemberDescription, teamMemberPath, teamMemberSchemas, teamPersonId, teamSchemas, wikidataIdOf, type TeamPerson } from "../../src/lib/seo";
 
 const nitheesh: TeamPerson = {
   slug: "asha-kumar",
@@ -105,3 +105,30 @@ describe("knowledge-panel facts", () => {
 function base(): TeamPerson {
   return { slug: "asha-kumar", name: "Asha Kumar", role: "Designer", bio: "", photoUrl: null, links: [] };
 }
+
+describe("the Setups Works founder's team page", () => {
+  const founder: TeamPerson = { slug: "nitheesh-rajendran", name: "Nitheesh  Rajendran", role: "Founder", bio: "", photoUrl: null, links: [{ label: "Site", url: SETUPS_WORKS.founder.url }] };
+  const docs = teamMemberSchemas(founder);
+  const person = type(docs, "Person");
+  const org = type(docs, "Organization");
+
+  it("is recognised by name, whatever the spacing", () => {
+    expect(isSetupsWorksFounder(founder)).toBe(true);
+    expect(isSetupsWorksFounder({ name: "Asha Kumar" })).toBe(false);
+  });
+
+  it("points at his Setups Works profile once, and works for Naazhi and Setups Works", () => {
+    expect((person.sameAs as string[]).filter((u) => u === SETUPS_WORKS.founder.url)).toHaveLength(1);
+    expect(person.worksFor).toEqual([{ "@id": expect.stringMatching(/\/#organization$/) }, { "@id": SETUPS_WORKS.id }]);
+  });
+
+  it("names him founder of Naazhi only because his role says so", () => {
+    expect(org.founder).toEqual({ "@id": teamPersonId("nitheesh-rajendran") });
+    const dev = type(teamMemberSchemas({ ...founder, role: "Developer" }), "Organization");
+    expect(dev.founder).toBeUndefined();
+  });
+
+  it("leaves other people's employer as Naazhi alone", () => {
+    expect(type(teamMemberSchemas(nitheesh), "Person").worksFor).toEqual({ "@id": expect.stringMatching(/\/#organization$/) });
+  });
+});

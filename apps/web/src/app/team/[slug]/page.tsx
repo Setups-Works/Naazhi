@@ -5,7 +5,7 @@ import JsonLd from "../../../components/site/JsonLd";
 import { CtaPanel } from "../../../components/site/kit";
 import { Section, Surface } from "../../../components/site/ui";
 import { OPERATOR } from "../../../lib/legal";
-import { pageMeta, SITE_NAME, teamMemberDescription, teamMemberPath, teamMemberSchemas } from "../../../lib/seo";
+import { isSetupsWorksFounder, pageMeta, SETUPS_WORKS, SITE_NAME, teamMemberDescription, teamMemberPath, teamMemberSchemas } from "../../../lib/seo";
 import { getPublicMember } from "../../../server/services/team/team.service";
 
 // People are edited in the admin panel, so each page is made when it is asked for.
@@ -65,6 +65,16 @@ export default async function Page({ params }: Props) {
               <p className="m-0 mt-2 text-[18px] text-fg-muted">
                 {m.role} at {SITE_NAME}
               </p>
+              {/* The founder's other role, shown so the Person markup (worksFor Setups Works, sameAs his Setups Works profile) matches the page. */}
+              {isSetupsWorksFounder(m) && (
+                <p className="m-0 mt-1 text-[16px] text-fg-muted">
+                  {SETUPS_WORKS.founder.jobTitle},{" "}
+                  <a className="text-green-fg underline" href={SETUPS_WORKS.founder.url} rel="noopener" target="_blank">
+                    {SETUPS_WORKS.name}
+                  </a>
+                  , the company behind {SITE_NAME}
+                </p>
+              )}
             </div>
           </header>
 

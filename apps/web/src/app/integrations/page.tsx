@@ -21,7 +21,7 @@ const SEO = {
   name: "Integrations",
   title: "Integrations — Naazhi",
   description:
-    "Connect Gmail, Google Calendar, Google Drive and Zoho apps to your workspace and ask about them from chat. See which integrations are live today and which are still coming.",
+    "Connect Gmail, Google Calendar, Google Drive and Zoho apps to Naazhi and ask about them from chat. See which integrations are live and which are coming.",
   path: "/integrations",
 };
 export const metadata: Metadata = pageMeta({ ...SEO, ownImage: true });

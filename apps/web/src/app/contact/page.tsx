@@ -8,7 +8,7 @@ import { pageMeta, pageSchemas } from "../../lib/seo";
 const SEO = {
   name: "Contact",
   title: "Contact — Naazhi",
-  description: "How to reach the team behind Naazhi: email, phone and postal address.",
+  description: "How to reach the team behind Naazhi: email for support and questions, a phone number, and the postal address of the company that builds Naazhi.",
   path: "/contact",
 };
 export const metadata: Metadata = pageMeta(SEO);

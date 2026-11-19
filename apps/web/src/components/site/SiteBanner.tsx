@@ -51,7 +51,8 @@ export default function SiteBanner() {
     setB(null);
   };
   return (
-    <div role="region" aria-label="Announcement" className={`relative flex items-center justify-center gap-x-3 gap-y-1 px-12 py-2.5 text-center text-[14px] ${TONE[b.tone] ?? TONE.info}`}>
+    // data-nosnippet: a passing announcement should never become the text Google shows for a page.
+    <div data-nosnippet role="region" aria-label="Announcement" className={`relative flex items-center justify-center gap-x-3 gap-y-1 px-12 py-2.5 text-center text-[14px] ${TONE[b.tone] ?? TONE.info}`}>
       <FA icon={ICON[b.tone as keyof typeof ICON] ?? faBullhorn} className="hidden shrink-0 sm:block" />
       <p className="m-0 [overflow-wrap:anywhere]">
         {b.message}

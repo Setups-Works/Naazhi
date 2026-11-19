@@ -7,7 +7,7 @@ import { Section, Surface } from "../../components/site/ui";
 import { breadcrumbSchema, pageMeta, webPageSchema } from "../../lib/seo";
 
 const TITLE = "Payments we accept — Naazhi";
-const DESCRIPTION = "Pay through Razorpay: by UPI, card or net banking in rupees in India, or by card in US dollars everywhere else. See what each accepts and how your payment is protected.";
+const DESCRIPTION = "Pay for Naazhi through Razorpay: UPI, card or net banking in rupees in India, or card in US dollars elsewhere, and how your payment is protected.";
 export const metadata: Metadata = pageMeta({ title: TITLE, description: DESCRIPTION, path: "/payments" });
 
 /** A payment brand: its logo (kept in /public/payments), or just its name where we have no logo file. Logos are shown at one height so they sit evenly. */

@@ -21,7 +21,7 @@ import { getTopupLimits, listPublicPlans, paymentsLive } from "../../server/serv
 export const dynamic = "force-dynamic";
 
 const TITLE = "Pricing — Naazhi";
-const DESCRIPTION = "One workspace, three ways to pay for AI, in rupees in India or US dollars elsewhere: a subscription, prepaid pay as you go credit, or your own API key. Work out what you would pay with the calculator. Change or cancel any time.";
+const DESCRIPTION = "Naazhi pricing: a subscription, prepaid pay as you go, or your own API key, in rupees in India or US dollars elsewhere. Estimate your cost and cancel any time.";
 export const metadata: Metadata = pageMeta({ title: TITLE, description: DESCRIPTION, path: "/pricing", ownImage: true });
 
 function Plan({ plan, emphasis = false }: { plan: BillingPlan; emphasis?: boolean }) {

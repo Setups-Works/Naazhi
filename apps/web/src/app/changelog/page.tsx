@@ -11,7 +11,7 @@ import Changelog from "../../features/changelog/Changelog";
 const SEO = {
   name: "Changelog",
   title: "Changelog — Naazhi",
-  description: "What’s new in the web app and the Android app, newest first.",
+  description: "Every Naazhi release, newest first: new features, fixes and improvements in the web app and the Android app, each with its date and version number.",
   path: "/changelog",
 };
 export const metadata: Metadata = pageMeta({ ...SEO, ownImage: true });

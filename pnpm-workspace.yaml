@@ -11,6 +11,8 @@ allowBuilds:
   electron: true
   esbuild: true
   electron-winstaller: false
+  # ONNX Runtime native bindings required for local multilingual E5 embeddings inference
+  onnxruntime-node: true
 minimumReleaseAgeExclude:
   - '@expo/cli@57.0.29'
   - '@expo/fingerprint@0.20.14'

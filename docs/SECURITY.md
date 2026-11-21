@@ -19,6 +19,7 @@ Rules for everyone (and every AI agent). The checklist at the bottom is finished
 | `S3_ENDPOINT`, `S3_REGION`, `S3_AUTO_CREATE_BUCKETS` | object storage endpoint and behavior | server-only configuration                                 |
 | `ADMIN_EMAILS`                                    | bootstrap admins                     | server only                                              |
 | `GROQ_API_KEY`                                   | AI / integrations services           | server only (Phase 3–4)                                  |
+| `CHROMA_AUTH_TOKEN`                               | Local Chroma server/client authentication | server only; never expose to browser or mobile           |
 | `CRON_SECRET`                                     | protects `/api/v1/jobs/*`            | server only                                              |
 | `SENTRY_*`, `NEXT_PUBLIC_POSTHOG_KEY`             | observability                        | DSN/keys are public identifiers; auth tokens server only |
 | Stripe keys                                       | billing                              | server only (Phase 6)                                    |
@@ -75,6 +76,7 @@ Full design: `docs/BILLING.md`.
 - **Any write action by the AI (send mail, create/delete events or tasks) requires explicit user confirmation** with a preview (UNT-82).
 - Log tool calls to the audit log; meter usage; cap per-user spend (UNT-83).
 - Don't send more context to a provider than the feature needs; document what each provider receives.
+- The local Chroma server has no published host port and is attached only to an internal Docker network shared with the token-checking gateway. The gateway alone is bound to `127.0.0.1:8000`; its bearer token is server-only. Memory remains unused/disabled until a later opt-in integration; do not trust client-supplied user ids for memory authorization.
 
 ## Web hardening (Phase 6)
 

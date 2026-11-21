@@ -9,6 +9,7 @@ The whole product runs on services you control. There is no Supabase or other ho
 | Files          | **S3-compatible storage** (SeaweedFS in Docker) | `apps/web/src/server/storage.ts`, `/api/v1/storage/*`                  |
 | Realtime       | Postgres `pg_notify` → Server-Sent Events       | `apps/web/src/server/realtime.ts`, `/api/v1/realtime`                  |
 | Cache / limits | **Redis 7**                                     | `apps/web/src/server/redis.ts`                                         |
+| Semantic memory (local development) | **ChromaDB 1.5.9** | `apps/web/src/server/repositories/conversation-memory.repository.ts` |
 | Email          | SMTP (Mailpit in dev, your provider in prod)    | `apps/web/src/server/mail.ts`                                          |
 
 > MinIO stopped publishing Docker images, so object storage runs on SeaweedFS. The app only speaks the S3 API: MinIO, Garage, RustFS, Cloudflare R2 or AWS S3 work by changing the `S3_*` variables.
@@ -30,6 +31,14 @@ corepack pnpm docker:up
 corepack pnpm db:migrate
 corepack pnpm dev:web
 ```
+
+### Local ChromaDB (development only)
+
+The Compose stack includes ChromaDB 1.5.9 with a dedicated named volume, `chromadata`, mounted at the image's actual `/data` persistence path. Chroma itself has no published host port and runs on an internal-only Docker network. A small Nginx gateway checks the server-side bearer token before forwarding requests. Replace the `CHROMA_AUTH_TOKEN` placeholder with a random alphanumeric value and put the same value in `.env.selfhost` and `apps/web/.env.local`. The web container connects to `http://chroma-auth:8000`; a Next.js process running on the host uses `http://127.0.0.1:8000`. Only the gateway is bound to loopback, so port 8000 is not available to other machines. This foundation is not connected to chat; memory remains inactive until the later opt-in chat integration.
+
+Start the local vector service with `docker compose --env-file .env.selfhost up -d chroma chroma-auth`; check both with `docker compose --env-file .env.selfhost ps chroma chroma-auth` and inspect their logs if needed. Chroma's container health check verifies its server process and mounted data directory; the app's server-only health helper probes the gateway and Chroma heartbeat. Data lives in the new `chromadata` volume and survives container recreation. Do not use `docker compose down -v`; it removes all named volumes, including PostgreSQL data. To stop only these services, run `docker compose --env-file .env.selfhost stop chroma-auth chroma`.
+
+Memory is not integrated into chat or enabled for any user by this local foundation. No automatic conversation backfill runs. Do not expose Chroma port 8000 publicly or put its token in a `NEXT_PUBLIC_*` setting.
 
 Mailpit shows every email at http://localhost:8025 (verification and reset links). To send real email, set `SMTP_URL` (and `MAIL_FROM`) in `apps/web/.env.local`, e.g. `smtps://user%40example.com:password@smtp.example.com:465` (URL-encode special characters).
 

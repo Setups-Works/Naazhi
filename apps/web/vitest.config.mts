@@ -1,5 +1,6 @@
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { defineConfig } from "vitest/config";
 
 // Dates are built from local time (see src/lib/dates.ts); pin the zone so tests give the same answers on every machine and in CI.
 process.env.TZ = "UTC";
@@ -14,7 +15,7 @@ if (withDb && !process.env.DATABASE_URL) {
   }
 }
 
-export default defineConfig({
+export default {
   resolve: {
     alias: {
       // `server-only` throws outside a Next.js server build; tests import server modules directly.
@@ -23,6 +24,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["tests/unit/**/*.test.ts", ...(withDb ? ["tests/db/**/*.test.ts"] : [])],
+    testTimeout: 60000,
+    include: ["tests/unit/**/*.test.ts", "tests/integration/**/*.test.ts", ...(withDb ? ["tests/db/**/*.test.ts"] : [])],
   },
-});
+};

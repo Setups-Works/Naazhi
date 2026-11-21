@@ -5,6 +5,7 @@ export type SettingsTab =
   | "prefs"
   | "appearance"
   | "billing"
+  | "memory"
   | "security"
   | "data"
   | "danger"
@@ -33,6 +34,7 @@ const SLUGS: Record<SettingsSection, string> = {
   prefs: "preferences",
   appearance: "appearance",
   billing: "billing",
+  memory: "memory",
   security: "security",
   data: "data",
   danger: "danger",

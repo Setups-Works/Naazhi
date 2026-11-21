@@ -32,6 +32,47 @@ x-app-env: &app-env
   ADMIN_EMAILS: ${ADMIN_EMAILS:-}
 
 services:
+  # Local-only vector service. No host port is published; only the auth gateway shares its internal network.
+  chroma:
+    image: chromadb/chroma:1.5.9
+    restart: unless-stopped
+    environment:
+      IS_PERSISTENT: "TRUE"
+      PERSIST_DIRECTORY: /data
+    expose: ["8000"]
+    networks: [chroma_private]
+    volumes:
+      - chromadata:/data
+    healthcheck:
+      # The official slim image has no curl/wget. The app-level health check uses Chroma heartbeat;
+      # this container check confirms the server process and mounted persistence directory are present.
+      test: ["CMD-SHELL", "test -r /proc/1/stat && test -d /data"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+
+  # Chroma 1.5.9's default server does not enforce its legacy auth variables. Keep it private and
+  # gate every API request through this token-checking proxy instead.
+  chroma-auth:
+    image: nginx:1.29.4-alpine
+    restart: unless-stopped
+    environment:
+      CHROMA_AUTH_TOKEN: ${CHROMA_AUTH_TOKEN:?set CHROMA_AUTH_TOKEN in .env.selfhost}
+      NGINX_ENVSUBST_FILTER: ^CHROMA_AUTH_TOKEN$
+    ports: ["127.0.0.1:8000:8000"]
+    volumes:
+      - ./docker/chroma/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+    networks: [default, chroma_private]
+    depends_on:
+      chroma: { condition: service_started }
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8000/_health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 5s
+
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -115,7 +156,12 @@ services:
     image: untitled-app:latest
     build: { context: ., target: runner }
     restart: unless-stopped
-    environment: *app-env
+    environment:
+      <<: *app-env
+      CHROMA_URL: http://chroma-auth:8000
+      CHROMA_AUTH_TOKEN: ${CHROMA_AUTH_TOKEN:?set CHROMA_AUTH_TOKEN in .env.selfhost}
+      CHROMA_COLLECTION: ${CHROMA_COLLECTION:-naazhi_conversation_memories}
+    networks: [default, chroma_private]
     ports: ["127.0.0.1:3000:3000"]
     depends_on:
       migrate: { condition: service_completed_successfully }
@@ -137,10 +183,14 @@ services:
         corepack enable && pnpm install --frozen-lockfile && pnpm db:migrate && exec pnpm dev:web
     environment:
       <<: *app-env
+      CHROMA_URL: http://chroma-auth:8000
+      CHROMA_AUTH_TOKEN: ${CHROMA_AUTH_TOKEN:?set CHROMA_AUTH_TOKEN in .env.selfhost}
+      CHROMA_COLLECTION: ${CHROMA_COLLECTION:-naazhi_conversation_memories}
       HOSTNAME: "0.0.0.0"
       NEXT_TELEMETRY_DISABLED: "1"
       WATCHPACK_POLLING: "true" # file events don't cross the Docker Desktop mount, so poll for changes
     ports: ["127.0.0.1:${WEB_PORT:-3000}:3000"]
+    networks: [default, chroma_private]
     volumes:
       - .:/app
       - devmodules:/app/node_modules
@@ -154,5 +204,11 @@ volumes:
   pgdata:
   redisdata:
   storagedata:
+  chromadata:
+    name: chromadata
   devmodules:
   devnext:
+
+networks:
+  chroma_private:
+    internal: true

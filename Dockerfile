@@ -8,6 +8,7 @@ FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
 RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY scripts/ensure-pnpm-shim.mjs ./scripts/ensure-pnpm-shim.mjs
 COPY apps/web/package.json ./apps/web/package.json
 COPY apps/mobile/package.json ./apps/mobile/package.json
 COPY packages/api-client/package.json ./packages/api-client/package.json

@@ -1,0 +1,140 @@
+import "server-only";
+import { userDb } from "../../db/builders";
+
+export interface UserMemoryPreference {
+  enabled: boolean;
+  paused: boolean;
+  updatedAt: string;
+}
+
+const DEFAULT_PREFERENCE: UserMemoryPreference = {
+  enabled: false,
+  paused: false,
+  updatedAt: new Date(0).toISOString(),
+};
+
+/**
+ * Gets the memory preference for the authenticated user.
+ * Defaults to disabled (enabled: false, paused: false) if no preference row exists.
+ */
+export async function getMemoryPreference(userId: string): Promise<UserMemoryPreference> {
+  if (!userId) throw new TypeError("Valid user id is required to read memory preferences.");
+  const db = userDb(userId);
+  const { data, error } = await db
+    .from("user_memory_preferences")
+    .select("enabled,paused,updated_at")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error || !data) return DEFAULT_PREFERENCE;
+
+  const row = data as { enabled: boolean; paused: boolean; updated_at: string };
+  return {
+    enabled: Boolean(row.enabled),
+    paused: Boolean(row.paused),
+    updatedAt: row.updated_at ?? new Date().toISOString(),
+  };
+}
+
+/**
+ * Returns true only when long-term memory is explicitly enabled AND not paused.
+ */
+export async function isMemoryActive(userId: string): Promise<boolean> {
+  try {
+    const pref = await getMemoryPreference(userId);
+    return pref.enabled && !pref.paused;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Enables AI memory for the authenticated user.
+ */
+export async function enableMemory(userId: string): Promise<UserMemoryPreference> {
+  if (!userId) throw new TypeError("Valid user id is required to enable memory.");
+  const db = userDb(userId);
+  const now = new Date().toISOString();
+  const { error } = await db.from("user_memory_preferences").upsert(
+    {
+      user_id: userId,
+      enabled: true,
+      paused: false,
+      updated_at: now,
+    },
+    { onConflict: "user_id" },
+  );
+
+  if (error) {
+    throw new Error("Failed to enable memory preferences.");
+  }
+  return { enabled: true, paused: false, updatedAt: now };
+}
+
+/**
+ * Pauses AI memory without clearing stored memories.
+ */
+export async function pauseMemory(userId: string): Promise<UserMemoryPreference> {
+  if (!userId) throw new TypeError("Valid user id is required to pause memory.");
+  const db = userDb(userId);
+  const now = new Date().toISOString();
+  const { error } = await db.from("user_memory_preferences").upsert(
+    {
+      user_id: userId,
+      paused: true,
+      updated_at: now,
+    },
+    { onConflict: "user_id" },
+  );
+
+  if (error) {
+    throw new Error("Failed to pause memory preferences.");
+  }
+  return { enabled: true, paused: true, updatedAt: now };
+}
+
+/**
+ * Resumes AI memory for an opted-in user.
+ */
+export async function resumeMemory(userId: string): Promise<UserMemoryPreference> {
+  if (!userId) throw new TypeError("Valid user id is required to resume memory.");
+  const db = userDb(userId);
+  const now = new Date().toISOString();
+  const { error } = await db.from("user_memory_preferences").upsert(
+    {
+      user_id: userId,
+      enabled: true,
+      paused: false,
+      updated_at: now,
+    },
+    { onConflict: "user_id" },
+  );
+
+  if (error) {
+    throw new Error("Failed to resume memory preferences.");
+  }
+  return { enabled: true, paused: false, updatedAt: now };
+}
+
+/**
+ * Disables AI memory and resets preference flags.
+ */
+export async function disableMemory(userId: string): Promise<UserMemoryPreference> {
+  if (!userId) throw new TypeError("Valid user id is required to disable memory.");
+  const db = userDb(userId);
+  const now = new Date().toISOString();
+  const { error } = await db.from("user_memory_preferences").upsert(
+    {
+      user_id: userId,
+      enabled: false,
+      paused: false,
+      updated_at: now,
+    },
+    { onConflict: "user_id" },
+  );
+
+  if (error) {
+    throw new Error("Failed to disable memory preferences.");
+  }
+  return { enabled: false, paused: false, updatedAt: now };
+}

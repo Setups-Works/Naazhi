@@ -65,6 +65,7 @@ export const qk = {
   },
   aiCatalog: ["ai", "catalog"] as const, // the model picker: ChatGPT and provider connections with their models
   billing: { me: ["billing", "me"] as const, invoices: ["billing", "invoices"] as const }, // the signed-in person's plan, usage and own-key setup
+  memory: { preferences: ["memory", "preferences"] as const },
   profile: ["profile"] as const,
   aiProviders: ["ai", "providers"] as const,
 } as const;

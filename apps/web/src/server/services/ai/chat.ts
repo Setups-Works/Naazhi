@@ -15,6 +15,11 @@ import { zohoStatus } from "../integrations/zoho";
 import { CHAT_PROMPT, personaLine, zohoLine } from "./prompts/chat";
 import { composioStatus } from "../composio";
 import { composioLine } from "./prompts/composio";
+import { SUSPICIOUS_PROMPT_GUARD, validateStoredUserPrompt } from "./promptValidation";
+import { retrieveConversationMemories } from "../../repositories/conversation-memory.repository";
+import { isMemoryActive } from "../memory/memory-preferences.service";
+import { formatUntrustedMemoryContext, MEMORY_CONFIG } from "../memory/memory-config";
+import { scheduleMemoryTurnIndexing } from "../memory/memory-indexing.service";
 
 /** Limits live here (not in routes) so every caller gets the same behaviour. */
 const LIMITS = { historyMessages: 20, charsPerMessage: 6000, repliesPerMinute: 20, savedChars: 19000 } as const;
@@ -113,6 +118,30 @@ export async function startChatReply(opts: {
   localDate: string;
   signal?: AbortSignal;
 }): Promise<ChatReply> {
+  if (!(await underRateLimit(opts.userId)))
+    return { ok: false, status: 429, error: "You’re sending messages very fast. Wait a moment and try again." };
+
+  const db = userDb(opts.userId);
+  const { data } = await db
+    .from("chat_messages")
+    .select("role,body")
+    .eq("chat_id", opts.chatId)
+    .order("created_at", { ascending: false })
+    .limit(LIMITS.historyMessages);
+  const rows = ((data ?? []) as { role: "user" | "assistant"; body: string }[]).reverse();
+  if (!rows.length) return { ok: false, status: 404, error: "Chat not found." };
+  if (rows[rows.length - 1].role !== "user") return { ok: false, status: 400, error: "Nothing to reply to." };
+  const latestPrompt = validateStoredUserPrompt(rows[rows.length - 1].body);
+  if (!latestPrompt.ok) {
+    const error =
+      latestPrompt.reason === "empty"
+        ? "Write a message before sending it."
+        : latestPrompt.reason === "too_long"
+          ? "That message is too long. Shorten it and try again."
+          : "That message contains unsupported input.";
+    return { ok: false, status: 400, error };
+  }
+
   // A model the person connected themselves (their own key, or their ChatGPT sign-in) is paid by them directly: it doesn't go through
   // the plan's allowance or metering. Everything else follows the plan: their own key plan, or ours counted against an allowance.
   const own = parseOwnChoice(opts.providerId);
@@ -144,35 +173,49 @@ export async function startChatReply(opts: {
     if (e instanceof ServiceError) return { ok: false, status: e.status, error: e.message };
     throw e;
   }
-  if (!(await underRateLimit(opts.userId)))
-    return { ok: false, status: 429, error: "You’re sending messages very fast. Wait a moment and try again." };
-
-  const db = userDb(opts.userId);
-  const { data } = await db
-    .from("chat_messages")
-    .select("role,body")
-    .eq("chat_id", opts.chatId)
-    .order("created_at", { ascending: false })
-    .limit(LIMITS.historyMessages);
-  const rows = ((data ?? []) as { role: "user" | "assistant"; body: string }[]).reverse();
-  if (!rows.length) return { ok: false, status: 404, error: "Chat not found." };
-  if (rows[rows.length - 1].role !== "user") return { ok: false, status: 400, error: "Nothing to reply to." };
-
   // The model is bad at calendar arithmetic ("next Tuesday", "the 20th"), so it gets a ready list of the coming dates instead.
-  const [health, profile, zoho, google] = await Promise.all([
+  const [health, profile, zoho, google, memoryActive] = await Promise.all([
     healthContextFor(opts.userId, opts.localDate),
     db.from("profiles").select("preferences").maybeSingle(),
     // Only the ids of the services they picked: no Zoho data ever reaches the model. A failed lookup means "not connected" for this reply.
     zohoStatus(opts.userId).catch(() => null),
     // The same for Gmail, Google Calendar and Google Drive (Google sign-in): which apps are connected, never their content.
     composioStatus(opts.userId).catch(() => null),
+    // Check if long-term semantic memory is enabled and not paused
+    isMemoryActive(opts.userId).catch(() => false),
   ]);
+
+  let memoryContext = "";
+  if (memoryActive) {
+    try {
+      const retrieval = await retrieveConversationMemories(opts.userId, latestPrompt.text, {
+        topK: MEMORY_CONFIG.topK,
+        minSimilarity: MEMORY_CONFIG.minSimilarity,
+      });
+      if (retrieval.available && retrieval.memories.length > 0) {
+        // Exclude memories from the current chat to prevent redundant context
+        const relevant = retrieval.memories.filter((m) => m.conversationId !== opts.chatId);
+        if (relevant.length > 0) {
+          memoryContext = formatUntrustedMemoryContext(relevant);
+        }
+      }
+    } catch {
+      // Memory store hiccups must never block normal chat
+      memoryContext = "";
+    }
+  }
+
   const googleApps = google?.apps.filter((a) => a.state === "connected").map((a) => a.app) ?? [];
   const googleLine = google?.configured ? `\n${composioLine(googleApps)}` : "";
+  const memoryLine = memoryContext ? `\n${memoryContext}` : "";
   const persona = personaLine((profile.data as { preferences?: { role?: unknown; writeTone?: unknown } } | null)?.preferences);
   const messages: AiMessage[] = [
-    { role: "system", content: `${CHAT_PROMPT.system} ${calendarFor(opts.localDate)}${health ? `\n${health}` : ""}${persona ? `\n${persona}` : ""}${zoho?.configured ? `\n${zohoLine(zoho.connected ? zoho.services : [])}` : ""}${googleLine}` },
-    ...rows.map((m) => ({ role: m.role, content: m.body.slice(0, LIMITS.charsPerMessage) })),
+    { role: "system", content: `${CHAT_PROMPT.system} ${calendarFor(opts.localDate)}${health ? `\n${health}` : ""}${persona ? `\n${persona}` : ""}${zoho?.configured ? `\n${zohoLine(zoho.connected ? zoho.services : [])}` : ""}${googleLine}${memoryLine}` },
+    ...(latestPrompt.risk.suspicious ? [{ role: "system" as const, content: SUSPICIOUS_PROMPT_GUARD }] : []),
+    ...rows.map((m, index) => ({
+      role: m.role,
+      content: index === rows.length - 1 ? latestPrompt.text : m.body.slice(0, LIMITS.charsPerMessage),
+    })),
   ];
   const it = provider
     .stream({ messages, model, signal: opts.signal, ...(credentials ? { credentials } : {}) })
@@ -222,6 +265,14 @@ export async function startChatReply(opts: {
           full = settleBlocks(full, before);
         }
         await save().catch(() => undefined);
+        if (completed && !cancelled && full.trim()) {
+          void scheduleMemoryTurnIndexing({
+            userId: opts.userId,
+            chatId: opts.chatId,
+            userText: latestPrompt.text,
+            assistantText: full,
+          }).catch(() => undefined);
+        }
         // Count what the answer used, even a stopped one; providers that don't report usage get an estimate.
         await access
           .record(usage ?? { inputTokens: estimateTokens(promptChars), outputTokens: estimateTokens(full.length) }, provider.id)

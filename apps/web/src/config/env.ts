@@ -68,6 +68,11 @@ export function serverEnv() {
   if (typeof window !== "undefined") throw new Error("serverEnv() was called in the browser. Secrets must stay on the server.");
   return {
     databaseUrl: optional("DATABASE_URL"),
+    chroma: {
+      url: optional("CHROMA_URL"),
+      authToken: optional("CHROMA_AUTH_TOKEN"),
+      collection: optional("CHROMA_COLLECTION") ?? "naazhi_conversation_memories",
+    },
     redisUrl: optional("REDIS_URL"),
     s3: {
       endpoint: optional("S3_ENDPOINT"),

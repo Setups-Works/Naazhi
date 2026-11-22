@@ -23,6 +23,16 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     date: "2026-11-22",
+    title: "Memory in the Settings menu",
+    summary: "Memory now has its own place in Settings, so you can find it and switch it on.",
+    tone: "mint",
+    changes: [
+      { kind: "fixed", platform: "web", text: "Memory now appears in the Settings menu and on the Settings page, under Naazhi." },
+      { kind: "fixed", platform: "desktop", text: "The Mac and Windows apps show Memory in Settings too." },
+    ],
+  },
+  {
+    date: "2026-11-22",
     title: "Version 9.4.0: Naazhi can remember, if you want it to",
     summary: "Switch on Memory and the assistant recalls what you told it in earlier chats. It’s off until you turn it on, stays private to you, and you can pause or clear it any time.",
     tone: "mint",

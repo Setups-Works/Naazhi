@@ -5,6 +5,7 @@ import { Icon as FA } from "@/components/ui/Icon";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   faBolt,
+  faBrain,
   faBriefcase,
   faDatabase,
   faEnvelope,
@@ -99,6 +100,7 @@ const GROUPS: { label: string; tiles: Tile[] }[] = [
       { k: "youdo", label: "YouDo", desc: "Automations that run on a schedule or when an email arrives.", icon: faBolt, soon: ["Describe an automation in a sentence", "Start from examples like a morning read or a Friday wrap-up", "See how many runs you have left this month"] },
       { k: "skills", label: "Skills", desc: "Slash commands and saved prompts.", icon: faTerminal },
       { k: "keys", label: "API keys", desc: "Use your own AI provider keys.", icon: faKey },
+      { k: "memory", label: "Memory", desc: "Let the assistant remember things from earlier chats.", icon: faBrain },
     ],
   },
   {

@@ -136,6 +136,7 @@ Three developers and several AI agents write UI here. To keep it one product, th
 | `docs/DATA_MODEL.md`        | You touch the database                                                                                                                                                          |
 | `docs/BILLING.md`           | You touch plans, prices, AI access or limits, the Plan and billing tab, the admin Plans page or the pricing page — the three plans, the rules, security of saved API keys, how to connect payments |
 | `docs/ANALYTICS.md`         | You add a screen or action people use, or any tracking tool — Firebase and Microsoft Clarity on web, desktop and app, one switch, masking, what the policies must say |
+| `docs/MEMORY.md`           | You touch long-term AI memory — opt-in, pgvector table with RLS, local E5 embeddings, the indexing queue and its cron, turning it on in Azure |
 | `docs/DESKTOP.md`           | You touch `apps/desktop`, the window frame (top bar, sidebar header), `naazhi://` links, desktop sign-in or the desktop release — what the shell does, how the web app talks to it, signing and the release workflow |
 | `docs/SELF_HOSTING.md`      | You run, deploy or back up the stack (Docker, env, storage, auth, Supabase data import)                                                                                         |
 | `docs/SECURITY.md`          | You touch auth, uploads, sharing, admin, AI tools or secrets                                                                                                                    |

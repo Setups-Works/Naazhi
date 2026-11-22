@@ -1,19 +1,23 @@
 # syntax=docker/dockerfile:1
 # Multi-stage build for the Next.js app. Used by `docker compose --profile app up --build`.
 
-ARG NODE_VERSION=24-alpine
+# Debian slim, not Alpine: ONNX Runtime (local AI-memory embeddings) ships glibc-only native libraries that fail on musl.
+ARG NODE_VERSION=24-bookworm-slim
 
 # Dependencies layer: only re-runs when a workspace manifest or the pnpm lockfile changes.
 FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
 RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY scripts/ensure-pnpm-shim.mjs ./scripts/ensure-pnpm-shim.mjs
 COPY apps/web/package.json ./apps/web/package.json
 COPY apps/mobile/package.json ./apps/mobile/package.json
 COPY packages/api-client/package.json ./packages/api-client/package.json
 COPY packages/logic/package.json ./packages/logic/package.json
 COPY packages/types/package.json ./packages/types/package.json
 COPY packages/validation/package.json ./packages/validation/package.json
+# ONNX Runtime (local AI-memory embeddings) runs on the CPU: skip its optional CUDA download (~100 MB of GPU libraries).
+ENV ONNXRUNTIME_NODE_INSTALL=skip
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile
 
 FROM node:${NODE_VERSION} AS builder
@@ -51,11 +55,13 @@ ENV NEXT_PUBLIC_FIREBASE_APP_ID=${NEXT_PUBLIC_FIREBASE_APP_ID}
 ENV NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=${NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID}
 ENV NEXT_PUBLIC_CLARITY_PROJECT_ID=${NEXT_PUBLIC_CLARITY_PROJECT_ID}
 RUN --mount=type=cache,target=/app/apps/web/.next/cache pnpm build:web
+# Transformers.js (AI-memory embeddings) loads ONNX Runtime and sharp in ways output tracing misses; copy them in whole.
+RUN node scripts/docker/copy-runtime-deps.mjs apps/web/.next/standalone @huggingface/transformers
 
 FROM node:${NODE_VERSION} AS runner
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
-RUN addgroup -S app && adduser -S app -G app
+RUN groupadd --system app && useradd --system --gid app --no-create-home app
 # Copy order: least to most frequently changing, so a code change only invalidates the last layers.
 COPY --from=builder --chown=app:app /app/apps/web/public ./apps/web/public
 COPY --from=builder --chown=app:app /app/apps/web/package.json ./apps/web/package.json
@@ -68,5 +74,5 @@ COPY --chown=app:app db ./db
 USER app
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD wget -q -O /dev/null http://127.0.0.1:3000/ || exit 1
+  CMD node -e "fetch('http://127.0.0.1:3000/').then((r)=>process.exit(r.status<500?0:1),()=>process.exit(1))"
 CMD ["node", "apps/web/server.js"]

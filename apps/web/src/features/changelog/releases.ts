@@ -22,6 +22,21 @@ export type Release = {
  */
 export const RELEASES: Release[] = [
   {
+    date: "2026-11-22",
+    title: "Version 9.4.0: Naazhi can remember, if you want it to",
+    summary: "Switch on Memory and the assistant recalls what you told it in earlier chats. It’s off until you turn it on, stays private to you, and you can pause or clear it any time.",
+    tone: "mint",
+    appVersion: "v9.4.0",
+    changes: [
+      { kind: "new", platform: "web", text: "Settings → Memory lets you switch on long-term memory: the assistant recalls useful things from your earlier chats, like preferences or project details." },
+      { kind: "new", platform: "web", text: "Memory is off until you turn it on. Pause it to stop using it, or clear everything it remembered in one step." },
+      { kind: "improved", platform: "web", text: "Memories stay in Naazhi’s own database and are only ever shown to you. Deleting a chat or your account deletes what was remembered from it." },
+      { kind: "improved", platform: "web", text: "Chat is better at ignoring messages that try to override its rules or reveal its hidden instructions." },
+      { kind: "improved", platform: "desktop", text: "The Mac and Windows apps get Memory in Settings too." },
+      { kind: "improved", platform: "app", text: "Chats in the phone app use your memory too, once you switch it on in Settings → Memory on the web." },
+    ],
+  },
+  {
     date: "2026-11-19",
     title: "Clearer search results and team pages",
     summary: "Naazhi’s pages describe themselves better in Google, and the team page shows who stands behind Naazhi.",

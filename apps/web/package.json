@@ -1,7 +1,7 @@
 {
   "name": "@untitled/web",
   "private": true,
-  "version": "9.3.0",
+  "version": "9.4.0",
   "scripts": {
     "dev": "node ../../scripts/web-next.mjs dev",
     "build": "node ../../scripts/web-next.mjs build",
@@ -22,6 +22,7 @@
     "@fortawesome/fontawesome-svg-core": "^7.3.1",
     "@fortawesome/free-solid-svg-icons": "^7.3.1",
     "@fortawesome/react-fontawesome": "^3.5.0",
+    "@huggingface/transformers": "^4.3.2",
     "@microsoft/clarity": "^1.0.2",
     "@radix-ui/react-alert-dialog": "^1.1.24",
     "@radix-ui/react-dialog": "^1.2.0",

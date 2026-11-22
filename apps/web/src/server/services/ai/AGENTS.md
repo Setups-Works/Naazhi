@@ -28,3 +28,7 @@
 - Puter (`runtime: "client"`): hand the prepared messages to the browser and accept the final message back through `/api/v1/ai/messages`.
 
 **Zoho in chat (`chat.v20`):** `zohoLine` (prompts/chat.ts) is added only for people with Zoho set up; `<show-item>{"kind":"zoho"}` cards are read by `services/integrations/zoho`; `zoho_crm` / `zoho_mail` / `zoho_cliq` drafts are created in `actions.ts` after the button press. See `docs/ZOHO.md`.
+
+**Prompt boundary:** `startChatReply()` validates the latest persisted user message through `promptValidation.ts` before provider selection or generation. Input validation covers type, non-empty content, controls, and the 6,000-character cap. Multiple independent injection signals add a fixed trusted system guard; they do not replace authorization, the fixed prompt, or role separation. Do not log prompt content.
+
+**Long-term semantic memory:** opt-in per person (`services/memory/*`, `repositories/conversation-memory.repository.ts`, pgvector in PostgreSQL, local E5 embeddings). `chat.ts` asks `isMemoryActive()` and adds retrieved memories from *other* chats as an untrusted block; a failing store never blocks the reply. Keep `chat_messages` as short-term history and never add client-controlled user filters. See `docs/MEMORY.md`.

@@ -37,7 +37,10 @@ function create() {
     secret: env.authSecret,
     database: authPool(),
     advanced: {
-      database: { generateId: "uuid" },
+      database: {
+        generateId: "uuid",
+        ...(process.env.NEXT_PHASE === "phase-production-build" ? { validateSchema: false } : {}),
+      },
       // With the website and the app on sibling hosts, one cookie on the parent domain lets the website tell you are signed in.
       ...(env.authCookieDomain ? { crossSubDomainCookies: { enabled: true, domain: env.authCookieDomain } } : {}),
       // Rate limits are per address. The auth route puts our own reading of it (clientIp(), from CLIENT_IP_HEADER) in this header.

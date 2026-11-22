@@ -33,7 +33,9 @@ x-app-env: &app-env
 
 services:
   postgres:
-    image: postgres:16-alpine
+    # postgres:16-alpine plus pgvector (AI memory); see docker/postgres/Dockerfile.
+    image: untitled-postgres:16-pgvector
+    build: { context: docker/postgres }
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-app}

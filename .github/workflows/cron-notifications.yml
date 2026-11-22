@@ -34,3 +34,16 @@ jobs:
         run: |
           if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then echo "APP_URL or CRON_SECRET is not set; skipping."; exit 0; fi
           curl --fail --silent --show-error -X POST -H "Authorization: Bearer $CRON_SECRET" "${APP_URL%/}/api/cron/email-campaigns"
+
+  memory-indexing:
+    # Every ten minutes: embed and store the chat turns of people who switched on AI memory (docs/MEMORY.md).
+    if: github.event.schedule != '7 * * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Index the next memories
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then echo "APP_URL or CRON_SECRET is not set; skipping."; exit 0; fi
+          curl --fail --silent --show-error -X POST -H "Authorization: Bearer $CRON_SECRET" "${APP_URL%/}/api/cron/memory-indexing"

@@ -74,6 +74,7 @@ Full design: `docs/BILLING.md`.
 - **Any write action by the AI (send mail, create/delete events or tasks) requires explicit user confirmation** with a preview.
 - Log tool calls to the audit log; meter usage; cap per-user spend.
 - Don't send more context to a provider than the feature needs; document what each provider receives.
+- Long-term AI memory (`conversation_memories`) is opt-in and owner-only under RLS; embeddings are computed on our server (no hosted embedding API), memories are passed to the model as untrusted history, and they are deleted with the chat or the account. See `docs/MEMORY.md`.
 
 ## Web hardening (Phase 6)
 

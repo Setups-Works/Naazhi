@@ -23,6 +23,8 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    // The opt-in local E5 benchmark (RUN_LOCAL_E5_TESTS=1) downloads and loads the model on first run.
+    testTimeout: 60000,
     include: ["tests/unit/**/*.test.ts", ...(withDb ? ["tests/db/**/*.test.ts"] : [])],
   },
 });

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon as FA } from "@/components/ui/Icon";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
+  faBrain,
   faBroom,
   faCircleCheck,
   faDatabase,
@@ -45,6 +46,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { COUNTRIES } from "@untitled/logic/countries";
 import BillingPanel from "../../features/billing/BillingPanel";
 import AppearancePicker from "../../features/settings/AppearancePicker";
+import MemorySettings from "../../features/settings/pages/MemorySettings";
 import { applyLook, saveLook } from "../../lib/look";
 import { normalizePhone } from "@untitled/logic/billing";
 
@@ -54,6 +56,7 @@ const NAV: { k: Tab; label: string; icon: IconDefinition }[] = [
   { k: "prefs", label: "Preferences", icon: faSliders },
   { k: "appearance", label: "Appearance", icon: faPalette },
   { k: "billing", label: "Plan and billing", icon: faWallet },
+  { k: "memory", label: "Memory", icon: faBrain },
   { k: "security", label: "Security", icon: faShieldHalved },
   { k: "data", label: "Your data", icon: faDatabase },
   { k: "danger", label: "Danger zone", icon: faTrash },
@@ -790,6 +793,10 @@ export default function SettingsView({
 
         <TabsContent value="billing">
           <BillingPanel />
+        </TabsContent>
+
+        <TabsContent value="memory">
+          <MemorySettings />
         </TabsContent>
 
         <TabsContent value="security" forceMount asChild>

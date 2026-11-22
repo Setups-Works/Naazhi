@@ -9,6 +9,7 @@ The whole product runs on services you control. There is no Supabase or other ho
 | Files          | **S3-compatible storage** (SeaweedFS in Docker) | `apps/web/src/server/storage.ts`, `/api/v1/storage/*`                  |
 | Realtime       | Postgres `pg_notify` → Server-Sent Events       | `apps/web/src/server/realtime.ts`, `/api/v1/realtime`                  |
 | Cache / limits | **Redis 7**                                     | `apps/web/src/server/redis.ts`                                         |
+| Semantic memory | **pgvector** in the same PostgreSQL | `apps/web/src/server/repositories/conversation-memory.repository.ts`, `docs/MEMORY.md` |
 | Email          | SMTP (Mailpit in dev, your provider in prod)    | `apps/web/src/server/mail.ts`                                          |
 
 > MinIO stopped publishing Docker images, so object storage runs on SeaweedFS. The app only speaks the S3 API: MinIO, Garage, RustFS, Cloudflare R2 or AWS S3 work by changing the `S3_*` variables.
@@ -30,6 +31,13 @@ corepack pnpm docker:up
 corepack pnpm db:migrate
 corepack pnpm dev:web
 ```
+
+### pgvector (AI memory)
+
+The `postgres` service is built from `docker/postgres/Dockerfile`: the same `postgres:16-alpine` image with the pgvector extension added, so
+existing data volumes keep working. After pulling this change run `docker compose --env-file .env.selfhost up -d --build postgres` once,
+then `corepack pnpm db:migrate`. A managed PostgreSQL needs the `vector` extension allowed (Azure: `azure.extensions` includes `VECTOR`).
+See `docs/MEMORY.md`.
 
 Mailpit shows every email at http://localhost:8025 (verification and reset links). To send real email, set `SMTP_URL` (and `MAIL_FROM`) in `apps/web/.env.local`, e.g. `smtps://user%40example.com:password@smtp.example.com:465` (URL-encode special characters).
 

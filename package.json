@@ -1,8 +1,14 @@
 {
   "name": "untitled-project",
   "private": true,
-  "version": "9.3.0",
+  "version": "9.4.0",
   "packageManager": "pnpm@12.11.2",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.11.2"
+    }
+  },
   "engines": { "node": ">=22.13.0" },
   "scripts": {
     "dev": "turbo run dev --parallel",
@@ -25,7 +31,7 @@
     "format:check": "prettier --check .",
     "check:design": "node scripts/check-design.mjs",
     "check:design:all": "node scripts/check-design.mjs --all",
-    "prepare": "node scripts/ensure-pnpm-shim.mjs && git config core.hooksPath .githooks 2>/dev/null || true"
+    "prepare": "node scripts/ensure-pnpm-shim.mjs"
   },
   "devDependencies": {
     "prettier": "^3.9.9",
